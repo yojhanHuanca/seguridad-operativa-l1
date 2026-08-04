@@ -1,1 +1,6 @@
-.agents/`n.claude/`.windsurf/`nskills-lock.json`n
+.agents/
+.claude/
+.windsurf/
+skills-lock.json
+backend/node_modules/
+frontend/node_modules/
