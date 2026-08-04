@@ -1,0 +1,5469 @@
+import type * as runtime from "@prisma/client/runtime/library";
+import type * as Prisma from "../internal/prismaNamespace.js";
+/**
+ * Model catalogo_detalle
+ *
+ */
+export type catalogo_detalleModel = runtime.Types.Result.DefaultSelection<Prisma.$catalogo_detallePayload>;
+export type AggregateCatalogo_detalle = {
+    _count: Catalogo_detalleCountAggregateOutputType | null;
+    _avg: Catalogo_detalleAvgAggregateOutputType | null;
+    _sum: Catalogo_detalleSumAggregateOutputType | null;
+    _min: Catalogo_detalleMinAggregateOutputType | null;
+    _max: Catalogo_detalleMaxAggregateOutputType | null;
+};
+export type Catalogo_detalleAvgAggregateOutputType = {
+    id_detalle: number | null;
+    id_catalogo: number | null;
+    orden: number | null;
+};
+export type Catalogo_detalleSumAggregateOutputType = {
+    id_detalle: number | null;
+    id_catalogo: number | null;
+    orden: number | null;
+};
+export type Catalogo_detalleMinAggregateOutputType = {
+    id_detalle: number | null;
+    id_catalogo: number | null;
+    codigo: string | null;
+    nombre: string | null;
+    descripcion: string | null;
+    orden: number | null;
+    color: string | null;
+    estado: boolean | null;
+    created_at: Date | null;
+};
+export type Catalogo_detalleMaxAggregateOutputType = {
+    id_detalle: number | null;
+    id_catalogo: number | null;
+    codigo: string | null;
+    nombre: string | null;
+    descripcion: string | null;
+    orden: number | null;
+    color: string | null;
+    estado: boolean | null;
+    created_at: Date | null;
+};
+export type Catalogo_detalleCountAggregateOutputType = {
+    id_detalle: number;
+    id_catalogo: number;
+    codigo: number;
+    nombre: number;
+    descripcion: number;
+    orden: number;
+    color: number;
+    estado: number;
+    created_at: number;
+    _all: number;
+};
+export type Catalogo_detalleAvgAggregateInputType = {
+    id_detalle?: true;
+    id_catalogo?: true;
+    orden?: true;
+};
+export type Catalogo_detalleSumAggregateInputType = {
+    id_detalle?: true;
+    id_catalogo?: true;
+    orden?: true;
+};
+export type Catalogo_detalleMinAggregateInputType = {
+    id_detalle?: true;
+    id_catalogo?: true;
+    codigo?: true;
+    nombre?: true;
+    descripcion?: true;
+    orden?: true;
+    color?: true;
+    estado?: true;
+    created_at?: true;
+};
+export type Catalogo_detalleMaxAggregateInputType = {
+    id_detalle?: true;
+    id_catalogo?: true;
+    codigo?: true;
+    nombre?: true;
+    descripcion?: true;
+    orden?: true;
+    color?: true;
+    estado?: true;
+    created_at?: true;
+};
+export type Catalogo_detalleCountAggregateInputType = {
+    id_detalle?: true;
+    id_catalogo?: true;
+    codigo?: true;
+    nombre?: true;
+    descripcion?: true;
+    orden?: true;
+    color?: true;
+    estado?: true;
+    created_at?: true;
+    _all?: true;
+};
+export type Catalogo_detalleAggregateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Filter which catalogo_detalle to aggregate.
+     */
+    where?: Prisma.catalogo_detalleWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of catalogo_detalles to fetch.
+     */
+    orderBy?: Prisma.catalogo_detalleOrderByWithRelationInput | Prisma.catalogo_detalleOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
+    cursor?: Prisma.catalogo_detalleWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` catalogo_detalles from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` catalogo_detalles.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned catalogo_detalles
+    **/
+    _count?: true | Catalogo_detalleCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to average
+    **/
+    _avg?: Catalogo_detalleAvgAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to sum
+    **/
+    _sum?: Catalogo_detalleSumAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+    **/
+    _min?: Catalogo_detalleMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+    **/
+    _max?: Catalogo_detalleMaxAggregateInputType;
+};
+export type GetCatalogo_detalleAggregateType<T extends Catalogo_detalleAggregateArgs> = {
+    [P in keyof T & keyof AggregateCatalogo_detalle]: P extends '_count' | 'count' ? T[P] extends true ? number : Prisma.GetScalarType<T[P], AggregateCatalogo_detalle[P]> : Prisma.GetScalarType<T[P], AggregateCatalogo_detalle[P]>;
+};
+export type catalogo_detalleGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    orderBy?: Prisma.catalogo_detalleOrderByWithAggregationInput | Prisma.catalogo_detalleOrderByWithAggregationInput[];
+    by: Prisma.Catalogo_detalleScalarFieldEnum[] | Prisma.Catalogo_detalleScalarFieldEnum;
+    having?: Prisma.catalogo_detalleScalarWhereWithAggregatesInput;
+    take?: number;
+    skip?: number;
+    _count?: Catalogo_detalleCountAggregateInputType | true;
+    _avg?: Catalogo_detalleAvgAggregateInputType;
+    _sum?: Catalogo_detalleSumAggregateInputType;
+    _min?: Catalogo_detalleMinAggregateInputType;
+    _max?: Catalogo_detalleMaxAggregateInputType;
+};
+export type Catalogo_detalleGroupByOutputType = {
+    id_detalle: number;
+    id_catalogo: number;
+    codigo: string | null;
+    nombre: string;
+    descripcion: string | null;
+    orden: number | null;
+    color: string | null;
+    estado: boolean | null;
+    created_at: Date | null;
+    _count: Catalogo_detalleCountAggregateOutputType | null;
+    _avg: Catalogo_detalleAvgAggregateOutputType | null;
+    _sum: Catalogo_detalleSumAggregateOutputType | null;
+    _min: Catalogo_detalleMinAggregateOutputType | null;
+    _max: Catalogo_detalleMaxAggregateOutputType | null;
+};
+type GetCatalogo_detalleGroupByPayload<T extends catalogo_detalleGroupByArgs> = Prisma.PrismaPromise<Array<Prisma.PickEnumerable<Catalogo_detalleGroupByOutputType, T['by']> & {
+    [P in ((keyof T) & (keyof Catalogo_detalleGroupByOutputType))]: P extends '_count' ? T[P] extends boolean ? number : Prisma.GetScalarType<T[P], Catalogo_detalleGroupByOutputType[P]> : Prisma.GetScalarType<T[P], Catalogo_detalleGroupByOutputType[P]>;
+}>>;
+export type catalogo_detalleWhereInput = {
+    AND?: Prisma.catalogo_detalleWhereInput | Prisma.catalogo_detalleWhereInput[];
+    OR?: Prisma.catalogo_detalleWhereInput[];
+    NOT?: Prisma.catalogo_detalleWhereInput | Prisma.catalogo_detalleWhereInput[];
+    id_detalle?: Prisma.IntFilter<"catalogo_detalle"> | number;
+    id_catalogo?: Prisma.IntFilter<"catalogo_detalle"> | number;
+    codigo?: Prisma.StringNullableFilter<"catalogo_detalle"> | string | null;
+    nombre?: Prisma.StringFilter<"catalogo_detalle"> | string;
+    descripcion?: Prisma.StringNullableFilter<"catalogo_detalle"> | string | null;
+    orden?: Prisma.IntNullableFilter<"catalogo_detalle"> | number | null;
+    color?: Prisma.StringNullableFilter<"catalogo_detalle"> | string | null;
+    estado?: Prisma.BoolNullableFilter<"catalogo_detalle"> | boolean | null;
+    created_at?: Prisma.DateTimeNullableFilter<"catalogo_detalle"> | Date | string | null;
+    actividades_plan?: Prisma.Actividades_planListRelationFilter;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.Casos_sopListRelationFilter;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.Casos_sopListRelationFilter;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.Casos_sopListRelationFilter;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.Casos_sopListRelationFilter;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.Casos_sopListRelationFilter;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.Casos_sopListRelationFilter;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.Casos_sopListRelationFilter;
+    catalogos?: Prisma.XOR<Prisma.CatalogosScalarRelationFilter, Prisma.catalogosWhereInput>;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    planes_accion?: Prisma.Planes_accionListRelationFilter;
+};
+export type catalogo_detalleOrderByWithRelationInput = {
+    id_detalle?: Prisma.SortOrder;
+    id_catalogo?: Prisma.SortOrder;
+    codigo?: Prisma.SortOrderInput | Prisma.SortOrder;
+    nombre?: Prisma.SortOrder;
+    descripcion?: Prisma.SortOrderInput | Prisma.SortOrder;
+    orden?: Prisma.SortOrderInput | Prisma.SortOrder;
+    color?: Prisma.SortOrderInput | Prisma.SortOrder;
+    estado?: Prisma.SortOrderInput | Prisma.SortOrder;
+    created_at?: Prisma.SortOrderInput | Prisma.SortOrder;
+    actividades_plan?: Prisma.actividades_planOrderByRelationAggregateInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopOrderByRelationAggregateInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopOrderByRelationAggregateInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopOrderByRelationAggregateInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopOrderByRelationAggregateInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopOrderByRelationAggregateInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopOrderByRelationAggregateInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopOrderByRelationAggregateInput;
+    catalogos?: Prisma.catalogosOrderByWithRelationInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosOrderByRelationAggregateInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosOrderByRelationAggregateInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosOrderByRelationAggregateInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosOrderByRelationAggregateInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosOrderByRelationAggregateInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosOrderByRelationAggregateInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosOrderByRelationAggregateInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosOrderByRelationAggregateInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosOrderByRelationAggregateInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosOrderByRelationAggregateInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosOrderByRelationAggregateInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosOrderByRelationAggregateInput;
+    planes_accion?: Prisma.planes_accionOrderByRelationAggregateInput;
+};
+export type catalogo_detalleWhereUniqueInput = Prisma.AtLeast<{
+    id_detalle?: number;
+    AND?: Prisma.catalogo_detalleWhereInput | Prisma.catalogo_detalleWhereInput[];
+    OR?: Prisma.catalogo_detalleWhereInput[];
+    NOT?: Prisma.catalogo_detalleWhereInput | Prisma.catalogo_detalleWhereInput[];
+    id_catalogo?: Prisma.IntFilter<"catalogo_detalle"> | number;
+    codigo?: Prisma.StringNullableFilter<"catalogo_detalle"> | string | null;
+    nombre?: Prisma.StringFilter<"catalogo_detalle"> | string;
+    descripcion?: Prisma.StringNullableFilter<"catalogo_detalle"> | string | null;
+    orden?: Prisma.IntNullableFilter<"catalogo_detalle"> | number | null;
+    color?: Prisma.StringNullableFilter<"catalogo_detalle"> | string | null;
+    estado?: Prisma.BoolNullableFilter<"catalogo_detalle"> | boolean | null;
+    created_at?: Prisma.DateTimeNullableFilter<"catalogo_detalle"> | Date | string | null;
+    actividades_plan?: Prisma.Actividades_planListRelationFilter;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.Casos_sopListRelationFilter;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.Casos_sopListRelationFilter;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.Casos_sopListRelationFilter;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.Casos_sopListRelationFilter;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.Casos_sopListRelationFilter;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.Casos_sopListRelationFilter;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.Casos_sopListRelationFilter;
+    catalogos?: Prisma.XOR<Prisma.CatalogosScalarRelationFilter, Prisma.catalogosWhereInput>;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.Eventos_operativosListRelationFilter;
+    planes_accion?: Prisma.Planes_accionListRelationFilter;
+}, "id_detalle">;
+export type catalogo_detalleOrderByWithAggregationInput = {
+    id_detalle?: Prisma.SortOrder;
+    id_catalogo?: Prisma.SortOrder;
+    codigo?: Prisma.SortOrderInput | Prisma.SortOrder;
+    nombre?: Prisma.SortOrder;
+    descripcion?: Prisma.SortOrderInput | Prisma.SortOrder;
+    orden?: Prisma.SortOrderInput | Prisma.SortOrder;
+    color?: Prisma.SortOrderInput | Prisma.SortOrder;
+    estado?: Prisma.SortOrderInput | Prisma.SortOrder;
+    created_at?: Prisma.SortOrderInput | Prisma.SortOrder;
+    _count?: Prisma.catalogo_detalleCountOrderByAggregateInput;
+    _avg?: Prisma.catalogo_detalleAvgOrderByAggregateInput;
+    _max?: Prisma.catalogo_detalleMaxOrderByAggregateInput;
+    _min?: Prisma.catalogo_detalleMinOrderByAggregateInput;
+    _sum?: Prisma.catalogo_detalleSumOrderByAggregateInput;
+};
+export type catalogo_detalleScalarWhereWithAggregatesInput = {
+    AND?: Prisma.catalogo_detalleScalarWhereWithAggregatesInput | Prisma.catalogo_detalleScalarWhereWithAggregatesInput[];
+    OR?: Prisma.catalogo_detalleScalarWhereWithAggregatesInput[];
+    NOT?: Prisma.catalogo_detalleScalarWhereWithAggregatesInput | Prisma.catalogo_detalleScalarWhereWithAggregatesInput[];
+    id_detalle?: Prisma.IntWithAggregatesFilter<"catalogo_detalle"> | number;
+    id_catalogo?: Prisma.IntWithAggregatesFilter<"catalogo_detalle"> | number;
+    codigo?: Prisma.StringNullableWithAggregatesFilter<"catalogo_detalle"> | string | null;
+    nombre?: Prisma.StringWithAggregatesFilter<"catalogo_detalle"> | string;
+    descripcion?: Prisma.StringNullableWithAggregatesFilter<"catalogo_detalle"> | string | null;
+    orden?: Prisma.IntNullableWithAggregatesFilter<"catalogo_detalle"> | number | null;
+    color?: Prisma.StringNullableWithAggregatesFilter<"catalogo_detalle"> | string | null;
+    estado?: Prisma.BoolNullableWithAggregatesFilter<"catalogo_detalle"> | boolean | null;
+    created_at?: Prisma.DateTimeNullableWithAggregatesFilter<"catalogo_detalle"> | Date | string | null;
+};
+export type catalogo_detalleCreateInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUpdateInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleCreateManyInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+};
+export type catalogo_detalleUpdateManyMutationInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+};
+export type catalogo_detalleUncheckedUpdateManyInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+};
+export type Catalogo_detalleNullableScalarRelationFilter = {
+    is?: Prisma.catalogo_detalleWhereInput | null;
+    isNot?: Prisma.catalogo_detalleWhereInput | null;
+};
+export type Catalogo_detalleScalarRelationFilter = {
+    is?: Prisma.catalogo_detalleWhereInput;
+    isNot?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleCountOrderByAggregateInput = {
+    id_detalle?: Prisma.SortOrder;
+    id_catalogo?: Prisma.SortOrder;
+    codigo?: Prisma.SortOrder;
+    nombre?: Prisma.SortOrder;
+    descripcion?: Prisma.SortOrder;
+    orden?: Prisma.SortOrder;
+    color?: Prisma.SortOrder;
+    estado?: Prisma.SortOrder;
+    created_at?: Prisma.SortOrder;
+};
+export type catalogo_detalleAvgOrderByAggregateInput = {
+    id_detalle?: Prisma.SortOrder;
+    id_catalogo?: Prisma.SortOrder;
+    orden?: Prisma.SortOrder;
+};
+export type catalogo_detalleMaxOrderByAggregateInput = {
+    id_detalle?: Prisma.SortOrder;
+    id_catalogo?: Prisma.SortOrder;
+    codigo?: Prisma.SortOrder;
+    nombre?: Prisma.SortOrder;
+    descripcion?: Prisma.SortOrder;
+    orden?: Prisma.SortOrder;
+    color?: Prisma.SortOrder;
+    estado?: Prisma.SortOrder;
+    created_at?: Prisma.SortOrder;
+};
+export type catalogo_detalleMinOrderByAggregateInput = {
+    id_detalle?: Prisma.SortOrder;
+    id_catalogo?: Prisma.SortOrder;
+    codigo?: Prisma.SortOrder;
+    nombre?: Prisma.SortOrder;
+    descripcion?: Prisma.SortOrder;
+    orden?: Prisma.SortOrder;
+    color?: Prisma.SortOrder;
+    estado?: Prisma.SortOrder;
+    created_at?: Prisma.SortOrder;
+};
+export type catalogo_detalleSumOrderByAggregateInput = {
+    id_detalle?: Prisma.SortOrder;
+    id_catalogo?: Prisma.SortOrder;
+    orden?: Prisma.SortOrder;
+};
+export type Catalogo_detalleListRelationFilter = {
+    every?: Prisma.catalogo_detalleWhereInput;
+    some?: Prisma.catalogo_detalleWhereInput;
+    none?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleOrderByRelationAggregateInput = {
+    _count?: Prisma.SortOrder;
+};
+export type catalogo_detalleCreateNestedOneWithoutActividades_planInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutActividades_planInput, Prisma.catalogo_detalleUncheckedCreateWithoutActividades_planInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutActividades_planInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+};
+export type catalogo_detalleUpdateOneWithoutActividades_planNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutActividades_planInput, Prisma.catalogo_detalleUncheckedCreateWithoutActividades_planInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutActividades_planInput;
+    upsert?: Prisma.catalogo_detalleUpsertWithoutActividades_planInput;
+    disconnect?: Prisma.catalogo_detalleWhereInput | boolean;
+    delete?: Prisma.catalogo_detalleWhereInput | boolean;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.catalogo_detalleUpdateToOneWithWhereWithoutActividades_planInput, Prisma.catalogo_detalleUpdateWithoutActividades_planInput>, Prisma.catalogo_detalleUncheckedUpdateWithoutActividades_planInput>;
+};
+export type catalogo_detalleCreateNestedOneWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+};
+export type catalogo_detalleCreateNestedOneWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+};
+export type catalogo_detalleCreateNestedOneWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+};
+export type catalogo_detalleCreateNestedOneWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+};
+export type catalogo_detalleCreateNestedOneWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+};
+export type catalogo_detalleCreateNestedOneWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+};
+export type catalogo_detalleCreateNestedOneWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+};
+export type catalogo_detalleUpdateOneRequiredWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    upsert?: Prisma.catalogo_detalleUpsertWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.catalogo_detalleUpdateToOneWithWhereWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput, Prisma.catalogo_detalleUpdateWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput>, Prisma.catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateOneWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput;
+    upsert?: Prisma.catalogo_detalleUpsertWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput;
+    disconnect?: Prisma.catalogo_detalleWhereInput | boolean;
+    delete?: Prisma.catalogo_detalleWhereInput | boolean;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.catalogo_detalleUpdateToOneWithWhereWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput, Prisma.catalogo_detalleUpdateWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput>, Prisma.catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateOneRequiredWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput;
+    upsert?: Prisma.catalogo_detalleUpsertWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.catalogo_detalleUpdateToOneWithWhereWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput, Prisma.catalogo_detalleUpdateWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput>, Prisma.catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateOneWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    upsert?: Prisma.catalogo_detalleUpsertWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    disconnect?: Prisma.catalogo_detalleWhereInput | boolean;
+    delete?: Prisma.catalogo_detalleWhereInput | boolean;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.catalogo_detalleUpdateToOneWithWhereWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput, Prisma.catalogo_detalleUpdateWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput>, Prisma.catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateOneWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    upsert?: Prisma.catalogo_detalleUpsertWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    disconnect?: Prisma.catalogo_detalleWhereInput | boolean;
+    delete?: Prisma.catalogo_detalleWhereInput | boolean;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.catalogo_detalleUpdateToOneWithWhereWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput, Prisma.catalogo_detalleUpdateWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput>, Prisma.catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateOneRequiredWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput;
+    upsert?: Prisma.catalogo_detalleUpsertWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.catalogo_detalleUpdateToOneWithWhereWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput, Prisma.catalogo_detalleUpdateWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput>, Prisma.catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateOneRequiredWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput;
+    upsert?: Prisma.catalogo_detalleUpsertWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.catalogo_detalleUpdateToOneWithWhereWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput, Prisma.catalogo_detalleUpdateWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput>, Prisma.catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput>;
+};
+export type NullableBoolFieldUpdateOperationsInput = {
+    set?: boolean | null;
+};
+export type catalogo_detalleCreateNestedManyWithoutCatalogosInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCatalogosInput, Prisma.catalogo_detalleUncheckedCreateWithoutCatalogosInput> | Prisma.catalogo_detalleCreateWithoutCatalogosInput[] | Prisma.catalogo_detalleUncheckedCreateWithoutCatalogosInput[];
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutCatalogosInput | Prisma.catalogo_detalleCreateOrConnectWithoutCatalogosInput[];
+    createMany?: Prisma.catalogo_detalleCreateManyCatalogosInputEnvelope;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput | Prisma.catalogo_detalleWhereUniqueInput[];
+};
+export type catalogo_detalleUncheckedCreateNestedManyWithoutCatalogosInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCatalogosInput, Prisma.catalogo_detalleUncheckedCreateWithoutCatalogosInput> | Prisma.catalogo_detalleCreateWithoutCatalogosInput[] | Prisma.catalogo_detalleUncheckedCreateWithoutCatalogosInput[];
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutCatalogosInput | Prisma.catalogo_detalleCreateOrConnectWithoutCatalogosInput[];
+    createMany?: Prisma.catalogo_detalleCreateManyCatalogosInputEnvelope;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput | Prisma.catalogo_detalleWhereUniqueInput[];
+};
+export type catalogo_detalleUpdateManyWithoutCatalogosNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCatalogosInput, Prisma.catalogo_detalleUncheckedCreateWithoutCatalogosInput> | Prisma.catalogo_detalleCreateWithoutCatalogosInput[] | Prisma.catalogo_detalleUncheckedCreateWithoutCatalogosInput[];
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutCatalogosInput | Prisma.catalogo_detalleCreateOrConnectWithoutCatalogosInput[];
+    upsert?: Prisma.catalogo_detalleUpsertWithWhereUniqueWithoutCatalogosInput | Prisma.catalogo_detalleUpsertWithWhereUniqueWithoutCatalogosInput[];
+    createMany?: Prisma.catalogo_detalleCreateManyCatalogosInputEnvelope;
+    set?: Prisma.catalogo_detalleWhereUniqueInput | Prisma.catalogo_detalleWhereUniqueInput[];
+    disconnect?: Prisma.catalogo_detalleWhereUniqueInput | Prisma.catalogo_detalleWhereUniqueInput[];
+    delete?: Prisma.catalogo_detalleWhereUniqueInput | Prisma.catalogo_detalleWhereUniqueInput[];
+    connect?: Prisma.catalogo_detalleWhereUniqueInput | Prisma.catalogo_detalleWhereUniqueInput[];
+    update?: Prisma.catalogo_detalleUpdateWithWhereUniqueWithoutCatalogosInput | Prisma.catalogo_detalleUpdateWithWhereUniqueWithoutCatalogosInput[];
+    updateMany?: Prisma.catalogo_detalleUpdateManyWithWhereWithoutCatalogosInput | Prisma.catalogo_detalleUpdateManyWithWhereWithoutCatalogosInput[];
+    deleteMany?: Prisma.catalogo_detalleScalarWhereInput | Prisma.catalogo_detalleScalarWhereInput[];
+};
+export type catalogo_detalleUncheckedUpdateManyWithoutCatalogosNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCatalogosInput, Prisma.catalogo_detalleUncheckedCreateWithoutCatalogosInput> | Prisma.catalogo_detalleCreateWithoutCatalogosInput[] | Prisma.catalogo_detalleUncheckedCreateWithoutCatalogosInput[];
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutCatalogosInput | Prisma.catalogo_detalleCreateOrConnectWithoutCatalogosInput[];
+    upsert?: Prisma.catalogo_detalleUpsertWithWhereUniqueWithoutCatalogosInput | Prisma.catalogo_detalleUpsertWithWhereUniqueWithoutCatalogosInput[];
+    createMany?: Prisma.catalogo_detalleCreateManyCatalogosInputEnvelope;
+    set?: Prisma.catalogo_detalleWhereUniqueInput | Prisma.catalogo_detalleWhereUniqueInput[];
+    disconnect?: Prisma.catalogo_detalleWhereUniqueInput | Prisma.catalogo_detalleWhereUniqueInput[];
+    delete?: Prisma.catalogo_detalleWhereUniqueInput | Prisma.catalogo_detalleWhereUniqueInput[];
+    connect?: Prisma.catalogo_detalleWhereUniqueInput | Prisma.catalogo_detalleWhereUniqueInput[];
+    update?: Prisma.catalogo_detalleUpdateWithWhereUniqueWithoutCatalogosInput | Prisma.catalogo_detalleUpdateWithWhereUniqueWithoutCatalogosInput[];
+    updateMany?: Prisma.catalogo_detalleUpdateManyWithWhereWithoutCatalogosInput | Prisma.catalogo_detalleUpdateManyWithWhereWithoutCatalogosInput[];
+    deleteMany?: Prisma.catalogo_detalleScalarWhereInput | Prisma.catalogo_detalleScalarWhereInput[];
+};
+export type catalogo_detalleCreateNestedOneWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+};
+export type catalogo_detalleCreateNestedOneWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+};
+export type catalogo_detalleCreateNestedOneWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+};
+export type catalogo_detalleCreateNestedOneWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+};
+export type catalogo_detalleCreateNestedOneWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+};
+export type catalogo_detalleCreateNestedOneWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+};
+export type catalogo_detalleCreateNestedOneWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+};
+export type catalogo_detalleCreateNestedOneWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+};
+export type catalogo_detalleCreateNestedOneWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+};
+export type catalogo_detalleCreateNestedOneWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+};
+export type catalogo_detalleCreateNestedOneWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+};
+export type catalogo_detalleCreateNestedOneWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+};
+export type catalogo_detalleUpdateOneWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    upsert?: Prisma.catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    disconnect?: Prisma.catalogo_detalleWhereInput | boolean;
+    delete?: Prisma.catalogo_detalleWhereInput | boolean;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput, Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput>, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateOneWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput;
+    upsert?: Prisma.catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput;
+    disconnect?: Prisma.catalogo_detalleWhereInput | boolean;
+    delete?: Prisma.catalogo_detalleWhereInput | boolean;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput, Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput>, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateOneWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    upsert?: Prisma.catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    disconnect?: Prisma.catalogo_detalleWhereInput | boolean;
+    delete?: Prisma.catalogo_detalleWhereInput | boolean;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput, Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput>, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateOneWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    upsert?: Prisma.catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    disconnect?: Prisma.catalogo_detalleWhereInput | boolean;
+    delete?: Prisma.catalogo_detalleWhereInput | boolean;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput, Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput>, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateOneWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    upsert?: Prisma.catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    disconnect?: Prisma.catalogo_detalleWhereInput | boolean;
+    delete?: Prisma.catalogo_detalleWhereInput | boolean;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput, Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput>, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateOneWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    upsert?: Prisma.catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    disconnect?: Prisma.catalogo_detalleWhereInput | boolean;
+    delete?: Prisma.catalogo_detalleWhereInput | boolean;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput, Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput>, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateOneWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    upsert?: Prisma.catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    disconnect?: Prisma.catalogo_detalleWhereInput | boolean;
+    delete?: Prisma.catalogo_detalleWhereInput | boolean;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput, Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput>, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateOneWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    upsert?: Prisma.catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    disconnect?: Prisma.catalogo_detalleWhereInput | boolean;
+    delete?: Prisma.catalogo_detalleWhereInput | boolean;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput, Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput>, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateOneRequiredWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    upsert?: Prisma.catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput, Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput>, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateOneWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    upsert?: Prisma.catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    disconnect?: Prisma.catalogo_detalleWhereInput | boolean;
+    delete?: Prisma.catalogo_detalleWhereInput | boolean;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput, Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput>, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateOneWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    upsert?: Prisma.catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    disconnect?: Prisma.catalogo_detalleWhereInput | boolean;
+    delete?: Prisma.catalogo_detalleWhereInput | boolean;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput, Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput>, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateOneWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    upsert?: Prisma.catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    disconnect?: Prisma.catalogo_detalleWhereInput | boolean;
+    delete?: Prisma.catalogo_detalleWhereInput | boolean;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput, Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput>, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput>;
+};
+export type catalogo_detalleCreateNestedOneWithoutPlanes_accionInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutPlanes_accionInput, Prisma.catalogo_detalleUncheckedCreateWithoutPlanes_accionInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutPlanes_accionInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+};
+export type catalogo_detalleUpdateOneRequiredWithoutPlanes_accionNestedInput = {
+    create?: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutPlanes_accionInput, Prisma.catalogo_detalleUncheckedCreateWithoutPlanes_accionInput>;
+    connectOrCreate?: Prisma.catalogo_detalleCreateOrConnectWithoutPlanes_accionInput;
+    upsert?: Prisma.catalogo_detalleUpsertWithoutPlanes_accionInput;
+    connect?: Prisma.catalogo_detalleWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.catalogo_detalleUpdateToOneWithWhereWithoutPlanes_accionInput, Prisma.catalogo_detalleUpdateWithoutPlanes_accionInput>, Prisma.catalogo_detalleUncheckedUpdateWithoutPlanes_accionInput>;
+};
+export type catalogo_detalleCreateWithoutActividades_planInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutActividades_planInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutActividades_planInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutActividades_planInput, Prisma.catalogo_detalleUncheckedCreateWithoutActividades_planInput>;
+};
+export type catalogo_detalleUpsertWithoutActividades_planInput = {
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutActividades_planInput, Prisma.catalogo_detalleUncheckedUpdateWithoutActividades_planInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutActividades_planInput, Prisma.catalogo_detalleUncheckedCreateWithoutActividades_planInput>;
+    where?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleUpdateToOneWithWhereWithoutActividades_planInput = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutActividades_planInput, Prisma.catalogo_detalleUncheckedUpdateWithoutActividades_planInput>;
+};
+export type catalogo_detalleUpdateWithoutActividades_planInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutActividades_planInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleCreateWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput>;
+};
+export type catalogo_detalleCreateWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput>;
+};
+export type catalogo_detalleCreateWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput>;
+};
+export type catalogo_detalleCreateWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput>;
+};
+export type catalogo_detalleCreateWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput>;
+};
+export type catalogo_detalleCreateWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput>;
+};
+export type catalogo_detalleCreateWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpsertWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput = {
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput>;
+    where?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleUpdateToOneWithWhereWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUpsertWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput = {
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput>;
+    where?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleUpdateToOneWithWhereWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUpsertWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput = {
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput>;
+    where?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleUpdateToOneWithWhereWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUpsertWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput = {
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput>;
+    where?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleUpdateToOneWithWhereWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUpsertWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput = {
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput>;
+    where?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleUpdateToOneWithWhereWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUpsertWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput = {
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput>;
+    where?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleUpdateToOneWithWhereWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUpsertWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput = {
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput>;
+    where?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleUpdateToOneWithWhereWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleCreateWithoutCatalogosInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutCatalogosInput = {
+    id_detalle?: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutCatalogosInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCatalogosInput, Prisma.catalogo_detalleUncheckedCreateWithoutCatalogosInput>;
+};
+export type catalogo_detalleCreateManyCatalogosInputEnvelope = {
+    data: Prisma.catalogo_detalleCreateManyCatalogosInput | Prisma.catalogo_detalleCreateManyCatalogosInput[];
+    skipDuplicates?: boolean;
+};
+export type catalogo_detalleUpsertWithWhereUniqueWithoutCatalogosInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutCatalogosInput, Prisma.catalogo_detalleUncheckedUpdateWithoutCatalogosInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutCatalogosInput, Prisma.catalogo_detalleUncheckedCreateWithoutCatalogosInput>;
+};
+export type catalogo_detalleUpdateWithWhereUniqueWithoutCatalogosInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutCatalogosInput, Prisma.catalogo_detalleUncheckedUpdateWithoutCatalogosInput>;
+};
+export type catalogo_detalleUpdateManyWithWhereWithoutCatalogosInput = {
+    where: Prisma.catalogo_detalleScalarWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateManyMutationInput, Prisma.catalogo_detalleUncheckedUpdateManyWithoutCatalogosInput>;
+};
+export type catalogo_detalleScalarWhereInput = {
+    AND?: Prisma.catalogo_detalleScalarWhereInput | Prisma.catalogo_detalleScalarWhereInput[];
+    OR?: Prisma.catalogo_detalleScalarWhereInput[];
+    NOT?: Prisma.catalogo_detalleScalarWhereInput | Prisma.catalogo_detalleScalarWhereInput[];
+    id_detalle?: Prisma.IntFilter<"catalogo_detalle"> | number;
+    id_catalogo?: Prisma.IntFilter<"catalogo_detalle"> | number;
+    codigo?: Prisma.StringNullableFilter<"catalogo_detalle"> | string | null;
+    nombre?: Prisma.StringFilter<"catalogo_detalle"> | string;
+    descripcion?: Prisma.StringNullableFilter<"catalogo_detalle"> | string | null;
+    orden?: Prisma.IntNullableFilter<"catalogo_detalle"> | number | null;
+    color?: Prisma.StringNullableFilter<"catalogo_detalle"> | string | null;
+    estado?: Prisma.BoolNullableFilter<"catalogo_detalle"> | boolean | null;
+    created_at?: Prisma.DateTimeNullableFilter<"catalogo_detalle"> | Date | string | null;
+};
+export type catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput>;
+};
+export type catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput>;
+};
+export type catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput>;
+};
+export type catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput>;
+};
+export type catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput>;
+};
+export type catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput>;
+};
+export type catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput>;
+};
+export type catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput>;
+};
+export type catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput>;
+};
+export type catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput>;
+};
+export type catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput>;
+};
+export type catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput = {
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput>;
+    where?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput = {
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput>;
+    where?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_estadoTocatalogo_detalleInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput = {
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput>;
+    where?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput = {
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput>;
+    where?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput = {
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput>;
+    where?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput = {
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput>;
+    where?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput = {
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput>;
+    where?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput = {
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput>;
+    where?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput = {
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput>;
+    where?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput = {
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput>;
+    where?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput = {
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput>;
+    where?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUpsertWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput = {
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedCreateWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput>;
+    where?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleUpdateToOneWithWhereWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput, Prisma.catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput>;
+};
+export type catalogo_detalleUpdateWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleCreateWithoutPlanes_accionInput = {
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    catalogos: Prisma.catalogosCreateNestedOneWithoutCatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+};
+export type catalogo_detalleUncheckedCreateWithoutPlanes_accionInput = {
+    id_detalle?: number;
+    id_catalogo: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutCatalogo_detalleInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedCreateNestedManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleInput;
+};
+export type catalogo_detalleCreateOrConnectWithoutPlanes_accionInput = {
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutPlanes_accionInput, Prisma.catalogo_detalleUncheckedCreateWithoutPlanes_accionInput>;
+};
+export type catalogo_detalleUpsertWithoutPlanes_accionInput = {
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutPlanes_accionInput, Prisma.catalogo_detalleUncheckedUpdateWithoutPlanes_accionInput>;
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateWithoutPlanes_accionInput, Prisma.catalogo_detalleUncheckedCreateWithoutPlanes_accionInput>;
+    where?: Prisma.catalogo_detalleWhereInput;
+};
+export type catalogo_detalleUpdateToOneWithWhereWithoutPlanes_accionInput = {
+    where?: Prisma.catalogo_detalleWhereInput;
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateWithoutPlanes_accionInput, Prisma.catalogo_detalleUncheckedUpdateWithoutPlanes_accionInput>;
+};
+export type catalogo_detalleUpdateWithoutPlanes_accionInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    catalogos?: Prisma.catalogosUpdateOneRequiredWithoutCatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutPlanes_accionInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    id_catalogo?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+};
+export type catalogo_detalleCreateManyCatalogosInput = {
+    id_detalle?: number;
+    codigo?: string | null;
+    nombre: string;
+    descripcion?: string | null;
+    orden?: number | null;
+    color?: string | null;
+    estado?: boolean | null;
+    created_at?: Date | string | null;
+};
+export type catalogo_detalleUpdateWithoutCatalogosInput = {
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateWithoutCatalogosInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleNestedInput;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_estadoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalleNestedInput;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: Prisma.eventos_operativosUncheckedUpdateManyWithoutCatalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalleNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCatalogo_detalleNestedInput;
+};
+export type catalogo_detalleUncheckedUpdateManyWithoutCatalogosInput = {
+    id_detalle?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    orden?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+};
+/**
+ * Count Type Catalogo_detalleCountOutputType
+ */
+export type Catalogo_detalleCountOutputType = {
+    actividades_plan: number;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle: number;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle: number;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle: number;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle: number;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle: number;
+    casos_sop_casos_sop_tipoTocatalogo_detalle: number;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle: number;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle: number;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle: number;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle: number;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle: number;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle: number;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle: number;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle: number;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle: number;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle: number;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle: number;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle: number;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle: number;
+    planes_accion: number;
+};
+export type Catalogo_detalleCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    actividades_plan?: boolean | Catalogo_detalleCountOutputTypeCountActividades_planArgs;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: boolean | Catalogo_detalleCountOutputTypeCountCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleArgs;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: boolean | Catalogo_detalleCountOutputTypeCountCasos_sop_casos_sop_estado_planTocatalogo_detalleArgs;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: boolean | Catalogo_detalleCountOutputTypeCountCasos_sop_casos_sop_procedenciaTocatalogo_detalleArgs;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: boolean | Catalogo_detalleCountOutputTypeCountCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleArgs;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: boolean | Catalogo_detalleCountOutputTypeCountCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleArgs;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: boolean | Catalogo_detalleCountOutputTypeCountCasos_sop_casos_sop_tipoTocatalogo_detalleArgs;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: boolean | Catalogo_detalleCountOutputTypeCountCasos_sop_casos_sop_tipo_sopTocatalogo_detalleArgs;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: boolean | Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleArgs;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: boolean | Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_estadoTocatalogo_detalleArgs;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: boolean | Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleArgs;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: boolean | Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleArgs;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: boolean | Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleArgs;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: boolean | Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleArgs;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: boolean | Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleArgs;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: boolean | Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleArgs;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: boolean | Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleArgs;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: boolean | Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleArgs;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: boolean | Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleArgs;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: boolean | Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleArgs;
+    planes_accion?: boolean | Catalogo_detalleCountOutputTypeCountPlanes_accionArgs;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Catalogo_detalleCountOutputType
+     */
+    select?: Prisma.Catalogo_detalleCountOutputTypeSelect<ExtArgs> | null;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeCountActividades_planArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.actividades_planWhereInput;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeCountCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.casos_sopWhereInput;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeCountCasos_sop_casos_sop_estado_planTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.casos_sopWhereInput;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeCountCasos_sop_casos_sop_procedenciaTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.casos_sopWhereInput;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeCountCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.casos_sopWhereInput;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeCountCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.casos_sopWhereInput;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeCountCasos_sop_casos_sop_tipoTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.casos_sopWhereInput;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeCountCasos_sop_casos_sop_tipo_sopTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.casos_sopWhereInput;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.eventos_operativosWhereInput;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_estadoTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.eventos_operativosWhereInput;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.eventos_operativosWhereInput;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.eventos_operativosWhereInput;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.eventos_operativosWhereInput;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.eventos_operativosWhereInput;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.eventos_operativosWhereInput;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.eventos_operativosWhereInput;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.eventos_operativosWhereInput;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.eventos_operativosWhereInput;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.eventos_operativosWhereInput;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeCountEventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.eventos_operativosWhereInput;
+};
+/**
+ * Catalogo_detalleCountOutputType without action
+ */
+export type Catalogo_detalleCountOutputTypeCountPlanes_accionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.planes_accionWhereInput;
+};
+export type catalogo_detalleSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
+    id_detalle?: boolean;
+    id_catalogo?: boolean;
+    codigo?: boolean;
+    nombre?: boolean;
+    descripcion?: boolean;
+    orden?: boolean;
+    color?: boolean;
+    estado?: boolean;
+    created_at?: boolean;
+    actividades_plan?: boolean | Prisma.catalogo_detalle$actividades_planArgs<ExtArgs>;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$casos_sop_casos_sop_estado_hallazgoTocatalogo_detalleArgs<ExtArgs>;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$casos_sop_casos_sop_estado_planTocatalogo_detalleArgs<ExtArgs>;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$casos_sop_casos_sop_procedenciaTocatalogo_detalleArgs<ExtArgs>;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$casos_sop_casos_sop_analisis_riesgoTocatalogo_detalleArgs<ExtArgs>;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$casos_sop_casos_sop_subtipo_sopTocatalogo_detalleArgs<ExtArgs>;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$casos_sop_casos_sop_tipoTocatalogo_detalleArgs<ExtArgs>;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$casos_sop_casos_sop_tipo_sopTocatalogo_detalleArgs<ExtArgs>;
+    catalogos?: boolean | Prisma.catalogosDefaultArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_estadoTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleArgs<ExtArgs>;
+    planes_accion?: boolean | Prisma.catalogo_detalle$planes_accionArgs<ExtArgs>;
+    _count?: boolean | Prisma.Catalogo_detalleCountOutputTypeDefaultArgs<ExtArgs>;
+}, ExtArgs["result"]["catalogo_detalle"]>;
+export type catalogo_detalleSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
+    id_detalle?: boolean;
+    id_catalogo?: boolean;
+    codigo?: boolean;
+    nombre?: boolean;
+    descripcion?: boolean;
+    orden?: boolean;
+    color?: boolean;
+    estado?: boolean;
+    created_at?: boolean;
+    catalogos?: boolean | Prisma.catalogosDefaultArgs<ExtArgs>;
+}, ExtArgs["result"]["catalogo_detalle"]>;
+export type catalogo_detalleSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
+    id_detalle?: boolean;
+    id_catalogo?: boolean;
+    codigo?: boolean;
+    nombre?: boolean;
+    descripcion?: boolean;
+    orden?: boolean;
+    color?: boolean;
+    estado?: boolean;
+    created_at?: boolean;
+    catalogos?: boolean | Prisma.catalogosDefaultArgs<ExtArgs>;
+}, ExtArgs["result"]["catalogo_detalle"]>;
+export type catalogo_detalleSelectScalar = {
+    id_detalle?: boolean;
+    id_catalogo?: boolean;
+    codigo?: boolean;
+    nombre?: boolean;
+    descripcion?: boolean;
+    orden?: boolean;
+    color?: boolean;
+    estado?: boolean;
+    created_at?: boolean;
+};
+export type catalogo_detalleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id_detalle" | "id_catalogo" | "codigo" | "nombre" | "descripcion" | "orden" | "color" | "estado" | "created_at", ExtArgs["result"]["catalogo_detalle"]>;
+export type catalogo_detalleInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    actividades_plan?: boolean | Prisma.catalogo_detalle$actividades_planArgs<ExtArgs>;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$casos_sop_casos_sop_estado_hallazgoTocatalogo_detalleArgs<ExtArgs>;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$casos_sop_casos_sop_estado_planTocatalogo_detalleArgs<ExtArgs>;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$casos_sop_casos_sop_procedenciaTocatalogo_detalleArgs<ExtArgs>;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$casos_sop_casos_sop_analisis_riesgoTocatalogo_detalleArgs<ExtArgs>;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$casos_sop_casos_sop_subtipo_sopTocatalogo_detalleArgs<ExtArgs>;
+    casos_sop_casos_sop_tipoTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$casos_sop_casos_sop_tipoTocatalogo_detalleArgs<ExtArgs>;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$casos_sop_casos_sop_tipo_sopTocatalogo_detalleArgs<ExtArgs>;
+    catalogos?: boolean | Prisma.catalogosDefaultArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_estadoTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleArgs<ExtArgs>;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle?: boolean | Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleArgs<ExtArgs>;
+    planes_accion?: boolean | Prisma.catalogo_detalle$planes_accionArgs<ExtArgs>;
+    _count?: boolean | Prisma.Catalogo_detalleCountOutputTypeDefaultArgs<ExtArgs>;
+};
+export type catalogo_detalleIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    catalogos?: boolean | Prisma.catalogosDefaultArgs<ExtArgs>;
+};
+export type catalogo_detalleIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    catalogos?: boolean | Prisma.catalogosDefaultArgs<ExtArgs>;
+};
+export type $catalogo_detallePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    name: "catalogo_detalle";
+    objects: {
+        actividades_plan: Prisma.$actividades_planPayload<ExtArgs>[];
+        casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle: Prisma.$casos_sopPayload<ExtArgs>[];
+        casos_sop_casos_sop_estado_planTocatalogo_detalle: Prisma.$casos_sopPayload<ExtArgs>[];
+        casos_sop_casos_sop_procedenciaTocatalogo_detalle: Prisma.$casos_sopPayload<ExtArgs>[];
+        casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle: Prisma.$casos_sopPayload<ExtArgs>[];
+        casos_sop_casos_sop_subtipo_sopTocatalogo_detalle: Prisma.$casos_sopPayload<ExtArgs>[];
+        casos_sop_casos_sop_tipoTocatalogo_detalle: Prisma.$casos_sopPayload<ExtArgs>[];
+        casos_sop_casos_sop_tipo_sopTocatalogo_detalle: Prisma.$casos_sopPayload<ExtArgs>[];
+        catalogos: Prisma.$catalogosPayload<ExtArgs>;
+        eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle: Prisma.$eventos_operativosPayload<ExtArgs>[];
+        eventos_operativos_eventos_operativos_estadoTocatalogo_detalle: Prisma.$eventos_operativosPayload<ExtArgs>[];
+        eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle: Prisma.$eventos_operativosPayload<ExtArgs>[];
+        eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle: Prisma.$eventos_operativosPayload<ExtArgs>[];
+        eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle: Prisma.$eventos_operativosPayload<ExtArgs>[];
+        eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle: Prisma.$eventos_operativosPayload<ExtArgs>[];
+        eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle: Prisma.$eventos_operativosPayload<ExtArgs>[];
+        eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle: Prisma.$eventos_operativosPayload<ExtArgs>[];
+        eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle: Prisma.$eventos_operativosPayload<ExtArgs>[];
+        eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle: Prisma.$eventos_operativosPayload<ExtArgs>[];
+        eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle: Prisma.$eventos_operativosPayload<ExtArgs>[];
+        eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle: Prisma.$eventos_operativosPayload<ExtArgs>[];
+        planes_accion: Prisma.$planes_accionPayload<ExtArgs>[];
+    };
+    scalars: runtime.Types.Extensions.GetPayloadResult<{
+        id_detalle: number;
+        id_catalogo: number;
+        codigo: string | null;
+        nombre: string;
+        descripcion: string | null;
+        orden: number | null;
+        color: string | null;
+        estado: boolean | null;
+        created_at: Date | null;
+    }, ExtArgs["result"]["catalogo_detalle"]>;
+    composites: {};
+};
+export type catalogo_detalleGetPayload<S extends boolean | null | undefined | catalogo_detalleDefaultArgs> = runtime.Types.Result.GetResult<Prisma.$catalogo_detallePayload, S>;
+export type catalogo_detalleCountArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = Omit<catalogo_detalleFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+    select?: Catalogo_detalleCountAggregateInputType | true;
+};
+export interface catalogo_detalleDelegate<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: {
+        types: Prisma.TypeMap<ExtArgs>['model']['catalogo_detalle'];
+        meta: {
+            name: 'catalogo_detalle';
+        };
+    };
+    /**
+     * Find zero or one Catalogo_detalle that matches the filter.
+     * @param {catalogo_detalleFindUniqueArgs} args - Arguments to find a Catalogo_detalle
+     * @example
+     * // Get one Catalogo_detalle
+     * const catalogo_detalle = await prisma.catalogo_detalle.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends catalogo_detalleFindUniqueArgs>(args: Prisma.SelectSubset<T, catalogo_detalleFindUniqueArgs<ExtArgs>>): Prisma.Prisma__catalogo_detalleClient<runtime.Types.Result.GetResult<Prisma.$catalogo_detallePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
+    /**
+     * Find one Catalogo_detalle that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {catalogo_detalleFindUniqueOrThrowArgs} args - Arguments to find a Catalogo_detalle
+     * @example
+     * // Get one Catalogo_detalle
+     * const catalogo_detalle = await prisma.catalogo_detalle.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends catalogo_detalleFindUniqueOrThrowArgs>(args: Prisma.SelectSubset<T, catalogo_detalleFindUniqueOrThrowArgs<ExtArgs>>): Prisma.Prisma__catalogo_detalleClient<runtime.Types.Result.GetResult<Prisma.$catalogo_detallePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>;
+    /**
+     * Find the first Catalogo_detalle that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {catalogo_detalleFindFirstArgs} args - Arguments to find a Catalogo_detalle
+     * @example
+     * // Get one Catalogo_detalle
+     * const catalogo_detalle = await prisma.catalogo_detalle.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends catalogo_detalleFindFirstArgs>(args?: Prisma.SelectSubset<T, catalogo_detalleFindFirstArgs<ExtArgs>>): Prisma.Prisma__catalogo_detalleClient<runtime.Types.Result.GetResult<Prisma.$catalogo_detallePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
+    /**
+     * Find the first Catalogo_detalle that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {catalogo_detalleFindFirstOrThrowArgs} args - Arguments to find a Catalogo_detalle
+     * @example
+     * // Get one Catalogo_detalle
+     * const catalogo_detalle = await prisma.catalogo_detalle.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends catalogo_detalleFindFirstOrThrowArgs>(args?: Prisma.SelectSubset<T, catalogo_detalleFindFirstOrThrowArgs<ExtArgs>>): Prisma.Prisma__catalogo_detalleClient<runtime.Types.Result.GetResult<Prisma.$catalogo_detallePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>;
+    /**
+     * Find zero or more Catalogo_detalles that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {catalogo_detalleFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Catalogo_detalles
+     * const catalogo_detalles = await prisma.catalogo_detalle.findMany()
+     *
+     * // Get first 10 Catalogo_detalles
+     * const catalogo_detalles = await prisma.catalogo_detalle.findMany({ take: 10 })
+     *
+     * // Only select the `id_detalle`
+     * const catalogo_detalleWithId_detalleOnly = await prisma.catalogo_detalle.findMany({ select: { id_detalle: true } })
+     *
+     */
+    findMany<T extends catalogo_detalleFindManyArgs>(args?: Prisma.SelectSubset<T, catalogo_detalleFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$catalogo_detallePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>;
+    /**
+     * Create a Catalogo_detalle.
+     * @param {catalogo_detalleCreateArgs} args - Arguments to create a Catalogo_detalle.
+     * @example
+     * // Create one Catalogo_detalle
+     * const Catalogo_detalle = await prisma.catalogo_detalle.create({
+     *   data: {
+     *     // ... data to create a Catalogo_detalle
+     *   }
+     * })
+     *
+     */
+    create<T extends catalogo_detalleCreateArgs>(args: Prisma.SelectSubset<T, catalogo_detalleCreateArgs<ExtArgs>>): Prisma.Prisma__catalogo_detalleClient<runtime.Types.Result.GetResult<Prisma.$catalogo_detallePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>;
+    /**
+     * Create many Catalogo_detalles.
+     * @param {catalogo_detalleCreateManyArgs} args - Arguments to create many Catalogo_detalles.
+     * @example
+     * // Create many Catalogo_detalles
+     * const catalogo_detalle = await prisma.catalogo_detalle.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
+    createMany<T extends catalogo_detalleCreateManyArgs>(args?: Prisma.SelectSubset<T, catalogo_detalleCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<Prisma.BatchPayload>;
+    /**
+     * Create many Catalogo_detalles and returns the data saved in the database.
+     * @param {catalogo_detalleCreateManyAndReturnArgs} args - Arguments to create many Catalogo_detalles.
+     * @example
+     * // Create many Catalogo_detalles
+     * const catalogo_detalle = await prisma.catalogo_detalle.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many Catalogo_detalles and only return the `id_detalle`
+     * const catalogo_detalleWithId_detalleOnly = await prisma.catalogo_detalle.createManyAndReturn({
+     *   select: { id_detalle: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    createManyAndReturn<T extends catalogo_detalleCreateManyAndReturnArgs>(args?: Prisma.SelectSubset<T, catalogo_detalleCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$catalogo_detallePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>;
+    /**
+     * Delete a Catalogo_detalle.
+     * @param {catalogo_detalleDeleteArgs} args - Arguments to delete one Catalogo_detalle.
+     * @example
+     * // Delete one Catalogo_detalle
+     * const Catalogo_detalle = await prisma.catalogo_detalle.delete({
+     *   where: {
+     *     // ... filter to delete one Catalogo_detalle
+     *   }
+     * })
+     *
+     */
+    delete<T extends catalogo_detalleDeleteArgs>(args: Prisma.SelectSubset<T, catalogo_detalleDeleteArgs<ExtArgs>>): Prisma.Prisma__catalogo_detalleClient<runtime.Types.Result.GetResult<Prisma.$catalogo_detallePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>;
+    /**
+     * Update one Catalogo_detalle.
+     * @param {catalogo_detalleUpdateArgs} args - Arguments to update one Catalogo_detalle.
+     * @example
+     * // Update one Catalogo_detalle
+     * const catalogo_detalle = await prisma.catalogo_detalle.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    update<T extends catalogo_detalleUpdateArgs>(args: Prisma.SelectSubset<T, catalogo_detalleUpdateArgs<ExtArgs>>): Prisma.Prisma__catalogo_detalleClient<runtime.Types.Result.GetResult<Prisma.$catalogo_detallePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>;
+    /**
+     * Delete zero or more Catalogo_detalles.
+     * @param {catalogo_detalleDeleteManyArgs} args - Arguments to filter Catalogo_detalles to delete.
+     * @example
+     * // Delete a few Catalogo_detalles
+     * const { count } = await prisma.catalogo_detalle.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
+    deleteMany<T extends catalogo_detalleDeleteManyArgs>(args?: Prisma.SelectSubset<T, catalogo_detalleDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<Prisma.BatchPayload>;
+    /**
+     * Update zero or more Catalogo_detalles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {catalogo_detalleUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Catalogo_detalles
+     * const catalogo_detalle = await prisma.catalogo_detalle.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    updateMany<T extends catalogo_detalleUpdateManyArgs>(args: Prisma.SelectSubset<T, catalogo_detalleUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<Prisma.BatchPayload>;
+    /**
+     * Update zero or more Catalogo_detalles and returns the data updated in the database.
+     * @param {catalogo_detalleUpdateManyAndReturnArgs} args - Arguments to update many Catalogo_detalles.
+     * @example
+     * // Update many Catalogo_detalles
+     * const catalogo_detalle = await prisma.catalogo_detalle.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more Catalogo_detalles and only return the `id_detalle`
+     * const catalogo_detalleWithId_detalleOnly = await prisma.catalogo_detalle.updateManyAndReturn({
+     *   select: { id_detalle: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    updateManyAndReturn<T extends catalogo_detalleUpdateManyAndReturnArgs>(args: Prisma.SelectSubset<T, catalogo_detalleUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$catalogo_detallePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>;
+    /**
+     * Create or update one Catalogo_detalle.
+     * @param {catalogo_detalleUpsertArgs} args - Arguments to update or create a Catalogo_detalle.
+     * @example
+     * // Update or create a Catalogo_detalle
+     * const catalogo_detalle = await prisma.catalogo_detalle.upsert({
+     *   create: {
+     *     // ... data to create a Catalogo_detalle
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Catalogo_detalle we want to update
+     *   }
+     * })
+     */
+    upsert<T extends catalogo_detalleUpsertArgs>(args: Prisma.SelectSubset<T, catalogo_detalleUpsertArgs<ExtArgs>>): Prisma.Prisma__catalogo_detalleClient<runtime.Types.Result.GetResult<Prisma.$catalogo_detallePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>;
+    /**
+     * Count the number of Catalogo_detalles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {catalogo_detalleCountArgs} args - Arguments to filter Catalogo_detalles to count.
+     * @example
+     * // Count the number of Catalogo_detalles
+     * const count = await prisma.catalogo_detalle.count({
+     *   where: {
+     *     // ... the filter for the Catalogo_detalles we want to count
+     *   }
+     * })
+    **/
+    count<T extends catalogo_detalleCountArgs>(args?: Prisma.Subset<T, catalogo_detalleCountArgs>): Prisma.PrismaPromise<T extends runtime.Types.Utils.Record<'select', any> ? T['select'] extends true ? number : Prisma.GetScalarType<T['select'], Catalogo_detalleCountAggregateOutputType> : number>;
+    /**
+     * Allows you to perform aggregations operations on a Catalogo_detalle.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {Catalogo_detalleAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends Catalogo_detalleAggregateArgs>(args: Prisma.Subset<T, Catalogo_detalleAggregateArgs>): Prisma.PrismaPromise<GetCatalogo_detalleAggregateType<T>>;
+    /**
+     * Group by Catalogo_detalle.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {catalogo_detalleGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+    **/
+    groupBy<T extends catalogo_detalleGroupByArgs, HasSelectOrTake extends Prisma.Or<Prisma.Extends<'skip', Prisma.Keys<T>>, Prisma.Extends<'take', Prisma.Keys<T>>>, OrderByArg extends Prisma.True extends HasSelectOrTake ? {
+        orderBy: catalogo_detalleGroupByArgs['orderBy'];
+    } : {
+        orderBy?: catalogo_detalleGroupByArgs['orderBy'];
+    }, OrderFields extends Prisma.ExcludeUnderscoreKeys<Prisma.Keys<Prisma.MaybeTupleToUnion<T['orderBy']>>>, ByFields extends Prisma.MaybeTupleToUnion<T['by']>, ByValid extends Prisma.Has<ByFields, OrderFields>, HavingFields extends Prisma.GetHavingFields<T['having']>, HavingValid extends Prisma.Has<ByFields, HavingFields>, ByEmpty extends T['by'] extends never[] ? Prisma.True : Prisma.False, InputErrors extends ByEmpty extends Prisma.True ? `Error: "by" must not be empty.` : HavingValid extends Prisma.False ? {
+        [P in HavingFields]: P extends ByFields ? never : P extends string ? `Error: Field "${P}" used in "having" needs to be provided in "by".` : [
+            Error,
+            'Field ',
+            P,
+            ` in "having" needs to be provided in "by"`
+        ];
+    }[HavingFields] : 'take' extends Prisma.Keys<T> ? 'orderBy' extends Prisma.Keys<T> ? ByValid extends Prisma.True ? {} : {
+        [P in OrderFields]: P extends ByFields ? never : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+    }[OrderFields] : 'Error: If you provide "take", you also need to provide "orderBy"' : 'skip' extends Prisma.Keys<T> ? 'orderBy' extends Prisma.Keys<T> ? ByValid extends Prisma.True ? {} : {
+        [P in OrderFields]: P extends ByFields ? never : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+    }[OrderFields] : 'Error: If you provide "skip", you also need to provide "orderBy"' : ByValid extends Prisma.True ? {} : {
+        [P in OrderFields]: P extends ByFields ? never : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+    }[OrderFields]>(args: Prisma.SubsetIntersection<T, catalogo_detalleGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCatalogo_detalleGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the catalogo_detalle model
+     */
+    readonly fields: catalogo_detalleFieldRefs;
+}
+/**
+ * The delegate class that acts as a "Promise-like" for catalogo_detalle.
+ * Why is this prefixed with `Prisma__`?
+ * Because we want to prevent naming conflicts as mentioned in
+ * https://github.com/prisma/prisma-client-js/issues/707
+ */
+export interface Prisma__catalogo_detalleClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise";
+    actividades_plan<T extends Prisma.catalogo_detalle$actividades_planArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogo_detalle$actividades_planArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$actividades_planPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle<T extends Prisma.catalogo_detalle$casos_sop_casos_sop_estado_hallazgoTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogo_detalle$casos_sop_casos_sop_estado_hallazgoTocatalogo_detalleArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$casos_sopPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    casos_sop_casos_sop_estado_planTocatalogo_detalle<T extends Prisma.catalogo_detalle$casos_sop_casos_sop_estado_planTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogo_detalle$casos_sop_casos_sop_estado_planTocatalogo_detalleArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$casos_sopPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    casos_sop_casos_sop_procedenciaTocatalogo_detalle<T extends Prisma.catalogo_detalle$casos_sop_casos_sop_procedenciaTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogo_detalle$casos_sop_casos_sop_procedenciaTocatalogo_detalleArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$casos_sopPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle<T extends Prisma.catalogo_detalle$casos_sop_casos_sop_analisis_riesgoTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogo_detalle$casos_sop_casos_sop_analisis_riesgoTocatalogo_detalleArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$casos_sopPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    casos_sop_casos_sop_subtipo_sopTocatalogo_detalle<T extends Prisma.catalogo_detalle$casos_sop_casos_sop_subtipo_sopTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogo_detalle$casos_sop_casos_sop_subtipo_sopTocatalogo_detalleArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$casos_sopPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    casos_sop_casos_sop_tipoTocatalogo_detalle<T extends Prisma.catalogo_detalle$casos_sop_casos_sop_tipoTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogo_detalle$casos_sop_casos_sop_tipoTocatalogo_detalleArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$casos_sopPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    casos_sop_casos_sop_tipo_sopTocatalogo_detalle<T extends Prisma.catalogo_detalle$casos_sop_casos_sop_tipo_sopTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogo_detalle$casos_sop_casos_sop_tipo_sopTocatalogo_detalleArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$casos_sopPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    catalogos<T extends Prisma.catalogosDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogosDefaultArgs<ExtArgs>>): Prisma.Prisma__catalogosClient<runtime.Types.Result.GetResult<Prisma.$catalogosPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>;
+    eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle<T extends Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$eventos_operativosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    eventos_operativos_eventos_operativos_estadoTocatalogo_detalle<T extends Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_estadoTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_estadoTocatalogo_detalleArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$eventos_operativosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle<T extends Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$eventos_operativosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle<T extends Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$eventos_operativosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle<T extends Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$eventos_operativosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle<T extends Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$eventos_operativosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle<T extends Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$eventos_operativosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle<T extends Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$eventos_operativosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle<T extends Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$eventos_operativosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle<T extends Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$eventos_operativosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle<T extends Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$eventos_operativosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle<T extends Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogo_detalle$eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$eventos_operativosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    planes_accion<T extends Prisma.catalogo_detalle$planes_accionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.catalogo_detalle$planes_accionArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$planes_accionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): runtime.Types.Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): runtime.Types.Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): runtime.Types.Utils.JsPromise<T>;
+}
+/**
+ * Fields of the catalogo_detalle model
+ */
+export interface catalogo_detalleFieldRefs {
+    readonly id_detalle: Prisma.FieldRef<"catalogo_detalle", 'Int'>;
+    readonly id_catalogo: Prisma.FieldRef<"catalogo_detalle", 'Int'>;
+    readonly codigo: Prisma.FieldRef<"catalogo_detalle", 'String'>;
+    readonly nombre: Prisma.FieldRef<"catalogo_detalle", 'String'>;
+    readonly descripcion: Prisma.FieldRef<"catalogo_detalle", 'String'>;
+    readonly orden: Prisma.FieldRef<"catalogo_detalle", 'Int'>;
+    readonly color: Prisma.FieldRef<"catalogo_detalle", 'String'>;
+    readonly estado: Prisma.FieldRef<"catalogo_detalle", 'Boolean'>;
+    readonly created_at: Prisma.FieldRef<"catalogo_detalle", 'DateTime'>;
+}
+/**
+ * catalogo_detalle findUnique
+ */
+export type catalogo_detalleFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the catalogo_detalle
+     */
+    select?: Prisma.catalogo_detalleSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the catalogo_detalle
+     */
+    omit?: Prisma.catalogo_detalleOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.catalogo_detalleInclude<ExtArgs> | null;
+    /**
+     * Filter, which catalogo_detalle to fetch.
+     */
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+};
+/**
+ * catalogo_detalle findUniqueOrThrow
+ */
+export type catalogo_detalleFindUniqueOrThrowArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the catalogo_detalle
+     */
+    select?: Prisma.catalogo_detalleSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the catalogo_detalle
+     */
+    omit?: Prisma.catalogo_detalleOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.catalogo_detalleInclude<ExtArgs> | null;
+    /**
+     * Filter, which catalogo_detalle to fetch.
+     */
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+};
+/**
+ * catalogo_detalle findFirst
+ */
+export type catalogo_detalleFindFirstArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the catalogo_detalle
+     */
+    select?: Prisma.catalogo_detalleSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the catalogo_detalle
+     */
+    omit?: Prisma.catalogo_detalleOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.catalogo_detalleInclude<ExtArgs> | null;
+    /**
+     * Filter, which catalogo_detalle to fetch.
+     */
+    where?: Prisma.catalogo_detalleWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of catalogo_detalles to fetch.
+     */
+    orderBy?: Prisma.catalogo_detalleOrderByWithRelationInput | Prisma.catalogo_detalleOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for catalogo_detalles.
+     */
+    cursor?: Prisma.catalogo_detalleWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` catalogo_detalles from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` catalogo_detalles.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of catalogo_detalles.
+     */
+    distinct?: Prisma.Catalogo_detalleScalarFieldEnum | Prisma.Catalogo_detalleScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle findFirstOrThrow
+ */
+export type catalogo_detalleFindFirstOrThrowArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the catalogo_detalle
+     */
+    select?: Prisma.catalogo_detalleSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the catalogo_detalle
+     */
+    omit?: Prisma.catalogo_detalleOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.catalogo_detalleInclude<ExtArgs> | null;
+    /**
+     * Filter, which catalogo_detalle to fetch.
+     */
+    where?: Prisma.catalogo_detalleWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of catalogo_detalles to fetch.
+     */
+    orderBy?: Prisma.catalogo_detalleOrderByWithRelationInput | Prisma.catalogo_detalleOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for catalogo_detalles.
+     */
+    cursor?: Prisma.catalogo_detalleWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` catalogo_detalles from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` catalogo_detalles.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of catalogo_detalles.
+     */
+    distinct?: Prisma.Catalogo_detalleScalarFieldEnum | Prisma.Catalogo_detalleScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle findMany
+ */
+export type catalogo_detalleFindManyArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the catalogo_detalle
+     */
+    select?: Prisma.catalogo_detalleSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the catalogo_detalle
+     */
+    omit?: Prisma.catalogo_detalleOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.catalogo_detalleInclude<ExtArgs> | null;
+    /**
+     * Filter, which catalogo_detalles to fetch.
+     */
+    where?: Prisma.catalogo_detalleWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of catalogo_detalles to fetch.
+     */
+    orderBy?: Prisma.catalogo_detalleOrderByWithRelationInput | Prisma.catalogo_detalleOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing catalogo_detalles.
+     */
+    cursor?: Prisma.catalogo_detalleWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` catalogo_detalles from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` catalogo_detalles.
+     */
+    skip?: number;
+    distinct?: Prisma.Catalogo_detalleScalarFieldEnum | Prisma.Catalogo_detalleScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle create
+ */
+export type catalogo_detalleCreateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the catalogo_detalle
+     */
+    select?: Prisma.catalogo_detalleSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the catalogo_detalle
+     */
+    omit?: Prisma.catalogo_detalleOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.catalogo_detalleInclude<ExtArgs> | null;
+    /**
+     * The data needed to create a catalogo_detalle.
+     */
+    data: Prisma.XOR<Prisma.catalogo_detalleCreateInput, Prisma.catalogo_detalleUncheckedCreateInput>;
+};
+/**
+ * catalogo_detalle createMany
+ */
+export type catalogo_detalleCreateManyArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many catalogo_detalles.
+     */
+    data: Prisma.catalogo_detalleCreateManyInput | Prisma.catalogo_detalleCreateManyInput[];
+    skipDuplicates?: boolean;
+};
+/**
+ * catalogo_detalle createManyAndReturn
+ */
+export type catalogo_detalleCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the catalogo_detalle
+     */
+    select?: Prisma.catalogo_detalleSelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the catalogo_detalle
+     */
+    omit?: Prisma.catalogo_detalleOmit<ExtArgs> | null;
+    /**
+     * The data used to create many catalogo_detalles.
+     */
+    data: Prisma.catalogo_detalleCreateManyInput | Prisma.catalogo_detalleCreateManyInput[];
+    skipDuplicates?: boolean;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.catalogo_detalleIncludeCreateManyAndReturn<ExtArgs> | null;
+};
+/**
+ * catalogo_detalle update
+ */
+export type catalogo_detalleUpdateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the catalogo_detalle
+     */
+    select?: Prisma.catalogo_detalleSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the catalogo_detalle
+     */
+    omit?: Prisma.catalogo_detalleOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.catalogo_detalleInclude<ExtArgs> | null;
+    /**
+     * The data needed to update a catalogo_detalle.
+     */
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateInput, Prisma.catalogo_detalleUncheckedUpdateInput>;
+    /**
+     * Choose, which catalogo_detalle to update.
+     */
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+};
+/**
+ * catalogo_detalle updateMany
+ */
+export type catalogo_detalleUpdateManyArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * The data used to update catalogo_detalles.
+     */
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateManyMutationInput, Prisma.catalogo_detalleUncheckedUpdateManyInput>;
+    /**
+     * Filter which catalogo_detalles to update
+     */
+    where?: Prisma.catalogo_detalleWhereInput;
+    /**
+     * Limit how many catalogo_detalles to update.
+     */
+    limit?: number;
+};
+/**
+ * catalogo_detalle updateManyAndReturn
+ */
+export type catalogo_detalleUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the catalogo_detalle
+     */
+    select?: Prisma.catalogo_detalleSelectUpdateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the catalogo_detalle
+     */
+    omit?: Prisma.catalogo_detalleOmit<ExtArgs> | null;
+    /**
+     * The data used to update catalogo_detalles.
+     */
+    data: Prisma.XOR<Prisma.catalogo_detalleUpdateManyMutationInput, Prisma.catalogo_detalleUncheckedUpdateManyInput>;
+    /**
+     * Filter which catalogo_detalles to update
+     */
+    where?: Prisma.catalogo_detalleWhereInput;
+    /**
+     * Limit how many catalogo_detalles to update.
+     */
+    limit?: number;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.catalogo_detalleIncludeUpdateManyAndReturn<ExtArgs> | null;
+};
+/**
+ * catalogo_detalle upsert
+ */
+export type catalogo_detalleUpsertArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the catalogo_detalle
+     */
+    select?: Prisma.catalogo_detalleSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the catalogo_detalle
+     */
+    omit?: Prisma.catalogo_detalleOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.catalogo_detalleInclude<ExtArgs> | null;
+    /**
+     * The filter to search for the catalogo_detalle to update in case it exists.
+     */
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+    /**
+     * In case the catalogo_detalle found by the `where` argument doesn't exist, create a new catalogo_detalle with this data.
+     */
+    create: Prisma.XOR<Prisma.catalogo_detalleCreateInput, Prisma.catalogo_detalleUncheckedCreateInput>;
+    /**
+     * In case the catalogo_detalle was found with the provided `where` argument, update it with this data.
+     */
+    update: Prisma.XOR<Prisma.catalogo_detalleUpdateInput, Prisma.catalogo_detalleUncheckedUpdateInput>;
+};
+/**
+ * catalogo_detalle delete
+ */
+export type catalogo_detalleDeleteArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the catalogo_detalle
+     */
+    select?: Prisma.catalogo_detalleSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the catalogo_detalle
+     */
+    omit?: Prisma.catalogo_detalleOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.catalogo_detalleInclude<ExtArgs> | null;
+    /**
+     * Filter which catalogo_detalle to delete.
+     */
+    where: Prisma.catalogo_detalleWhereUniqueInput;
+};
+/**
+ * catalogo_detalle deleteMany
+ */
+export type catalogo_detalleDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Filter which catalogo_detalles to delete
+     */
+    where?: Prisma.catalogo_detalleWhereInput;
+    /**
+     * Limit how many catalogo_detalles to delete.
+     */
+    limit?: number;
+};
+/**
+ * catalogo_detalle.actividades_plan
+ */
+export type catalogo_detalle$actividades_planArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the actividades_plan
+     */
+    select?: Prisma.actividades_planSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the actividades_plan
+     */
+    omit?: Prisma.actividades_planOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.actividades_planInclude<ExtArgs> | null;
+    where?: Prisma.actividades_planWhereInput;
+    orderBy?: Prisma.actividades_planOrderByWithRelationInput | Prisma.actividades_planOrderByWithRelationInput[];
+    cursor?: Prisma.actividades_planWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Actividades_planScalarFieldEnum | Prisma.Actividades_planScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle.casos_sop_casos_sop_estado_hallazgoTocatalogo_detalle
+ */
+export type catalogo_detalle$casos_sop_casos_sop_estado_hallazgoTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the casos_sop
+     */
+    select?: Prisma.casos_sopSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the casos_sop
+     */
+    omit?: Prisma.casos_sopOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.casos_sopInclude<ExtArgs> | null;
+    where?: Prisma.casos_sopWhereInput;
+    orderBy?: Prisma.casos_sopOrderByWithRelationInput | Prisma.casos_sopOrderByWithRelationInput[];
+    cursor?: Prisma.casos_sopWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Casos_sopScalarFieldEnum | Prisma.Casos_sopScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle.casos_sop_casos_sop_estado_planTocatalogo_detalle
+ */
+export type catalogo_detalle$casos_sop_casos_sop_estado_planTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the casos_sop
+     */
+    select?: Prisma.casos_sopSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the casos_sop
+     */
+    omit?: Prisma.casos_sopOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.casos_sopInclude<ExtArgs> | null;
+    where?: Prisma.casos_sopWhereInput;
+    orderBy?: Prisma.casos_sopOrderByWithRelationInput | Prisma.casos_sopOrderByWithRelationInput[];
+    cursor?: Prisma.casos_sopWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Casos_sopScalarFieldEnum | Prisma.Casos_sopScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle.casos_sop_casos_sop_procedenciaTocatalogo_detalle
+ */
+export type catalogo_detalle$casos_sop_casos_sop_procedenciaTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the casos_sop
+     */
+    select?: Prisma.casos_sopSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the casos_sop
+     */
+    omit?: Prisma.casos_sopOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.casos_sopInclude<ExtArgs> | null;
+    where?: Prisma.casos_sopWhereInput;
+    orderBy?: Prisma.casos_sopOrderByWithRelationInput | Prisma.casos_sopOrderByWithRelationInput[];
+    cursor?: Prisma.casos_sopWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Casos_sopScalarFieldEnum | Prisma.Casos_sopScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle.casos_sop_casos_sop_analisis_riesgoTocatalogo_detalle
+ */
+export type catalogo_detalle$casos_sop_casos_sop_analisis_riesgoTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the casos_sop
+     */
+    select?: Prisma.casos_sopSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the casos_sop
+     */
+    omit?: Prisma.casos_sopOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.casos_sopInclude<ExtArgs> | null;
+    where?: Prisma.casos_sopWhereInput;
+    orderBy?: Prisma.casos_sopOrderByWithRelationInput | Prisma.casos_sopOrderByWithRelationInput[];
+    cursor?: Prisma.casos_sopWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Casos_sopScalarFieldEnum | Prisma.Casos_sopScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle.casos_sop_casos_sop_subtipo_sopTocatalogo_detalle
+ */
+export type catalogo_detalle$casos_sop_casos_sop_subtipo_sopTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the casos_sop
+     */
+    select?: Prisma.casos_sopSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the casos_sop
+     */
+    omit?: Prisma.casos_sopOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.casos_sopInclude<ExtArgs> | null;
+    where?: Prisma.casos_sopWhereInput;
+    orderBy?: Prisma.casos_sopOrderByWithRelationInput | Prisma.casos_sopOrderByWithRelationInput[];
+    cursor?: Prisma.casos_sopWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Casos_sopScalarFieldEnum | Prisma.Casos_sopScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle.casos_sop_casos_sop_tipoTocatalogo_detalle
+ */
+export type catalogo_detalle$casos_sop_casos_sop_tipoTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the casos_sop
+     */
+    select?: Prisma.casos_sopSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the casos_sop
+     */
+    omit?: Prisma.casos_sopOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.casos_sopInclude<ExtArgs> | null;
+    where?: Prisma.casos_sopWhereInput;
+    orderBy?: Prisma.casos_sopOrderByWithRelationInput | Prisma.casos_sopOrderByWithRelationInput[];
+    cursor?: Prisma.casos_sopWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Casos_sopScalarFieldEnum | Prisma.Casos_sopScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle.casos_sop_casos_sop_tipo_sopTocatalogo_detalle
+ */
+export type catalogo_detalle$casos_sop_casos_sop_tipo_sopTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the casos_sop
+     */
+    select?: Prisma.casos_sopSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the casos_sop
+     */
+    omit?: Prisma.casos_sopOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.casos_sopInclude<ExtArgs> | null;
+    where?: Prisma.casos_sopWhereInput;
+    orderBy?: Prisma.casos_sopOrderByWithRelationInput | Prisma.casos_sopOrderByWithRelationInput[];
+    cursor?: Prisma.casos_sopWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Casos_sopScalarFieldEnum | Prisma.Casos_sopScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle.eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalle
+ */
+export type catalogo_detalle$eventos_operativos_eventos_operativos_direccion_viaTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the eventos_operativos
+     */
+    select?: Prisma.eventos_operativosSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the eventos_operativos
+     */
+    omit?: Prisma.eventos_operativosOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.eventos_operativosInclude<ExtArgs> | null;
+    where?: Prisma.eventos_operativosWhereInput;
+    orderBy?: Prisma.eventos_operativosOrderByWithRelationInput | Prisma.eventos_operativosOrderByWithRelationInput[];
+    cursor?: Prisma.eventos_operativosWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Eventos_operativosScalarFieldEnum | Prisma.Eventos_operativosScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle.eventos_operativos_eventos_operativos_estadoTocatalogo_detalle
+ */
+export type catalogo_detalle$eventos_operativos_eventos_operativos_estadoTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the eventos_operativos
+     */
+    select?: Prisma.eventos_operativosSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the eventos_operativos
+     */
+    omit?: Prisma.eventos_operativosOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.eventos_operativosInclude<ExtArgs> | null;
+    where?: Prisma.eventos_operativosWhereInput;
+    orderBy?: Prisma.eventos_operativosOrderByWithRelationInput | Prisma.eventos_operativosOrderByWithRelationInput[];
+    cursor?: Prisma.eventos_operativosWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Eventos_operativosScalarFieldEnum | Prisma.Eventos_operativosScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle.eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalle
+ */
+export type catalogo_detalle$eventos_operativos_eventos_operativos_lugar_incidenteTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the eventos_operativos
+     */
+    select?: Prisma.eventos_operativosSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the eventos_operativos
+     */
+    omit?: Prisma.eventos_operativosOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.eventos_operativosInclude<ExtArgs> | null;
+    where?: Prisma.eventos_operativosWhereInput;
+    orderBy?: Prisma.eventos_operativosOrderByWithRelationInput | Prisma.eventos_operativosOrderByWithRelationInput[];
+    cursor?: Prisma.eventos_operativosWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Eventos_operativosScalarFieldEnum | Prisma.Eventos_operativosScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle.eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalle
+ */
+export type catalogo_detalle$eventos_operativos_eventos_operativos_modelo_mrTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the eventos_operativos
+     */
+    select?: Prisma.eventos_operativosSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the eventos_operativos
+     */
+    omit?: Prisma.eventos_operativosOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.eventos_operativosInclude<ExtArgs> | null;
+    where?: Prisma.eventos_operativosWhereInput;
+    orderBy?: Prisma.eventos_operativosOrderByWithRelationInput | Prisma.eventos_operativosOrderByWithRelationInput[];
+    cursor?: Prisma.eventos_operativosWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Eventos_operativosScalarFieldEnum | Prisma.Eventos_operativosScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle.eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalle
+ */
+export type catalogo_detalle$eventos_operativos_eventos_operativos_numero_mrTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the eventos_operativos
+     */
+    select?: Prisma.eventos_operativosSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the eventos_operativos
+     */
+    omit?: Prisma.eventos_operativosOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.eventos_operativosInclude<ExtArgs> | null;
+    where?: Prisma.eventos_operativosWhereInput;
+    orderBy?: Prisma.eventos_operativosOrderByWithRelationInput | Prisma.eventos_operativosOrderByWithRelationInput[];
+    cursor?: Prisma.eventos_operativosWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Eventos_operativosScalarFieldEnum | Prisma.Eventos_operativosScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle.eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalle
+ */
+export type catalogo_detalle$eventos_operativos_eventos_operativos_personal_involucradoTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the eventos_operativos
+     */
+    select?: Prisma.eventos_operativosSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the eventos_operativos
+     */
+    omit?: Prisma.eventos_operativosOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.eventos_operativosInclude<ExtArgs> | null;
+    where?: Prisma.eventos_operativosWhereInput;
+    orderBy?: Prisma.eventos_operativosOrderByWithRelationInput | Prisma.eventos_operativosOrderByWithRelationInput[];
+    cursor?: Prisma.eventos_operativosWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Eventos_operativosScalarFieldEnum | Prisma.Eventos_operativosScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle.eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalle
+ */
+export type catalogo_detalle$eventos_operativos_eventos_operativos_posible_causaTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the eventos_operativos
+     */
+    select?: Prisma.eventos_operativosSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the eventos_operativos
+     */
+    omit?: Prisma.eventos_operativosOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.eventos_operativosInclude<ExtArgs> | null;
+    where?: Prisma.eventos_operativosWhereInput;
+    orderBy?: Prisma.eventos_operativosOrderByWithRelationInput | Prisma.eventos_operativosOrderByWithRelationInput[];
+    cursor?: Prisma.eventos_operativosWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Eventos_operativosScalarFieldEnum | Prisma.Eventos_operativosScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle.eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalle
+ */
+export type catalogo_detalle$eventos_operativos_eventos_operativos_rango_horarioTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the eventos_operativos
+     */
+    select?: Prisma.eventos_operativosSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the eventos_operativos
+     */
+    omit?: Prisma.eventos_operativosOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.eventos_operativosInclude<ExtArgs> | null;
+    where?: Prisma.eventos_operativosWhereInput;
+    orderBy?: Prisma.eventos_operativosOrderByWithRelationInput | Prisma.eventos_operativosOrderByWithRelationInput[];
+    cursor?: Prisma.eventos_operativosWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Eventos_operativosScalarFieldEnum | Prisma.Eventos_operativosScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle.eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalle
+ */
+export type catalogo_detalle$eventos_operativos_eventos_operativos_tipo_incidenteTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the eventos_operativos
+     */
+    select?: Prisma.eventos_operativosSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the eventos_operativos
+     */
+    omit?: Prisma.eventos_operativosOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.eventos_operativosInclude<ExtArgs> | null;
+    where?: Prisma.eventos_operativosWhereInput;
+    orderBy?: Prisma.eventos_operativosOrderByWithRelationInput | Prisma.eventos_operativosOrderByWithRelationInput[];
+    cursor?: Prisma.eventos_operativosWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Eventos_operativosScalarFieldEnum | Prisma.Eventos_operativosScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle.eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle
+ */
+export type catalogo_detalle$eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the eventos_operativos
+     */
+    select?: Prisma.eventos_operativosSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the eventos_operativos
+     */
+    omit?: Prisma.eventos_operativosOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.eventos_operativosInclude<ExtArgs> | null;
+    where?: Prisma.eventos_operativosWhereInput;
+    orderBy?: Prisma.eventos_operativosOrderByWithRelationInput | Prisma.eventos_operativosOrderByWithRelationInput[];
+    cursor?: Prisma.eventos_operativosWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Eventos_operativosScalarFieldEnum | Prisma.Eventos_operativosScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle.eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle
+ */
+export type catalogo_detalle$eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the eventos_operativos
+     */
+    select?: Prisma.eventos_operativosSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the eventos_operativos
+     */
+    omit?: Prisma.eventos_operativosOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.eventos_operativosInclude<ExtArgs> | null;
+    where?: Prisma.eventos_operativosWhereInput;
+    orderBy?: Prisma.eventos_operativosOrderByWithRelationInput | Prisma.eventos_operativosOrderByWithRelationInput[];
+    cursor?: Prisma.eventos_operativosWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Eventos_operativosScalarFieldEnum | Prisma.Eventos_operativosScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle.eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle
+ */
+export type catalogo_detalle$eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the eventos_operativos
+     */
+    select?: Prisma.eventos_operativosSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the eventos_operativos
+     */
+    omit?: Prisma.eventos_operativosOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.eventos_operativosInclude<ExtArgs> | null;
+    where?: Prisma.eventos_operativosWhereInput;
+    orderBy?: Prisma.eventos_operativosOrderByWithRelationInput | Prisma.eventos_operativosOrderByWithRelationInput[];
+    cursor?: Prisma.eventos_operativosWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Eventos_operativosScalarFieldEnum | Prisma.Eventos_operativosScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle.planes_accion
+ */
+export type catalogo_detalle$planes_accionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the planes_accion
+     */
+    select?: Prisma.planes_accionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the planes_accion
+     */
+    omit?: Prisma.planes_accionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.planes_accionInclude<ExtArgs> | null;
+    where?: Prisma.planes_accionWhereInput;
+    orderBy?: Prisma.planes_accionOrderByWithRelationInput | Prisma.planes_accionOrderByWithRelationInput[];
+    cursor?: Prisma.planes_accionWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Planes_accionScalarFieldEnum | Prisma.Planes_accionScalarFieldEnum[];
+};
+/**
+ * catalogo_detalle without action
+ */
+export type catalogo_detalleDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the catalogo_detalle
+     */
+    select?: Prisma.catalogo_detalleSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the catalogo_detalle
+     */
+    omit?: Prisma.catalogo_detalleOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.catalogo_detalleInclude<ExtArgs> | null;
+};
+export {};
+//# sourceMappingURL=catalogo_detalle.d.ts.map
