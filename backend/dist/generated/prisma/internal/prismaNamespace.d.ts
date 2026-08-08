@@ -272,6 +272,8 @@ export declare const ModelName: {
     readonly historial_indicadores: "historial_indicadores";
     readonly incidencias: "incidencias";
     readonly indicadores: "indicadores";
+    readonly timeline_caso: "timeline_caso";
+    readonly investigacion_caso: "investigacion_caso";
     readonly investigaciones: "investigaciones";
     readonly logs_sistema: "logs_sistema";
     readonly metas_indicadores: "metas_indicadores";
@@ -282,6 +284,7 @@ export declare const ModelName: {
     readonly roles: "roles";
     readonly seguimientos: "seguimientos";
     readonly sesiones: "sesiones";
+    readonly solicitudes_informacion: "solicitudes_informacion";
     readonly solicitudes_prorroga: "solicitudes_prorroga";
     readonly usuarios: "usuarios";
 };
@@ -296,7 +299,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         omit: GlobalOmitOptions;
     };
     meta: {
-        modelProps: "actividades_plan" | "anexos_caso" | "areas" | "auditoria" | "bitacora" | "casos_sop" | "catalogo_detalle" | "catalogos" | "configuracion" | "dashboard_indicadores" | "dashboards" | "estaciones" | "evento_caso" | "eventos_operativos" | "evidencias" | "evidencias_evento" | "historial_indicadores" | "incidencias" | "indicadores" | "investigaciones" | "logs_sistema" | "metas_indicadores" | "notificaciones" | "planes_accion" | "reporte_detalle" | "reporte_estadistico" | "roles" | "seguimientos" | "sesiones" | "solicitudes_prorroga" | "usuarios";
+        modelProps: "actividades_plan" | "anexos_caso" | "areas" | "auditoria" | "bitacora" | "casos_sop" | "catalogo_detalle" | "catalogos" | "configuracion" | "dashboard_indicadores" | "dashboards" | "estaciones" | "evento_caso" | "eventos_operativos" | "evidencias" | "evidencias_evento" | "historial_indicadores" | "incidencias" | "indicadores" | "timeline_caso" | "investigacion_caso" | "investigaciones" | "logs_sistema" | "metas_indicadores" | "notificaciones" | "planes_accion" | "reporte_detalle" | "reporte_estadistico" | "roles" | "seguimientos" | "sesiones" | "solicitudes_informacion" | "solicitudes_prorroga" | "usuarios";
         txIsolationLevel: TransactionIsolationLevel;
     };
     model: {
@@ -1706,6 +1709,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
                 };
             };
         };
+        timeline_caso: {
+            payload: Prisma.$timeline_casoPayload<ExtArgs>;
+            fields: Prisma.timeline_casoFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.timeline_casoFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$timeline_casoPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.timeline_casoFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$timeline_casoPayload>;
+                };
+                findFirst: {
+                    args: Prisma.timeline_casoFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$timeline_casoPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.timeline_casoFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$timeline_casoPayload>;
+                };
+                findMany: {
+                    args: Prisma.timeline_casoFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$timeline_casoPayload>[];
+                };
+                create: {
+                    args: Prisma.timeline_casoCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$timeline_casoPayload>;
+                };
+                createMany: {
+                    args: Prisma.timeline_casoCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.timeline_casoCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$timeline_casoPayload>[];
+                };
+                delete: {
+                    args: Prisma.timeline_casoDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$timeline_casoPayload>;
+                };
+                update: {
+                    args: Prisma.timeline_casoUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$timeline_casoPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.timeline_casoDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.timeline_casoUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.timeline_casoUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$timeline_casoPayload>[];
+                };
+                upsert: {
+                    args: Prisma.timeline_casoUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$timeline_casoPayload>;
+                };
+                aggregate: {
+                    args: Prisma.Timeline_casoAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateTimeline_caso>;
+                };
+                groupBy: {
+                    args: Prisma.timeline_casoGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Timeline_casoGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.timeline_casoCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Timeline_casoCountAggregateOutputType> | number;
+                };
+            };
+        };
+        investigacion_caso: {
+            payload: Prisma.$investigacion_casoPayload<ExtArgs>;
+            fields: Prisma.investigacion_casoFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.investigacion_casoFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$investigacion_casoPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.investigacion_casoFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$investigacion_casoPayload>;
+                };
+                findFirst: {
+                    args: Prisma.investigacion_casoFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$investigacion_casoPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.investigacion_casoFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$investigacion_casoPayload>;
+                };
+                findMany: {
+                    args: Prisma.investigacion_casoFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$investigacion_casoPayload>[];
+                };
+                create: {
+                    args: Prisma.investigacion_casoCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$investigacion_casoPayload>;
+                };
+                createMany: {
+                    args: Prisma.investigacion_casoCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.investigacion_casoCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$investigacion_casoPayload>[];
+                };
+                delete: {
+                    args: Prisma.investigacion_casoDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$investigacion_casoPayload>;
+                };
+                update: {
+                    args: Prisma.investigacion_casoUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$investigacion_casoPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.investigacion_casoDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.investigacion_casoUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.investigacion_casoUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$investigacion_casoPayload>[];
+                };
+                upsert: {
+                    args: Prisma.investigacion_casoUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$investigacion_casoPayload>;
+                };
+                aggregate: {
+                    args: Prisma.Investigacion_casoAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateInvestigacion_caso>;
+                };
+                groupBy: {
+                    args: Prisma.investigacion_casoGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Investigacion_casoGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.investigacion_casoCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Investigacion_casoCountAggregateOutputType> | number;
+                };
+            };
+        };
         investigaciones: {
             payload: Prisma.$investigacionesPayload<ExtArgs>;
             fields: Prisma.investigacionesFieldRefs;
@@ -2446,6 +2597,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
                 };
             };
         };
+        solicitudes_informacion: {
+            payload: Prisma.$solicitudes_informacionPayload<ExtArgs>;
+            fields: Prisma.solicitudes_informacionFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.solicitudes_informacionFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitudes_informacionPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.solicitudes_informacionFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitudes_informacionPayload>;
+                };
+                findFirst: {
+                    args: Prisma.solicitudes_informacionFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitudes_informacionPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.solicitudes_informacionFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitudes_informacionPayload>;
+                };
+                findMany: {
+                    args: Prisma.solicitudes_informacionFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitudes_informacionPayload>[];
+                };
+                create: {
+                    args: Prisma.solicitudes_informacionCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitudes_informacionPayload>;
+                };
+                createMany: {
+                    args: Prisma.solicitudes_informacionCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.solicitudes_informacionCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitudes_informacionPayload>[];
+                };
+                delete: {
+                    args: Prisma.solicitudes_informacionDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitudes_informacionPayload>;
+                };
+                update: {
+                    args: Prisma.solicitudes_informacionUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitudes_informacionPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.solicitudes_informacionDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.solicitudes_informacionUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.solicitudes_informacionUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitudes_informacionPayload>[];
+                };
+                upsert: {
+                    args: Prisma.solicitudes_informacionUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitudes_informacionPayload>;
+                };
+                aggregate: {
+                    args: Prisma.Solicitudes_informacionAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateSolicitudes_informacion>;
+                };
+                groupBy: {
+                    args: Prisma.solicitudes_informacionGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Solicitudes_informacionGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.solicitudes_informacionCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Solicitudes_informacionCountAggregateOutputType> | number;
+                };
+            };
+        };
         solicitudes_prorroga: {
             payload: Prisma.$solicitudes_prorrogaPayload<ExtArgs>;
             fields: Prisma.solicitudes_prorrogaFieldRefs;
@@ -2681,6 +2906,10 @@ export type BitacoraScalarFieldEnum = (typeof BitacoraScalarFieldEnum)[keyof typ
 export declare const Casos_sopScalarFieldEnum: {
     readonly id_caso: "id_caso";
     readonly codigo_sop: "codigo_sop";
+    readonly titulo: "titulo";
+    readonly nombre_reportante: "nombre_reportante";
+    readonly correo_reportante: "correo_reportante";
+    readonly telefono_reportante: "telefono_reportante";
     readonly fecha_hallazgo: "fecha_hallazgo";
     readonly fecha_evento: "fecha_evento";
     readonly estado_hallazgo: "estado_hallazgo";
@@ -2693,6 +2922,7 @@ export declare const Casos_sopScalarFieldEnum: {
     readonly subtipo_sop: "subtipo_sop";
     readonly peligro: "peligro";
     readonly consecuencia: "consecuencia";
+    readonly clasificacion: "clasificacion";
     readonly analisis_riesgo: "analisis_riesgo";
     readonly acr: "acr";
     readonly area_responsable: "area_responsable";
@@ -2845,6 +3075,29 @@ export declare const IndicadoresScalarFieldEnum: {
     readonly activo: "activo";
 };
 export type IndicadoresScalarFieldEnum = (typeof IndicadoresScalarFieldEnum)[keyof typeof IndicadoresScalarFieldEnum];
+export declare const Timeline_casoScalarFieldEnum: {
+    readonly id_evento: "id_evento";
+    readonly id_caso: "id_caso";
+    readonly kind: "kind";
+    readonly actor: "actor";
+    readonly actor_rol: "actor_rol";
+    readonly titulo: "titulo";
+    readonly detalle: "detalle";
+    readonly fecha: "fecha";
+};
+export type Timeline_casoScalarFieldEnum = (typeof Timeline_casoScalarFieldEnum)[keyof typeof Timeline_casoScalarFieldEnum];
+export declare const Investigacion_casoScalarFieldEnum: {
+    readonly id_investigacion: "id_investigacion";
+    readonly id_caso: "id_caso";
+    readonly hallazgos: "hallazgos";
+    readonly causa_raiz: "causa_raiz";
+    readonly conclusiones: "conclusiones";
+    readonly observaciones: "observaciones";
+    readonly investigador: "investigador";
+    readonly created_at: "created_at";
+    readonly updated_at: "updated_at";
+};
+export type Investigacion_casoScalarFieldEnum = (typeof Investigacion_casoScalarFieldEnum)[keyof typeof Investigacion_casoScalarFieldEnum];
 export declare const InvestigacionesScalarFieldEnum: {
     readonly id_investigacion: "id_investigacion";
     readonly id_incidencia: "id_incidencia";
@@ -2894,6 +3147,10 @@ export declare const Planes_accionScalarFieldEnum: {
     readonly fecha_reprogramada: "fecha_reprogramada";
     readonly dias_abierto: "dias_abierto";
     readonly observaciones: "observaciones";
+    readonly prorroga_motivo: "prorroga_motivo";
+    readonly prorroga_fecha: "prorroga_fecha";
+    readonly prorroga_estado: "prorroga_estado";
+    readonly prorroga_fecha_sol: "prorroga_fecha_sol";
     readonly created_at: "created_at";
     readonly updated_at: "updated_at";
 };
@@ -2941,6 +3198,17 @@ export declare const SesionesScalarFieldEnum: {
     readonly estado: "estado";
 };
 export type SesionesScalarFieldEnum = (typeof SesionesScalarFieldEnum)[keyof typeof SesionesScalarFieldEnum];
+export declare const Solicitudes_informacionScalarFieldEnum: {
+    readonly id_solicitud: "id_solicitud";
+    readonly id_caso: "id_caso";
+    readonly mensaje: "mensaje";
+    readonly respuesta: "respuesta";
+    readonly respondida: "respondida";
+    readonly estado_previo: "estado_previo";
+    readonly fecha_solicitud: "fecha_solicitud";
+    readonly fecha_respuesta: "fecha_respuesta";
+};
+export type Solicitudes_informacionScalarFieldEnum = (typeof Solicitudes_informacionScalarFieldEnum)[keyof typeof Solicitudes_informacionScalarFieldEnum];
 export declare const Solicitudes_prorrogaScalarFieldEnum: {
     readonly id_prorroga: "id_prorroga";
     readonly id_incidencia: "id_incidencia";
@@ -3173,6 +3441,8 @@ export type GlobalOmitConfig = {
     historial_indicadores?: Prisma.historial_indicadoresOmit;
     incidencias?: Prisma.incidenciasOmit;
     indicadores?: Prisma.indicadoresOmit;
+    timeline_caso?: Prisma.timeline_casoOmit;
+    investigacion_caso?: Prisma.investigacion_casoOmit;
     investigaciones?: Prisma.investigacionesOmit;
     logs_sistema?: Prisma.logs_sistemaOmit;
     metas_indicadores?: Prisma.metas_indicadoresOmit;
@@ -3183,6 +3453,7 @@ export type GlobalOmitConfig = {
     roles?: Prisma.rolesOmit;
     seguimientos?: Prisma.seguimientosOmit;
     sesiones?: Prisma.sesionesOmit;
+    solicitudes_informacion?: Prisma.solicitudes_informacionOmit;
     solicitudes_prorroga?: Prisma.solicitudes_prorrogaOmit;
     usuarios?: Prisma.usuariosOmit;
 };

@@ -1,9 +1,11 @@
 @import "@fontsource-variable/manrope";
+@import "@fontsource-variable/geist";
 @import "tailwindcss";
 @import "tw-animate-css";
 
 @theme inline {
   --font-sans: "Manrope Variable", "Manrope", "Segoe UI", sans-serif;
+  --font-display: "Geist Variable", "Geist", "Manrope Variable", "Segoe UI", sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
@@ -12,29 +14,126 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-destructive: var(--destructive);
+
+  /* SIGMA L1 brand scale — ported from el prototipo (design-system/) */
+  --color-brand-50: #ecf7ef;
+  --color-brand-100: #d4ecd9;
+  --color-brand-200: #a8d8b4;
+  --color-brand-300: #6fbd86;
+  --color-brand-400: #38a860;
+  --color-brand-500: #1f9d52;
+  --color-brand-600: #14814a;
+  --color-brand-700: #0f6b3e;
+  --color-brand-800: #0c5431;
+  --color-brand-900: #0a3f24;
+  --color-brand-950: #052715;
+
+  --color-ink: #182621;
+  --color-ink-soft: #41504a;
+  --color-ink-quiet: #767f79;
+  --color-ink-faint: #a4aba6;
+  --color-line: #e3e8e5;
+  --color-line-soft: #edf1ee;
+  --color-line-strong: #cdd5d0;
+  --color-paper: #ffffff;
+  --color-surface: #f6f8f7;
+  --color-surface-2: #eef2f1;
+  --color-surface-3: #e6ebe9;
+
+  --color-info: #2c7be0;
+  --color-info-soft: #e8f1fc;
+  --color-info-ink: #13407a;
+  --color-warning: #d99520;
+  --color-warning-soft: #fbf0d6;
+  --color-warning-ink: #6f4a07;
+  --color-critical: #d23a2c;
+  --color-critical-soft: #fcecea;
+  --color-critical-ink: #7a1c12;
 }
 
 :root {
   color-scheme: light;
   --background: #ffffff;
   --foreground: #1a1a1a;
-  --primary: #00a651;
+  --primary: #0f6b3e;
   --primary-foreground: #ffffff;
   --secondary: #f5f5f5;
   --secondary-foreground: #1a1a1a;
   --muted: #f0f0f0;
   --muted-foreground: #666666;
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
+  --accent: #f0f0f0;
+  --accent-foreground: #1a1a1a;
   --border: #e0e0e0;
   --input: #e0e0e0;
-  --ring: rgba(0, 166, 81, 0.45);
+  --ring: rgba(15, 107, 62, 0.35);
   --destructive: #ef4444;
   --radius-md: 8px;
   --radius-lg: 8px;
   --radius-sm: 6px;
+
+  --shadow-card: 0 1px 2px rgba(15, 41, 26, 0.04), 0 6px 18px -8px rgba(15, 41, 26, 0.08);
+  --shadow-card-hover: 0 2px 6px rgba(15, 41, 26, 0.06), 0 14px 36px -12px rgba(15, 41, 26, 0.14);
+  --shadow-plate: 0 1px 2px rgba(15, 41, 26, 0.04), 0 12px 32px -14px rgba(15, 41, 26, 0.16);
+  --shadow-pop: 0 8px 30px -8px rgba(15, 41, 26, 0.22);
+}
+
+/* Animaciones de entrada del prototipo (usadas por Modal). */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes riseUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Brand gradient + mesh glow + train-track dash — ported from el prototipo */
+.bg-brand-gradient {
+  background-image: linear-gradient(120deg, #0a3f24 0%, #0f6b3e 45%, #14814a 100%);
+}
+.bg-mesh {
+  background-image: radial-gradient(1200px 400px at 80% -10%, rgba(56, 168, 96, 0.18), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(31, 157, 82, 0.12), transparent 60%);
+}
+@keyframes trainDash {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+.track-dash {
+  stroke-dasharray: 6 6;
+  animation: trainDash 1.2s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .track-dash {
+    animation: none;
+  }
 }
 
 * {
@@ -61,14 +160,20 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
+/* Dentro de @layer base para que las utilidades de Tailwind puedan
+   sobrescribirlas. Fuera de la capa, `font: inherit` (shorthand que resetea
+   tamaño, peso y familia) y `color: inherit` ganaban por precedencia y
+   anulaban utilidades de texto/fuente/color en todo <a> y <button> de la app. */
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 
-button,
-a {
-  font: inherit;
+  button,
+  a {
+    font: inherit;
+  }
 }
 
 ::selection {
@@ -105,5 +210,62 @@ a {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+}
+/* ── Impresión / Exportar PDF ────────────────────────────────────────────
+   El botón "Exportar PDF" del expediente usa window.print(). Sin estas
+   reglas el PDF sale con el menú lateral, la barra superior y los botones
+   de acción, que no tienen sentido en un documento. Se marca con
+   `data-print="hide"` todo lo que es navegación o acción, y el expediente
+   queda como documento: cabecera, stepper, panel lateral y etapa activa. */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 12mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  /* Navegación, acciones y overlays no pertenecen al documento impreso. */
+  [data-print="hide"] {
+    display: none !important;
+  }
+
+  /* Un botón es siempre una acción, nunca contenido: no va al PDF. Lo que
+     sí es contenido (pills de estado, filas de datos) no usa <button>. */
+  main button {
+    display: none !important;
+  }
+
+  /* El sticky del panel lateral y de la cabecera rompe la paginación. */
+  .lg\:sticky,
+  [class*="sticky"] {
+    position: static !important;
+  }
+
+  /* Tarjetas planas: sombras y fondos grises gastan tinta y no aportan. */
+  [class*="shadow"] {
+    box-shadow: none !important;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  /* Evita cortar una tarjeta o una fila de tabla entre dos páginas. */
+  section,
+  article,
+  tr,
+  [data-print="block"] {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  a[href]::after {
+    content: "";
   }
 }

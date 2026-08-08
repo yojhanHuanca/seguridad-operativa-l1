@@ -2,9 +2,9 @@ import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
 
 interface JwtPayload {
-    id: number;
-    email: string;
-    roles: string;
+    id_usuario: number;
+    correo: string;
+    rol: number | null;
 }
 
 export class JwtHelper {

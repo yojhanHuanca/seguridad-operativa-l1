@@ -321,6 +321,28 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
         omit: OmitOpts;
     }>;
     /**
+     * `prisma.timeline_caso`: Exposes CRUD operations for the **timeline_caso** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more Timeline_casos
+      * const timeline_casos = await prisma.timeline_caso.findMany()
+      * ```
+      */
+    get timeline_caso(): Prisma.timeline_casoDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    /**
+     * `prisma.investigacion_caso`: Exposes CRUD operations for the **investigacion_caso** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more Investigacion_casos
+      * const investigacion_casos = await prisma.investigacion_caso.findMany()
+      * ```
+      */
+    get investigacion_caso(): Prisma.investigacion_casoDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    /**
      * `prisma.investigaciones`: Exposes CRUD operations for the **investigaciones** model.
       * Example usage:
       * ```ts
@@ -428,6 +450,17 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
       * ```
       */
     get sesiones(): Prisma.sesionesDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    /**
+     * `prisma.solicitudes_informacion`: Exposes CRUD operations for the **solicitudes_informacion** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more Solicitudes_informacions
+      * const solicitudes_informacions = await prisma.solicitudes_informacion.findMany()
+      * ```
+      */
+    get solicitudes_informacion(): Prisma.solicitudes_informacionDelegate<ExtArgs, {
         omit: OmitOpts;
     }>;
     /**

@@ -1,0 +1,170 @@
+import prisma from "../../lib/prisma.js";
+const DIAS = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+const LIST_INCLUDE = {
+    catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { select: { nombre: true, color: true } },
+    catalogo_detalle_casos_sop_tipoTocatalogo_detalle: { select: { nombre: true } },
+    catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle: { select: { nombre: true } },
+    areas: { select: { nombre_area: true } },
+    anexos_caso: { select: { id_anexo: true } },
+    solicitudes_informacion: {
+        orderBy: { fecha_solicitud: "desc" },
+        select: {
+            id_solicitud: true,
+            mensaje: true,
+            respuesta: true,
+            respondida: true,
+            fecha_solicitud: true,
+            fecha_respuesta: true,
+        },
+    },
+    evento_caso: {
+        include: {
+            eventos_operativos: {
+                include: {
+                    catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: { select: { nombre: true } },
+                    catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: { select: { nombre: true } },
+                },
+            },
+        },
+    },
+};
+export class ReportRepository {
+    static async findAll() {
+        return prisma.casos_sop.findMany({
+            orderBy: { created_at: "desc" },
+            include: LIST_INCLUDE,
+        });
+    }
+    static async findByCodigo(codigo_sop) {
+        return prisma.casos_sop.findUnique({
+            where: { codigo_sop },
+            include: LIST_INCLUDE,
+        });
+    }
+    static async findCatalogoDetalle(catalogoNombre, valorNombre) {
+        return prisma.catalogo_detalle.findFirst({
+            where: { nombre: valorNombre, catalogos: { nombre: catalogoNombre } },
+        });
+    }
+    static async findCatalogoDetalleById(id_detalle) {
+        return prisma.catalogo_detalle.findUnique({
+            where: { id_detalle },
+            include: { catalogos: { select: { nombre: true } } },
+        });
+    }
+    static async createFullReport(dto, archivos) {
+        const MAX_INTENTOS = 3;
+        let intento = 0;
+        while (true) {
+            intento++;
+            try {
+                return await prisma.$transaction(async (tx) => {
+                    const ahora = new Date();
+                    const fecha = new Date(Date.UTC(ahora.getFullYear(), ahora.getMonth(), ahora.getDate()));
+                    const hora = new Date(Date.UTC(1970, 0, 1, ahora.getHours(), ahora.getMinutes(), ahora.getSeconds()));
+                    const evento = await tx.eventos_operativos.create({
+                        data: {
+                            fecha,
+                            hora,
+                            anio: fecha.getUTCFullYear(),
+                            mes: fecha.getUTCMonth() + 1,
+                            dia: DIAS[fecha.getUTCDay()] ?? null,
+                            tipo_incidente: dto.id_tipo,
+                            lugar_incidente: dto.id_lugar,
+                            ubicacion: dto.id_lugar_especifico ?? null,
+                            descripcion: dto.descripcion,
+                            // usuario_registra: TODO(auth) — asignar req.user?.id_usuario cuando exista login real.
+                        },
+                    });
+                    // El wizard no pide Área, Tipo SOP ni Tipo (No Conformidad/
+                    // Observación) — Seguridad Operativa los define al derivar el
+                    // caso, en la etapa de Evaluación.
+                    const [estadoRecepcion, procedencia, tipoSopDefault, tipoDefault, tipoReporte, lugar, lugarEspecifico] = await Promise.all([
+                        tx.catalogo_detalle.findFirst({ where: { nombre: "Recepción", catalogos: { nombre: "Estado Hallazgo" } } }),
+                        tx.catalogo_detalle.findFirst({ where: { nombre: "Incidencias", catalogos: { nombre: "Procedencia" } } }),
+                        tx.catalogo_detalle.findFirst({ where: { nombre: "Hallazgo", catalogos: { nombre: "Tipo SOP" } } }),
+                        tx.catalogo_detalle.findFirst({ where: { nombre: "Observación", catalogos: { nombre: "Tipo" } } }),
+                        tx.catalogo_detalle.findUnique({ where: { id_detalle: dto.id_tipo }, select: { nombre: true } }),
+                        tx.catalogo_detalle.findUnique({ where: { id_detalle: dto.id_lugar }, select: { nombre: true } }),
+                        dto.id_lugar_especifico
+                            ? tx.catalogo_detalle.findUnique({ where: { id_detalle: dto.id_lugar_especifico }, select: { nombre: true } })
+                            : Promise.resolve(null),
+                    ]);
+                    if (!estadoRecepcion)
+                        throw new Error("Falta el estado 'Recepción' en el catálogo 'Estado Hallazgo'");
+                    if (!procedencia)
+                        throw new Error("Falta el valor 'Incidencias' en el catálogo 'Procedencia'");
+                    if (!tipoSopDefault)
+                        throw new Error("Falta el valor 'Hallazgo' en el catálogo 'Tipo SOP'");
+                    if (!tipoDefault)
+                        throw new Error("Falta el valor 'Observación' en el catálogo 'Tipo'");
+                    if (!tipoReporte)
+                        throw new Error("El tipo de reporte seleccionado no existe");
+                    if (!lugar)
+                        throw new Error("El lugar seleccionado no existe");
+                    // Código secuencial por año, mismo formato que el caso de ejemplo "SOP 01-2024".
+                    const year = fecha.getUTCFullYear();
+                    const inicioAnio = new Date(Date.UTC(year, 0, 1));
+                    const finAnio = new Date(Date.UTC(year + 1, 0, 1));
+                    const totalAnio = await tx.casos_sop.count({
+                        where: { fecha_hallazgo: { gte: inicioAnio, lt: finAnio } },
+                    });
+                    const codigo_sop = `SOP ${String(totalAnio + 1).padStart(2, "0")}-${year}`;
+                    const esIdentificado = dto.modalidad === "identificado";
+                    const ubicacionTitulo = [lugar.nombre, lugarEspecifico?.nombre].filter(Boolean).join(" · ");
+                    const titulo = `${tipoReporte.nombre} en ${ubicacionTitulo}`;
+                    const caso = await tx.casos_sop.create({
+                        data: {
+                            codigo_sop,
+                            titulo,
+                            fecha_hallazgo: ahora,
+                            fecha_evento: ahora,
+                            estado_hallazgo: estadoRecepcion.id_detalle,
+                            procedencia: procedencia.id_detalle,
+                            tipo: tipoDefault.id_detalle,
+                            descripcion: dto.descripcion,
+                            tipo_sop: tipoSopDefault.id_detalle,
+                            nombre_reportante: esIdentificado ? dto.nombre_reportante?.trim() || null : null,
+                            correo_reportante: esIdentificado ? dto.correo_reportante?.trim().toLowerCase() || null : null,
+                            telefono_reportante: esIdentificado ? dto.telefono_reportante?.trim() || null : null,
+                            // responsable_hallazgo / created_by: TODO(auth) — asignar req.user?.id_usuario cuando exista login real.
+                            // area_responsable: lo define Seguridad Operativa al derivar el caso.
+                        },
+                    });
+                    await tx.evento_caso.create({
+                        data: { id_evento: evento.id_evento, id_caso: caso.id_caso },
+                    });
+                    await tx.timeline_caso.create({
+                        data: {
+                            id_caso: caso.id_caso,
+                            kind: "creado",
+                            actor: esIdentificado ? dto.nombre_reportante?.trim() || "Reportante Identificado" : "Reporte Anónimo",
+                            actor_rol: "reportante",
+                            titulo: "Reporte registrado por trabajador",
+                            detalle: `${codigo_sop} creado. Enviado a la bandeja de Seguridad Operativa.`,
+                        },
+                    });
+                    if (archivos.length > 0) {
+                        await tx.anexos_caso.createMany({
+                            data: archivos.map((f) => ({
+                                id_caso: caso.id_caso,
+                                nombre_archivo: f.originalname,
+                                ruta_archivo: `/uploads/casos/${f.filename}`,
+                                tipo_archivo: f.mimetype,
+                                peso: Math.round((f.size / 1024) * 100) / 100, // KB
+                            })),
+                        });
+                    }
+                    return { caso, evento };
+                });
+            }
+            catch (error) {
+                const esColisionCodigo = error instanceof Error && error.message.includes("codigo_sop");
+                if (esColisionCodigo && intento < MAX_INTENTOS)
+                    continue;
+                throw error;
+            }
+        }
+    }
+}
+//# sourceMappingURL=report.repository.js.map

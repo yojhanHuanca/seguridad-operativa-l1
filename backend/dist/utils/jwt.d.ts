@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 interface JwtPayload {
-    id: number;
-    email: string;
-    roles: string;
+    id_usuario: number;
+    correo: string;
+    rol: number | null;
 }
 export declare class JwtHelper {
     static generateToken(payload: JwtPayload): string;

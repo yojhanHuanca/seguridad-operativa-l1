@@ -10,5 +10,27 @@ export class UsersController {
             return res.status(500).json(ApiResponse.error("Error al obtener los usuarios", error));
         }
     }
+    static async getById(req, res) {
+        try {
+            const id = Number(req.params.id);
+            const user = await UsersService.getUserById(id);
+            if (!user) {
+                throw new Error("Usuario no encontrado");
+            }
+            return res.json(ApiResponse.success("Usuario obtenido correctamente", user));
+        }
+        catch (error) {
+            return res.status(500).json(ApiResponse.error("Error al obtener el usuario", error));
+        }
+    }
+    static async create(req, res) {
+        try {
+            const user = await UsersService.createUser(req.body);
+            return res.status(201).json(ApiResponse.success("Usuario creado correctamente", user));
+        }
+        catch (error) {
+            return res.status(500).json(ApiResponse.error(error instanceof Error ? error.message : "Error al crear el usuario", error));
+        }
+    }
 }
 //# sourceMappingURL=users.controller.js.map

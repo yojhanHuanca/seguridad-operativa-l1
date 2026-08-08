@@ -1,2 +1,223 @@
-export {};
+import { ZodError } from "zod";
+import { CaseService } from "./case.service.js";
+import { ApiResponse } from "../../utils/ApiResponse.js";
+function handleError(res, error, fallback) {
+    if (error instanceof ZodError) {
+        return res.status(400).json(ApiResponse.error("Datos inválidos", error.flatten().fieldErrors));
+    }
+    return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : fallback, error));
+}
+function param(req, name) {
+    const value = req.params[name];
+    if (typeof value !== "string" || value.trim() === "") {
+        throw new Error(`Parámetro de ruta inválido: ${name}`);
+    }
+    return value;
+}
+export class CaseController {
+    static async getAll(req, res) {
+        try {
+            const casos = await CaseService.list(req.query);
+            return res.json(ApiResponse.success("Casos obtenidos correctamente", casos));
+        }
+        catch (error) {
+            return res.status(500).json(ApiResponse.error("Error al obtener los casos", error));
+        }
+    }
+    static async getPlans(req, res) {
+        try {
+            const planes = await CaseService.listPlans(req.query);
+            return res.json(ApiResponse.success("Planes obtenidos correctamente", planes));
+        }
+        catch (error) {
+            return res.status(500).json(ApiResponse.error("Error al obtener los planes", error));
+        }
+    }
+    static async getByCodigo(req, res) {
+        try {
+            const caso = await CaseService.getByCodigo(param(req, "codigo"));
+            return res.json(ApiResponse.success("Caso obtenido correctamente", caso));
+        }
+        catch (error) {
+            return res.status(404).json(ApiResponse.error(error instanceof Error ? error.message : "Caso no encontrado", error));
+        }
+    }
+    static async approve(req, res) {
+        try {
+            const caso = await CaseService.approve(param(req, "codigo"));
+            return res.json(ApiResponse.success("Reporte aprobado, pasó a Evaluación", caso));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al aprobar el reporte");
+        }
+    }
+    static async addObservation(req, res) {
+        try {
+            const caso = await CaseService.addObservation(param(req, "codigo"), req.body);
+            return res.status(201).json(ApiResponse.success("Observación registrada", caso));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al registrar la observación");
+        }
+    }
+    static async evaluate(req, res) {
+        try {
+            const caso = await CaseService.evaluate(param(req, "codigo"), req.body);
+            return res.json(ApiResponse.success("Caso evaluado correctamente", caso));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al evaluar el caso");
+        }
+    }
+    static async reject(req, res) {
+        try {
+            const caso = await CaseService.reject(param(req, "codigo"), req.body);
+            return res.json(ApiResponse.success("Caso rechazado", caso));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al rechazar el caso");
+        }
+    }
+    static async requestInfo(req, res) {
+        try {
+            const solicitud = await CaseService.requestInfo(param(req, "codigo"), req.body);
+            return res.status(201).json(ApiResponse.success("Solicitud de información enviada", solicitud));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al solicitar información");
+        }
+    }
+    static async respondInfo(req, res) {
+        try {
+            const solicitud = await CaseService.respondInfo(param(req, "codigo"), param(req, "idSolicitud"), req.body);
+            return res.json(ApiResponse.success("Solicitud respondida", solicitud));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al responder la solicitud");
+        }
+    }
+    static async saveInvestigation(req, res) {
+        try {
+            const investigacion = await CaseService.saveInvestigation(param(req, "codigo"), req.body);
+            return res.json(ApiResponse.success("Investigación guardada, caso pasó a Plan de Acción", investigacion));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al guardar la investigación");
+        }
+    }
+    static async createPlan(req, res) {
+        try {
+            const plan = await CaseService.createPlan(param(req, "codigo"), req.body);
+            return res.status(201).json(ApiResponse.success("Plan de acción creado y enviado", plan));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al crear el plan de acción");
+        }
+    }
+    static async close(req, res) {
+        try {
+            const caso = await CaseService.closeCase(param(req, "codigo"), req.body);
+            return res.json(ApiResponse.success("Caso cerrado correctamente", caso));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al cerrar el caso");
+        }
+    }
+    static async acceptPlan(req, res) {
+        try {
+            const caso = await CaseService.acceptPlan(param(req, "codigo"), req.body);
+            return res.json(ApiResponse.success("Plan aceptado, la ejecución ha iniciado", caso));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al aceptar el plan");
+        }
+    }
+    static async completeExecution(req, res) {
+        try {
+            const caso = await CaseService.completeExecution(param(req, "codigo"), req.body);
+            return res.json(ApiResponse.success("Ejecución completada, el caso pasó a Verificación", caso));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al completar la ejecución");
+        }
+    }
+    static async keepPending(req, res) {
+        try {
+            const caso = await CaseService.keepPending(param(req, "codigo"), req.body);
+            return res.json(ApiResponse.success("Caso devuelto a Ejecución", caso));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al mantener el caso pendiente");
+        }
+    }
+    static async reopen(req, res) {
+        try {
+            const caso = await CaseService.reopenCase(param(req, "codigo"), req.body);
+            return res.json(ApiResponse.success("Caso reabierto", caso));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al reabrir el caso");
+        }
+    }
+    static async updatePlan(req, res) {
+        try {
+            const plan = await CaseService.updatePlan(param(req, "idPlan"), req.body);
+            return res.json(ApiResponse.success("Plan de acción actualizado", plan));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al actualizar el plan");
+        }
+    }
+    static async updateActivity(req, res) {
+        try {
+            const actividad = await CaseService.updateActivity(param(req, "idActividad"), req.body);
+            return res.json(ApiResponse.success("Actividad actualizada", actividad));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al actualizar la actividad");
+        }
+    }
+    static async requestExtension(req, res) {
+        try {
+            const caso = await CaseService.requestExtension(param(req, "codigo"), req.body);
+            return res.status(201).json(ApiResponse.success("Ampliación de plazo solicitada", caso));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al solicitar la ampliación");
+        }
+    }
+    static async reviewExtension(req, res) {
+        try {
+            const caso = await CaseService.reviewExtension(param(req, "codigo"), req.body);
+            return res.json(ApiResponse.success("Solicitud de ampliación resuelta", caso));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al resolver la ampliación");
+        }
+    }
+    static async addComment(req, res) {
+        try {
+            const timeline = await CaseService.addComment(param(req, "codigo"), req.body);
+            return res.status(201).json(ApiResponse.success("Comentario agregado", timeline));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al agregar el comentario");
+        }
+    }
+    static async addEvidence(req, res) {
+        try {
+            const files = (req.files ?? []).map((f) => ({
+                originalname: f.originalname,
+                filename: f.filename,
+                mimetype: f.mimetype,
+                size: f.size,
+            }));
+            const anexos = await CaseService.addEvidence(param(req, "codigo"), files);
+            return res.status(201).json(ApiResponse.success("Evidencia adjuntada correctamente", anexos));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al adjuntar evidencia");
+        }
+    }
+}
 //# sourceMappingURL=case.controller.js.map

@@ -1,5 +1,44 @@
 import { AuthRepository } from "./auth.repository.js";
+import { BcryptHelper } from "../../utils/bcrypt.js";
+import { JwtHelper } from "../../utils/jwt.js";
 export class AuthService {
+    static async login(correo, password) {
+        // Buscar usuarios 
+        const user = await AuthRepository.findByEmail(correo);
+        if (!user) {
+            throw new Error("Usuario no encontrado");
+        }
+        // Verificar estado del usuario
+        if (user.estado !== "activo") {
+            throw new Error("Usuario inactivo");
+        }
+        //Comparar comtraseña 
+        const isPasswordValid = await BcryptHelper.compare(password, user.password_hash);
+        if (!isPasswordValid) {
+            throw new Error("Correo o contraseña incorrectos");
+        }
+        if (user.id_rol == null) {
+            throw new Error("El usuario no tiene rol asignado");
+        }
+        // Generar token JWT 
+        const token = JwtHelper.generateToken({
+            id_usuario: user.id_usuario,
+            correo: user.correo,
+            rol: user.id_rol,
+        });
+        return {
+            token,
+            usuario: {
+                id_usuario: user.id_usuario,
+                codigo_usuario: user.codigo_usuario,
+                nombre: user.nombre,
+                correo: user.correo,
+                estado: user.estado,
+                rol: user.roles?.nombre_rol,
+                area: user.areas?.nombre_area,
+            },
+        };
+    }
     static async home() {
         await AuthRepository.healthCheck();
         return {

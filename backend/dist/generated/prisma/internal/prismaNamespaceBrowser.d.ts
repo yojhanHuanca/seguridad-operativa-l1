@@ -60,6 +60,8 @@ export declare const ModelName: {
     readonly historial_indicadores: "historial_indicadores";
     readonly incidencias: "incidencias";
     readonly indicadores: "indicadores";
+    readonly timeline_caso: "timeline_caso";
+    readonly investigacion_caso: "investigacion_caso";
     readonly investigaciones: "investigaciones";
     readonly logs_sistema: "logs_sistema";
     readonly metas_indicadores: "metas_indicadores";
@@ -70,6 +72,7 @@ export declare const ModelName: {
     readonly roles: "roles";
     readonly seguimientos: "seguimientos";
     readonly sesiones: "sesiones";
+    readonly solicitudes_informacion: "solicitudes_informacion";
     readonly solicitudes_prorroga: "solicitudes_prorroga";
     readonly usuarios: "usuarios";
 };
@@ -134,6 +137,10 @@ export type BitacoraScalarFieldEnum = (typeof BitacoraScalarFieldEnum)[keyof typ
 export declare const Casos_sopScalarFieldEnum: {
     readonly id_caso: "id_caso";
     readonly codigo_sop: "codigo_sop";
+    readonly titulo: "titulo";
+    readonly nombre_reportante: "nombre_reportante";
+    readonly correo_reportante: "correo_reportante";
+    readonly telefono_reportante: "telefono_reportante";
     readonly fecha_hallazgo: "fecha_hallazgo";
     readonly fecha_evento: "fecha_evento";
     readonly estado_hallazgo: "estado_hallazgo";
@@ -146,6 +153,7 @@ export declare const Casos_sopScalarFieldEnum: {
     readonly subtipo_sop: "subtipo_sop";
     readonly peligro: "peligro";
     readonly consecuencia: "consecuencia";
+    readonly clasificacion: "clasificacion";
     readonly analisis_riesgo: "analisis_riesgo";
     readonly acr: "acr";
     readonly area_responsable: "area_responsable";
@@ -298,6 +306,29 @@ export declare const IndicadoresScalarFieldEnum: {
     readonly activo: "activo";
 };
 export type IndicadoresScalarFieldEnum = (typeof IndicadoresScalarFieldEnum)[keyof typeof IndicadoresScalarFieldEnum];
+export declare const Timeline_casoScalarFieldEnum: {
+    readonly id_evento: "id_evento";
+    readonly id_caso: "id_caso";
+    readonly kind: "kind";
+    readonly actor: "actor";
+    readonly actor_rol: "actor_rol";
+    readonly titulo: "titulo";
+    readonly detalle: "detalle";
+    readonly fecha: "fecha";
+};
+export type Timeline_casoScalarFieldEnum = (typeof Timeline_casoScalarFieldEnum)[keyof typeof Timeline_casoScalarFieldEnum];
+export declare const Investigacion_casoScalarFieldEnum: {
+    readonly id_investigacion: "id_investigacion";
+    readonly id_caso: "id_caso";
+    readonly hallazgos: "hallazgos";
+    readonly causa_raiz: "causa_raiz";
+    readonly conclusiones: "conclusiones";
+    readonly observaciones: "observaciones";
+    readonly investigador: "investigador";
+    readonly created_at: "created_at";
+    readonly updated_at: "updated_at";
+};
+export type Investigacion_casoScalarFieldEnum = (typeof Investigacion_casoScalarFieldEnum)[keyof typeof Investigacion_casoScalarFieldEnum];
 export declare const InvestigacionesScalarFieldEnum: {
     readonly id_investigacion: "id_investigacion";
     readonly id_incidencia: "id_incidencia";
@@ -347,6 +378,10 @@ export declare const Planes_accionScalarFieldEnum: {
     readonly fecha_reprogramada: "fecha_reprogramada";
     readonly dias_abierto: "dias_abierto";
     readonly observaciones: "observaciones";
+    readonly prorroga_motivo: "prorroga_motivo";
+    readonly prorroga_fecha: "prorroga_fecha";
+    readonly prorroga_estado: "prorroga_estado";
+    readonly prorroga_fecha_sol: "prorroga_fecha_sol";
     readonly created_at: "created_at";
     readonly updated_at: "updated_at";
 };
@@ -394,6 +429,17 @@ export declare const SesionesScalarFieldEnum: {
     readonly estado: "estado";
 };
 export type SesionesScalarFieldEnum = (typeof SesionesScalarFieldEnum)[keyof typeof SesionesScalarFieldEnum];
+export declare const Solicitudes_informacionScalarFieldEnum: {
+    readonly id_solicitud: "id_solicitud";
+    readonly id_caso: "id_caso";
+    readonly mensaje: "mensaje";
+    readonly respuesta: "respuesta";
+    readonly respondida: "respondida";
+    readonly estado_previo: "estado_previo";
+    readonly fecha_solicitud: "fecha_solicitud";
+    readonly fecha_respuesta: "fecha_respuesta";
+};
+export type Solicitudes_informacionScalarFieldEnum = (typeof Solicitudes_informacionScalarFieldEnum)[keyof typeof Solicitudes_informacionScalarFieldEnum];
 export declare const Solicitudes_prorrogaScalarFieldEnum: {
     readonly id_prorroga: "id_prorroga";
     readonly id_incidencia: "id_incidencia";

@@ -1,6 +1,10 @@
 import { Router } from "express";
 import authRoutes from "../modules/auth/auth.routes.js";
 import usersRoutes from "../modules/users/users.routes.js";
+import catalogsRoutes from "../modules/catalogs/catalog.routes.js";
+import areasRoutes from "../modules/areas/area.routes.js";
+import reportsRoutes from "../modules/reports/report.routes.js";
+import casesRoutes from "../modules/cases/case.routes.js";
 import { AuthController } from "../modules/auth/auth.controller.js";
 const router = Router();
 router.get("/", (_req, res) => {
@@ -12,6 +16,10 @@ router.get("/", (_req, res) => {
 });
 router.use("/auth", authRoutes);
 router.use("/users", usersRoutes);
+router.use("/catalogs", catalogsRoutes);
+router.use("/areas", areasRoutes);
+router.use("/reports", reportsRoutes);
+router.use("/cases", casesRoutes);
 router.get("/", AuthController.home);
 export default router;
 //# sourceMappingURL=index.js.map

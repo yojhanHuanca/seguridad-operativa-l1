@@ -58,6 +58,8 @@ export const ModelName = {
     historial_indicadores: 'historial_indicadores',
     incidencias: 'incidencias',
     indicadores: 'indicadores',
+    timeline_caso: 'timeline_caso',
+    investigacion_caso: 'investigacion_caso',
     investigaciones: 'investigaciones',
     logs_sistema: 'logs_sistema',
     metas_indicadores: 'metas_indicadores',
@@ -68,6 +70,7 @@ export const ModelName = {
     roles: 'roles',
     seguimientos: 'seguimientos',
     sesiones: 'sesiones',
+    solicitudes_informacion: 'solicitudes_informacion',
     solicitudes_prorroga: 'solicitudes_prorroga',
     usuarios: 'usuarios'
 };
@@ -128,6 +131,10 @@ export const BitacoraScalarFieldEnum = {
 export const Casos_sopScalarFieldEnum = {
     id_caso: 'id_caso',
     codigo_sop: 'codigo_sop',
+    titulo: 'titulo',
+    nombre_reportante: 'nombre_reportante',
+    correo_reportante: 'correo_reportante',
+    telefono_reportante: 'telefono_reportante',
     fecha_hallazgo: 'fecha_hallazgo',
     fecha_evento: 'fecha_evento',
     estado_hallazgo: 'estado_hallazgo',
@@ -140,6 +147,7 @@ export const Casos_sopScalarFieldEnum = {
     subtipo_sop: 'subtipo_sop',
     peligro: 'peligro',
     consecuencia: 'consecuencia',
+    clasificacion: 'clasificacion',
     analisis_riesgo: 'analisis_riesgo',
     acr: 'acr',
     area_responsable: 'area_responsable',
@@ -278,6 +286,27 @@ export const IndicadoresScalarFieldEnum = {
     formula: 'formula',
     activo: 'activo'
 };
+export const Timeline_casoScalarFieldEnum = {
+    id_evento: 'id_evento',
+    id_caso: 'id_caso',
+    kind: 'kind',
+    actor: 'actor',
+    actor_rol: 'actor_rol',
+    titulo: 'titulo',
+    detalle: 'detalle',
+    fecha: 'fecha'
+};
+export const Investigacion_casoScalarFieldEnum = {
+    id_investigacion: 'id_investigacion',
+    id_caso: 'id_caso',
+    hallazgos: 'hallazgos',
+    causa_raiz: 'causa_raiz',
+    conclusiones: 'conclusiones',
+    observaciones: 'observaciones',
+    investigador: 'investigador',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+};
 export const InvestigacionesScalarFieldEnum = {
     id_investigacion: 'id_investigacion',
     id_incidencia: 'id_incidencia',
@@ -323,6 +352,10 @@ export const Planes_accionScalarFieldEnum = {
     fecha_reprogramada: 'fecha_reprogramada',
     dias_abierto: 'dias_abierto',
     observaciones: 'observaciones',
+    prorroga_motivo: 'prorroga_motivo',
+    prorroga_fecha: 'prorroga_fecha',
+    prorroga_estado: 'prorroga_estado',
+    prorroga_fecha_sol: 'prorroga_fecha_sol',
     created_at: 'created_at',
     updated_at: 'updated_at'
 };
@@ -363,6 +396,16 @@ export const SesionesScalarFieldEnum = {
     navegador: 'navegador',
     dispositivo: 'dispositivo',
     estado: 'estado'
+};
+export const Solicitudes_informacionScalarFieldEnum = {
+    id_solicitud: 'id_solicitud',
+    id_caso: 'id_caso',
+    mensaje: 'mensaje',
+    respuesta: 'respuesta',
+    respondida: 'respondida',
+    estado_previo: 'estado_previo',
+    fecha_solicitud: 'fecha_solicitud',
+    fecha_respuesta: 'fecha_respuesta'
 };
 export const Solicitudes_prorrogaScalarFieldEnum = {
     id_prorroga: 'id_prorroga',

@@ -115,6 +115,19 @@ export type incidencias = Prisma.incidenciasModel;
  */
 export type indicadores = Prisma.indicadoresModel;
 /**
+ * Model timeline_caso
+ * Bitácora del expediente: un registro por cada acción del workflow.
+ * Equivale a `CaseFile.timeline` del prototipo (pushTimeline en cada acción).
+ * Es distinta de `bitacora`, que es auditoría técnica del sistema y exige
+ * usuario — aquí el actor puede ser un rol sin login todavía.
+ */
+export type timeline_caso = Prisma.timeline_casoModel;
+/**
+ * Model investigacion_caso
+ *
+ */
+export type investigacion_caso = Prisma.investigacion_casoModel;
+/**
  * Model investigaciones
  *
  */
@@ -164,6 +177,11 @@ export type seguimientos = Prisma.seguimientosModel;
  *
  */
 export type sesiones = Prisma.sesionesModel;
+/**
+ * Model solicitudes_informacion
+ *
+ */
+export type solicitudes_informacion = Prisma.solicitudes_informacionModel;
 /**
  * Model solicitudes_prorroga
  *

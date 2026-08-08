@@ -79,6 +79,13 @@ model bitacora {
 model casos_sop {
   id_caso                                                      Int               @id @default(autoincrement())
   codigo_sop                                                   String            @unique @db.VarChar(30)
+  titulo                                                       String?           @db.VarChar(200)
+  // Datos del "Reporte Identificado" (paso 5 del wizard) — quedan null si el
+  // reportante elige "Reporte Anónimo". nombre_reportante es el único
+  // requerido cuando se identifica; correo y teléfono son opcionales.
+  nombre_reportante                                            String?           @db.VarChar(150)
+  correo_reportante                                            String?           @db.VarChar(150)
+  telefono_reportante                                          String?           @db.VarChar(20)
   fecha_hallazgo                                               DateTime          @db.Date
   fecha_evento                                                 DateTime?         @db.Timestamp(6)
   estado_hallazgo                                              Int
@@ -91,6 +98,10 @@ model casos_sop {
   subtipo_sop                                                  Int?
   peligro                                                      String?
   consecuencia                                                 String?
+  // Clasificación libre que asigna Seguridad Operativa en la etapa de
+  // Evaluación (ej. "Hallazgo · Caída", "No conformidad"). Es más granular
+  // que `tipo`, que solo distingue No Conformidad / Observación.
+  clasificacion                                                String?           @db.VarChar(200)
   analisis_riesgo                                              Int?
   acr                                                          String?           @db.VarChar(50)
   area_responsable                                             Int?
@@ -117,9 +128,13 @@ model casos_sop {
   catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle        catalogo_detalle  @relation("casos_sop_tipo_sopTocatalogo_detalle", fields: [tipo_sop], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_tipo_sop")
   evento_caso                                                  evento_caso[]
   planes_accion                                                planes_accion[]
+  investigacion_caso                                           investigacion_caso?
+  solicitudes_informacion                                      solicitudes_informacion[]
+  timeline_caso                                                timeline_caso[]
 
   @@index([area_responsable], map: "idx_caso_area")
   @@index([codigo_sop], map: "idx_caso_codigo")
+  @@index([correo_reportante], map: "idx_caso_correo_reportante")
   @@index([estado_hallazgo], map: "idx_caso_estado")
   @@index([fecha_hallazgo], map: "idx_caso_fecha")
   @@index([responsable_hallazgo], map: "idx_caso_responsable")
@@ -332,6 +347,38 @@ model indicadores {
   metas_indicadores     metas_indicadores[]
 }
 
+/// Bitácora del expediente: un registro por cada acción del workflow.
+/// Equivale a `CaseFile.timeline` del prototipo (pushTimeline en cada acción).
+/// Es distinta de `bitacora`, que es auditoría técnica del sistema y exige
+/// usuario — aquí el actor puede ser un rol sin login todavía.
+model timeline_caso {
+  id_evento  Int       @id @default(autoincrement())
+  id_caso    Int
+  kind       String    @db.VarChar(40)
+  actor      String    @db.VarChar(150)
+  actor_rol  String    @db.VarChar(30)
+  titulo     String    @db.VarChar(250)
+  detalle    String?
+  fecha      DateTime? @default(now()) @db.Timestamp(6)
+  casos_sop  casos_sop @relation(fields: [id_caso], references: [id_caso], onDelete: Cascade, onUpdate: NoAction, map: "fk_timeline_caso")
+
+  @@index([id_caso], map: "idx_timeline_caso")
+}
+
+model investigacion_caso {
+  id_investigacion Int       @id @default(autoincrement())
+  id_caso          Int       @unique
+  hallazgos        String
+  causa_raiz       String
+  conclusiones     String
+  observaciones    String?
+  investigador     Int?
+  created_at       DateTime? @default(now()) @db.Timestamp(6)
+  updated_at       DateTime? @default(now()) @db.Timestamp(6)
+  casos_sop        casos_sop @relation(fields: [id_caso], references: [id_caso], onDelete: Cascade, onUpdate: NoAction, map: "fk_investigacion_caso")
+  usuarios         usuarios? @relation(fields: [investigador], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_investigacion_investigador")
+}
+
 model investigaciones {
   id_investigacion        Int          @id @default(autoincrement())
   id_incidencia           Int?         @unique
@@ -386,6 +433,12 @@ model planes_accion {
   fecha_reprogramada DateTime?          @db.Date
   dias_abierto       Int?               @default(0)
   observaciones      String?
+  // Solicitud de ampliación de plazo que hace el Jefe del Área y resuelve
+  // Seguridad Operativa. `prorroga_estado`: pendiente | aprobada | rechazada.
+  prorroga_motivo    String?
+  prorroga_fecha     DateTime?          @db.Date
+  prorroga_estado    String?            @db.VarChar(20)
+  prorroga_fecha_sol DateTime?          @db.Timestamp(6)
   created_at         DateTime?          @default(now()) @db.Timestamp(6)
   updated_at         DateTime?          @default(now()) @db.Timestamp(6)
   actividades_plan   actividades_plan[]
@@ -452,6 +505,20 @@ model sesiones {
   usuarios     usuarios  @relation(fields: [usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_sesion_usuario")
 }
 
+model solicitudes_informacion {
+  id_solicitud    Int       @id @default(autoincrement())
+  id_caso         Int
+  mensaje         String
+  respuesta       String?
+  respondida      Boolean   @default(false)
+  estado_previo   String?   @db.VarChar(60)
+  fecha_solicitud DateTime? @default(now()) @db.Timestamp(6)
+  fecha_respuesta DateTime? @db.Timestamp(6)
+  casos_sop       casos_sop @relation(fields: [id_caso], references: [id_caso], onDelete: Cascade, onUpdate: NoAction, map: "fk_solicitud_info_caso")
+
+  @@index([id_caso], map: "idx_solicitud_info_caso")
+}
+
 model solicitudes_prorroga {
   id_prorroga           Int          @id @default(autoincrement())
   id_incidencia         Int?
@@ -485,6 +552,7 @@ model usuarios {
   eventos_operativos                                 eventos_operativos[]
   evidencias_evento                                  evidencias_evento[]
   incidencias                                        incidencias[]
+  investigacion_caso                                 investigacion_caso[]
   investigaciones                                    investigaciones[]
   logs_sistema                                       logs_sistema[]
   notificaciones                                     notificaciones[]

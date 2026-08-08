@@ -1,11 +1,7 @@
 import { Router } from "express";
+import { AuthController } from "./auth.controller.js";
 const router = Router();
-router.get("/", (_req, res) => {
-    res.json({
-        success: true,
-        module: "Auth",
-        message: "Módulo de autenticación funcionando correctamente",
-    });
-});
+router.post("/login", AuthController.login);
+router.get("/home", AuthController.home);
 export default router;
 //# sourceMappingURL=auth.routes.js.map
