@@ -6,8 +6,6 @@ import { Field, Input, Select, Textarea } from "@/design-system/primitives/Input
 import { RiskPill } from "@/design-system/primitives/Pill";
 import { RiskMatrixPicker } from "@/features/cases/components/RiskMatrixPicker";
 import { useCatalogs } from "@/features/reports/hooks/useCatalogs";
-import { useAreas } from "@/features/reports/hooks/useAreas";
-import { useUsers } from "@/features/users/hooks/useUsers";
 import { useEvaluateCase } from "@/features/cases/hooks/useCaseActions";
 import { gravedadDerivada, diasSlaPorRiesgo } from "@/features/cases/lib/sla";
 import type { RiskLevel } from "@/features/cases/domain";
@@ -18,8 +16,6 @@ import type { CaseDetail } from "@/features/cases/types";
 // Portado de pages/seguridad/CaseFile.tsx → EvaluationForm.
 export function EvaluationForm({ caso }: { caso: CaseDetail }) {
   const catalogs = useCatalogs();
-  const { data: areas } = useAreas();
-  const { data: usuarios } = useUsers();
   const evaluate = useEvaluateCase(caso.codigo_sop);
 
   const riesgoItems = catalogs.byName.get("Análisis de riesgo")?.catalogo_detalle ?? [];
@@ -33,22 +29,17 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
   const [observations, setObservations] = useState("");
   const [peligro, setPeligro] = useState(caso.peligro ?? "");
   const [consecuencia, setConsecuencia] = useState(caso.consecuencia ?? "");
-  const [idArea, setIdArea] = useState<string>(caso.areas ? String(caso.areas.id_area) : "");
-  const [idResponsable, setIdResponsable] = useState<string>(
-    caso.usuarios_casos_sop_responsable_hallazgoTousuarios
-      ? String(caso.usuarios_casos_sop_responsable_hallazgoTousuarios.id_usuario)
-      : ""
-  );
 
   const cleanClassification = classification.startsWith("__otro__:")
     ? classification.slice(9).trim()
     : classification.trim();
-  const canSave = cleanClassification.length > 0 && idRiesgo != null;
+  const motivoOmision = observations.trim();
+  const canSave = cleanClassification.length > 0 && idRiesgo != null && (requiresInvestigation || motivoOmision.length > 0);
 
   const riesgoSel = riesgoItems.find((r) => r.id_detalle === idRiesgo);
   const risk = riesgoSel?.codigo as RiskLevel | undefined;
-  const gravedad = gravedadDerivada(riesgoSel?.nombre);
-  const diasSla = diasSlaPorRiesgo(riesgoSel?.nombre);
+  const gravedad = gravedadDerivada(riesgoSel?.nombre, riesgoSel?.codigo);
+  const diasSla = diasSlaPorRiesgo(riesgoSel?.nombre, riesgoSel?.codigo);
 
   const PRESETS = [
     "Reporte Voluntario",
@@ -145,29 +136,6 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
         )}
       </Field>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Área responsable">
-          <Select value={idArea} onChange={(e) => setIdArea(e.target.value)}>
-            <option value="">Sin asignar…</option>
-            {(areas ?? []).map((a) => (
-              <option key={a.id_area} value={String(a.id_area)}>
-                {a.nombre_area}
-              </option>
-            ))}
-          </Select>
-        </Field>
-        <Field label="Responsable del hallazgo" hint="Quien conduce la investigación desde SO">
-          <Select value={idResponsable} onChange={(e) => setIdResponsable(e.target.value)}>
-            <option value="">Sin asignar…</option>
-            {(usuarios ?? []).map((u) => (
-              <option key={u.id_usuario} value={String(u.id_usuario)}>
-                {u.nombre}
-              </option>
-            ))}
-          </Select>
-        </Field>
-      </div>
-
       <Field label="¿Requiere investigación?">
         <div className="flex gap-2">
           <button
@@ -193,9 +161,20 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
         </div>
       </Field>
 
-      <Field label="Observaciones de la evaluación" hint="Análisis, antecedentes y criterios considerados">
-        <Textarea value={observations} onChange={(e) => setObservations(e.target.value)} rows={3} placeholder="Análisis, antecedentes, criterios considerados…" />
-      </Field>
+      {!requiresInvestigation && (
+        <Field
+          label="Motivo para no realizar investigación"
+          required
+          hint="Explique por qué el caso pasará directo al Plan de Acción."
+        >
+          <Textarea
+            value={observations}
+            onChange={(e) => setObservations(e.target.value)}
+            rows={3}
+            placeholder="Detalle por qué no corresponde abrir investigación para este caso…"
+          />
+        </Field>
+      )}
 
       <div className="pt-3 border-t border-line-soft flex items-center justify-end gap-2">
         <Button
@@ -205,12 +184,10 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
             evaluate.mutate(
               {
                 id_riesgo: Number(idRiesgo),
-                id_area: idArea ? Number(idArea) : null,
-                id_responsable: idResponsable ? Number(idResponsable) : null,
                 clasificacion: cleanClassification,
                 peligro: peligro.trim() || null,
                 consecuencia: consecuencia.trim() || null,
-                observaciones: observations.trim() || null,
+                observaciones: requiresInvestigation ? null : motivoOmision,
                 requiere_investigacion: requiresInvestigation,
               },
               {

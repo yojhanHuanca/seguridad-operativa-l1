@@ -26,6 +26,7 @@ export type CaseAction =
   | "resolver_prorroga"
   | "cerrar"
   | "devolver_ejecucion"
+  | "retroceder"
   | "reabrir"
   | "adjuntar_evidencia"
   | "comentar";
@@ -80,12 +81,12 @@ const ESTADOS: Record<string, EstadoSpec> = {
   },
   Investigación: {
     panel: "investigacion",
-    acciones: ["registrar_investigacion", "solicitar_info", ...BITACORA],
+    acciones: ["registrar_investigacion", "retroceder", "solicitar_info", ...BITACORA],
     siguiente: "Al guardar la investigación, el caso pasa a Plan de Acción.",
   },
   "Plan de Acción": {
     panel: "plan",
-    acciones: ["crear_plan", "modificar_plan", ...BITACORA],
+    acciones: ["crear_plan", "modificar_plan", "retroceder", ...BITACORA],
     siguiente: "El plan queda pendiente de aceptación del Jefe de Área; al aceptarlo arranca la Ejecución.",
   },
   Ejecución: {

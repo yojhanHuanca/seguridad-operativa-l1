@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/design-system/primitives/Button";
 import { Field, Textarea } from "@/design-system/primitives/Input";
 import { useAddComment } from "@/features/cases/hooks/useCaseActions";
+import { compactPlanCodes } from "@/features/cases/lib/planLabels";
 import { ACTOR_ROL_LABEL } from "@/features/cases/lib/workflow";
 import { apiErrorMessage } from "@/lib/api";
 import { relativeTime } from "@/lib/format";
@@ -19,7 +20,7 @@ function TimelineIcon({ kind }: { kind: string }) {
     creado: FileText, aprobado: Check, rechazado: X, info_solicitada: Mail, info_recibida: CornerUpLeft,
     derivado: Send, investigacion: Microscope, plan_propuesto: ClipboardList, plan_aprobado: CheckCircle2,
     plan_ajustado: AlertCircle, ejecucion: Rocket, ampliacion: Timer, seguimiento: Activity,
-    cierre: CheckCircle2, reapertura: CornerUpLeft, comentario: FileText, sancion: Gavel,
+    cierre: CheckCircle2, reapertura: CornerUpLeft, retroceso: CornerUpLeft, comentario: FileText, sancion: Gavel,
   };
   const Icon = map[kind] ?? FileText;
   return <Icon className="h-4 w-4" />;
@@ -96,7 +97,7 @@ export function TimelinePanel({ caso, puedeComentar = true }: { caso: CaseDetail
                 >
                   <TimelineIcon kind={t.kind} />
                 </div>
-                <p className="text-[12.5px] font-semibold text-ink leading-tight">{t.titulo}</p>
+                <p className="text-[12.5px] font-semibold text-ink leading-tight">{compactPlanCodes(t.titulo)}</p>
                 <div className="flex items-center gap-1.5 flex-wrap mt-1">
                   <span className={cn("rounded px-1.5 py-0.5 text-[10px] font-semibold", estilo.etiqueta)}>
                     {ACTOR_ROL_LABEL[t.actor_rol] ?? t.actor_rol}
@@ -106,7 +107,7 @@ export function TimelinePanel({ caso, puedeComentar = true }: { caso: CaseDetail
                   </span>
                 </div>
                 {t.detalle && (
-                  <p className="text-[12px] text-ink-soft mt-1.5 leading-relaxed bg-surface/60 rounded-md p-2">{t.detalle}</p>
+                  <p className="text-[12px] text-ink-soft mt-1.5 leading-relaxed bg-surface/60 rounded-md p-2">{compactPlanCodes(t.detalle)}</p>
                 )}
               </div>
             );

@@ -3,7 +3,7 @@ export interface SeguimientoActividad {
   comentario: string | null;
   porcentaje: string | null;
   fecha: string | null;
-  usuarios: { id_usuario: number; nombre: string } | null;
+  usuarios: { id_usuario: number; nombre: string; cargo: string | null } | null;
 }
 
 export interface AnexoPlanCaso {
@@ -15,13 +15,23 @@ export interface AnexoPlanCaso {
   fecha_subida: string | null;
 }
 
+export interface TimelinePlanCaso {
+  id_evento: number;
+  kind: string;
+  actor: string;
+  actor_rol: string;
+  titulo: string;
+  detalle: string | null;
+  fecha: string | null;
+}
+
 export interface PlanActividad {
   id_actividad: number;
   descripcion: string;
   fecha_inicio: string | null;
   fecha_fin: string | null;
   porcentaje: string | null;
-  usuarios: { id_usuario: number; nombre: string } | null;
+  usuarios: { id_usuario: number; nombre: string; cargo: string | null } | null;
   catalogo_detalle: { nombre: string } | null;
   seguimientos: SeguimientoActividad[];
 }
@@ -41,7 +51,7 @@ export interface PlanItem {
   created_at: string | null;
   updated_at: string | null;
   areas: { id_area: number; nombre_area: string };
-  usuarios: { id_usuario: number; nombre: string };
+  usuarios: { id_usuario: number; nombre: string; cargo: string | null };
   catalogo_detalle: { nombre: string };
   actividades_plan: PlanActividad[];
   casos_sop: {
@@ -53,6 +63,7 @@ export interface PlanItem {
     catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { nombre: string };
     catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: { codigo: string | null; nombre: string } | null;
     investigacion_caso: { causa_raiz: string; hallazgos: string; conclusiones: string } | null;
+    timeline_caso: TimelinePlanCaso[];
     anexos_caso: AnexoPlanCaso[];
   };
 }

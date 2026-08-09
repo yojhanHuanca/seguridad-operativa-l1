@@ -3,7 +3,7 @@
 // portados del prototipo. Aísla la traducción en un solo lugar: las pantallas
 // portadas no saben nada de Prisma ni de nombres de relaciones.
 import { stageFromEstado, tipoSopFromNombre, type RiskLevel, type Stage, type TipoSOP } from "./domain";
-import { slaDueDate } from "./lib/sla";
+import { criterioAceptabilidad, slaDueDate } from "./lib/sla";
 import type { CaseListItem, PlanAccion } from "./types";
 
 export interface CaseRow {
@@ -73,9 +73,9 @@ export function toCaseRow(c: CaseListItem): CaseRow {
     station,
     area: c.areas?.nombre_area ?? null,
     risk: (riesgo?.codigo as RiskLevel | undefined) ?? null,
-    riskCategoria: riesgo?.nombre ?? null,
+    riskCategoria: riesgo ? criterioAceptabilidad(riesgo.nombre, riesgo.codigo) ?? riesgo.nombre : null,
     createdAt: c.created_at,
-    slaDueDate: slaDueDate(c.fecha_hallazgo, riesgo?.nombre),
+    slaDueDate: slaDueDate(c.fecha_hallazgo, riesgo?.nombre, riesgo?.codigo),
     prorrogaSolicitada: estadoNombre === "Prórroga Solicitada",
     evidencias: c.anexos_caso.length,
     planes: c.planes_accion ?? [],

@@ -8,6 +8,7 @@ export class UserRepository {
                 codigo_usuario: true,
                 nombre: true,
                 correo: true,
+                cargo: true,
                 telefono: true,
                 estado: true,
                 roles: {

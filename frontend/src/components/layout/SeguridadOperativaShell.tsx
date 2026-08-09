@@ -323,7 +323,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main className="mx-auto max-w-[1240px] px-4 py-5 sm:px-6 sm:py-6">{children}</main>
+        <main className="w-full max-w-none px-4 py-5 sm:px-6 sm:py-6 lg:px-8">{children}</main>
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ export declare class UsersService {
         codigo_usuario: string;
         correo: string;
         nombre: string;
+        cargo: string | null;
         telefono: string | null;
         estado: string | null;
         roles: {

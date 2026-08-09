@@ -38,6 +38,7 @@ export interface SaveInvestigationDto {
 }
 
 export interface CreatePlanActivityDto {
+  id_actividad?: number | undefined;
   descripcion: string;
   responsable?: number | null | undefined;
   fecha_inicio?: string | null | undefined;
@@ -84,6 +85,7 @@ export type TimelineKind =
   | "seguimiento"
   | "cierre"
   | "reapertura"
+  | "retroceso"
   | "comentario"
   | "sancion";
 
@@ -97,4 +99,9 @@ export interface TimelineEntry {
 
 export interface CommentDto {
   texto: string;
+}
+
+export interface RollbackStageDto {
+  destino: "Evaluación" | "Investigación";
+  motivo: string;
 }

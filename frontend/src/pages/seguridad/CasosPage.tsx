@@ -10,6 +10,7 @@ import { useAreas } from "@/features/reports/hooks/useAreas";
 import { useCases } from "@/features/cases/hooks/useCases";
 import { toCaseRow, type CaseRow } from "@/features/cases/adapter";
 import { CASE_FILTERS, countByFilter, resolveFilter } from "@/features/cases/lib/filters";
+import { shortPlanCode } from "@/features/cases/lib/planLabels";
 import { slaEstado, diasRestantes } from "@/features/cases/lib/sla";
 import { EVENT_LABELS, TYPE_TONE } from "@/features/cases/domain";
 import { formatDate } from "@/lib/format";
@@ -160,10 +161,10 @@ export function SoCasosPage() {
       {/* Table */}
       <Card padded={false} className="mt-4 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="min-w-[1180px] w-full text-left">
             <thead>
               <tr className="bg-surface/60 border-b border-line">
-                <th className="px-4 py-3 text-[11px] font-semibold tracking-wide uppercase text-ink-faint w-[120px]">Código</th>
+                <th className="px-4 py-3 text-[11px] font-semibold tracking-wide uppercase text-ink-faint w-[150px]">Código</th>
                 <th className="px-4 py-3 text-[11px] font-semibold tracking-wide uppercase text-ink-faint w-[110px]">Tipo</th>
                 <th className="px-4 py-3 text-[11px] font-semibold tracking-wide uppercase text-ink-faint">Título</th>
                 <th className="px-4 py-3 text-[11px] font-semibold tracking-wide uppercase text-ink-faint w-[115px]">Reportante</th>
@@ -182,10 +183,10 @@ export function SoCasosPage() {
                 return (
                   <Fragment key={c.id}>
                     <tr className="group hover:bg-surface/40 transition-colors">
-                      <td className="px-4 py-3.5">
+                      <td className="px-4 py-3.5 whitespace-nowrap">
                         <Link
                           to={`/seguridad/casos/${encodeURIComponent(c.id)}`}
-                          className="font-mono text-[15px] font-bold text-brand-700 hover:underline cursor-pointer"
+                          className="inline-block font-mono text-[14px] font-bold leading-tight text-brand-700 hover:underline cursor-pointer"
                         >
                           {c.id}
                         </Link>
@@ -278,7 +279,7 @@ export function SoCasosPage() {
                                       </div>
                                       <div className="min-w-0 flex-1">
                                         <div className="flex flex-wrap items-center gap-2">
-                                          <p className="font-mono text-[12px] font-semibold text-brand-700">{plan.codigo_plan}</p>
+                                          <p className="font-mono text-[12px] font-semibold text-brand-700">{shortPlanCode(plan.codigo_plan)}</p>
                                           <Pill tone={plan.prorroga_estado === "pendiente" ? "warning" : "brand"} dot>
                                             {plan.prorroga_estado === "pendiente" ? "Prórroga pendiente" : plan.catalogo_detalle.nombre}
                                           </Pill>
@@ -386,4 +387,3 @@ function exportCsv(rows: CaseRow[]) {
   a.click();
   URL.revokeObjectURL(url);
 }
-

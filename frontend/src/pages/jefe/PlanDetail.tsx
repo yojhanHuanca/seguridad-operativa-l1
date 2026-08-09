@@ -7,17 +7,17 @@ import {
   AlertTriangle,
   Building2,
   CalendarClock,
+  ChevronDown,
+  ChevronUp,
   Check,
-  CheckCircle2,
   ClipboardList,
   Download,
   FileText,
   Image as ImageIcon,
-  Lock,
   MessageSquare,
   Microscope,
-  Paperclip,
-  Send,
+  Plus,
+  Save,
   Timer,
   Upload,
   UserRound,
@@ -30,10 +30,12 @@ import { Button } from "@/design-system/primitives/Button";
 import { Pill, RiskPill } from "@/design-system/primitives/Pill";
 import { Progress } from "@/design-system/primitives/Progress";
 import { Modal } from "@/design-system/primitives/Modal";
-import { Field, Input, Select, Textarea } from "@/design-system/primitives/Input";
-import { useAddCaseEvidence } from "@/features/cases/hooks/useCaseActions";
+import { Field, Input, Textarea } from "@/design-system/primitives/Input";
+import { parseActivityDescription } from "@/features/cases/lib/activityMeta";
+import { compactPlanCodes, shortPlanCode } from "@/features/cases/lib/planLabels";
 import {
   useAcceptPlanById,
+  useAddPlanEvidence,
   useCompleteExecutionByPlan,
   usePlans,
   useRequestPlanExtension,
@@ -49,6 +51,9 @@ const ACTOR = "Jefe de Área"; // TODO(auth): usuario logueado.
 const API_ORIGIN = (import.meta.env.VITE_API_URL ?? "http://localhost:3000/api").replace(/\/api\/?$/, "");
 const TIPOS_PERMITIDOS = ["image/jpeg", "image/png", "image/webp", "video/mp4", "video/quicktime", "application/pdf"];
 const ACCEPT = TIPOS_PERMITIDOS.join(",");
+const ACCEPT_IMAGES = "image/jpeg,image/png,image/webp";
+const ACCEPT_VIDEOS = "video/mp4,video/quicktime";
+const ACCEPT_DOCUMENTS = "application/pdf";
 const MAX_ARCHIVOS = 10;
 const MAX_BYTES = 25 * 1024 * 1024;
 
@@ -61,37 +66,30 @@ function normalize(value?: string | null): string {
     .toLowerCase();
 }
 
-function InfoRow({ label, value }: { label: string; value?: ReactNode }) {
-  return (
-    <div>
-      <p className="text-[11.5px] font-semibold uppercase tracking-wider text-ink-faint mb-1">{label}</p>
-      <p className="text-[14px] font-medium text-ink">{value ?? "-"}</p>
-    </div>
-  );
+function activityProgressValue(activity: PlanActividad): number {
+  if (activity.porcentaje !== null && activity.porcentaje !== "") {
+    const numeric = Number(activity.porcentaje);
+    if (Number.isFinite(numeric)) return Math.min(100, Math.max(0, numeric));
+  }
+
+  const estado = normalize(activity.catalogo_detalle?.nombre);
+  if (estado.includes("complet")) return 100;
+  if (estado.includes("progreso")) return 50;
+  return 0;
 }
 
-function SidebarRow({ icon, label, value }: { icon: ReactNode; label: string; value?: ReactNode }) {
-  return (
-    <div className="flex items-start gap-2.5">
-      <span className="mt-0.5 text-ink-faint shrink-0">{icon}</span>
-      <div className="min-w-0">
-        <p className="text-[11.5px] font-semibold uppercase tracking-wider text-ink-faint">{label}</p>
-        <p className="text-[13.5px] font-medium text-ink mt-0.5 break-words">{value ?? "-"}</p>
-      </div>
-    </div>
-  );
-}
-
-function calcProgress(p: PlanItem): number {
-  const items = p.actividades_plan ?? [];
+function calcProgress(plan: PlanItem): number {
+  const items = plan.actividades_plan ?? [];
   if (items.length === 0) return 0;
-  const total = items.reduce((acc, it) => {
-    const state = normalize(it.catalogo_detalle?.nombre);
-    if (state.includes("complet")) return acc + 100;
-    if (state.includes("progreso")) return acc + 50;
-    return acc;
-  }, 0);
+  const total = items.reduce((acc, item) => acc + activityProgressValue(item), 0);
   return Math.round(total / items.length);
+}
+
+function planTipoAccion(plan: PlanItem): string {
+  const tipo = plan.actividades_plan
+    .map((actividad) => parseActivityDescription(actividad.descripcion).meta.tipoAccion)
+    .find(Boolean);
+  return tipo?.replace(/^Acción\s+/i, "") ?? "Correctiva";
 }
 
 function planFlow(plan: PlanItem) {
@@ -99,20 +97,20 @@ function planFlow(plan: PlanItem) {
   const etapaCaso = plan.casos_sop.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre;
   const estadoKey = normalize(estadoPlan);
   const etapaKey = normalize(etapaCaso);
+  const finalizado = estadoKey.includes("finaliz");
   const cerrado = estadoKey.includes("cerrad") || etapaKey.includes("cierre");
   const rechazado = estadoKey.includes("rechaz") || etapaKey.includes("rechaz");
   const enVerificacion = etapaKey.includes("verificacion");
   const prorrogaPendiente = plan.prorroga_estado === "pendiente";
-  const aceptado = estadoKey.includes("aceptad");
-  const pendienteAceptacion = !aceptado && !cerrado && !rechazado && !enVerificacion && !prorrogaPendiente;
-  const puedeTrabajar = aceptado && !cerrado && !rechazado && !enVerificacion && !prorrogaPendiente;
-  const todasCompletadas =
-    (plan.actividades_plan ?? []).length > 0 &&
-    plan.actividades_plan.every((a) => normalize(a.catalogo_detalle?.nombre).includes("complet"));
+  const aceptado = estadoKey.includes("aceptad") || estadoKey.includes("ejecucion") || finalizado || estadoKey.includes("cerrad");
+  const pendienteAceptacion = !aceptado && !finalizado && !cerrado && !rechazado && !enVerificacion && !prorrogaPendiente;
+  const puedeTrabajar = aceptado && !finalizado && !cerrado && !rechazado && !enVerificacion && !prorrogaPendiente;
+  const todasCompletadas = (plan.actividades_plan ?? []).length > 0 && plan.actividades_plan.every((a) => activityProgressValue(a) >= 100);
 
   return {
     estadoPlan,
     etapaCaso,
+    finalizado,
     cerrado,
     rechazado,
     enVerificacion,
@@ -124,31 +122,15 @@ function planFlow(plan: PlanItem) {
   };
 }
 
-function statusLabel(flow: ReturnType<typeof planFlow>) {
-  if (flow.rechazado) return { label: "Rechazado", tone: "critical" as StatusTone };
-  if (flow.cerrado) return { label: "Cerrado", tone: "neutral" as StatusTone };
-  if (flow.prorrogaPendiente) return { label: "Prórroga solicitada", tone: "warning" as StatusTone };
-  if (flow.enVerificacion) return { label: "En verificación SO", tone: "warning" as StatusTone };
-  if (flow.aceptado) return { label: "En ejecución", tone: "brand" as StatusTone };
-  return { label: "Pendiente de aceptación", tone: "info" as StatusTone };
+function statusLabel(flow: ReturnType<typeof planFlow>): { label: string; tone: StatusTone } {
+  if (flow.rechazado) return { label: "Rechazado", tone: "critical" };
+  if (flow.cerrado) return { label: "Cerrado", tone: "neutral" };
+  if (flow.finalizado) return { label: "En revisión SO", tone: "warning" };
+  if (flow.prorrogaPendiente) return { label: "Prórroga solicitada", tone: "warning" };
+  if (flow.enVerificacion) return { label: "En verificación SO", tone: "warning" };
+  if (flow.aceptado) return { label: "En ejecución", tone: "brand" };
+  return { label: "Pendiente de aceptación", tone: "info" };
 }
-
-function activityTone(estado?: string | null): StatusTone {
-  const key = normalize(estado);
-  if (key.includes("complet")) return "success";
-  if (key.includes("progreso")) return "brand";
-  return "neutral";
-}
-
-function dueCopy(fecha: string, locked: boolean) {
-  const days = daysUntil(fecha);
-  if (locked) return `Fecha límite ${formatDate(fecha)}`;
-  if (days < 0) return `Vencido hace ${Math.abs(days)} d`;
-  if (days === 0) return "Vence hoy";
-  if (days === 1) return "Vence mañana";
-  return `Vence en ${days} d`;
-}
-
 
 function priorityInfo(plan: PlanItem): { label: string; tone: StatusTone; rank: number } {
   const riesgo = plan.casos_sop.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle;
@@ -173,6 +155,102 @@ function planEnd(plan: PlanItem): string {
   return plan.fecha_reprogramada ?? ends[0] ?? plan.fecha_plan;
 }
 
+function planNumberLabel(plan: PlanItem): string {
+  return shortPlanCode(plan.codigo_plan);
+}
+
+function estimatedDuration(start: string, end: string): string {
+  const startMs = new Date(start).getTime();
+  const endMs = new Date(end).getTime();
+  if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs < startMs) return "-";
+  const days = Math.max(1, Math.ceil((endMs - startMs) / 86400000));
+  return `${days} ${days === 1 ? "día" : "días"}`;
+}
+
+function reviewState(flow: ReturnType<typeof planFlow>): { label: string; tone: StatusTone } {
+  if (flow.rechazado) return { label: "Rechazado", tone: "critical" };
+  if (flow.pendienteAceptacion) return { label: "Pendiente", tone: "info" };
+  return { label: "Aprobado", tone: "success" };
+}
+
+function detailStatus(flow: ReturnType<typeof planFlow>, progreso: number): { label: string; tone: StatusTone } {
+  if (flow.rechazado) return { label: "Rechazado", tone: "critical" };
+  if (flow.cerrado) return { label: "Cerrado", tone: "neutral" };
+  if (flow.finalizado || flow.enVerificacion) return { label: "En revisión SO", tone: "warning" };
+  if (flow.prorrogaPendiente) return { label: "Prórroga solicitada", tone: "warning" };
+  if (progreso >= 100) return { label: "Completado", tone: "success" };
+  if (flow.aceptado) return { label: "En proceso", tone: "brand" };
+  return { label: "Pendiente", tone: "info" };
+}
+
+function nextActivityForProgress(plan: PlanItem): PlanActividad | null {
+  return (
+    plan.actividades_plan.find((actividad) => activityProgressValue(actividad) < 100) ??
+    plan.actividades_plan[0] ??
+    null
+  );
+}
+
+function nextAutoActivityState(activity: PlanActividad): string {
+  return activityProgressValue(activity) >= 50 ? "Completado" : "En progreso";
+}
+
+function executionComments(plan: PlanItem) {
+  const activityComments = plan.actividades_plan
+    .flatMap((actividad) =>
+      (actividad.seguimientos ?? []).map((seguimiento) => ({
+        id: `seg-${seguimiento.id_seguimiento}`,
+        role: "jefe" as const,
+        text: seguimiento.comentario ?? "Seguimiento sin comentario",
+        actor: seguimiento.usuarios?.nombre ?? actividad.usuarios?.nombre ?? "Jefe de Área",
+        meta: [
+          parseActivityDescription(actividad.descripcion).descripcion,
+          seguimiento.porcentaje ? `${seguimiento.porcentaje}%` : null,
+        ].filter(Boolean).join(" · "),
+        fecha: seguimiento.fecha,
+      }))
+    );
+
+  const soComments = planTimeline(plan)
+    .filter((evento) => evento.actor_rol === "seguridad" && evento.kind === "comentario")
+    .map((evento) => ({
+      id: `evt-${evento.id_evento}`,
+      role: "seguridad" as const,
+      text: evento.detalle ?? evento.titulo,
+      actor: evento.actor || "Seguridad Operativa",
+      meta: "Respuesta de Seguridad Operativa",
+      fecha: evento.fecha,
+    }));
+
+  return [...activityComments, ...soComments].sort(
+    (a, b) => new Date(b.fecha ?? 0).getTime() - new Date(a.fecha ?? 0).getTime()
+  );
+}
+
+function eventBelongsToPlan(plan: PlanItem, evento: PlanItem["casos_sop"]["timeline_caso"][number]) {
+  return `${evento.titulo} ${evento.detalle ?? ""}`.includes(plan.codigo_plan);
+}
+
+function planTimeline(plan: PlanItem) {
+  return (plan.casos_sop.timeline_caso ?? []).filter((evento) => eventBelongsToPlan(plan, evento));
+}
+
+function planEvidenceFiles(plan: PlanItem): AnexoPlanCaso[] {
+  const names = new Set(
+    planTimeline(plan)
+      .filter((evento) => normalize(evento.titulo).includes("evidencia"))
+      .flatMap((evento) => (evento.detalle ?? "").split(","))
+      .map((name) => name.trim())
+      .filter(Boolean)
+  );
+
+  if (names.size === 0) return [];
+  return (plan.casos_sop.anexos_caso ?? []).filter((anexo) => {
+    const name = anexo.nombre_archivo?.trim();
+    return !!name && names.has(name);
+  });
+}
+
 function planWeight(plan: PlanItem): number {
   const flow = planFlow(plan);
   const due = daysUntil(planEnd(plan));
@@ -180,11 +258,42 @@ function planWeight(plan: PlanItem): number {
   if (due < 0) return 0;
   if (flow.prorrogaPendiente) return 1;
   if (flow.pendienteAceptacion) return 2;
-  if (flow.todasCompletadas && flow.aceptado && !flow.enVerificacion) return 3;
+  if (flow.finalizado || flow.todasCompletadas) return 3;
   if (flow.aceptado) return 4;
   if (flow.enVerificacion) return 5;
   return 6;
 }
+
+function InfoRow({ label, value }: { label: string; value?: ReactNode }) {
+  return (
+    <div>
+      <p className="mb-1 text-[11.5px] font-semibold uppercase tracking-wider text-ink-faint">{label}</p>
+      <p className="text-[14px] font-medium text-ink">{value ?? "-"}</p>
+    </div>
+  );
+}
+
+function SectionHeader({ icon, title, open, onToggle }: { icon: ReactNode; title: string; open: boolean; onToggle: () => void }) {
+  return (
+    <button type="button" onClick={onToggle} className="flex w-full items-center justify-between gap-4 text-left">
+      <span className="flex items-center gap-3">
+        <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-2 text-brand-700">{icon}</span>
+        <h2 className="text-[17px] font-semibold text-ink">{title}</h2>
+      </span>
+      <span className="text-ink-quiet">{open ? <ChevronUp className="h-4.5 w-4.5" /> : <ChevronDown className="h-4.5 w-4.5" />}</span>
+    </button>
+  );
+}
+
+function InfoTile({ label, value, wide }: { label: string; value?: ReactNode; wide?: boolean }) {
+  return (
+    <div className={cn("rounded-xl border border-line-soft bg-surface/60 px-4 py-3.5", wide && "md:col-span-2")}>
+      <p className="mb-2 text-[11.5px] font-semibold uppercase tracking-wider text-ink-faint">{label}</p>
+      <div className="text-[14px] leading-relaxed text-ink">{value ?? "-"}</div>
+    </div>
+  );
+}
+
 function IconoArchivo({ tipo }: { tipo: string | null }) {
   if (tipo?.startsWith("image/")) return <ImageIcon className="h-4.5 w-4.5" />;
   if (tipo?.startsWith("video/")) return <Video className="h-4.5 w-4.5" />;
@@ -198,22 +307,22 @@ function FilaAnexo({ anexo }: { anexo: AnexoPlanCaso }) {
       target="_blank"
       rel="noreferrer"
       className={cn(
-        "flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-surface transition-colors group",
+        "group flex items-center gap-2.5 rounded-lg p-2.5 transition-colors hover:bg-surface",
         !anexo.ruta_archivo && "pointer-events-none opacity-60"
       )}
     >
-      <div className="h-10 w-10 rounded-lg bg-surface-2 text-ink-soft grid place-items-center shrink-0">
+      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-surface-2 text-ink-soft">
         <IconoArchivo tipo={anexo.tipo_archivo} />
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-medium text-ink truncate">{anexo.nombre_archivo ?? "Archivo adjunto"}</p>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[13px] font-medium text-ink">{anexo.nombre_archivo ?? "Archivo adjunto"}</p>
         <p className="text-[11.5px] text-ink-quiet">
           {anexo.peso ? `${anexo.peso} KB` : ""}
           {anexo.peso && anexo.fecha_subida ? " · " : ""}
           {anexo.fecha_subida ? formatDateTime(anexo.fecha_subida) : ""}
         </p>
       </div>
-      <Download className="h-3.5 w-3.5 text-ink-faint opacity-0 group-hover:opacity-100 transition-opacity" />
+      <Download className="h-3.5 w-3.5 text-ink-faint opacity-0 transition-opacity group-hover:opacity-100" />
     </a>
   );
 }
@@ -222,37 +331,39 @@ export function PlanDetail() {
   const { codigo = "" } = useParams<{ codigo: string }>();
   const [params] = useSearchParams();
   const idPlan = params.get("plan");
-  const { data: planes, isLoading } = usePlans();
+  const { data: planes, isLoading, isError } = usePlans();
 
   const casePlans = useMemo(
     () => (planes ?? []).filter((p) => p.casos_sop.codigo_sop === codigo),
     [planes, codigo]
   );
-  const plan = idPlan ? casePlans.find((p) => String(p.id_plan) === idPlan) : null;
 
   if (isLoading) {
     return (
       <JefeShell>
-        <Card className="p-8 text-center text-[14px] text-ink-quiet">Cargando planes...</Card>
+        <Card className="py-16 text-center">
+          <p className="text-[13px] text-ink-quiet">Cargando plan de acción…</p>
+        </Card>
       </JefeShell>
     );
   }
 
-  if (casePlans.length === 0) {
+  if (isError || casePlans.length === 0) {
     return (
       <JefeShell>
-        <div className="mx-auto max-w-3xl">
-          <div className="mb-6 flex items-center gap-3">
-            <Link to="/jefe" className="rounded-lg p-2 hover:bg-surface-2">
-              <ArrowLeft className="h-4.5 w-4.5" />
-            </Link>
-            <h1 className="text-[24px] font-bold tracking-tight text-ink">Reporte no encontrado</h1>
-          </div>
-          <Card className="p-6 text-center">
-            <AlertCircle className="mx-auto mb-4 h-12 w-12 text-critical" />
-            <p className="text-[14px] text-ink-soft">No hay planes de acción asignados para el SOP solicitado.</p>
-          </Card>
+        <div className="mb-5 flex items-center gap-3">
+          <Link to="/jefe" className="rounded-lg p-2 hover:bg-surface-2">
+            <ArrowLeft className="h-4.5 w-4.5" />
+          </Link>
+          <h1 className="text-[26px] font-bold tracking-tight text-ink">Reporte no encontrado</h1>
         </div>
+        <Card className="p-6 text-center">
+          <AlertCircle className="mx-auto mb-4 h-12 w-12 text-critical" />
+          <p className="font-medium text-ink">No encontramos planes para el SOP {codigo}.</p>
+          <Link to="/jefe" className="mt-4 inline-block">
+            <Button variant="outline" size="sm">Volver a mi plan</Button>
+          </Link>
+        </Card>
       </JefeShell>
     );
   }
@@ -261,21 +372,23 @@ export function PlanDetail() {
     return <PlanSelectionContent codigo={codigo} plans={casePlans} />;
   }
 
+  const plan = casePlans.find((p) => String(p.id_plan) === idPlan);
   if (!plan) {
     return (
       <JefeShell>
-        <div className="mx-auto max-w-3xl">
-          <div className="mb-6 flex items-center gap-3">
-            <Link to={`/jefe/planes/${encodeURIComponent(codigo)}`} className="rounded-lg p-2 hover:bg-surface-2">
-              <ArrowLeft className="h-4.5 w-4.5" />
-            </Link>
-            <h1 className="text-[24px] font-bold tracking-tight text-ink">Plan no encontrado</h1>
-          </div>
-          <Card className="p-6 text-center">
-            <AlertCircle className="mx-auto mb-4 h-12 w-12 text-critical" />
-            <p className="text-[14px] text-ink-soft">El plan de acción solicitado no pertenece a este SOP.</p>
-          </Card>
+        <div className="mb-5 flex items-center gap-3">
+          <Link to={`/jefe/planes/${encodeURIComponent(codigo)}`} className="rounded-lg p-2 hover:bg-surface-2">
+            <ArrowLeft className="h-4.5 w-4.5" />
+          </Link>
+          <h1 className="text-[26px] font-bold tracking-tight text-ink">Plan no encontrado</h1>
         </div>
+        <Card className="p-6 text-center">
+          <AlertCircle className="mx-auto mb-4 h-12 w-12 text-critical" />
+          <p className="font-medium text-ink">El plan de acción solicitado no pertenece a este SOP.</p>
+          <Link to={`/jefe/planes/${encodeURIComponent(codigo)}`} className="mt-4 inline-block">
+            <Button variant="outline" size="sm">Ver planes del reporte</Button>
+          </Link>
+        </Card>
       </JefeShell>
     );
   }
@@ -284,41 +397,39 @@ export function PlanDetail() {
 }
 
 function PlanSelectionContent({ codigo, plans }: { codigo: string; plans: PlanItem[] }) {
-  const caso = plans[0].casos_sop;
   const sortedPlans = useMemo(
     () => [...plans].sort((a, b) => planWeight(a) - planWeight(b) || daysUntil(planEnd(a)) - daysUntil(planEnd(b))),
     [plans]
   );
+  const caso = plans[0]?.casos_sop;
 
   return (
     <JefeShell>
-      <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <Link
-            to="/jefe"
-            className="rounded-xl p-2 text-ink-quiet transition-all hover:bg-surface-2 hover:text-ink hover:shadow-sm"
-            aria-label="Volver a mis planes"
-          >
+      <div className="mb-5 flex items-start justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <Link to="/jefe" className="rounded-lg p-2 hover:bg-surface-2">
             <ArrowLeft className="h-6 w-6" />
           </Link>
           <div>
-            <h1 className="text-[24px] font-bold tracking-tight text-ink">Plan de Acción</h1>
-            <p className="mt-1 text-[13px] text-ink-soft">Caso: <span className="font-mono">{codigo}</span></p>
+            <h1 className="text-[26px] font-bold tracking-tight text-ink">Plan de Acción</h1>
+            <p className="mt-1 text-[14px] text-ink-soft">
+              Caso: <span className="font-mono">{codigo}</span>
+            </p>
           </div>
         </div>
-
-        <Card padded={false} className="overflow-hidden border-line-soft shadow-sm">
-          <div className="border-b border-line-soft bg-surface/70 px-5 py-4">
-            <p className="text-[14px] font-semibold text-ink">Seleccione un plan para ver el detalle:</p>
-            <p className="mt-1 line-clamp-1 text-[13px] text-ink-quiet">{caso.titulo?.trim() || caso.descripcion}</p>
-          </div>
-          <div className="space-y-3 p-5">
-            {sortedPlans.map((plan) => (
-              <PlanChoiceCard key={plan.id_plan} codigo={codigo} plan={plan} />
-            ))}
-          </div>
-        </Card>
       </div>
+
+      <Card padded={false} className="overflow-hidden border-line-soft shadow-sm">
+        <div className="border-b border-line-soft bg-surface/70 px-5 py-4">
+          <p className="text-[15px] font-semibold text-ink">Seleccione un plan para ver el detalle:</p>
+          <p className="mt-1 line-clamp-1 text-[13.5px] text-ink-quiet">{caso?.titulo?.trim() || caso?.descripcion}</p>
+        </div>
+        <div className="space-y-3 p-5">
+          {sortedPlans.map((plan) => (
+            <PlanChoiceCard key={plan.id_plan} codigo={codigo} plan={plan} />
+          ))}
+        </div>
+      </Card>
     </JefeShell>
   );
 }
@@ -327,37 +438,38 @@ function PlanChoiceCard({ codigo, plan }: { codigo: string; plan: PlanItem }) {
   const flow = planFlow(plan);
   const status = statusLabel(flow);
   const priority = priorityInfo(plan);
-  const acceptPlan = useAcceptPlanById();
   const inicio = planStart(plan);
   const fin = planEnd(plan);
-  const vencido = daysUntil(fin) < 0 && !flow.cerrado && !flow.rechazado && !flow.enVerificacion;
+  const vencido = daysUntil(fin) < 0 && !flow.finalizado && !flow.cerrado && !flow.rechazado && !flow.enVerificacion;
   const progreso = calcProgress(plan);
+  const acceptPlan = useAcceptPlanById();
 
   return (
-    <article className="rounded-xl border border-line-soft bg-white p-4 transition-all hover:border-line-strong hover:shadow-[var(--shadow-card-hover)]">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-brand-200 bg-brand-50 text-brand-700">
-            <ClipboardList className="h-6 w-6" />
+    <article className="rounded-xl border border-line-soft bg-white p-4 shadow-sm transition-colors hover:border-brand-200">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
+            <ClipboardList className="h-5 w-5" />
           </div>
           <div className="min-w-0">
             <Link
               to={`/jefe/planes/${encodeURIComponent(codigo)}?plan=${plan.id_plan}`}
-              className="font-mono text-[16px] font-bold text-brand-700 transition-colors hover:text-brand-800 hover:underline"
+              className="font-mono text-[17px] font-bold text-brand-700 transition-colors hover:text-brand-800 hover:underline"
             >
-              {plan.codigo_plan}
+              {shortPlanCode(plan.codigo_plan)}
             </Link>
-            <p className="mt-1 line-clamp-1 text-[13px] text-ink-quiet">{plan.descripcion}</p>
+            <p className="mt-1 line-clamp-1 text-[13.5px] text-ink-quiet">{plan.descripcion}</p>
           </div>
         </div>
         <Pill tone={status.tone} dot>{status.label}</Pill>
       </div>
 
-      <div className="mt-4 grid gap-x-8 gap-y-3 text-[13px] md:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-4 grid gap-x-8 gap-y-3 text-[13.5px] md:grid-cols-2 xl:grid-cols-4">
         <div className="flex items-center gap-2 text-ink-soft">
           <UserRound className="h-3.5 w-3.5 text-ink-faint" />
           <span>Responsable:</span>
           <span className="font-semibold text-ink">{plan.usuarios.nombre}</span>
+          {plan.usuarios.cargo && <span className="text-ink-faint">· {plan.usuarios.cargo}</span>}
         </div>
         <div className="flex items-center gap-2 text-ink-soft">
           <Building2 className="h-3.5 w-3.5 text-ink-faint" />
@@ -367,9 +479,11 @@ function PlanChoiceCard({ codigo, plan }: { codigo: string; plan: PlanItem }) {
         <div className="flex items-center gap-2 text-ink-soft">
           <ClipboardList className="h-3.5 w-3.5 text-ink-faint" />
           <span>Tipo:</span>
-          <span className="font-semibold text-ink">Acción correctiva</span>
+          <span className="font-semibold text-ink">{planTipoAccion(plan)}</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 text-ink-soft">
+          <AlertTriangle className="h-3.5 w-3.5 text-ink-faint" />
+          <span>Riesgo:</span>
           <Pill tone={priority.tone} dot>{priority.label}</Pill>
         </div>
         <div className="flex items-center gap-2 text-ink-soft">
@@ -377,25 +491,22 @@ function PlanChoiceCard({ codigo, plan }: { codigo: string; plan: PlanItem }) {
           <span>Inicio:</span>
           <span className="font-medium text-ink">{formatDate(inicio)}</span>
         </div>
-        <div className={cn("flex items-center gap-2", vencido ? "font-semibold text-critical" : "text-ink-soft")}>
-          {vencido && <AlertCircle className="h-3.5 w-3.5" />}
-          <span>Fin:</span>
-          <span>{formatDate(fin)}</span>
-        </div>
         <div className="flex items-center gap-2 text-ink-soft">
-          <span>Actividades:</span>
-          <span className="font-semibold text-ink">{plan.actividades_plan.length}</span>
-        </div>
-        <div className="flex items-center gap-2 text-ink-soft">
-          <span>Avance:</span>
-          <span className="font-semibold text-ink">{progreso}%</span>
+          <Timer className="h-3.5 w-3.5 text-ink-faint" />
+          <span>{vencido ? "Vencido:" : "Fin:"}</span>
+          <span className={cn("font-medium", vencido ? "text-critical" : "text-ink")}>{formatDate(fin)}</span>
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center justify-end gap-2 border-t border-line-soft pt-3">
+      <div className="mt-4 flex items-center gap-3">
+        <Progress value={progreso} className="h-2 flex-1" />
+        <span className="w-12 text-right text-[12px] font-semibold text-ink-soft">{progreso}%</span>
+      </div>
+
+      <div className="mt-4 flex flex-wrap justify-end gap-2">
         {flow.pendienteAceptacion && (
           <Button
-            size="md"
+            size="sm"
             disabled={acceptPlan.isPending}
             onClick={() =>
               acceptPlan.mutate(
@@ -412,7 +523,7 @@ function PlanChoiceCard({ codigo, plan }: { codigo: string; plan: PlanItem }) {
         )}
         <Link
           to={`/jefe/planes/${encodeURIComponent(codigo)}?plan=${plan.id_plan}`}
-          className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-line-strong bg-white px-3 text-[13.5px] font-medium text-ink transition-colors hover:bg-surface-2 hover:border-ink-faint"
+          className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-line-strong bg-white px-3 text-[13.5px] font-medium text-ink transition-colors hover:border-ink-faint hover:bg-surface-2"
         >
           <ArrowUpRight className="h-4.5 w-4.5" /> Ver detalle
         </Link>
@@ -420,50 +531,108 @@ function PlanChoiceCard({ codigo, plan }: { codigo: string; plan: PlanItem }) {
     </article>
   );
 }
+
 function PlanDetailContent({ plan }: { plan: PlanItem }) {
   const caso = plan.casos_sop;
   const flow = planFlow(plan);
-  const status = statusLabel(flow);
-  const limite = plan.fecha_reprogramada ?? plan.fecha_plan;
+  const limite = plan.fecha_reprogramada ?? planEnd(plan);
   const progreso = calcProgress(plan);
-  const anexos = caso.anexos_caso ?? [];
-  const evidenciasBloqueadas = flow.cerrado || flow.rechazado || flow.enVerificacion || flow.prorrogaPendiente;
-  const vencido = daysUntil(limite) < 0 && !flow.cerrado && !flow.rechazado && !flow.enVerificacion;
+  const status = detailStatus(flow, progreso);
+  const inicio = planStart(plan);
+  const fin = planEnd(plan);
+  const priority = priorityInfo(plan);
+  const revision = reviewState(flow);
+  const anexos = planEvidenceFiles(plan);
+  const comentarios = executionComments(plan);
+  const targetActivity = nextActivityForProgress(plan);
+  const evidenciasBloqueadas = flow.finalizado || flow.cerrado || flow.rechazado || flow.enVerificacion || flow.prorrogaPendiente;
+  const vencido = daysUntil(limite) < 0 && !flow.finalizado && !flow.cerrado && !flow.rechazado && !flow.enVerificacion;
 
   const acceptPlan = useAcceptPlanById();
   const completeExec = useCompleteExecutionByPlan();
   const requestExt = useRequestPlanExtension();
   const updateActivity = useUpdateActivity();
-  const addEvidence = useAddCaseEvidence(caso.codigo_sop);
+  const addEvidence = useAddPlanEvidence();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [subiendo, setSubiendo] = useState(false);
-  const [activityDrafts, setActivityDrafts] = useState<Record<number, string>>({});
+  const [fileAccept, setFileAccept] = useState(ACCEPT);
+  const [executionComment, setExecutionComment] = useState("");
+  const [finalDescription, setFinalDescription] = useState("");
   const [extOpen, setExtOpen] = useState(false);
+  const [expandedSections, setExpandedSections] = useState({ info: true, execution: true });
   const [nuevaFecha, setNuevaFecha] = useState(new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10));
-  const [justificacion, setJustificación] = useState("");
+  const [justificacion, setJustificacion] = useState("");
+  const puedeFinalizar = flow.puedeTrabajar && progreso >= 100;
 
-  const updateDraft = (id: number, value: string) => {
-    setActivityDrafts((current) => ({ ...current, [id]: value }));
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections((current) => ({ ...current, [section]: !current[section] }));
   };
 
-  const submitActivity = (actividad: PlanActividad, estado: string, comentario?: string) => {
-    const texto = (comentario ?? activityDrafts[actividad.id_actividad] ?? "").trim();
+  const registerProgress = (comentario: string) => {
+    const texto = comentario.trim();
+    if (!targetActivity || !texto || !flow.puedeTrabajar) return;
+
+    const estado = nextAutoActivityState(targetActivity);
     updateActivity.mutate(
-      {
-        id_actividad: actividad.id_actividad,
-        estado,
-        comentario: texto || undefined,
-        actor: ACTOR,
-      },
+      { id_actividad: targetActivity.id_actividad, estado, comentario: texto, actor: ACTOR },
       {
         onSuccess: () => {
-          toast.success(texto ? "Seguimiento registrado" : "Actividad actualizada");
-          if (texto) updateDraft(actividad.id_actividad, "");
+          toast.success(estado === "Completado" ? "Avance completado" : "Avance registrado");
+          setExecutionComment("");
         },
         onError: (err) => toast.error(apiErrorMessage(err, "No se pudo actualizar la actividad")),
       }
     );
+  };
+
+  const finalizePlan = () => {
+    if (!puedeFinalizar) {
+      toast.error("Completa todas las actividades antes de finalizar el plan");
+      return;
+    }
+
+    const descripcion = finalDescription.trim();
+    if (descripcion.length < 10) {
+      toast.error("Agrega una descripción final de al menos 10 caracteres");
+      return;
+    }
+
+    completeExec.mutate(
+      { id_plan: plan.id_plan, actor: ACTOR, descripcion },
+      {
+        onSuccess: () => {
+          toast.success("Plan enviado a Seguridad Operativa para revisión");
+          setFinalDescription("");
+        },
+        onError: (e) => toast.error(apiErrorMessage(e, "No se pudo finalizar el plan")),
+      }
+    );
+  };
+
+  const saveChanges = () => {
+    if (flow.pendienteAceptacion) {
+      acceptPlan.mutate(
+        { id_plan: plan.id_plan, actor: ACTOR },
+        {
+          onSuccess: () => toast.success("Plan aceptado, la ejecución ha iniciado"),
+          onError: (e) => toast.error(apiErrorMessage(e, "No se pudo aceptar el plan")),
+        }
+      );
+      return;
+    }
+
+    if (executionComment.trim()) {
+      registerProgress(executionComment);
+      return;
+    }
+
+    if (puedeFinalizar) {
+      finalizePlan();
+      return;
+    }
+
+    toast.info("No hay cambios pendientes por guardar");
   };
 
   const onFiles = (files: FileList | null) => {
@@ -471,7 +640,7 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
     const lista = Array.from(files);
 
     if (lista.length > MAX_ARCHIVOS) {
-      toast.error(`Maximo ${MAX_ARCHIVOS} archivos por vez.`);
+      toast.error(`Máximo ${MAX_ARCHIVOS} archivos por vez.`);
       return;
     }
     const pesado = lista.find((f) => f.size > MAX_BYTES);
@@ -486,7 +655,7 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
     }
 
     setSubiendo(true);
-    addEvidence.mutate(lista, {
+    addEvidence.mutate({ id_plan: plan.id_plan, files: lista, actor: ACTOR }, {
       onSuccess: () => toast.success(lista.length === 1 ? "Evidencia adjuntada" : `${lista.length} evidencias adjuntadas`),
       onError: (e) => toast.error(apiErrorMessage(e, "No se pudo adjuntar la evidencia")),
       onSettled: () => {
@@ -496,321 +665,377 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
     });
   };
 
+  const openEvidencePicker = (accept: string) => {
+    setFileAccept(accept);
+    window.setTimeout(() => fileInputRef.current?.click(), 0);
+  };
+
   return (
     <JefeShell>
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="flex items-start gap-3 min-w-0">
-          <Link to={`/jefe/planes/${encodeURIComponent(caso.codigo_sop)}`} className="p-2 hover:bg-surface-2 rounded-lg shrink-0">
-            <ArrowLeft className="h-4.5 w-4.5" />
-          </Link>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-mono text-[20px] font-bold text-brand-700">{plan.codigo_plan}</span>
-              <span className="text-ink-faint">·</span>
-              <Pill tone={status.tone} dot>{status.label}</Pill>
-              {vencido && (
-                <Pill tone="critical" dot>
-                  <AlertTriangle className="h-3 w-3" /> Plazo vencido
-                </Pill>
-              )}
+      <div className="space-y-6">
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept={fileAccept}
+          className="hidden"
+          onChange={(e) => onFiles(e.target.files)}
+        />
+
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-4">
+            <Link
+              to={`/jefe/planes/${encodeURIComponent(caso.codigo_sop)}`}
+              className="rounded-xl p-2 text-ink-quiet transition-colors hover:bg-surface-2 hover:text-ink"
+              aria-label="Volver a planes del caso"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-[24px] font-bold tracking-tight text-ink">Detalle del Plan</h1>
+                <span className="rounded-full border border-line bg-surface-2 px-3 py-1 font-mono text-[13px] font-medium text-ink-soft">
+                  {caso.codigo_sop}
+                </span>
+                {vencido && (
+                  <Pill tone="critical" dot>
+                    <AlertTriangle className="h-3 w-3" /> Plazo vencido
+                  </Pill>
+                )}
+              </div>
+              <p className="mt-1.5 flex items-center gap-1.5 text-[14px] text-ink-soft">
+                <ClipboardList className="h-4 w-4 text-brand-700" />
+                {planNumberLabel(plan)}
+              </p>
             </div>
-            <h1 className="mt-2 text-[26px] font-bold text-ink tracking-tight leading-tight max-w-3xl">
-              {caso.titulo?.trim() || caso.descripcion}
-            </h1>
-            <p className="text-[13px] text-ink-soft mt-1 font-mono">{caso.codigo_sop}</p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {flow.puedeTrabajar && (
+              <Button variant="outline" size="md" onClick={() => setExtOpen(true)}>
+                <Timer className="h-4.5 w-4.5" /> Solicitar Prórroga
+              </Button>
+            )}
+            <Pill tone={status.tone} dot className="text-[13px]">
+              {status.label}
+            </Pill>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          {flow.pendienteAceptacion && (
-            <Button
-              size="md"
-              disabled={acceptPlan.isPending}
-              onClick={() =>
-                acceptPlan.mutate(
-                  { id_plan: plan.id_plan, actor: ACTOR },
-                  {
-                    onSuccess: () => toast.success("Plan aceptado, la ejecución ha iniciado"),
-                    onError: (e) => toast.error(apiErrorMessage(e, "No se pudo aceptar el plan")),
-                  }
-                )
-              }
-            >
-              <Check className="h-4.5 w-4.5" /> Aceptar plan
-            </Button>
-          )}
-          {flow.puedeTrabajar && (
-            <>
+        {flow.pendienteAceptacion && (
+          <Card className="border-brand-100 bg-brand-50/50 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-[14px] font-semibold text-ink">Plan pendiente de aceptación</p>
+                <p className="mt-1 text-[13px] text-ink-soft">Acepta el plan para iniciar la ejecución y habilitar comentarios/evidencias.</p>
+              </div>
               <Button
                 size="md"
-                disabled={!flow.todasCompletadas || completeExec.isPending}
+                disabled={acceptPlan.isPending}
                 onClick={() =>
-                  completeExec.mutate(
+                  acceptPlan.mutate(
                     { id_plan: plan.id_plan, actor: ACTOR },
                     {
-                      onSuccess: () => toast.success("Plan completado correctamente"),
-                      onError: (e) => toast.error(apiErrorMessage(e, "No se pudo completar la ejecución")),
+                      onSuccess: () => toast.success("Plan aceptado, la ejecución ha iniciado"),
+                      onError: (e) => toast.error(apiErrorMessage(e, "No se pudo aceptar el plan")),
                     }
                   )
                 }
               >
-                <Send className="h-4.5 w-4.5" /> Enviar a SO
+                <Check className="h-4.5 w-4.5" /> Aceptar Plan
               </Button>
-              <Button variant="outline" size="md" onClick={() => setExtOpen(true)}>
-                <Timer className="h-4.5 w-4.5" /> Solicitar prórroga
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
+            </div>
+          </Card>
+        )}
 
-      <div className="mt-5 grid xl:grid-cols-[minmax(760px,1fr)_360px] gap-5 items-start">
-        <div className="space-y-4">
-          <Card>
-            <div className="flex items-start justify-between gap-4 mb-4">
-              <div className="flex items-start gap-3 min-w-0">
-                <div className="h-12 w-12 rounded-xl bg-brand-50 text-brand-700 grid place-items-center shrink-0">
-                  <ClipboardList className="h-6 w-6" />
+        <Card padded={false} className="overflow-hidden border-line-soft shadow-sm">
+          <div className="px-5 pt-4">
+            <SectionHeader
+              icon={<ClipboardList className="h-4.5 w-4.5" />}
+              title="Información del Plan"
+              open={expandedSections.info}
+              onToggle={() => toggleSection("info")}
+            />
+          </div>
+          {expandedSections.info && (
+            <div className="space-y-6 px-5 pb-5 pt-5">
+              <div className="grid gap-x-10 gap-y-6 md:grid-cols-3">
+                <InfoRow label="Tipo" value={planTipoAccion(plan)} />
+                <InfoRow label="Elaborado por" value="No registrado" />
+                <InfoRow label="Área responsable" value={plan.areas.nombre_area} />
+                <InfoRow label="Inicio" value={formatDate(inicio)} />
+                <InfoRow
+                  label="Fin"
+                  value={
+                    <span className={cn(daysUntil(fin) <= 3 && !flow.cerrado ? "font-semibold text-critical" : "text-ink")}>
+                      {daysUntil(fin) <= 3 && !flow.cerrado && <AlertCircle className="mr-1 inline h-3.5 w-3.5 align-[-2px]" />}
+                      {formatDate(fin)}
+                    </span>
+                  }
+                />
+                <InfoRow label="Tiempo estimado" value={estimatedDuration(inicio, fin)} />
+                <InfoRow label="Prioridad" value={<Pill tone={priority.tone} dot>{priority.label}</Pill>} />
+                <InfoRow label="Estado de revisión" value={<Pill tone={revision.tone} dot>{revision.label}</Pill>} />
+                <InfoRow label="Responsable" value={plan.usuarios.nombre} />
+                <InfoRow label="Fecha de envío" value={plan.created_at ? formatDate(plan.created_at) : formatDate(plan.fecha_plan)} />
+                {caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle?.codigo && (
+                  <InfoRow
+                    label="Riesgo"
+                    value={
+                      <RiskPill
+                        risk={caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle.codigo as RiskLevel}
+                        showCategory
+                      />
+                    }
+                  />
+                )}
+              </div>
+
+              <div>
+                <div className="mb-4 flex items-center gap-3">
+                  <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-2 text-brand-700">
+                    <Microscope className="h-4.5 w-4.5" />
+                  </span>
+                  <h2 className="text-[17px] font-semibold text-ink">Investigación</h2>
                 </div>
-                <div className="min-w-0">
-                  <h2 className="text-[18px] font-bold text-ink leading-tight">Actividades del plan</h2>
-                  <p className="text-[13.5px] text-ink-quiet mt-0.5">{plan.descripcion}</p>
+                {caso.investigacion_caso ? (
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <InfoTile label="Causa raíz" value={caso.investigacion_caso.causa_raiz} />
+                    <InfoTile label="Descripción técnica" value={plan.descripcion || caso.investigacion_caso.conclusiones} />
+                    <InfoTile label="Hallazgos" value={caso.investigacion_caso.hallazgos} wide />
+                  </div>
+                ) : (
+                  <InfoTile label="Investigación" value="La investigación del caso aún no está registrada." wide />
+                )}
+              </div>
+
+              <div>
+                <div className="mb-4 flex items-center gap-3">
+                  <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-2 text-brand-700">
+                    <ClipboardList className="h-4.5 w-4.5" />
+                  </span>
+                  <h2 className="text-[17px] font-semibold text-ink">Actividades del plan</h2>
+                </div>
+                <div className="rounded-xl border border-line-soft bg-surface/60 px-4 py-4">
+                  <div className="grid gap-x-10 gap-y-4 md:grid-cols-2">
+                    <InfoRow label="Responsable" value={plan.usuarios.nombre} />
+                    <InfoRow label="Tipo" value={planTipoAccion(plan)} />
+                    <InfoRow label="Área" value={plan.areas.nombre_area} />
+                    <InfoRow label="Inicio" value={formatDate(inicio)} />
+                    <InfoRow label="Fin" value={formatDate(fin)} />
+                  </div>
+                  <div className="mt-4">
+                    <InfoRow label="Descripción" value={plan.descripcion} />
+                  </div>
+                  {plan.observaciones && (
+                    <div className="mt-5 rounded-xl border border-line-soft bg-white/70 px-4 py-3.5">
+                      <InfoRow label="Observaciones" value={plan.observaciones} />
+                    </div>
+                  )}
                 </div>
               </div>
-              <Pill tone={flow.todasCompletadas ? "success" : "info"} dot>
-                {progreso}% avance
+            </div>
+          )}
+        </Card>
+
+        <Card padded={false} className="overflow-hidden border-line-soft shadow-sm">
+          <div className="px-5 pt-4">
+            <SectionHeader
+              icon={<MessageSquare className="h-4.5 w-4.5" />}
+              title="Comentarios de Ejecución"
+              open={expandedSections.execution}
+              onToggle={() => toggleSection("execution")}
+            />
+          </div>
+          {expandedSections.execution && (
+            <div className="space-y-5 px-5 pb-5 pt-5">
+              <div>
+                <div className="mb-2.5 flex items-center justify-between gap-3">
+                  <p className="text-[12px] font-semibold uppercase tracking-wider text-ink-faint">Comentarios de ejecución</p>
+                  <span className="text-[12px] font-medium text-ink-quiet">{progreso}% avance</span>
+                </div>
+                <Progress value={progreso} className="mb-3" />
+                <div className="mb-3 space-y-2">
+                  {comentarios.length > 0 ? (
+                    comentarios.map((item) => (
+                      <div
+                        key={item.id}
+                        className={cn(
+                          "rounded-lg border px-3 py-2",
+                          item.role === "seguridad" ? "border-brand-100 bg-brand-50/70" : "border-line-soft bg-surface/70"
+                        )}
+                      >
+                        <p className="text-[13px] text-ink">{compactPlanCodes(item.text)}</p>
+                        <p className="mt-1 text-[11.5px] text-ink-faint">
+                          {item.actor}
+                          {item.meta ? ` · ${compactPlanCodes(item.meta)}` : ""}
+                          {item.fecha ? ` · ${formatDateTime(item.fecha)}` : ""}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="rounded-lg border border-dashed border-line bg-surface px-3 py-3 text-[13px] text-ink-quiet">No hay comentarios registrados</p>
+                  )}
+                </div>
+                <div className="grid gap-2 md:grid-cols-[1fr_auto]">
+                  <Input
+                    value={executionComment}
+                    disabled={!flow.puedeTrabajar || updateActivity.isPending}
+                    onChange={(event) => setExecutionComment(event.target.value)}
+                    placeholder={flow.puedeTrabajar ? "Agregar comentario..." : "La ejecución está bloqueada por el estado actual"}
+                  />
+                  <Button
+                    size="md"
+                    disabled={!flow.puedeTrabajar || updateActivity.isPending || executionComment.trim().length < 3}
+                    onClick={() => registerProgress(executionComment)}
+                  >
+                    <Plus className="h-4 w-4" /> Agregar
+                  </Button>
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-3 text-[12px] font-semibold uppercase tracking-wider text-ink-faint">
+                  Evidencias de ejecución <span className="text-ink-quiet">({anexos.length})</span>
+                </p>
+                {anexos.length > 0 ? (
+                  <div className="space-y-2">
+                    {anexos.map((a) => <FilaAnexo key={a.id_anexo} anexo={a} />)}
+                  </div>
+                ) : (
+                  <p className="rounded-lg border border-dashed border-line bg-surface px-3 py-3 text-[13px] text-ink-quiet">No hay evidencias registradas</p>
+                )}
+                {!evidenciasBloqueadas && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <Button variant="outline" size="md" disabled={subiendo} onClick={() => openEvidencePicker(ACCEPT_IMAGES)}>
+                      <Upload className="h-4 w-4" /> Agregar Foto
+                    </Button>
+                    <Button variant="outline" size="md" disabled={subiendo} onClick={() => openEvidencePicker(ACCEPT_VIDEOS)}>
+                      <Upload className="h-4 w-4" /> Agregar Video
+                    </Button>
+                    <Button variant="outline" size="md" disabled={subiendo} onClick={() => openEvidencePicker(ACCEPT_DOCUMENTS)}>
+                      <Upload className="h-4 w-4" /> Agregar Documento
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </Card>
+
+        {(flow.puedeTrabajar || flow.finalizado) && (
+          <Card className={cn("border-line-soft shadow-sm", puedeFinalizar && "border-brand-100 bg-brand-50/30")}>
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-3">
+                  <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-2 text-brand-700">
+                    <Save className="h-4.5 w-4.5" />
+                  </span>
+                  <div>
+                    <h2 className="text-[17px] font-semibold text-ink">Cierre de ejecución</h2>
+                    <p className="mt-0.5 text-[13px] text-ink-quiet">
+                      Se habilita cuando todas las actividades del plan llegan al 100%.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <Pill tone={puedeFinalizar ? "success" : flow.finalizado ? "warning" : "info"} dot>
+                {flow.finalizado ? "En revisión SO" : puedeFinalizar ? "Listo para enviar" : `${progreso}% avance`}
               </Pill>
             </div>
 
-            <Progress value={progreso} showLabel className="mb-4" />
-
-            {!flow.todasCompletadas && flow.puedeTrabajar && (
-              <div className="mb-4 rounded-lg border border-line-soft bg-surface/60 p-3 text-[13px] text-ink-soft">
-                Actualiza cada actividad y deja comentarios de avance. Cuando todas esten completadas, podras enviar el expediente a Seguridad Operativa.
-              </div>
-            )}
-
-            <div className="space-y-3">
-              {(plan.actividades_plan ?? []).map((a) => {
-                const estado = a.catalogo_detalle?.nombre ?? "Pendiente";
-                const draft = activityDrafts[a.id_actividad] ?? "";
-                const seguimientos = a.seguimientos ?? [];
-                return (
-                  <div key={a.id_actividad} className="rounded-xl border border-line-soft p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-[14px] font-semibold text-ink">{a.descripcion}</p>
-                          <Pill tone={activityTone(estado)} dot>{estado}</Pill>
-                        </div>
-                        <p className="text-[12px] text-ink-quiet mt-1 flex items-center gap-1.5 flex-wrap">
-                          <UserRound className="h-3.5 w-3.5" /> {a.usuarios?.nombre ?? "Sin responsable"}
-                          {a.fecha_fin && (
-                            <>
-                              <span className="text-ink-faint">·</span>
-                              <CalendarClock className="h-3.5 w-3.5" /> vence {formatDate(a.fecha_fin)}
-                            </>
-                          )}
-                        </p>
-                      </div>
-                      <Select
-                        className="h-10 w-[170px] text-[13px] shrink-0"
-                        value={estado}
-                        disabled={!flow.puedeTrabajar || updateActivity.isPending}
-                        onChange={(e) => submitActivity(a, e.target.value)}
-                      >
-                        <option value="Pendiente">Pendiente</option>
-                        <option value="En progreso">En progreso</option>
-                        <option value="Completado">Completado</option>
-                      </Select>
-                    </div>
-
-                    <div className="mt-3 grid md:grid-cols-[1fr_auto] gap-2 items-start">
-                      <Textarea
-                        value={draft}
-                        rows={2}
-                        disabled={!flow.puedeTrabajar || updateActivity.isPending}
-                        onChange={(e) => updateDraft(a.id_actividad, e.target.value)}
-                        placeholder={flow.puedeTrabajar ? "Comentario de avance, bloqueo o evidencia realizada..." : "Actividad bloqueada por el estado actual del caso"}
-                        className="min-h-[92px] text-[13.5px]"
-                      />
-                      <Button
-                        variant="outline"
-                        size="md"
-                        disabled={!flow.puedeTrabajar || updateActivity.isPending || draft.trim().length < 3}
-                        onClick={() => submitActivity(a, estado, draft)}
-                        className="md:mt-0"
-                      >
-                        <MessageSquare className="h-4.5 w-4.5" /> Agregar comentario
-                      </Button>
-                    </div>
-
-                    {seguimientos.length > 0 && (
-                      <div className="mt-3 border-t border-line-soft pt-3 space-y-2">
-                        <p className="text-[11.5px] font-semibold tracking-wide uppercase text-ink-faint">Seguimientos</p>
-                        {seguimientos.map((s) => (
-                          <div key={s.id_seguimiento} className="rounded-lg bg-surface/70 px-3 py-2">
-                            <p className="text-[13px] text-ink-soft">{s.comentario ?? "Seguimiento sin comentario"}</p>
-                            <p className="text-[11.5px] text-ink-faint mt-1">
-                              {s.usuarios?.nombre ?? ACTOR}
-                              {s.porcentaje ? ` · ${s.porcentaje}%` : ""}
-                              {s.fecha ? ` · ${formatDateTime(s.fecha)}` : ""}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-              {(plan.actividades_plan ?? []).length === 0 && (
-                <p className="text-[13.5px] text-ink-quiet">Este plan no tiene actividades registradas.</p>
-              )}
-            </div>
-
-            <div className="mt-5 pt-5 border-t border-line-soft flex items-center gap-2 flex-wrap">
-              {flow.enVerificacion && (
-                <p className="text-[13.5px] text-ink-quiet flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4.5 w-4.5 text-brand-600" /> Enviado a Seguridad Operativa para verificación.
-                </p>
-              )}
-              {(flow.cerrado || flow.rechazado) && (
-                <p className="text-[13.5px] text-ink-quiet flex items-center gap-1.5">
-                  <Lock className="h-4.5 w-4.5" /> El expediente está cerrado para acciones del jefe de área.
-                </p>
-              )}
-              {flow.prorrogaPendiente && (
-                <p className="text-[13.5px] text-warning-ink flex items-center gap-1.5">
-                  <Timer className="h-4.5 w-4.5" /> La prorroga esta pendiente de decision de Seguridad Operativa.
-                </p>
-              )}
-              {flow.puedeTrabajar && !flow.todasCompletadas && (
-                <span className="text-[12.5px] text-ink-quiet">Completa todas las actividades para habilitar el envio a SO.</span>
-              )}
-            </div>
-          </Card>
-
-          <Card>
-            <div className="flex items-start justify-between gap-4 mb-3">
-              <div className="flex items-center gap-2.5">
-                <span className="grid place-items-center h-10 w-10 rounded-lg bg-surface-2 text-brand-700">
-                  <Paperclip className="h-4.5 w-4.5" />
-                </span>
-                <div>
-                  <h2 className="text-[15px] font-semibold text-ink">Evidencias de ejecución</h2>
-                  <p className="text-[13px] text-ink-quiet">Archivos que sustentan el avance del plan.</p>
-                </div>
-              </div>
-              {!evidenciasBloqueadas && (
-                <>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    accept={ACCEPT}
-                    className="hidden"
-                    onChange={(e) => onFiles(e.target.files)}
-                  />
-                  <Button variant="outline" size="md" disabled={subiendo} onClick={() => fileInputRef.current?.click()}>
-                    <Upload className="h-4.5 w-4.5" /> {subiendo ? "Subiendo..." : "Adjuntar"}
-                  </Button>
-                </>
-              )}
-            </div>
-
-            {anexos.length > 0 ? (
-              <div className="space-y-1.5">
-                {anexos.map((a) => <FilaAnexo key={a.id_anexo} anexo={a} />)}
-              </div>
+            {flow.finalizado ? (
+              <p className="mt-4 rounded-lg border border-warning/30 bg-warning-soft px-3 py-3 text-[13px] text-warning-ink">
+                Este plan ya fue finalizado por el área y está pendiente de revisión final por Seguridad Operativa.
+              </p>
             ) : (
-              <p className="text-[13px] text-ink-faint p-2">Sin evidencias adjuntas.</p>
-            )}
-
-            <p className="pt-3 mt-3 border-t border-line-soft text-[12.5px] text-ink-quiet">
-              {evidenciasBloqueadas
-                ? "El estado actual permite consultar evidencias, pero no adjuntar nuevos archivos."
-                : `Imagenes, video MP4/MOV o PDF · hasta ${MAX_ARCHIVOS} archivos de 25 MB.`}
-            </p>
-          </Card>
-
-          {caso.investigacion_caso && (
-            <Card>
-              <div className="flex items-center gap-2.5 mb-4">
-                <span className="grid place-items-center h-10 w-10 rounded-lg bg-surface-2 text-brand-700">
-                  <Microscope className="h-4.5 w-4.5" />
-                </span>
-                <div>
-                  <h2 className="text-[15px] font-semibold text-ink">Investigación del caso</h2>
-                  <p className="text-[13px] text-ink-quiet">Contexto aprobado por Seguridad Operativa para ejecutar el plan.</p>
-                </div>
-              </div>
-              <div className="grid md:grid-cols-3 gap-4">
-                <InfoRow label="Causa raíz" value={caso.investigacion_caso.causa_raiz} />
-                <InfoRow label="Hallazgos" value={caso.investigacion_caso.hallazgos} />
-                <InfoRow label="Conclusiones" value={caso.investigacion_caso.conclusiones} />
-              </div>
-            </Card>
-          )}
-        </div>
-
-        <div className="space-y-4 lg:sticky lg:top-20">
-          <Card padded={false}>
-            <div className="p-4 border-b border-line-soft">
-              <p className="text-[11px] font-semibold tracking-[0.14em] uppercase text-ink-faint">Información del plan</p>
-            </div>
-            <div className="p-4 space-y-3.5">
-              <SidebarRow icon={<FileText className="h-3.5 w-3.5" />} label="Código plan" value={plan.codigo_plan} />
-              <SidebarRow icon={<FileText className="h-3.5 w-3.5" />} label="Código SOP" value={caso.codigo_sop} />
-              <SidebarRow icon={<UserRound className="h-3.5 w-3.5" />} label="Responsable" value={plan.usuarios.nombre} />
-              <SidebarRow icon={<UserRound className="h-3.5 w-3.5" />} label="Área" value={plan.areas.nombre_area} />
-              <SidebarRow icon={<CalendarClock className="h-3.5 w-3.5" />} label="Fecha límite" value={formatDate(limite)} />
-              <SidebarRow icon={<Timer className="h-3.5 w-3.5" />} label="Control de plazo" value={dueCopy(limite, flow.cerrado || flow.rechazado || flow.enVerificacion)} />
-              <SidebarRow icon={<CheckCircle2 className="h-3.5 w-3.5" />} label="Estado plan" value={flow.estadoPlan} />
-              <SidebarRow icon={<ClipboardList className="h-3.5 w-3.5" />} label="Etapa caso" value={flow.etapaCaso} />
-
-              {caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle?.codigo && (
-                <div>
-                  <p className="text-[11.5px] font-semibold uppercase tracking-wider text-ink-faint mb-1">Riesgo del caso</p>
-                  <RiskPill
-                    risk={caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle.codigo as RiskLevel}
-                    showCategory
+              <div className="mt-4 space-y-4">
+                <Field label="Descripción final de ejecución" required>
+                  <Textarea
+                    value={finalDescription}
+                    onChange={(e) => setFinalDescription(e.target.value)}
+                    rows={4}
+                    disabled={!puedeFinalizar || completeExec.isPending}
+                    placeholder={
+                      puedeFinalizar
+                        ? "Resume qué se ejecutó, qué evidencia se adjuntó y cualquier condición relevante para la revisión de SO."
+                        : "Completa todas las actividades para habilitar el cierre del plan."
+                    }
                   />
+                </Field>
+
+                <div className="rounded-xl border border-line-soft bg-white/70 px-4 py-3.5">
+                  <p className="text-[12px] font-semibold uppercase tracking-wider text-ink-faint">Evidencia final de soporte</p>
+                  <p className="mt-1 text-[13px] text-ink-quiet">
+                    Adjunta fotos, videos o documentos que sustenten el cierre antes de enviarlo a revisión.
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      size="md"
+                      disabled={!puedeFinalizar || subiendo}
+                      onClick={() => openEvidencePicker(ACCEPT_IMAGES)}
+                    >
+                      <Upload className="h-4 w-4" /> Agregar Foto
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="md"
+                      disabled={!puedeFinalizar || subiendo}
+                      onClick={() => openEvidencePicker(ACCEPT_VIDEOS)}
+                    >
+                      <Upload className="h-4 w-4" /> Agregar Video
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="md"
+                      disabled={!puedeFinalizar || subiendo}
+                      onClick={() => openEvidencePicker(ACCEPT_DOCUMENTS)}
+                    >
+                      <Upload className="h-4 w-4" /> Agregar Documento
+                    </Button>
+                  </div>
                 </div>
-              )}
-              {plan.observaciones && <InfoRow label="Observaciones" value={plan.observaciones} />}
-            </div>
-          </Card>
 
-          <Card className={cn(flow.todasCompletadas ? "border-brand-100 bg-brand-50/40" : "border-line-soft")}> 
-            <p className="text-[13px] font-semibold text-ink">Checklist de cierre</p>
-            <div className="mt-3 space-y-2.5">
-              <ChecklistItem done={flow.aceptado} label="Plan aceptado por el jefe" />
-              <ChecklistItem done={progreso === 100} label="Actividades completadas" />
-              <ChecklistItem done={anexos.length > 0} label="Evidencias adjuntas" />
-              <ChecklistItem done={flow.enVerificacion || flow.cerrado} label="Enviado a verificación SO" />
-            </div>
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line-soft pt-4">
+                  <p className="text-[12.5px] text-ink-quiet">
+                    Seguridad Operativa revisará este plan individualmente; los otros planes del SOP no se bloquean.
+                  </p>
+                  <Button
+                    size="md"
+                    disabled={!puedeFinalizar || finalDescription.trim().length < 10 || completeExec.isPending}
+                    onClick={finalizePlan}
+                  >
+                    <Save className="h-4.5 w-4.5" /> Finalizar y enviar a SO
+                  </Button>
+                </div>
+              </div>
+            )}
           </Card>
+        )}
 
-          {flow.prorrogaPendiente && (
-            <Card className="border-warning/40 bg-warning-soft">
-              <p className="text-[13px] font-semibold text-warning-ink">Prórroga en revisión</p>
-              <p className="text-[13px] text-ink-soft mt-1.5">{plan.prorroga_motivo}</p>
-              {plan.prorroga_fecha && (
-                <p className="text-[12px] text-ink-quiet mt-1.5">Nueva fecha propuesta: {formatDate(plan.prorroga_fecha)}</p>
-              )}
-              {plan.prorroga_fecha_sol && (
-                <p className="text-[12px] text-ink-quiet mt-1">Solicitada: {formatDateTime(plan.prorroga_fecha_sol)}</p>
-              )}
-            </Card>
-          )}
-        </div>
+        <Button
+          variant={progreso >= 100 && flow.puedeTrabajar ? "primary" : "outline"}
+          size="lg"
+          className="w-full"
+          disabled={acceptPlan.isPending || updateActivity.isPending || completeExec.isPending || (!flow.pendienteAceptacion && !flow.puedeTrabajar)}
+          onClick={saveChanges}
+        >
+          <Save className="h-4.5 w-4.5" /> Guardar cambios
+        </Button>
+
+        {flow.finalizado && (
+          <p className="rounded-xl border border-warning/30 bg-warning-soft px-4 py-3 text-[13.5px] text-warning-ink">
+            Plan finalizado; pendiente de revisión final de Seguridad Operativa.
+          </p>
+        )}
       </div>
 
       <Modal
         open={extOpen}
         onClose={() => setExtOpen(false)}
         title="Solicitar ampliación de plazo"
-        subtitle={`${plan.codigo_plan} · la decide Seguridad Operativa`}
+        subtitle={`${shortPlanCode(plan.codigo_plan)} · la decide Seguridad Operativa`}
         footer={
           <>
             <Button variant="ghost" onClick={() => setExtOpen(false)}>
@@ -825,9 +1050,9 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
                     onSuccess: () => {
                       toast.success("Ampliación solicitada, pendiente de decisión de SO");
                       setExtOpen(false);
-                      setJustificación("");
+                      setJustificacion("");
                     },
-                    onError: (e) => toast.error(apiErrorMessage(e, "No se pudo solicitar la ampliacion")),
+                    onError: (e) => toast.error(apiErrorMessage(e, "No se pudo solicitar la ampliación")),
                   }
                 )
               }
@@ -843,7 +1068,7 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
         <Field label="Justificación" required className="mt-4">
           <Textarea
             value={justificacion}
-            onChange={(e) => setJustificación(e.target.value)}
+            onChange={(e) => setJustificacion(e.target.value)}
             rows={4}
             placeholder="Explique por qué necesita más tiempo..."
           />
@@ -852,29 +1077,4 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
     </JefeShell>
   );
 }
-
-function ChecklistItem({ done, label }: { done: boolean; label: string }) {
-  return (
-    <div className="flex items-center gap-2 text-[13px]">
-      <span
-        className={cn(
-          "grid place-items-center h-6 w-6 rounded-full border shrink-0",
-          done ? "bg-brand-700 border-brand-700 text-white" : "bg-white border-line-strong text-ink-faint"
-        )}
-      >
-        {done ? <Check className="h-3.5 w-3.5" /> : <span className="h-1.5 w-1.5 rounded-full bg-current" />}
-      </span>
-      <span className={done ? "text-ink" : "text-ink-quiet"}>{label}</span>
-    </div>
-  );
-}
-
-
-
-
-
-
-
-
-
 

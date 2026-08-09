@@ -27,8 +27,21 @@ const notaSchema = z.object({
   nota: z.string().trim().max(1000).optional().nullable(),
 });
 
+const rollbackSchema = z.object({
+  destino: z.enum(["Evaluación", "Investigación"]),
+  motivo: z.string().trim().min(5, "Explique el motivo del retroceso").max(1000),
+});
+
 const actorSchema = z.object({
   actor: z.string().trim().max(150).optional().default(""),
+});
+
+const completePlanSchema = z.object({
+  actor: z.string().trim().max(150).optional().default(""),
+  descripcion: z.preprocess(
+    (value) => (typeof value === "string" ? value : ""),
+    z.string().trim().min(10, "Describa el cierre de ejecución").max(2000)
+  ),
 });
 
 const activityUpdateSchema = z.object({
@@ -44,6 +57,11 @@ const extensionSchema = z.object({
 });
 
 const extensionReviewSchema = z.object({
+  decision: z.enum(["aprobada", "rechazada"]),
+  nota: z.string().trim().max(1000).optional().nullable(),
+});
+
+const planFinalReviewSchema = z.object({
   decision: z.enum(["aprobada", "rechazada"]),
   nota: z.string().trim().max(1000).optional().nullable(),
 });
@@ -65,6 +83,7 @@ const investigationSchema = z.object({
 });
 
 const activitySchema = z.object({
+  id_actividad: idPositivo.optional(),
   descripcion: z.string().trim().min(3, "Describa la actividad"),
   responsable: idPositivo.optional().nullable(),
   fecha_inicio: z.string().optional().nullable(),
@@ -78,6 +97,10 @@ const planSchema = z.object({
   fecha_plan: z.string().min(1, "La fecha del plan es obligatoria"),
   observaciones: z.string().trim().max(1000).optional().nullable(),
   actividades: z.array(activitySchema).min(1, "Agregue al menos una actividad"),
+});
+
+const plansBatchSchema = z.object({
+  planes: z.array(planSchema).min(1, "Agregue al menos un plan de acción"),
 });
 
 async function getCasoBasico(codigo: string) {
@@ -160,6 +183,12 @@ export class CaseService {
     return CaseRepository.createPlan(caso.id_caso, caso.codigo_sop, dto);
   }
 
+  static async createPlans(codigo: string, rawBody: unknown) {
+    const dto = plansBatchSchema.parse(rawBody);
+    const caso = await getCasoBasico(codigo);
+    return CaseRepository.createPlans(caso.id_caso, caso.codigo_sop, dto.planes as CreatePlanDto[]);
+  }
+
   static async updatePlan(idPlan: string, rawBody: unknown) {
     const dto = planSchema.parse(rawBody) as CreatePlanDto;
     return CaseRepository.updatePlan(Number(idPlan), dto);
@@ -185,9 +214,15 @@ export class CaseService {
   }
 
   static async completeExecutionByPlan(idPlan: string, rawBody: unknown) {
-    const dto = actorSchema.parse(rawBody ?? {});
+    const dto = completePlanSchema.parse(rawBody ?? {});
     const id = idPositivo.parse(idPlan);
-    return CaseRepository.completeExecutionByPlan(id, dto.actor || "Jefe de Área");
+    return CaseRepository.completeExecutionByPlan(id, dto.actor || "Jefe de Área", dto.descripcion);
+  }
+
+  static async reviewFinalPlanById(idPlan: string, rawBody: unknown) {
+    const dto = planFinalReviewSchema.parse(rawBody ?? {});
+    const id = idPositivo.parse(idPlan);
+    return CaseRepository.reviewFinalPlanById(id, dto.decision, dto.nota ?? null);
   }
 
   static async requestExtensionByPlan(idPlan: string, rawBody: unknown) {
@@ -199,6 +234,13 @@ export class CaseService {
       dto.actor || "Jefe de Área"
     );
   }
+
+  static async reviewExtensionByPlan(idPlan: string, rawBody: unknown) {
+    const dto = extensionReviewSchema.parse(rawBody);
+    const id = idPositivo.parse(idPlan);
+    return CaseRepository.reviewExtensionByPlan(id, dto.decision, dto.nota ?? null);
+  }
+
   static async completeExecution(codigo: string, rawBody: unknown) {
     const dto = actorSchema.parse(rawBody ?? {});
     const caso = await getCasoBasico(codigo);
@@ -215,6 +257,13 @@ export class CaseService {
     const dto = notaSchema.parse(rawBody ?? {});
     const caso = await getCasoBasico(codigo);
     return CaseRepository.reopenCase(caso.id_caso, dto.nota);
+  }
+
+  static async rollbackStage(codigo: string, rawBody: unknown) {
+    const dto = rollbackSchema.parse(rawBody ?? {});
+    const caso = await getCasoBasico(codigo);
+    const estadoActual = caso.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre;
+    return CaseRepository.rollbackStage(caso.id_caso, estadoActual, dto.destino, dto.motivo);
   }
 
   static async updateActivity(idActividad: string, rawBody: unknown) {
@@ -244,9 +293,21 @@ export class CaseService {
     return CaseRepository.addComment(caso.id_caso, dto.texto);
   }
 
+  static async addPlanComment(idPlan: string, rawBody: unknown) {
+    const dto = observationSchema.parse(rawBody);
+    const id = idPositivo.parse(idPlan);
+    return CaseRepository.addPlanComment(id, dto.texto);
+  }
+
   static async addEvidence(codigo: string, files: UploadedFile[]) {
     const caso = await getCasoBasico(codigo);
     return CaseRepository.addEvidence(caso.id_caso, files);
+  }
+
+  static async addEvidenceByPlan(idPlan: string, rawBody: unknown, files: UploadedFile[]) {
+    const dto = actorSchema.parse(rawBody ?? {});
+    const id = idPositivo.parse(idPlan);
+    return CaseRepository.addEvidenceByPlan(id, files, dto.actor || "Jefe de Área");
   }
 }
 

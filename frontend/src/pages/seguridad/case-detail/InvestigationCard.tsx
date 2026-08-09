@@ -7,10 +7,11 @@ import type { RiskLevel } from "@/features/cases/domain";
 import { Field, Textarea } from "@/design-system/primitives/Input";
 import { StageSection } from "@/features/cases/components/CaseParts";
 import { useSaveInvestigation } from "@/features/cases/hooks/useCaseActions";
+import { criterioAceptabilidad } from "@/features/cases/lib/sla";
 import { apiErrorMessage } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { EvidencePanel } from "./EvidencePanel";
+import { StageRollbackButton } from "./StageRollbackButton";
 import type { CaseDetail } from "@/features/cases/types";
 
 // Portado de pages/seguridad/CaseFile.tsx → InvestigationStage / InvDisplay.
@@ -46,7 +47,9 @@ export function InvestigationCard({ caso }: { caso: CaseDetail }) {
   const inv = caso.investigacion_caso;
   // El riesgo evaluado se muestra junto a la investigación: es el contexto que
   // el investigador necesita a la vista mientras redacta (pedido del cliente).
-  const risk = caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle?.codigo as RiskLevel | undefined;
+  const riesgo = caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle;
+  const risk = riesgo?.codigo as RiskLevel | undefined;
+  const riesgoLabel = riesgo ? `${riesgo.codigo} — ${criterioAceptabilidad(riesgo.nombre, riesgo.codigo) ?? riesgo.nombre}` : "Sin evaluar";
   // Aviso en color cuando la investigación está lista pero aún no hay plan.
   const sinPlan = caso.planes_accion.length === 0;
   const [editMode, setEditMode] = useState(!inv);
@@ -68,7 +71,14 @@ export function InvestigationCard({ caso }: { caso: CaseDetail }) {
         action={
           <div className="flex items-center gap-2">
             {risk && <RiskPill risk={risk} showCategory />}
-            <Pill tone="brand" dot>Completado</Pill>
+            <Pill tone={sinPlan ? "warning" : "brand"} dot>{sinPlan ? "Falta plan" : "Completado"}</Pill>
+            <StageRollbackButton
+              codigo={caso.codigo_sop}
+              destino="Evaluación"
+              label="Volver a Evaluación"
+              title="Volver al análisis de riesgo"
+              description="El caso regresará a Evaluación para corregir clasificación, peligro, consecuencia o nivel de riesgo. La investigación registrada se mantiene guardada."
+            />
             <Button variant="outline" size="sm" onClick={() => setEditMode(true)}>
               <FileSearch className="h-4 w-4" /> Editar
             </Button>
@@ -77,11 +87,11 @@ export function InvestigationCard({ caso }: { caso: CaseDetail }) {
       >
         {sinPlan && <SinPlanAviso />}
         <div className="space-y-4">
+          <InvBlock label="Riesgo evaluado" value={riesgoLabel} />
           <InvBlock label="Descripción de evento" value={inv.hallazgos} />
           <InvBlock label="Causa raíz" value={inv.causa_raiz} tone="critical" />
           <InvBlock label="Conclusiones" value={inv.conclusiones} />
           {inv.observaciones && <InvBlock label="Observaciones" value={inv.observaciones} />}
-          <EvidencePanel caso={caso} puedeAdjuntar compact />
           {inv.updated_at && (
             <p className="text-[11px] text-ink-faint pt-2 border-t border-line-soft">
               Actualizado {formatDateTime(inv.updated_at)}
@@ -96,17 +106,25 @@ export function InvestigationCard({ caso }: { caso: CaseDetail }) {
   return (
     <StageSection
       title="Investigación del caso"
-      subtitle="Seguridad Operativa registra hallazgos, causa raíz, análisis, conclusiones y evidencias."
+      subtitle="Seguridad Operativa registra hallazgos, causa raíz, análisis y conclusiones."
       icon={<Microscope className="h-5 w-5" />}
       action={
         <div className="flex items-center gap-2">
           {risk && <RiskPill risk={risk} showCategory />}
-          <Pill tone="info" dot>En curso</Pill>
+          <Pill tone={sinPlan ? "warning" : "info"} dot>{sinPlan ? "Falta plan" : "En curso"}</Pill>
+          <StageRollbackButton
+            codigo={caso.codigo_sop}
+            destino="Evaluación"
+            label="Volver a Evaluación"
+            title="Volver al análisis de riesgo"
+            description="El caso regresará a Evaluación para corregir clasificación, peligro, consecuencia o nivel de riesgo. Si ya existe una investigación guardada, no se elimina."
+          />
         </div>
       }
     >
       {sinPlan && <SinPlanAviso />}
       <div className="space-y-4">
+        <InvBlock label="Riesgo evaluado" value={riesgoLabel} />
         <Field label="Descripción de evento" required>
           <Textarea value={findings} onChange={(e) => setFindings(e.target.value)} placeholder="¿Qué se encontró durante la inspección?" rows={3} />
         </Field>
@@ -119,8 +137,6 @@ export function InvestigationCard({ caso }: { caso: CaseDetail }) {
         <Field label="Observaciones">
           <Textarea value={observations} onChange={(e) => setObservations(e.target.value)} placeholder="Recomendaciones o información complementaria…" rows={2} />
         </Field>
-
-        <EvidencePanel caso={caso} puedeAdjuntar compact />
 
         <div className="pt-3 border-t border-line-soft flex items-center justify-end gap-2">
           {inv && (

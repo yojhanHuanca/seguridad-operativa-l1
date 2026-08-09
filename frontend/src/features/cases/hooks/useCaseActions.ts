@@ -42,6 +42,11 @@ export interface RespondInfoInput {
   respuesta?: string;
 }
 
+export interface RollbackStageInput {
+  destino: "Evaluación" | "Investigación";
+  motivo: string;
+}
+
 export interface InvestigationInput {
   hallazgos: string;
   causa_raiz: string;
@@ -51,6 +56,7 @@ export interface InvestigationInput {
 }
 
 export interface PlanActivityInput {
+  id_actividad?: number;
   descripcion: string;
   responsable?: number | null;
   fecha_inicio?: string;
@@ -122,6 +128,13 @@ export function useCreatePlan(codigo: string) {
   });
 }
 
+export function useCreatePlans(codigo: string) {
+  return useCaseMutation<{ planes: PlanInput[] }>(codigo, async (input) => {
+    const { data } = await api.post(`/cases/${encodeURIComponent(codigo)}/plans/batch`, input);
+    return data;
+  });
+}
+
 export function useUpdatePlan(codigo: string) {
   return useCaseMutation<PlanInput & { id_plan: number }>(codigo, async ({ id_plan, ...body }) => {
     const { data } = await api.patch(`/cases/planes/${id_plan}`, body);
@@ -144,9 +157,39 @@ export function useReviewExtension(codigo: string) {
   });
 }
 
+/** SO resuelve la ampliación de un plan específico sin afectar los demás. */
+export function useReviewPlanExtension(codigo: string) {
+  return useCaseMutation<{ id_plan: number; decision: "aprobada" | "rechazada"; nota?: string }>(
+    codigo,
+    async ({ id_plan, ...input }) => {
+      const { data } = await api.post(`/cases/planes/${id_plan}/extension/review`, input);
+      return data;
+    }
+  );
+}
+
+/** SO revisa el cierre de un plan finalizado sin cerrar los demás planes del caso. */
+export function useReviewFinalPlan(codigo: string) {
+  return useCaseMutation<{ id_plan: number; decision: "aprobada" | "rechazada"; nota?: string }>(
+    codigo,
+    async ({ id_plan, ...input }) => {
+      const { data } = await api.post(`/cases/planes/${id_plan}/review-final`, input);
+      return data;
+    }
+  );
+}
+
 export function useAddComment(codigo: string) {
   return useCaseMutation<ObservationInput>(codigo, async (input) => {
     const { data } = await api.post(`/cases/${encodeURIComponent(codigo)}/comment`, input);
+    return data;
+  });
+}
+
+/** Comentario de SO asociado a un plan de acción puntual. */
+export function useAddPlanComment(codigo: string) {
+  return useCaseMutation<{ id_plan: number; texto: string }>(codigo, async ({ id_plan, texto }) => {
+    const { data } = await api.post(`/cases/planes/${id_plan}/comment`, { texto });
     return data;
   });
 }
@@ -176,6 +219,13 @@ export function useKeepPending(codigo: string) {
 export function useReopenCase(codigo: string) {
   return useCaseMutation<{ nota?: string }>(codigo, async (input) => {
     const { data } = await api.post(`/cases/${encodeURIComponent(codigo)}/reopen`, input ?? {});
+    return data;
+  });
+}
+
+export function useRollbackCase(codigo: string) {
+  return useCaseMutation<RollbackStageInput>(codigo, async (input) => {
+    const { data } = await api.post(`/cases/${encodeURIComponent(codigo)}/rollback`, input);
     return data;
   });
 }

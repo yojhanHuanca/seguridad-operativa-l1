@@ -114,6 +114,15 @@ export class CaseController {
             return handleError(res, error, "Error al crear el plan de acción");
         }
     }
+    static async createPlans(req, res) {
+        try {
+            const planes = await CaseService.createPlans(param(req, "codigo"), req.body);
+            return res.status(201).json(ApiResponse.success("Planes de acción creados y enviados", planes));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al crear los planes de acción");
+        }
+    }
     static async close(req, res) {
         try {
             const caso = await CaseService.closeCase(param(req, "codigo"), req.body);
@@ -130,6 +139,51 @@ export class CaseController {
         }
         catch (error) {
             return handleError(res, error, "Error al aceptar el plan");
+        }
+    }
+    static async acceptPlanById(req, res) {
+        try {
+            const plan = await CaseService.acceptPlanById(param(req, "idPlan"), req.body);
+            return res.json(ApiResponse.success("Plan aceptado, la ejecución ha iniciado", plan));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al aceptar el plan");
+        }
+    }
+    static async completeExecutionByPlan(req, res) {
+        try {
+            const plan = await CaseService.completeExecutionByPlan(param(req, "idPlan"), req.body);
+            return res.json(ApiResponse.success("Plan completado correctamente", plan));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al completar el plan");
+        }
+    }
+    static async reviewFinalPlanById(req, res) {
+        try {
+            const plan = await CaseService.reviewFinalPlanById(param(req, "idPlan"), req.body);
+            return res.json(ApiResponse.success("Revisión final del plan registrada", plan));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al revisar el plan");
+        }
+    }
+    static async requestExtensionByPlan(req, res) {
+        try {
+            const plan = await CaseService.requestExtensionByPlan(param(req, "idPlan"), req.body);
+            return res.status(201).json(ApiResponse.success("Ampliación de plazo solicitada", plan));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al solicitar la ampliación");
+        }
+    }
+    static async reviewExtensionByPlan(req, res) {
+        try {
+            const plan = await CaseService.reviewExtensionByPlan(param(req, "idPlan"), req.body);
+            return res.json(ApiResponse.success("Solicitud de ampliación del plan resuelta", plan));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al resolver la ampliación del plan");
         }
     }
     static async completeExecution(req, res) {
@@ -157,6 +211,15 @@ export class CaseController {
         }
         catch (error) {
             return handleError(res, error, "Error al reabrir el caso");
+        }
+    }
+    static async rollbackStage(req, res) {
+        try {
+            const caso = await CaseService.rollbackStage(param(req, "codigo"), req.body);
+            return res.json(ApiResponse.success("Caso retrocedido de etapa", caso));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al retroceder el caso");
         }
     }
     static async updatePlan(req, res) {
@@ -204,6 +267,15 @@ export class CaseController {
             return handleError(res, error, "Error al agregar el comentario");
         }
     }
+    static async addPlanComment(req, res) {
+        try {
+            const timeline = await CaseService.addPlanComment(param(req, "idPlan"), req.body);
+            return res.status(201).json(ApiResponse.success("Comentario agregado al plan", timeline));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al agregar el comentario del plan");
+        }
+    }
     static async addEvidence(req, res) {
         try {
             const files = (req.files ?? []).map((f) => ({
@@ -217,6 +289,21 @@ export class CaseController {
         }
         catch (error) {
             return handleError(res, error, "Error al adjuntar evidencia");
+        }
+    }
+    static async addEvidenceByPlan(req, res) {
+        try {
+            const files = (req.files ?? []).map((f) => ({
+                originalname: f.originalname,
+                filename: f.filename,
+                mimetype: f.mimetype,
+                size: f.size,
+            }));
+            const anexos = await CaseService.addEvidenceByPlan(param(req, "idPlan"), req.body, files);
+            return res.status(201).json(ApiResponse.success("Evidencia del plan adjuntada correctamente", anexos));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al adjuntar evidencia del plan");
         }
     }
 }

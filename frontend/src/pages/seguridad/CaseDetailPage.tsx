@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -16,11 +16,11 @@ import {
   Timer,
   Search,
   ClipboardList,
-  CheckCircle2,
   Train,
   Download,
 } from "lucide-react";
 import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
+import { Logo } from "@/components/brand/Logo";
 import { Card } from "@/design-system/primitives/Card";
 import { Button } from "@/design-system/primitives/Button";
 import { Modal } from "@/design-system/primitives/Modal";
@@ -29,17 +29,18 @@ import { WorkflowStepper, InfoRow, InfoCard } from "@/features/cases/components/
 import { useCase } from "@/features/cases/hooks/useCase";
 import { stageFromEstado } from "@/features/cases/domain";
 import { panelForEstado, puede, siguientePaso } from "@/features/cases/lib/workflow";
-import { fechaEvaluacion, slaDueDate, slaEstado, diasRestantes, gravedadDerivada } from "@/features/cases/lib/sla";
+import { criterioAceptabilidad, fechaEvaluacion, slaDueDate, slaEstado, diasRestantes, gravedadDerivada } from "@/features/cases/lib/sla";
 import { formatDate, formatDateTime, formatTime } from "@/lib/format";
 import { ReceptionStage } from "./case-detail/ReceptionStage";
 import { TimelinePanel } from "./case-detail/TimelinePanel";
-import { ExtensionReviewCard } from "./case-detail/ExtensionReviewCard";
 import { PendingInfoCard } from "./case-detail/PendingInfoCard";
 import { InvestigationCard } from "./case-detail/InvestigationCard";
 import { PlanCard } from "./case-detail/PlanCard";
 import { ExecutionSummaryCard } from "./case-detail/ExecutionSummaryCard";
 import { EvidencePanel } from "./case-detail/EvidencePanel";
 import type { CaseDetail } from "@/features/cases/types";
+import { parseActivityDescription } from "@/features/cases/lib/activityMeta";
+import { shortPlanCode } from "@/features/cases/lib/planLabels";
 
 // Portado de pages/seguridad/CaseFile.tsx: cabecera + stepper + panel
 // izquierdo (Información general / Registro SOP / Evento operativo) + panel
@@ -80,6 +81,7 @@ export function CaseDetailPage() {
 function CaseFileContent({ caso }: { caso: CaseDetail }) {
   const [showEvidence, setShowEvidence] = useState(false);
   const [showTimeline, setShowTimeline] = useState(false);
+  const [exportPlanActive, setExportPlanActive] = useState(false);
 
   const estado = caso.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre;
   const stage = stageFromEstado(estado);
@@ -87,6 +89,9 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
   // la UI nunca ofrece una transición que el flujo no contempla en esta etapa.
   const panel = panelForEstado(estado);
   const riesgo = caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle;
+  const investigacionOmitida =
+    !caso.investigacion_caso &&
+    ["Plan de Acción", "Ejecución", "Prórroga Solicitada", "Verificación", "Cerrado"].includes(estado);
 
   // El plazo corre desde la evaluación (que es cuando se asigna el riesgo),
   // no desde el hallazgo: antes de evaluar no hay SLA que medir. Los casos
@@ -95,7 +100,7 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
   // que es el mismo criterio que usa la bandeja.
   const evaluadoEl = fechaEvaluacion(caso.timeline_caso);
   const slaDesde = evaluadoEl ?? caso.fecha_hallazgo;
-  const slaDue = slaDueDate(slaDesde, riesgo?.nombre);
+  const slaDue = slaDueDate(slaDesde, riesgo?.nombre, riesgo?.codigo);
   const sla = slaEstado(slaDue, stage);
   const dias = slaDue ? diasRestantes(slaDue) : 0;
 
@@ -107,9 +112,25 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
   const titulo = caso.titulo?.trim() || caso.descripcion;
   const ayuda = siguientePaso(estado);
   const motivoRechazo = caso.timeline_caso.find((t) => t.kind === "rechazado")?.detalle ?? caso.observaciones;
+  const puedeExportarPlan = caso.planes_accion.length > 0;
+
+  useEffect(() => {
+    if (!exportPlanActive) return;
+    const cleanup = () => setExportPlanActive(false);
+    window.addEventListener("afterprint", cleanup, { once: true });
+    return () => window.removeEventListener("afterprint", cleanup);
+  }, [exportPlanActive]);
+
+  const exportarPlanAccion = () => {
+    setExportPlanActive(true);
+    window.setTimeout(() => window.print(), 0);
+  };
 
   return (
     <SeguridadOperativaShell>
+      <div data-plan-export-root={exportPlanActive ? "active" : "idle"}>
+      {puedeExportarPlan && exportPlanActive && <PlanActionPrintDocument caso={caso} />}
+      <div data-print-plan-screen>
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="min-w-0">
@@ -120,6 +141,11 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
             {estado === "Prórroga Solicitada" && (
               <Pill tone="warning" dot>
                 <Timer className="h-3 w-3" /> Prórroga solicitada
+              </Pill>
+            )}
+            {investigacionOmitida && (
+              <Pill tone="warning" dot>
+                <AlertTriangle className="h-3 w-3" /> Investigación omitida
               </Pill>
             )}
           </div>
@@ -138,9 +164,11 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
           <Button variant="outline" size="sm" onClick={() => setShowTimeline(true)}>
             <Clock className="h-4 w-4" /> Línea de tiempo
           </Button>
-          <Button variant="outline" size="sm" onClick={() => window.print()}>
-            <Download className="h-4 w-4" /> Exportar PDF
-          </Button>
+          {puedeExportarPlan && (
+            <Button variant="outline" size="sm" onClick={exportarPlanAccion}>
+              <Download className="h-4 w-4" /> Exportar Plan de Acción
+            </Button>
+          )}
           <Link to="/seguridad/casos">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4" /> Casos
@@ -150,7 +178,12 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
         </div>
       </div>
 
-      <WorkflowStepper stage={stage} vuelveA={vuelveA} prorroga={estado === "Prórroga Solicitada"} />
+      <WorkflowStepper
+        stage={stage}
+        vuelveA={vuelveA}
+        prorroga={estado === "Prórroga Solicitada"}
+        investigacionOmitida={investigacionOmitida}
+      />
       {ayuda && <p className="mt-2 text-[11.5px] text-ink-quiet">{ayuda}</p>}
 
       {/* Dos columnas */}
@@ -192,23 +225,53 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
             <InfoRow
               icon={<Shield className="h-3.5 w-3.5" />}
               label="Análisis de riesgo"
-              value={riesgo ? `${riesgo.codigo} — ${riesgo.nombre}` : "Sin evaluar"}
+              value={riesgo ? `${riesgo.codigo} — ${criterioAceptabilidad(riesgo.nombre, riesgo.codigo) ?? riesgo.nombre}` : "Sin evaluar"}
             />
             {riesgo && (
               <InfoRow
                 icon={<AlertOctagon className="h-3.5 w-3.5" />}
                 label={evaluadoEl ? "Gravedad · plazo desde evaluación" : "Gravedad · plazo desde hallazgo"}
-                value={`${gravedadDerivada(riesgo.nombre) ?? "—"}${slaDue ? ` · vence ${formatDate(slaDue)}` : ""}`}
+                value={`${gravedadDerivada(riesgo.nombre, riesgo.codigo) ?? "—"}${slaDue ? ` · vence ${formatDate(slaDue)}` : ""}`}
               />
             )}
             {caso.acr && <InfoRow icon={<FileText className="h-3.5 w-3.5" />} label="ACR" value={caso.acr} />}
             {caso.planes_accion.length > 0 && (
               <>
                 <div className="h-px bg-line-soft my-1" />
-                <InfoRow icon={<ClipboardList className="h-3.5 w-3.5" />} label="Plan de acción" value={caso.planes_accion[0].codigo_plan} />
-                <InfoRow icon={<UserIcon className="h-3.5 w-3.5" />} label="Responsable plan" value={caso.planes_accion[0].usuarios.nombre} />
-                <InfoRow icon={<Building2 className="h-3.5 w-3.5" />} label="Área plan" value={caso.planes_accion[0].areas.nombre_area} />
-                <InfoRow icon={<CheckCircle2 className="h-3.5 w-3.5" />} label="Estado plan" value={caso.planes_accion[0].catalogo_detalle.nombre} />
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-2 text-ink">
+                    <ClipboardList className="h-3.5 w-3.5 text-ink-faint" />
+                    <p className="text-[11px] text-ink-faint">Planes de acción</p>
+                  </div>
+                  {caso.planes_accion.map((plan) => (
+                    <div key={plan.id_plan} data-print="block" className="rounded-lg border border-line-soft bg-surface/40 p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-mono text-[12px] font-semibold text-brand-700">{shortPlanCode(plan.codigo_plan)}</p>
+                        <Pill tone="info" dot>{plan.catalogo_detalle.nombre}</Pill>
+                      </div>
+                      <p className="mt-2 text-[12.5px] font-medium text-ink">
+                        Responsable: {plan.usuarios.nombre}
+                        {plan.usuarios.cargo ? ` · ${plan.usuarios.cargo}` : ""}
+                      </p>
+                      <p className="mt-1 text-[12px] text-ink-quiet">Área: {plan.areas.nombre_area}</p>
+                      {plan.actividades_plan.length > 0 && (
+                        <div className="mt-2 space-y-1.5 border-t border-line-soft pt-2">
+                          {plan.actividades_plan.map((actividad, index) => {
+                            const parsed = parseActivityDescription(actividad.descripcion);
+                            return (
+                              <div key={actividad.id_actividad} className="text-[11.5px] leading-snug text-ink-soft">
+                                <span className="font-mono font-semibold text-ink-faint">ACT-{String(index + 1).padStart(2, "0")}</span>
+                                <span> · {parsed.descripcion || "Actividad sin descripción"}</span>
+                                <span> · Resp.: {actividad.usuarios?.nombre ?? "Sin responsable"}</span>
+                                {actividad.usuarios?.cargo ? <span> · {actividad.usuarios.cargo}</span> : null}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </>
             )}
           </InfoCard>
@@ -254,8 +317,7 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
           {panel === "pendiente_info" && <PendingInfoCard caso={caso} />}
           {panel === "investigacion" && <InvestigationCard caso={caso} />}
           {panel === "plan" && <PlanCard caso={caso} />}
-          {panel === "prorroga" && <ExtensionReviewCard caso={caso} />}
-          {(panel === "ejecucion" || panel === "verificacion" || panel === "cierre") && (
+          {(panel === "ejecucion" || panel === "prorroga" || panel === "verificacion" || panel === "cierre") && (
             <ExecutionSummaryCard caso={caso} panel={panel} />
           )}
           {panel === "rechazado" && (
@@ -289,7 +351,189 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
       >
         <TimelinePanel caso={caso} puedeComentar={puede(estado, "comentar")} />
       </Modal>
+      </div>
+      </div>
     </SeguridadOperativaShell>
   );
 }
 
+function planTipoAccion(plan: CaseDetail["planes_accion"][number]): string {
+  const actividadTipo = plan.actividades_plan
+    .map((actividad) => parseActivityDescription(actividad.descripcion).meta.tipoAccion)
+    .find(Boolean);
+  if (actividadTipo) return actividadTipo;
+
+  const match = plan.descripcion.match(/^([^:—-]+)[:—-]/);
+  return match?.[1]?.trim() || "Correctiva";
+}
+
+function planDescripcion(plan: CaseDetail["planes_accion"][number]): string {
+  const raw = plan.descripcion.trim();
+  const match = raw.match(/^[^:—-]+[:—-]\s*(.+)$/);
+  return match?.[1]?.trim() || raw || "Sin descripción registrada";
+}
+
+function planFechaLimite(plan: CaseDetail["planes_accion"][number]): string {
+  return plan.fecha_reprogramada ?? plan.fecha_plan;
+}
+
+function latestPlanLimit(caso: CaseDetail): string | null {
+  const dates = caso.planes_accion
+    .map(planFechaLimite)
+    .filter(Boolean)
+    .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+  return dates[0] ?? null;
+}
+
+function uniqueValues(values: Array<string | null | undefined>): string {
+  const clean = Array.from(new Set(values.map((value) => value?.trim()).filter(Boolean) as string[]));
+  return clean.length > 0 ? clean.join(", ") : "—";
+}
+
+type PlanExportRow = {
+  plan: CaseDetail["planes_accion"][number];
+  actividad: CaseDetail["planes_accion"][number]["actividades_plan"][number] | null;
+  descripcion: string;
+  tipo: string;
+  responsable: string;
+  area: string;
+  inicio: string | null;
+  limite: string;
+  estado: string;
+};
+
+function PlanActionPrintDocument({ caso }: { caso: CaseDetail }) {
+  const evento = caso.evento_caso[0]?.eventos_operativos;
+  const riesgo = caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle;
+  const fechaLimite = latestPlanLimit(caso);
+  const elaboradoPor =
+    caso.usuarios_casos_sop_responsable_planTousuarios?.nombre ??
+    caso.usuarios_casos_sop_responsable_hallazgoTousuarios?.nombre ??
+    "Seguridad Operativa";
+  const rows: PlanExportRow[] = caso.planes_accion.flatMap((plan): PlanExportRow[] => {
+    if (plan.actividades_plan.length === 0) {
+      return [{
+        plan,
+        actividad: null,
+        descripcion: planDescripcion(plan),
+        tipo: planTipoAccion(plan),
+        responsable: plan.usuarios.nombre,
+        area: plan.areas.nombre_area,
+        inicio: null,
+        limite: planFechaLimite(plan),
+        estado: plan.catalogo_detalle.nombre,
+      }];
+    }
+
+    return plan.actividades_plan.map((actividad) => {
+      const parsed = parseActivityDescription(actividad.descripcion);
+      return {
+        plan,
+        actividad,
+        descripcion: parsed.descripcion || planDescripcion(plan),
+        tipo: parsed.meta.tipoAccion ?? planTipoAccion(plan),
+        responsable: actividad.usuarios?.nombre ?? plan.usuarios.nombre,
+        area: parsed.meta.areaNombre ?? plan.areas.nombre_area,
+        inicio: actividad.fecha_inicio,
+        limite: actividad.fecha_fin ?? planFechaLimite(plan),
+        estado: actividad.catalogo_detalle?.nombre ?? plan.catalogo_detalle.nombre,
+      };
+    });
+  });
+
+  return (
+    <section data-plan-export className="mx-auto max-w-none bg-white px-2 py-1 text-ink">
+      <header className="flex items-center gap-4">
+        <Logo size={48} withWordmark={false} />
+        <div>
+          <h1 className="text-[28px] font-bold leading-tight text-ink">Plan de Acción — SIGMA L1</h1>
+          <p className="text-[14px] text-ink-quiet">Línea 1 del Metro de Lima · Seguridad Operativa</p>
+        </div>
+      </header>
+
+      <div className="mt-6 h-[3px] w-full bg-brand-700" />
+
+      <section className="mt-7">
+        <h2 className="border-b border-line pb-2 text-[18px] font-bold text-brand-800">Información del expediente</h2>
+        <div className="mt-3 grid grid-cols-2 gap-x-16 gap-y-3">
+          <PrintField label="Código" value={caso.codigo_sop} />
+          <PrintField label="Tipo de incidencia" value={caso.catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle.nombre} />
+          <PrintField label="Estación" value={evento?.catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle?.nombre ?? "—"} />
+          <PrintField label="Área responsable" value={uniqueValues(caso.planes_accion.map((plan) => plan.areas.nombre_area))} />
+          <PrintField
+            label="Análisis de riesgo"
+            value={riesgo ? `${riesgo.codigo ?? "—"} — ${criterioAceptabilidad(riesgo.nombre, riesgo.codigo) ?? riesgo.nombre}` : "Sin evaluar"}
+          />
+          <PrintField label="Fecha límite" value={fechaLimite ? formatDate(fechaLimite) : "—"} />
+          <PrintField label="Elaborado por" value={elaboradoPor} />
+          <PrintField label="Fecha de creación" value={formatDateTime(caso.created_at)} />
+        </div>
+      </section>
+
+      <section className="mt-6">
+        <h2 className="border-b border-line pb-2 text-[18px] font-bold text-brand-800">Objetivo del Plan de Acción</h2>
+        <div className="mt-3 space-y-2 text-[14px] leading-relaxed">
+          {caso.planes_accion.map((plan) => (
+            <p key={plan.id_plan}>
+              <span className="font-mono font-semibold text-brand-800">{shortPlanCode(plan.codigo_plan)}</span>{" "}
+              <span>{planTipoAccion(plan)} — {planDescripcion(plan)}</span>
+            </p>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-6">
+        <h2 className="border-b border-line pb-2 text-[18px] font-bold text-brand-800">Actividades</h2>
+        <table className="mt-3 w-full border-collapse text-left text-[13px]">
+          <thead>
+            <tr className="bg-surface">
+              <PrintTh>Código</PrintTh>
+              <PrintTh>Actividad</PrintTh>
+              <PrintTh>Responsable</PrintTh>
+              <PrintTh>Tipo de acción</PrintTh>
+              <PrintTh>Área responsable</PrintTh>
+              <PrintTh>Inicio</PrintTh>
+              <PrintTh>Límite</PrintTh>
+              <PrintTh>Estado</PrintTh>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => (
+              <tr key={`${row.plan.id_plan}-${row.actividad?.id_actividad ?? index}`}>
+                <PrintTd className="font-mono">{shortPlanCode(row.plan.codigo_plan)}</PrintTd>
+                <PrintTd className="font-semibold">{row.descripcion}</PrintTd>
+                <PrintTd>{row.responsable}</PrintTd>
+                <PrintTd>{row.tipo}</PrintTd>
+                <PrintTd>{row.area}</PrintTd>
+                <PrintTd>{row.inicio ? formatDate(row.inicio) : "—"}</PrintTd>
+                <PrintTd>{row.limite ? formatDate(row.limite) : "—"}</PrintTd>
+                <PrintTd>{row.estado}</PrintTd>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+
+      <footer className="mt-8 border-t border-line pt-4 text-[12px] text-ink-quiet">
+        Documento generado por SIGMA L1 · {formatDateTime(new Date())}
+      </footer>
+    </section>
+  );
+}
+
+function PrintField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="border-l-2 border-brand-700 pl-2">
+      <p className="text-[12px] font-semibold uppercase tracking-wide text-ink-quiet">{label}</p>
+      <p className="text-[14px] leading-tight text-ink">{value}</p>
+    </div>
+  );
+}
+
+function PrintTh({ children }: { children: ReactNode }) {
+  return <th className="border border-line px-2.5 py-2 text-[12px] font-bold text-ink">{children}</th>;
+}
+
+function PrintTd({ children, className }: { children: ReactNode; className?: string }) {
+  return <td className={`border border-line px-2.5 py-2 align-top text-ink ${className ?? ""}`}>{children}</td>;
+}

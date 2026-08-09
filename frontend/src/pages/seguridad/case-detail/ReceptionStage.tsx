@@ -10,7 +10,6 @@ import { useApproveCase, useRejectCase, useRequestInfo, useAddObservation } from
 import { apiErrorMessage } from "@/lib/api";
 import { relativeTime } from "@/lib/format";
 import { EvaluationForm } from "./EvaluationForm";
-import { EvidencePanel } from "./EvidencePanel";
 import type { CaseDetail } from "@/features/cases/types";
 
 // Portado de pages/seguridad/CaseFile.tsx → ReceptionStage.
@@ -36,13 +35,13 @@ export function ReceptionStage({ caso, isRecepcion }: { caso: CaseDetail; isRece
         title={isRecepcion ? "Recepción y Revisión de Reporte" : "Evaluación del Caso"}
         subtitle={
           isRecepcion
-            ? "Revise toda la información del reporte, evidencias y descripción. Apruebe para avanzar a Evaluación."
+            ? "Revise la información principal del reporte. Apruebe para avanzar a Evaluación."
             : "Analice la gravedad, defina prioridad y clasifique el caso. Determine si requiere investigación."
         }
         icon={isRecepcion ? <Inbox className="h-5 w-5" /> : <FileSearch className="h-5 w-5" />}
         action={<Pill tone="info" dot>{isRecepcion ? "Pendiente de aprobación" : "En evaluación"}</Pill>}
       >
-        <DescriptionBlock description={caso.descripcion} />
+        {isRecepcion && <DescriptionBlock description={caso.descripcion} />}
 
         {pendiente && (
           <div className="mt-4 rounded-lg bg-warning-soft border border-warning/30 p-4">
@@ -58,12 +57,6 @@ export function ReceptionStage({ caso, isRecepcion }: { caso: CaseDetail; isRece
             </div>
           </div>
         )}
-
-        {/* Las evidencias son parte de la revisión: se ven y se amplían aquí
-            mismo, sin tener que abrir el modal de la cabecera. */}
-        <div className="mt-4">
-          <EvidencePanel caso={caso} puedeAdjuntar compact />
-        </div>
 
         {isRecepcion ? (
           <div className="mt-5 pt-5 border-t border-line-soft flex items-center gap-2 flex-wrap">

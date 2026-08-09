@@ -6,6 +6,7 @@ import { Pill } from "@/design-system/primitives/Pill";
 import { Field, Textarea } from "@/design-system/primitives/Input";
 import { StageSection } from "@/features/cases/components/CaseParts";
 import { useReviewExtension } from "@/features/cases/hooks/useCaseActions";
+import { shortPlanCode } from "@/features/cases/lib/planLabels";
 import { apiErrorMessage } from "@/lib/api";
 import { formatDate, relativeTime } from "@/lib/format";
 import type { CaseDetail } from "@/features/cases/types";
@@ -58,7 +59,7 @@ export function ExtensionReviewCard({ caso }: { caso: CaseDetail }) {
         <div className="mt-4 grid gap-4 sm:grid-cols-3 border-t border-warning/25 pt-3.5">
           <div>
             <p className="text-[10.5px] font-semibold uppercase tracking-wider text-ink-faint">Plan</p>
-            <p className="text-[12.5px] font-medium text-ink mt-0.5 font-mono">{plan.codigo_plan}</p>
+            <p className="text-[12.5px] font-medium text-ink mt-0.5 font-mono">{shortPlanCode(plan.codigo_plan)}</p>
           </div>
           <div>
             <p className="text-[10.5px] font-semibold uppercase tracking-wider text-ink-faint">Fecha actual</p>

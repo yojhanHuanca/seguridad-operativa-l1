@@ -1,21 +1,34 @@
 import { useState } from "react";
-import { ClipboardList, Plus, Trash2, Send, FileSearch } from "lucide-react";
+import { BriefcaseBusiness, ClipboardList, Plus, Search, Send, Trash2, UserRound, FileSearch } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/design-system/primitives/Button";
 import { Modal } from "@/design-system/primitives/Modal";
-import { Pill } from "@/design-system/primitives/Pill";
+import { Pill, RiskPill } from "@/design-system/primitives/Pill";
 import { Field, Input, Select, Textarea } from "@/design-system/primitives/Input";
 import { StageSection } from "@/features/cases/components/CaseParts";
 import { useAreas } from "@/features/reports/hooks/useAreas";
 import { useUsers } from "@/features/users/hooks/useUsers";
-import { useCreatePlan, useUpdatePlan, type PlanActivityInput } from "@/features/cases/hooks/useCaseActions";
+import { useCreatePlans, useUpdatePlan, type PlanActivityInput } from "@/features/cases/hooks/useCaseActions";
+import { encodeActivityDescription, parseActivityDescription } from "@/features/cases/lib/activityMeta";
+import { shortPlanCode } from "@/features/cases/lib/planLabels";
 import { puedeModificarPlan } from "@/features/cases/lib/workflow";
 import { apiErrorMessage } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { StageRollbackButton } from "./StageRollbackButton";
 import type { CaseDetail } from "@/features/cases/types";
+import type { UserListItem } from "@/features/users/types";
+import type { RiskLevel } from "@/features/cases/domain";
 
 // Portado de pages/seguridad/CaseFile.tsx → PlanStage / PlanForm / PlanDisplay.
+const TIPOS_ACCION = ["Correctiva", "Preventiva", "Mitigación", "Mejora continua"];
+
+interface PlanFormActivityInput extends PlanActivityInput {
+  id_actividad?: number;
+  tipo_accion: string;
+  id_area: string;
+}
+
 function InvBlock({ label, value, tone }: { label: string; value: string; tone?: "critical" }) {
   return (
     <div>
@@ -27,8 +40,89 @@ function InvBlock({ label, value, tone }: { label: string; value: string; tone?:
   );
 }
 
-function blankActividad(): PlanActivityInput {
-  return { descripcion: "", responsable: null, fecha_inicio: "", fecha_fin: "" };
+function blankActividad(idArea = ""): PlanFormActivityInput {
+  return {
+    descripcion: "",
+    responsable: null,
+    fecha_inicio: new Date().toISOString().slice(0, 10),
+    fecha_fin: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10),
+    tipo_accion: TIPOS_ACCION[0],
+    id_area: idArea,
+  };
+}
+
+function ResponsableSearch({
+  value,
+  users,
+  onChange,
+}: {
+  value?: number | null;
+  users: UserListItem[];
+  onChange: (id: number | null) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const selected = users.find((u) => u.id_usuario === value);
+  const q = query.trim().toLowerCase();
+  const results = q
+    ? users
+        .filter((u) => `${u.nombre} ${u.cargo ?? ""} ${u.codigo_usuario}`.toLowerCase().includes(q))
+        .slice(0, 6)
+    : [];
+
+  return (
+    <div className="space-y-2">
+      <div className="flex h-12 items-center gap-2 rounded-lg border border-line bg-white px-3 focus-within:border-brand-600 focus-within:ring-2 focus-within:ring-brand-600/15">
+        <Search className="h-4 w-4 shrink-0 text-ink-faint" />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={selected ? "Buscar otro responsable..." : "Buscar por nombre, cargo o código..."}
+          className="min-w-0 flex-1 bg-transparent text-[13.5px] outline-none placeholder:text-ink-faint"
+        />
+      </div>
+
+      {selected && (
+        <div className="flex items-start justify-between gap-3 rounded-lg border border-brand-100 bg-brand-50/70 p-3">
+          <div className="flex min-w-0 items-start gap-2.5">
+            <UserRound className="mt-0.5 h-4 w-4 shrink-0 text-brand-700" />
+            <div className="min-w-0">
+              <p className="truncate text-[13px] font-semibold text-brand-900">{selected.nombre}</p>
+              <p className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-brand-800/80">
+                <BriefcaseBusiness className="h-3.5 w-3.5" /> {selected.cargo || "Cargo no registrado"}
+              </p>
+            </div>
+          </div>
+          <button type="button" onClick={() => onChange(null)} className="text-[11.5px] font-medium text-brand-700 hover:text-brand-900">
+            Quitar
+          </button>
+        </div>
+      )}
+
+      {q && results.length > 0 && (
+        <div className="max-h-56 overflow-auto rounded-lg border border-line bg-white shadow-sm">
+          {results.map((u) => (
+            <button
+              key={u.id_usuario}
+              type="button"
+              onClick={() => {
+                onChange(u.id_usuario);
+                setQuery("");
+              }}
+              className="flex w-full items-start gap-2.5 border-b border-line-soft px-3 py-2.5 text-left last:border-b-0 hover:bg-surface"
+            >
+              <UserRound className="mt-0.5 h-4 w-4 shrink-0 text-ink-faint" />
+              <span className="min-w-0">
+                <span className="block truncate text-[13px] font-medium text-ink">{u.nombre}</span>
+                <span className="block truncate text-[11.5px] text-ink-quiet">{u.cargo || "Cargo no registrado"} · {u.codigo_usuario}</span>
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {q && results.length === 0 && <p className="text-[12px] text-ink-faint">Sin resultados para “{query}”.</p>}
+    </div>
+  );
 }
 
 export function PlanCard({ caso }: { caso: CaseDetail }) {
@@ -38,6 +132,8 @@ export function PlanCard({ caso }: { caso: CaseDetail }) {
   const [editingId, setEditingId] = useState<number | null>(null);
 
   const inv = caso.investigacion_caso;
+  const riesgo = caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle;
+  const risk = riesgo?.codigo as RiskLevel | undefined;
   const editing = editingId != null ? caso.planes_accion.find((p) => p.id_plan === editingId) : undefined;
 
   return (
@@ -50,13 +146,22 @@ export function PlanCard({ caso }: { caso: CaseDetail }) {
       }
       icon={<ClipboardList className="h-5 w-5" />}
       action={
-        plan ? (
-          <Pill tone={plan.catalogo_detalle.nombre === "Aceptado" ? "brand" : "warning"} dot>
-            {plan.catalogo_detalle.nombre}
-          </Pill>
-        ) : (
-          <Pill tone="info" dot>Por crear</Pill>
-        )
+        <div className="flex items-center gap-2">
+          {plan ? (
+            <Pill tone={plan.catalogo_detalle.nombre === "Aceptado" ? "brand" : "warning"} dot>
+              {plan.catalogo_detalle.nombre}
+            </Pill>
+          ) : (
+            <Pill tone="info" dot>Por crear</Pill>
+          )}
+          <StageRollbackButton
+            codigo={caso.codigo_sop}
+            destino="Investigación"
+            label="Volver a Investigación"
+            title="Volver a investigación"
+            description="El caso regresará a Investigación para corregir o completar hallazgos, causa raíz y conclusiones. Los planes de acción ya cargados se mantienen guardados."
+          />
+        </div>
       }
     >
       {plan && !formOpen ? (
@@ -65,6 +170,12 @@ export function PlanCard({ caso }: { caso: CaseDetail }) {
             <div className="mb-4">
               <p className="text-[11px] font-semibold tracking-wide uppercase text-ink-faint mb-2.5">Resumen de la investigación</p>
               <div className="space-y-4">
+                {risk && (
+                  <div>
+                    <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Riesgo evaluado</p>
+                    <RiskPill risk={risk} showCategory />
+                  </div>
+                )}
                 <InvBlock label="Descripción de evento" value={inv.hallazgos} />
                 <InvBlock label="Causa raíz" value={inv.causa_raiz} tone="critical" />
                 <InvBlock label="Conclusiones" value={inv.conclusiones} />
@@ -136,10 +247,12 @@ function PlanDisplay({ caso, onEdit }: { caso: CaseDetail; onEdit: (idPlan: numb
           </div>
           <div className="grid sm:grid-cols-2 gap-3 text-sm">
             <div>
-              <span className="text-ink-quiet">Código:</span> <span className="font-medium font-mono">{plan.codigo_plan}</span>
+              <span className="text-ink-quiet">Plan:</span> <span className="font-medium font-mono">{shortPlanCode(plan.codigo_plan)}</span>
             </div>
             <div>
-              <span className="text-ink-quiet">Responsable:</span> <span className="font-medium">{plan.usuarios.nombre}</span>
+              <span className="text-ink-quiet">Responsable:</span>{" "}
+              <span className="font-medium">{plan.usuarios.nombre}</span>
+              {plan.usuarios.cargo && <span className="text-ink-faint text-xs"> · {plan.usuarios.cargo}</span>}
             </div>
             <div>
               <span className="text-ink-quiet">Área responsable:</span> <span className="font-medium">{plan.areas.nombre_area}</span>
@@ -168,35 +281,42 @@ function PlanDisplay({ caso, onEdit }: { caso: CaseDetail; onEdit: (idPlan: numb
           <div className="pt-3 mt-3 border-t border-line-soft">
             <p className="text-[11px] font-semibold tracking-wide uppercase text-ink-faint mb-2.5">Actividades del plan</p>
             <div className="space-y-2">
-              {plan.actividades_plan.map((it, i) => (
-                <div key={it.id_actividad} className="rounded-lg bg-surface border border-line p-3 text-sm">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold text-brand-700">ACT-{String(i + 1).padStart(2, "0")}</span>
-                    <Pill tone={it.catalogo_detalle?.nombre === "Completado" ? "brand" : "neutral"} dot>
-                      {it.catalogo_detalle?.nombre ?? "Pendiente"}
-                    </Pill>
+              {plan.actividades_plan.map((it, i) => {
+                const parsed = parseActivityDescription(it.descripcion);
+                return (
+                  <div key={it.id_actividad} className="rounded-lg bg-surface border border-line p-3 text-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold text-brand-700">ACT-{String(i + 1).padStart(2, "0")}</span>
+                      <Pill tone={it.catalogo_detalle?.nombre === "Completado" ? "brand" : "neutral"} dot>
+                        {it.catalogo_detalle?.nombre ?? "Pendiente"}
+                      </Pill>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-ink-quiet">Responsable:</span> {it.usuarios?.nombre ?? "—"}
+                        {it.usuarios?.cargo && <span className="text-ink-faint"> · {it.usuarios.cargo}</span>}
+                      </div>
+                      <div>
+                        <span className="text-ink-quiet">Tipo de acción:</span> {parsed.meta.tipoAccion ?? "—"}
+                      </div>
+                      <div>
+                        <span className="text-ink-quiet">Área responsable:</span> {parsed.meta.areaNombre ?? plan.areas.nombre_area}
+                      </div>
+                      <div>
+                        <span className="text-ink-quiet">Inicio:</span> {it.fecha_inicio ? formatDate(it.fecha_inicio) : "—"}
+                      </div>
+                      <div>
+                        <span className="text-ink-quiet">Fin:</span> {it.fecha_fin ? formatDate(it.fecha_fin) : "—"}
+                      </div>
+                    </div>
+                    {parsed.descripcion && (
+                      <div className="mt-2 text-xs">
+                        <span className="text-ink-quiet">Descripción:</span> {parsed.descripcion}
+                      </div>
+                    )}
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <span className="text-ink-quiet">Responsable:</span> {it.usuarios?.nombre ?? "—"}
-                    </div>
-                    <div>
-                      <span className="text-ink-quiet">Área:</span> {plan.areas.nombre_area}
-                    </div>
-                    <div>
-                      <span className="text-ink-quiet">Inicio:</span> {it.fecha_inicio ? formatDate(it.fecha_inicio) : "—"}
-                    </div>
-                    <div>
-                      <span className="text-ink-quiet">Fin:</span> {it.fecha_fin ? formatDate(it.fecha_fin) : "—"}
-                    </div>
-                  </div>
-                  {it.descripcion && (
-                    <div className="mt-2 text-xs">
-                      <span className="text-ink-quiet">Descripción:</span> {it.descripcion}
-                    </div>
-                  )}
-                </div>
-              ))}
+                );
+              })}
               {plan.actividades_plan.length === 0 && (
                 <p className="text-[12.5px] text-ink-quiet">Sin actividades registradas.</p>
               )}
@@ -222,31 +342,29 @@ function PlanForm({
 }) {
   const { data: areas } = useAreas();
   const { data: usuarios } = useUsers();
-  const createPlan = useCreatePlan(caso.codigo_sop);
+  const createPlans = useCreatePlans(caso.codigo_sop);
   const updatePlan = useUpdatePlan(caso.codigo_sop);
   const esEdicion = !!plan;
 
   const hoy = new Date().toISOString().slice(0, 10);
   const soloFecha = (v?: string | null) => (v ? v.slice(0, 10) : "");
+  const defaultArea = plan ? String(plan.areas.id_area) : caso.areas ? String(caso.areas.id_area) : "";
 
-  const [descripcion, setDescripcion] = useState(plan?.descripcion ?? "");
-  const [idArea, setIdArea] = useState(
-    plan ? String(plan.areas.id_area) : caso.areas ? String(caso.areas.id_area) : ""
-  );
-  const [responsable, setResponsable] = useState(plan ? String(plan.usuarios.id_usuario) : "");
-  const [fechaPlan, setFechaPlan] = useState(
-    plan ? soloFecha(plan.fecha_reprogramada ?? plan.fecha_plan) : new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
-  );
-  const [observaciones, setObservaciones] = useState(plan?.observaciones ?? "");
-  const [actividades, setActividades] = useState<PlanActivityInput[]>(
+  const [actividades, setActividades] = useState<PlanFormActivityInput[]>(
     plan && plan.actividades_plan.length > 0
-      ? plan.actividades_plan.map((a) => ({
-          descripcion: a.descripcion,
-          responsable: a.usuarios?.id_usuario ?? null,
-          fecha_inicio: soloFecha(a.fecha_inicio),
-          fecha_fin: soloFecha(a.fecha_fin),
-        }))
-      : [blankActividad()]
+      ? plan.actividades_plan.map((a) => {
+          const parsed = parseActivityDescription(a.descripcion);
+          return {
+            id_actividad: a.id_actividad,
+            descripcion: parsed.descripcion,
+            responsable: a.usuarios?.id_usuario ?? null,
+            fecha_inicio: soloFecha(a.fecha_inicio) || hoy,
+            fecha_fin: soloFecha(a.fecha_fin) || soloFecha(plan.fecha_reprogramada ?? plan.fecha_plan),
+            tipo_accion: parsed.meta.tipoAccion ?? TIPOS_ACCION[0],
+            id_area: parsed.meta.idArea ? String(parsed.meta.idArea) : defaultArea,
+          };
+        })
+      : [blankActividad(defaultArea)]
   );
 
   // El plan se revisa antes de salir: una vez enviado, el jefe del área lo ve
@@ -254,121 +372,89 @@ function PlanForm({
   // de solo lectura en vez de mandarlo directo desde el formulario.
   const [reviewOpen, setReviewOpen] = useState(false);
 
-  const actividadesValidas = actividades.filter((a) => a.descripcion.trim().length >= 3);
-  const puedeEnviar =
-    descripcion.trim().length >= 5 && !!idArea && !!responsable && !!fechaPlan && actividadesValidas.length > 0;
+  const actividadCompleta = (a: PlanFormActivityInput) =>
+    a.descripcion.trim().length >= 3 &&
+    !!a.tipo_accion &&
+    !!a.id_area &&
+    !!a.responsable &&
+    !!a.fecha_inicio &&
+    !!a.fecha_fin;
+  const actividadesValidas = actividades.filter(actividadCompleta);
+  const puedeEnviar = actividades.length > 0 && actividadesValidas.length === actividades.length;
 
-  const updateActividad = (i: number, patch: Partial<PlanActivityInput>) =>
+  const updateActividad = (i: number, patch: Partial<PlanFormActivityInput>) =>
     setActividades((prev) => prev.map((a, idx) => (idx === i ? { ...a, ...patch } : a)));
 
-  const nombreArea = (areas ?? []).find((a) => String(a.id_area) === idArea)?.nombre_area ?? "—";
+  const nombreArea = (idArea?: string) =>
+    (areas ?? []).find((a) => String(a.id_area) === idArea)?.nombre_area ??
+    (plan && String(plan.areas.id_area) === idArea ? plan.areas.nombre_area : "—");
   const nombreUsuario = (id?: number | null) =>
     (usuarios ?? []).find((u) => u.id_usuario === id)?.nombre ?? "Sin asignar";
-  const nombreResponsable = (usuarios ?? []).find((u) => String(u.id_usuario) === responsable)?.nombre ?? "—";
+  const cargoUsuario = (id?: number | null) =>
+    (usuarios ?? []).find((u) => u.id_usuario === id)?.cargo ?? null;
 
-  const enviar = () => {
-    const payload = {
-      descripcion: descripcion.trim(),
-      id_area: Number(idArea),
-      responsable: Number(responsable),
-      fecha_plan: fechaPlan,
-      observaciones: observaciones.trim() || undefined,
-      actividades: actividadesValidas.map((a) => ({
-        descripcion: a.descripcion.trim(),
+  const planPayload = (a: PlanFormActivityInput) => ({
+    descripcion: `${a.tipo_accion}: ${a.descripcion.trim()}`,
+    id_area: Number(a.id_area),
+    responsable: Number(a.responsable),
+    fecha_plan: a.fecha_fin || hoy,
+    observaciones: plan?.observaciones ?? undefined,
+    actividades: [
+      {
+        id_actividad: esEdicion ? a.id_actividad : undefined,
+        descripcion: encodeActivityDescription(a.descripcion.trim(), {
+          tipoAccion: a.tipo_accion,
+          idArea: Number(a.id_area),
+          areaNombre: nombreArea(a.id_area),
+        }),
         responsable: a.responsable ?? null,
         fecha_inicio: a.fecha_inicio || undefined,
         fecha_fin: a.fecha_fin || undefined,
-      })),
-    };
+      },
+    ],
+  });
+
+  const enviar = () => {
+    if (!puedeEnviar) return;
+
+    const planesPayload = actividadesValidas.map(planPayload);
     const opts = {
       onSuccess: () => {
-        toast.success(esEdicion ? "Plan de acción actualizado" : "Plan de acción creado y enviado al jefe del área");
+        toast.success(
+          esEdicion
+            ? "Plan de acción actualizado"
+            : actividadesValidas.length === 1
+              ? "Plan de acción creado y enviado al jefe del área"
+              : `${actividadesValidas.length} planes de acción creados y enviados`
+        );
         setReviewOpen(false);
         onSubmitted();
       },
       onError: (e: unknown) =>
         toast.error(apiErrorMessage(e, esEdicion ? "No se pudo actualizar el plan" : "No se pudo crear el plan de acción")),
     };
-    if (esEdicion && plan) updatePlan.mutate({ ...payload, id_plan: plan.id_plan }, opts);
-    else createPlan.mutate(payload, opts);
+    if (esEdicion && plan) updatePlan.mutate({ ...planesPayload[0], id_plan: plan.id_plan }, opts);
+    else createPlans.mutate({ planes: planesPayload }, opts);
   };
 
   return (
     <div className="space-y-5">
-      {/* Bloque 1 — datos generales del plan */}
-      <section>
-        <p className="text-[11px] font-semibold tracking-wide uppercase text-ink-faint mb-3 pb-2 border-b border-line-soft">
-          Datos del plan
-        </p>
-        <div className="space-y-4">
-          <Field label="Descripción del plan" required>
-            <Textarea value={descripcion} onChange={(e) => setDescripcion(e.target.value)} rows={2} placeholder="¿Qué acción correctiva se va a ejecutar?" />
-          </Field>
-
-          <div className="grid gap-4 sm:grid-cols-3">
-            <Field label="Área responsable" required>
-              <Select value={idArea} onChange={(e) => setIdArea(e.target.value)}>
-                <option value="">Seleccione…</option>
-                {(areas ?? []).map((a) => (
-                  <option key={a.id_area} value={String(a.id_area)}>
-                    {a.nombre_area}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="Responsable del plan" required>
-              <Select value={responsable} onChange={(e) => setResponsable(e.target.value)}>
-                <option value="">Seleccione…</option>
-                {(usuarios ?? []).map((u) => (
-                  <option key={u.id_usuario} value={String(u.id_usuario)}>
-                    {u.nombre}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="Fecha límite" required>
-              <Input type="date" min={hoy} value={fechaPlan} onChange={(e) => setFechaPlan(e.target.value)} />
-            </Field>
-          </div>
-
-          <Field label="Observaciones" hint="Opcional">
-            <Textarea value={observaciones} onChange={(e) => setObservaciones(e.target.value)} rows={2} />
-          </Field>
-        </div>
-      </section>
-
-      {/* Bloque 2 — actividades, numeradas y con contador */}
       <section>
         <div className="flex items-center justify-between mb-3 pb-2 border-b border-line-soft">
           <p className="text-[11px] font-semibold tracking-wide uppercase text-ink-faint">
-            Actividades del plan
+            Planes de acción
             <span className="ml-2 text-ink-quiet normal-case tracking-normal font-medium">
               {actividadesValidas.length} de {actividades.length} completas
             </span>
           </p>
-          <Button variant="outline" size="sm" onClick={() => setActividades((prev) => [...prev, blankActividad()])}>
-            <Plus className="h-3.5 w-3.5" /> Agregar actividad
-          </Button>
         </div>
-        <div className="space-y-2.5">
+        <div className="space-y-4">
           {actividades.map((act, i) => (
-            <div key={i} className="rounded-lg bg-surface border border-line p-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-mono text-[11.5px] font-semibold text-brand-700">
-                  ACT-{String(i + 1).padStart(2, "0")}
+            <div key={i} className="rounded-xl border border-line bg-white p-4">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <span className="font-mono text-[13px] font-semibold text-ink-faint">
+                  PLA-{String(i + 1).padStart(2, "0")}
                 </span>
-                {!act.descripcion.trim() && (
-                  <span className="text-[10.5px] text-ink-faint">Falta la descripción</span>
-                )}
-              </div>
-              <div className="flex items-start gap-2">
-                <Textarea
-                  rows={1}
-                  className="min-h-[40px] flex-1"
-                  placeholder="¿Qué se debe hacer?"
-                  value={act.descripcion}
-                  onChange={(e) => updateActividad(i, { descripcion: e.target.value })}
-                />
                 {actividades.length > 1 && (
                   <button
                     type="button"
@@ -379,37 +465,83 @@ function PlanForm({
                   </button>
                 )}
               </div>
-              <div className="mt-2 grid gap-2 sm:grid-cols-3">
-                <Select
-                  className="h-9 text-[12.5px]"
-                  value={act.responsable ? String(act.responsable) : ""}
-                  onChange={(e) => updateActividad(i, { responsable: e.target.value ? Number(e.target.value) : null })}
-                >
-                  <option value="">Responsable…</option>
-                  {(usuarios ?? []).map((u) => (
-                    <option key={u.id_usuario} value={String(u.id_usuario)}>
-                      {u.nombre}
-                    </option>
-                  ))}
-                </Select>
-                <Input
-                  type="date"
-                  className="h-9 text-[12.5px]"
-                  value={act.fecha_inicio ?? ""}
-                  onChange={(e) => updateActividad(i, { fecha_inicio: e.target.value })}
-                  title="Fecha de inicio"
-                />
-                <Input
-                  type="date"
-                  className="h-9 text-[12.5px]"
-                  value={act.fecha_fin ?? ""}
-                  onChange={(e) => updateActividad(i, { fecha_fin: e.target.value })}
-                  title="Fecha límite"
-                />
+
+              <div className="space-y-4">
+                <Field label="Responsable" required>
+                  <ResponsableSearch
+                    users={usuarios ?? []}
+                    value={act.responsable}
+                    onChange={(responsable) => updateActividad(i, { responsable })}
+                  />
+                </Field>
+
+                <Field label="Descripción" required>
+                  <Textarea
+                    rows={4}
+                    placeholder="Detalle de la actividad..."
+                    value={act.descripcion}
+                    onChange={(e) => updateActividad(i, { descripcion: e.target.value })}
+                  />
+                </Field>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Tipo de acción" required>
+                    <Select
+                      value={act.tipo_accion}
+                      onChange={(e) => updateActividad(i, { tipo_accion: e.target.value })}
+                    >
+                      {TIPOS_ACCION.map((tipo) => (
+                        <option key={tipo} value={tipo}>
+                          {tipo}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+
+                  <Field label="Área responsable" required>
+                    <Select
+                      value={act.id_area}
+                      onChange={(e) => updateActividad(i, { id_area: e.target.value })}
+                    >
+                      <option value="">Seleccione…</option>
+                      {(areas ?? []).map((a) => (
+                        <option key={a.id_area} value={String(a.id_area)}>
+                          {a.nombre_area}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+
+                  <Field label="Fecha inicio de plan de acción" required>
+                    <Input
+                      type="date"
+                      min={hoy}
+                      value={act.fecha_inicio ?? ""}
+                      onChange={(e) => updateActividad(i, { fecha_inicio: e.target.value })}
+                    />
+                  </Field>
+
+                  <Field label="Fecha fin de plan de acción" required>
+                    <Input
+                      type="date"
+                      min={act.fecha_inicio || hoy}
+                      value={act.fecha_fin ?? ""}
+                      onChange={(e) => updateActividad(i, { fecha_fin: e.target.value })}
+                    />
+                  </Field>
+                </div>
               </div>
             </div>
           ))}
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="mt-4"
+          onClick={() => setActividades((prev) => [...prev, blankActividad(defaultArea)])}
+        >
+          <Plus className="h-4 w-4" /> Agregar plan de acción
+        </Button>
       </section>
 
       <div className="pt-3 border-t border-line-soft flex items-center justify-end gap-2">
@@ -419,7 +551,7 @@ function PlanForm({
           </Button>
         )}
         <Button disabled={!puedeEnviar} onClick={() => setReviewOpen(true)}>
-          <FileSearch className="h-4 w-4" /> Revisar y {esEdicion ? "guardar" : "enviar"}
+          <Send className="h-4 w-4" /> Revisar y enviar planes
         </Button>
       </div>
 
@@ -427,57 +559,37 @@ function PlanForm({
         open={reviewOpen}
         onClose={() => setReviewOpen(false)}
         title={esEdicion ? "Revisar cambios del plan" : "Revisar plan antes de enviar"}
-        subtitle={`${caso.codigo_sop} · ${actividadesValidas.length} actividad(es) para ${nombreArea}`}
+        subtitle={`${caso.codigo_sop} · ${actividadesValidas.length} plan(es) de acción`}
         size="lg"
         footer={
           <>
             <Button variant="ghost" onClick={() => setReviewOpen(false)}>
               Seguir editando
             </Button>
-            <Button disabled={createPlan.isPending || updatePlan.isPending} onClick={enviar}>
-              <Send className="h-4 w-4" /> {esEdicion ? "Guardar cambios" : "Confirmar y enviar al jefe del área"}
+            <Button disabled={createPlans.isPending || updatePlan.isPending} onClick={enviar}>
+              <Send className="h-4 w-4" /> {esEdicion ? "Guardar cambios" : "Confirmar y enviar a jefes de área"}
             </Button>
           </>
         }
       >
         <div className="space-y-4">
-          <div className="rounded-lg border border-line bg-surface/50 p-3.5">
-            <p className="text-[11px] font-semibold tracking-wide uppercase text-ink-faint mb-2">Datos del plan</p>
-            <p className="text-[13px] text-ink leading-relaxed">{descripcion.trim()}</p>
-            <div className="mt-3 grid gap-x-4 gap-y-2 sm:grid-cols-3 text-[12.5px]">
-              <div>
-                <span className="text-ink-quiet">Área:</span> <span className="font-medium">{nombreArea}</span>
-              </div>
-              <div>
-                <span className="text-ink-quiet">Responsable:</span> <span className="font-medium">{nombreResponsable}</span>
-              </div>
-              <div>
-                <span className="text-ink-quiet">Fecha límite:</span>{" "}
-                <span className="font-medium">{fechaPlan ? formatDate(fechaPlan) : "—"}</span>
-              </div>
-            </div>
-            {observaciones.trim() && (
-              <p className="mt-3 pt-3 border-t border-line-soft text-[12.5px] text-ink-soft">
-                <span className="text-ink-quiet">Observaciones:</span> {observaciones.trim()}
-              </p>
-            )}
-          </div>
-
           <div>
             <p className="text-[11px] font-semibold tracking-wide uppercase text-ink-faint mb-2">
-              Actividades ({actividadesValidas.length})
+              Planes de acción a enviar ({actividadesValidas.length})
             </p>
             <div className="space-y-2">
               {actividadesValidas.map((a, i) => (
                 <div key={i} className="rounded-lg border border-line p-3">
                   <div className="flex items-start justify-between gap-3">
                     <span className="font-mono text-[11.5px] font-semibold text-brand-700 shrink-0">
-                      ACT-{String(i + 1).padStart(2, "0")}
+                      PLA-{String(i + 1).padStart(2, "0")}
                     </span>
-                    <p className="flex-1 text-[12.5px] text-ink leading-snug">{a.descripcion.trim()}</p>
+                    <Pill tone="brand" dot>{a.tipo_accion}</Pill>
                   </div>
+                  <p className="mt-2 text-[12.5px] text-ink leading-snug">{a.descripcion.trim()}</p>
                   <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11.5px] text-ink-quiet">
-                    <span>{nombreUsuario(a.responsable)}</span>
+                    <span>Responsable: {nombreUsuario(a.responsable)}{cargoUsuario(a.responsable) ? ` · ${cargoUsuario(a.responsable)}` : ""}</span>
+                    <span>Área: {nombreArea(a.id_area)}</span>
                     <span>Inicio: {a.fecha_inicio ? formatDate(a.fecha_inicio) : "—"}</span>
                     <span>Fin: {a.fecha_fin ? formatDate(a.fecha_fin) : "—"}</span>
                   </div>
@@ -488,13 +600,13 @@ function PlanForm({
 
           {actividades.length > actividadesValidas.length && (
             <p className="rounded-lg bg-warning-soft border border-warning/30 p-3 text-[12px] text-warning-ink">
-              {actividades.length - actividadesValidas.length} actividad(es) sin descripción no se enviarán.
+              Complete todos los campos obligatorios antes de enviar el plan de acción.
             </p>
           )}
 
           {!esEdicion && (
             <p className="text-[11.5px] text-ink-quiet">
-              Al confirmar, el plan queda en estado <span className="font-medium text-ink">Enviado</span> y el jefe del
+              Al confirmar, cada plan queda en estado <span className="font-medium text-ink">Enviado</span> y su jefe de
               área debe aceptarlo para que arranque la Ejecución.
             </p>
           )}

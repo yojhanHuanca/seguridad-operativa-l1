@@ -5,31 +5,47 @@
 // Fuente única: antes esta tabla estaba duplicada en tres archivos (adapter.ts,
 // CaseDetailPage.tsx y este módulo, que no se usaba), con riesgo de que se
 // desincronizaran.
-import type { Stage } from "../domain";
-import { STAGE_STATUS } from "../domain";
+import { RISK_CATEGORY_LABELS, STAGE_STATUS, isRiskLevel, riskCategory, type RiskCategory, type Stage } from "../domain";
 
-const RISK_SLA_DAYS: Record<string, number> = {
-  Inaceptable: 3,
-  "No deseable": 7,
-  "No Deseable": 7,
-  "Aceptable con revisión por la gerencia": 14,
-  "Aceptable sin revisión por la gerencia": 21,
+const RISK_SLA_DAYS = {
+  inaceptable: 3,
+  no_deseable: 7,
+  aceptable_revision: 14,
+  aceptable_sin_revision: 21,
 };
 
-const RISK_GRAVEDAD: Record<string, string> = {
-  Inaceptable: "Crítica",
-  "No deseable": "Alta",
-  "No Deseable": "Alta",
-  "Aceptable con revisión por la gerencia": "Media",
-  "Aceptable sin revisión por la gerencia": "Baja",
+const RISK_GRAVEDAD = {
+  inaceptable: "Alto",
+  no_deseable: "Grave",
+  aceptable_revision: "Medio",
+  aceptable_sin_revision: "Bajo",
 };
 
-export function gravedadDerivada(riesgoNombre?: string | null): string | null {
-  return riesgoNombre ? (RISK_GRAVEDAD[riesgoNombre] ?? null) : null;
+function categoriaDesdeRiesgo(riesgoNombre?: string | null, riesgoCodigo?: string | null): RiskCategory | null {
+  if (isRiskLevel(riesgoCodigo)) return riskCategory(riesgoCodigo);
+
+  const normalizado = riesgoNombre?.trim().toLowerCase();
+  if (!normalizado) return null;
+  if (normalizado.includes("inaceptable")) return "inaceptable";
+  if (normalizado.includes("no deseable")) return "no_deseable";
+  if (normalizado.includes("con revisión") || normalizado.includes("con revision")) return "aceptable_revision";
+  if (normalizado.includes("sin revisión") || normalizado.includes("sin revision")) return "aceptable_sin_revision";
+  return null;
 }
 
-export function diasSlaPorRiesgo(riesgoNombre?: string | null): number | null {
-  return riesgoNombre ? (RISK_SLA_DAYS[riesgoNombre] ?? null) : null;
+export function gravedadDerivada(riesgoNombre?: string | null, riesgoCodigo?: string | null): string | null {
+  const categoria = categoriaDesdeRiesgo(riesgoNombre, riesgoCodigo);
+  return categoria ? RISK_GRAVEDAD[categoria] : null;
+}
+
+export function criterioAceptabilidad(riesgoNombre?: string | null, riesgoCodigo?: string | null): string | null {
+  const categoria = categoriaDesdeRiesgo(riesgoNombre, riesgoCodigo);
+  return categoria ? RISK_CATEGORY_LABELS[categoria] : null;
+}
+
+export function diasSlaPorRiesgo(riesgoNombre?: string | null, riesgoCodigo?: string | null): number | null {
+  const categoria = categoriaDesdeRiesgo(riesgoNombre, riesgoCodigo);
+  return categoria ? RISK_SLA_DAYS[categoria] : null;
 }
 
 /**
@@ -55,8 +71,8 @@ export function fechaEvaluacion(timeline: { kind: string; fecha: string | null }
  * Fecha límite de atención. Devuelve null mientras no haya riesgo evaluado,
  * que es justamente la señal de que el SLA todavía no arrancó.
  */
-export function slaDueDate(desdeISO: string | null, riesgoNombre?: string | null): string | null {
-  const dias = diasSlaPorRiesgo(riesgoNombre);
+export function slaDueDate(desdeISO: string | null, riesgoNombre?: string | null, riesgoCodigo?: string | null): string | null {
+  const dias = diasSlaPorRiesgo(riesgoNombre, riesgoCodigo);
   if (!dias || !desdeISO) return null;
   const limite = new Date(desdeISO);
   if (isNaN(limite.getTime())) return null;

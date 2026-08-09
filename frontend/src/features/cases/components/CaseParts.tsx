@@ -37,12 +37,15 @@ export function WorkflowStepper({
   stage,
   vuelveA,
   prorroga = false,
+  investigacionOmitida = false,
 }: {
   stage: Stage;
   /** Etapa a la que vuelve un caso pausado por solicitud de información. */
   vuelveA?: Stage | null;
   /** Pausa por ampliación de plazo: ocurre dentro de Ejecución. */
   prorroga?: boolean;
+  /** Seguridad Operativa evaluó el caso y decidió saltar Investigación. */
+  investigacionOmitida?: boolean;
 }) {
   const stepIdx = stageStepIndex(stage, vuelveA);
   return (
@@ -55,29 +58,31 @@ export function WorkflowStepper({
           // Ambas pausas se pintan igual: el paso activo en ámbar, señalando
           // que el caso está detenido esperando a un tercero.
           const pendingInfo = (stage === "pendiente_info" || prorroga) && i === stepIdx;
+          const skippedInvestigation = investigacionOmitida && s.stage === "investigacion" && i < stepIdx;
           return (
             <div key={s.stage} className="flex items-center shrink-0">
               <div className="flex items-center gap-2.5 px-2">
                 <div
                   className={cn(
                     "h-9 w-9 rounded-full grid place-items-center shrink-0 transition-all",
-                    done && "bg-brand-700 text-white",
+                    done && !skippedInvestigation && "bg-brand-700 text-white",
                     active && !pendingInfo && "bg-info-soft text-info-ink ring-2 ring-info/30 ring-offset-2 ring-offset-white",
-                    pendingInfo && "bg-warning text-warning-ink ring-2 ring-warning/40 ring-offset-2 ring-offset-white",
+                    (pendingInfo || skippedInvestigation) && "bg-warning text-warning-ink ring-2 ring-warning/40 ring-offset-2 ring-offset-white",
                     rejected && "bg-critical text-white",
-                    !done && !active && !rejected && !pendingInfo && "bg-surface-2 text-ink-faint"
+                    !done && !active && !rejected && !pendingInfo && !skippedInvestigation && "bg-surface-2 text-ink-faint"
                   )}
+                  title={skippedInvestigation ? "Investigación omitida por decisión de Seguridad Operativa" : s.label}
                 >
-                  {done ? <Check className="h-4 w-4" /> : rejected ? <X className="h-4 w-4" /> : pendingInfo ? <AlertCircle className="h-4 w-4" /> : <s.icon className="h-4 w-4" />}
+                  {skippedInvestigation ? <AlertCircle className="h-4 w-4" /> : done ? <Check className="h-4 w-4" /> : rejected ? <X className="h-4 w-4" /> : pendingInfo ? <AlertCircle className="h-4 w-4" /> : <s.icon className="h-4 w-4" />}
                 </div>
                 <div className="hidden md:block">
                   <p
                     className={cn(
                       "text-[12.5px] font-medium leading-tight",
-                      active && !pendingInfo ? "text-info-ink" : pendingInfo ? "text-warning-ink" : done ? "text-ink" : "text-ink-quiet"
+                      active && !pendingInfo ? "text-info-ink" : pendingInfo || skippedInvestigation ? "text-warning-ink" : done ? "text-ink" : "text-ink-quiet"
                     )}
                   >
-                    {s.label}
+                    {skippedInvestigation ? "Investigación omitida" : s.label}
                   </p>
                 </div>
               </div>

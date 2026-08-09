@@ -10,14 +10,17 @@ const LIST_INCLUDE = {
         orderBy: { created_at: "asc" },
         include: {
             areas: { select: { id_area: true, nombre_area: true } },
-            usuarios: { select: { id_usuario: true, nombre: true } },
+            usuarios: { select: { id_usuario: true, nombre: true, cargo: true } },
             catalogo_detalle: { select: { nombre: true } },
             actividades_plan: {
                 orderBy: { id_actividad: "asc" },
                 include: {
-                    usuarios: { select: { id_usuario: true, nombre: true } },
+                    usuarios: { select: { id_usuario: true, nombre: true, cargo: true } },
                     catalogo_detalle: { select: { nombre: true } },
-                    seguimientos: { orderBy: { fecha: "desc" } },
+                    seguimientos: {
+                        orderBy: { fecha: "desc" },
+                        include: { usuarios: { select: { id_usuario: true, nombre: true, cargo: true } } },
+                    },
                 },
             },
         },
@@ -42,19 +45,24 @@ const DETAIL_INCLUDE = {
     usuarios_casos_sop_responsable_hallazgoTousuarios: { select: { id_usuario: true, nombre: true, cargo: true } },
     usuarios_casos_sop_responsable_planTousuarios: { select: { id_usuario: true, nombre: true, cargo: true } },
     anexos_caso: true,
-    investigacion_caso: { include: { usuarios: { select: { id_usuario: true, nombre: true } } } },
+    investigacion_caso: { include: { usuarios: { select: { id_usuario: true, nombre: true, cargo: true } } } },
     solicitudes_informacion: { orderBy: { fecha_solicitud: "desc" } },
     timeline_caso: { orderBy: { fecha: "desc" } },
     planes_accion: {
         orderBy: { created_at: "asc" },
         include: {
             areas: { select: { id_area: true, nombre_area: true } },
-            usuarios: { select: { id_usuario: true, nombre: true } },
+            usuarios: { select: { id_usuario: true, nombre: true, cargo: true } },
             catalogo_detalle: { select: { nombre: true } },
             actividades_plan: {
+                orderBy: { id_actividad: "asc" },
                 include: {
-                    usuarios: { select: { id_usuario: true, nombre: true } },
+                    usuarios: { select: { id_usuario: true, nombre: true, cargo: true } },
                     catalogo_detalle: { select: { nombre: true } },
+                    seguimientos: {
+                        orderBy: { fecha: "desc" },
+                        include: { usuarios: { select: { id_usuario: true, nombre: true, cargo: true } } },
+                    },
                 },
             },
         },
@@ -105,6 +113,23 @@ export class CaseRepository {
         });
         return prisma.timeline_caso.findMany({ where: { id_caso }, orderBy: { fecha: "desc" } });
     }
+    /** Comentario operativo de SO asociado a un plan específico. */
+    static async addPlanComment(id_plan, texto) {
+        const plan = await prisma.planes_accion.findUnique({
+            where: { id_plan },
+            select: { id_caso: true, codigo_plan: true },
+        });
+        if (!plan)
+            throw new Error(`El plan ${id_plan} no existe`);
+        await CaseRepository.pushTimeline(prisma, plan.id_caso, {
+            kind: "comentario",
+            actor: ACTOR_SO,
+            actor_rol: "seguridad",
+            titulo: `Comentario SO — ${plan.codigo_plan}`,
+            detalle: texto,
+        });
+        return prisma.timeline_caso.findMany({ where: { id_caso: plan.id_caso }, orderBy: { fecha: "desc" } });
+    }
     static async findAll(filtros) {
         const where = {};
         if (filtros.estados?.length) {
@@ -138,16 +163,16 @@ export class CaseRepository {
             orderBy: { created_at: "desc" },
             include: {
                 areas: { select: { id_area: true, nombre_area: true } },
-                usuarios: { select: { id_usuario: true, nombre: true } },
+                usuarios: { select: { id_usuario: true, nombre: true, cargo: true } },
                 catalogo_detalle: { select: { nombre: true } },
                 actividades_plan: {
                     orderBy: { id_actividad: "asc" },
                     include: {
-                        usuarios: { select: { id_usuario: true, nombre: true } },
+                        usuarios: { select: { id_usuario: true, nombre: true, cargo: true } },
                         catalogo_detalle: { select: { nombre: true } },
                         seguimientos: {
                             orderBy: { fecha: "desc" },
-                            include: { usuarios: { select: { id_usuario: true, nombre: true } } },
+                            include: { usuarios: { select: { id_usuario: true, nombre: true, cargo: true } } },
                         },
                     },
                 },
@@ -198,6 +223,30 @@ export class CaseRepository {
         if (!estado)
             throw new Error(`Falta el estado "${nombre}" en el catálogo "Estado Plan de acción"`);
         return estado;
+    }
+    static async ensureEstadoPlan(nombre) {
+        const catalogo = await prisma.catalogos.findUnique({
+            where: { nombre: "Estado Plan de acción" },
+            select: { id_catalogo: true },
+        });
+        if (!catalogo)
+            throw new Error('Falta el catálogo "Estado Plan de acción"');
+        const existente = await prisma.catalogo_detalle.findFirst({
+            where: { id_catalogo: catalogo.id_catalogo, nombre },
+        });
+        if (existente)
+            return existente;
+        const orden = await prisma.catalogo_detalle.aggregate({
+            where: { id_catalogo: catalogo.id_catalogo },
+            _max: { orden: true },
+        });
+        return prisma.catalogo_detalle.create({
+            data: {
+                id_catalogo: catalogo.id_catalogo,
+                nombre,
+                orden: (orden._max.orden ?? 0) + 1,
+            },
+        });
     }
     static async findEstadoActividad(nombre) {
         const estado = await prisma.catalogo_detalle.findFirst({ where: { nombre, catalogos: { nombre: "Estado Actividad" } } });
@@ -412,14 +461,79 @@ export class CaseRepository {
             }
         }
     }
+    static async createPlans(id_caso, codigo_sop, dtos) {
+        if (dtos.length === 0)
+            throw new Error("Agregue al menos un plan de acción");
+        const [estadoPlanEnviado, estadoCasoPlan, estadoActividadPendiente] = await Promise.all([
+            CaseRepository.findEstadoPlan("Enviado"),
+            CaseRepository.findEstado("Plan de Acción"),
+            CaseRepository.findEstadoActividad("Pendiente"),
+        ]);
+        return prisma.$transaction(async (tx) => {
+            const totalPlanes = await tx.planes_accion.count({ where: { id_caso } });
+            const creados = [];
+            for (const [i, dto] of dtos.entries()) {
+                const numero = totalPlanes + i + 1;
+                const codigo_plan = `${codigo_sop}-PLA-${String(numero).padStart(2, "0")}`;
+                const plan = await tx.planes_accion.create({
+                    data: {
+                        id_caso,
+                        codigo_plan,
+                        descripcion: dto.descripcion,
+                        id_area: dto.id_area,
+                        responsable: dto.responsable,
+                        estado: estadoPlanEnviado.id_detalle,
+                        fecha_plan: new Date(dto.fecha_plan),
+                        observaciones: dto.observaciones ?? null,
+                    },
+                });
+                if (dto.actividades.length > 0) {
+                    await tx.actividades_plan.createMany({
+                        data: dto.actividades.map((a) => ({
+                            id_plan: plan.id_plan,
+                            descripcion: a.descripcion,
+                            responsable: a.responsable ?? null,
+                            fecha_inicio: a.fecha_inicio ? new Date(a.fecha_inicio) : null,
+                            fecha_fin: a.fecha_fin ? new Date(a.fecha_fin) : null,
+                            estado: estadoActividadPendiente.id_detalle,
+                            porcentaje: 0,
+                        })),
+                    });
+                }
+                await CaseRepository.pushTimeline(tx, id_caso, {
+                    kind: "plan_propuesto",
+                    actor: ACTOR_SO,
+                    actor_rol: "seguridad",
+                    titulo: "Plan de Acción enviado a Jefe de Área",
+                    detalle: `${codigo_plan} · pendiente de aceptación por el área responsable.`,
+                });
+                creados.push(plan);
+            }
+            await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estadoCasoPlan.id_detalle } });
+            return creados;
+        });
+    }
     /**
-     * Modifica un plan ya enviado, reemplazando sus actividades. Antes esto no
-     * existía: la UI abría el formulario vacío y "modificar" terminaba creando
-     * otro plan, perdiendo lo ya cargado (bug reportado por el cliente).
+     * Modifica un plan ya enviado conservando las actividades existentes.
+     * Antes se borraban y recreaban en bloque; eso hacía que al presionar
+     * "Modificar" se perdiera lo ya cargado, especialmente estados, avances y
+     * seguimientos registrados sobre la actividad.
      */
     static async updatePlan(id_plan, dto) {
         const estadoActPendiente = await CaseRepository.findEstadoActividad("Pendiente");
         return prisma.$transaction(async (tx) => {
+            const actividadesActuales = await tx.actividades_plan.findMany({
+                where: { id_plan },
+                select: {
+                    id_actividad: true,
+                    porcentaje: true,
+                    seguimientos: { select: { id_seguimiento: true }, take: 1 },
+                },
+            });
+            const idsActuales = new Set(actividadesActuales.map((a) => a.id_actividad));
+            const idsRecibidos = new Set(dto.actividades
+                .map((a) => a.id_actividad)
+                .filter((id) => typeof id === "number" && idsActuales.has(id)));
             const plan = await tx.planes_accion.update({
                 where: { id_plan },
                 data: {
@@ -431,21 +545,38 @@ export class CaseRepository {
                     updated_at: new Date(),
                 },
             });
-            // Las actividades se reemplazan en bloque: el formulario envía la lista
-            // completa, así que borrar + recrear evita estados intermedios raros.
-            await tx.actividades_plan.deleteMany({ where: { id_plan } });
-            if (dto.actividades.length > 0) {
-                await tx.actividades_plan.createMany({
-                    data: dto.actividades.map((a) => ({
-                        id_plan,
-                        descripcion: a.descripcion,
-                        responsable: a.responsable ?? null,
-                        fecha_inicio: a.fecha_inicio ? new Date(a.fecha_inicio) : null,
-                        fecha_fin: a.fecha_fin ? new Date(a.fecha_fin) : null,
-                        estado: estadoActPendiente.id_detalle,
-                        porcentaje: 0,
-                    })),
-                });
+            for (const a of dto.actividades) {
+                if (a.id_actividad && idsActuales.has(a.id_actividad)) {
+                    await tx.actividades_plan.update({
+                        where: { id_actividad: a.id_actividad },
+                        data: {
+                            descripcion: a.descripcion,
+                            responsable: a.responsable ?? null,
+                            fecha_inicio: a.fecha_inicio ? new Date(a.fecha_inicio) : null,
+                            fecha_fin: a.fecha_fin ? new Date(a.fecha_fin) : null,
+                        },
+                    });
+                }
+                else {
+                    await tx.actividades_plan.create({
+                        data: {
+                            id_plan,
+                            descripcion: a.descripcion,
+                            responsable: a.responsable ?? null,
+                            fecha_inicio: a.fecha_inicio ? new Date(a.fecha_inicio) : null,
+                            fecha_fin: a.fecha_fin ? new Date(a.fecha_fin) : null,
+                            estado: estadoActPendiente.id_detalle,
+                            porcentaje: 0,
+                        },
+                    });
+                }
+            }
+            const removibles = actividadesActuales
+                .filter((a) => !idsRecibidos.has(a.id_actividad))
+                .filter((a) => Number(a.porcentaje ?? 0) === 0 && a.seguimientos.length === 0)
+                .map((a) => a.id_actividad);
+            if (removibles.length > 0) {
+                await tx.actividades_plan.deleteMany({ where: { id_actividad: { in: removibles } } });
             }
             await CaseRepository.pushTimeline(tx, plan.id_caso, {
                 kind: "plan_ajustado",
@@ -459,17 +590,17 @@ export class CaseRepository {
     }
     /** ETAPA 5 — el Jefe del Área acepta el plan y arranca la Ejecución. */
     static async acceptPlan(id_caso, actor) {
-        const [estadoCaso, estadoPlanAceptado, estadoActEnProgreso] = await Promise.all([
+        const [estadoCaso, estadoPlanEnEjecucion, estadoActEnProgreso] = await Promise.all([
             CaseRepository.findEstado("Ejecución"),
-            CaseRepository.findEstadoPlan("Aceptado"),
+            CaseRepository.findEstadoPlan("En Ejecución"),
             CaseRepository.findEstadoActividad("En progreso"),
         ]);
         return prisma.$transaction(async (tx) => {
             const planes = await tx.planes_accion.findMany({ where: { id_caso }, select: { id_plan: true } });
             const ids = planes.map((p) => p.id_plan);
-            await tx.planes_accion.updateMany({ where: { id_caso }, data: { estado: estadoPlanAceptado.id_detalle } });
+            await tx.planes_accion.updateMany({ where: { id_caso }, data: { estado: estadoPlanEnEjecucion.id_detalle } });
             if (ids.length > 0) {
-                await tx.actividades_plan.updateMany({ where: { id_plan: { in: ids } }, data: { estado: estadoActEnProgreso.id_detalle } });
+                await tx.actividades_plan.updateMany({ where: { id_plan: { in: ids } }, data: { estado: estadoActEnProgreso.id_detalle, porcentaje: 0 } });
             }
             const caso = await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estadoCaso.id_detalle } });
             await CaseRepository.pushTimeline(tx, id_caso, {
@@ -482,30 +613,276 @@ export class CaseRepository {
             return caso;
         });
     }
+    /** ETAPA 5 — el Jefe del Área acepta un plan específico del reporte. */
+    static async acceptPlanById(id_plan, actor) {
+        const plan = await prisma.planes_accion.findUnique({
+            where: { id_plan },
+            select: { id_plan: true, id_caso: true, codigo_plan: true, descripcion: true },
+        });
+        if (!plan)
+            throw new Error(`El plan ${id_plan} no existe`);
+        const [estadoCaso, estadoPlanAceptado, estadoPlanEnEjecucion, estadoPlanFinalizado, estadoPlanCerrado, estadoActEnProgreso] = await Promise.all([
+            CaseRepository.findEstado("Ejecución"),
+            CaseRepository.findEstadoPlan("Aceptado"),
+            CaseRepository.findEstadoPlan("En Ejecución"),
+            CaseRepository.ensureEstadoPlan("Finalizado"),
+            CaseRepository.findEstadoPlan("Cerrado"),
+            CaseRepository.findEstadoActividad("En progreso"),
+        ]);
+        return prisma.$transaction(async (tx) => {
+            const actualizado = await tx.planes_accion.update({
+                where: { id_plan },
+                data: { estado: estadoPlanEnEjecucion.id_detalle, updated_at: new Date() },
+            });
+            await tx.actividades_plan.updateMany({
+                where: { id_plan },
+                data: { estado: estadoActEnProgreso.id_detalle, porcentaje: 0 },
+            });
+            const estadosListos = [
+                estadoPlanAceptado.id_detalle,
+                estadoPlanEnEjecucion.id_detalle,
+                estadoPlanFinalizado.id_detalle,
+                estadoPlanCerrado.id_detalle,
+            ];
+            const planesPendientes = await tx.planes_accion.count({
+                where: { id_caso: plan.id_caso, estado: { notIn: estadosListos } },
+            });
+            if (planesPendientes === 0) {
+                await tx.casos_sop.update({ where: { id_caso: plan.id_caso }, data: { estado_hallazgo: estadoCaso.id_detalle } });
+            }
+            await CaseRepository.pushTimeline(tx, plan.id_caso, {
+                kind: "plan_aprobado",
+                actor,
+                actor_rol: "jefe",
+                titulo: planesPendientes === 0 ? "Todos los planes fueron aceptados" : "Plan aceptado por el jefe del área",
+                detalle: planesPendientes === 0
+                    ? `${plan.codigo_plan} aceptado. Todos los planes del reporte pueden ejecutarse.`
+                    : `${plan.codigo_plan} aceptado. Este plan inicia ejecución; el caso espera la aceptación de los demás planes.`,
+            });
+            return actualizado;
+        });
+    }
+    /** El área termina un plan específico; SO lo revisa después de forma independiente. */
+    static async completeExecutionByPlan(id_plan, actor, descripcionCierre) {
+        const plan = await prisma.planes_accion.findUnique({
+            where: { id_plan },
+            select: {
+                id_plan: true,
+                id_caso: true,
+                codigo_plan: true,
+                catalogo_detalle: { select: { nombre: true } },
+            },
+        });
+        if (!plan)
+            throw new Error(`El plan ${id_plan} no existe`);
+        const estadoPlan = plan.catalogo_detalle.nombre.toLowerCase();
+        if (estadoPlan.includes("finaliz") || estadoPlan.includes("cerrad")) {
+            throw new Error(`El plan ${plan.codigo_plan} ya fue enviado a revisión`);
+        }
+        const [totalActividades, actividadesPendientes] = await Promise.all([
+            prisma.actividades_plan.count({ where: { id_plan } }),
+            prisma.actividades_plan.count({
+                where: {
+                    id_plan,
+                    OR: [{ porcentaje: null }, { porcentaje: { lt: 100 } }],
+                },
+            }),
+        ]);
+        if (totalActividades === 0) {
+            throw new Error(`El plan ${plan.codigo_plan} no tiene actividades para finalizar`);
+        }
+        if (actividadesPendientes > 0) {
+            throw new Error(`Complete todas las actividades antes de enviar ${plan.codigo_plan} a revisión`);
+        }
+        const [estadoPlanFinalizado, estadoActCompletado] = await Promise.all([
+            CaseRepository.ensureEstadoPlan("Finalizado"),
+            CaseRepository.findEstadoActividad("Completado"),
+        ]);
+        return prisma.$transaction(async (tx) => {
+            await tx.planes_accion.update({
+                where: { id_plan },
+                data: { estado: estadoPlanFinalizado.id_detalle, updated_at: new Date() },
+            });
+            await tx.actividades_plan.updateMany({
+                where: { id_plan },
+                data: { estado: estadoActCompletado.id_detalle, porcentaje: 100 },
+            });
+            await CaseRepository.pushTimeline(tx, plan.id_caso, {
+                kind: "seguimiento",
+                actor,
+                actor_rol: "jefe",
+                titulo: `Plan de acción finalizado por el área — ${plan.codigo_plan}`,
+                detalle: `Descripción final: ${descripcionCierre}`,
+            });
+            return tx.planes_accion.findUnique({ where: { id_plan } });
+        });
+    }
+    /** SO revisa un plan finalizado: lo cierra o lo devuelve al área sin afectar a otros planes. */
+    static async reviewFinalPlanById(id_plan, decision, nota) {
+        const plan = await prisma.planes_accion.findUnique({
+            where: { id_plan },
+            select: {
+                id_plan: true,
+                id_caso: true,
+                codigo_plan: true,
+                catalogo_detalle: { select: { nombre: true } },
+            },
+        });
+        if (!plan)
+            throw new Error(`El plan ${id_plan} no existe`);
+        if (plan.catalogo_detalle.nombre !== "Finalizado") {
+            throw new Error(`El plan ${plan.codigo_plan} debe estar Finalizado para revisión final`);
+        }
+        const [estadoCasoVerificacion, estadoPlanCerrado, estadoPlanEnEjecucion, estadoActEnProgreso] = await Promise.all([
+            CaseRepository.findEstado("Verificación"),
+            CaseRepository.findEstadoPlan("Cerrado"),
+            CaseRepository.findEstadoPlan("En Ejecución"),
+            CaseRepository.findEstadoActividad("En progreso"),
+        ]);
+        return prisma.$transaction(async (tx) => {
+            const aprobado = decision === "aprobada";
+            const actualizado = await tx.planes_accion.update({
+                where: { id_plan },
+                data: {
+                    estado: aprobado ? estadoPlanCerrado.id_detalle : estadoPlanEnEjecucion.id_detalle,
+                    updated_at: new Date(),
+                },
+            });
+            if (!aprobado) {
+                await tx.actividades_plan.updateMany({
+                    where: { id_plan },
+                    data: { estado: estadoActEnProgreso.id_detalle, porcentaje: 50 },
+                });
+            }
+            let todosCerrados = false;
+            if (aprobado) {
+                const planesAbiertos = await tx.planes_accion.count({
+                    where: { id_caso: plan.id_caso, estado: { not: estadoPlanCerrado.id_detalle } },
+                });
+                todosCerrados = planesAbiertos === 0;
+                if (todosCerrados) {
+                    await tx.casos_sop.update({ where: { id_caso: plan.id_caso }, data: { estado_hallazgo: estadoCasoVerificacion.id_detalle } });
+                }
+            }
+            await CaseRepository.pushTimeline(tx, plan.id_caso, {
+                kind: "seguimiento",
+                actor: ACTOR_SO,
+                actor_rol: "seguridad",
+                titulo: aprobado
+                    ? `Plan de acción cerrado por Seguridad Operativa — ${plan.codigo_plan}`
+                    : `Plan de acción devuelto al área — ${plan.codigo_plan}`,
+                detalle: nota
+                    ? `${plan.codigo_plan}: ${nota}`
+                    : aprobado
+                        ? todosCerrados
+                            ? `${plan.codigo_plan} cerrado. Todos los planes están cerrados y el caso pasa a Verificación.`
+                            : `${plan.codigo_plan} cerrado. Otros planes del reporte siguen pendientes.`
+                        : `${plan.codigo_plan} requiere correcciones antes del cierre.`,
+            });
+            return actualizado;
+        });
+    }
+    /** ETAPA 5 — el Jefe del Área solicita ampliación de plazo para un plan específico. */
+    static async requestExtensionByPlan(id_plan, dto, actor) {
+        const plan = await prisma.planes_accion.findUnique({
+            where: { id_plan },
+            select: { id_plan: true, id_caso: true, codigo_plan: true },
+        });
+        if (!plan)
+            throw new Error(`El plan ${id_plan} no existe`);
+        const estado = await CaseRepository.findEstado("Prórroga Solicitada");
+        return prisma.$transaction(async (tx) => {
+            const actualizado = await tx.planes_accion.update({
+                where: { id_plan },
+                data: {
+                    prorroga_motivo: dto.justificacion,
+                    prorroga_fecha: new Date(dto.nueva_fecha),
+                    prorroga_estado: "pendiente",
+                    prorroga_fecha_sol: new Date(),
+                    updated_at: new Date(),
+                },
+            });
+            await tx.casos_sop.update({ where: { id_caso: plan.id_caso }, data: { estado_hallazgo: estado.id_detalle } });
+            await CaseRepository.pushTimeline(tx, plan.id_caso, {
+                kind: "ampliacion",
+                actor,
+                actor_rol: "jefe",
+                titulo: "Solicitud de ampliación de plazo",
+                detalle: `${plan.codigo_plan}. Nueva fecha: ${dto.nueva_fecha}. Justificación: ${dto.justificacion}`,
+            });
+            return actualizado;
+        });
+    }
+    /** SO aprueba o rechaza la prórroga de un plan sin tocar los demás. */
+    static async reviewExtensionByPlan(id_plan, decision, nota) {
+        const plan = await prisma.planes_accion.findUnique({
+            where: { id_plan },
+            select: { id_plan: true, id_caso: true, codigo_plan: true, prorroga_fecha: true, prorroga_estado: true },
+        });
+        if (!plan)
+            throw new Error(`El plan ${id_plan} no existe`);
+        if (plan.prorroga_estado !== "pendiente") {
+            throw new Error(`El plan ${plan.codigo_plan} no tiene una prórroga pendiente`);
+        }
+        const [estadoEjecucion, estadoProrroga] = await Promise.all([
+            CaseRepository.findEstado("Ejecución"),
+            CaseRepository.findEstado("Prórroga Solicitada"),
+        ]);
+        return prisma.$transaction(async (tx) => {
+            const actualizado = await tx.planes_accion.update({
+                where: { id_plan },
+                data: {
+                    prorroga_estado: decision,
+                    updated_at: new Date(),
+                    ...(decision === "aprobada" && plan.prorroga_fecha ? { fecha_reprogramada: plan.prorroga_fecha } : {}),
+                },
+            });
+            const pendientes = await tx.planes_accion.count({
+                where: { id_caso: plan.id_caso, prorroga_estado: "pendiente" },
+            });
+            await tx.casos_sop.update({
+                where: { id_caso: plan.id_caso },
+                data: { estado_hallazgo: pendientes > 0 ? estadoProrroga.id_detalle : estadoEjecucion.id_detalle },
+            });
+            await CaseRepository.pushTimeline(tx, plan.id_caso, {
+                kind: "ampliacion",
+                actor: ACTOR_SO,
+                actor_rol: "seguridad",
+                titulo: decision === "aprobada"
+                    ? `Ampliación de plazo aprobada — ${plan.codigo_plan}`
+                    : `Ampliación de plazo rechazada — ${plan.codigo_plan}`,
+                detalle: nota ? `${plan.codigo_plan}: ${nota}` : `${plan.codigo_plan}: solicitud ${decision}.`,
+            });
+            return actualizado;
+        });
+    }
     /** ETAPA 5 → 6 — el área termina las actividades y devuelve el caso a SO. */
     static async completeExecution(id_caso, actor) {
-        const [estadoCaso, estadoActCompletado] = await Promise.all([
-            CaseRepository.findEstado("Verificación"),
+        const [estadoPlanFinalizado, estadoActCompletado] = await Promise.all([
+            CaseRepository.ensureEstadoPlan("Finalizado"),
             CaseRepository.findEstadoActividad("Completado"),
         ]);
         return prisma.$transaction(async (tx) => {
             const planes = await tx.planes_accion.findMany({ where: { id_caso }, select: { id_plan: true } });
             const ids = planes.map((p) => p.id_plan);
             if (ids.length > 0) {
+                await tx.planes_accion.updateMany({
+                    where: { id_plan: { in: ids } },
+                    data: { estado: estadoPlanFinalizado.id_detalle, updated_at: new Date() },
+                });
                 await tx.actividades_plan.updateMany({
                     where: { id_plan: { in: ids } },
                     data: { estado: estadoActCompletado.id_detalle, porcentaje: 100 },
                 });
             }
-            const caso = await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estadoCaso.id_detalle } });
             await CaseRepository.pushTimeline(tx, id_caso, {
                 kind: "seguimiento",
                 actor,
                 actor_rol: "jefe",
-                titulo: "Ejecución finalizada — vuelve a Seguridad Operativa",
-                detalle: "El área completó las actividades. El expediente vuelve a SO para verificación.",
+                titulo: "Planes finalizados por el área",
+                detalle: "Los planes quedaron pendientes de revisión final individual por Seguridad Operativa.",
             });
-            return caso;
+            return tx.casos_sop.findUnique({ where: { id_caso } });
         });
     }
     /** ETAPA 5 — el área actualiza el estado/avance de una actividad del plan. */
@@ -516,7 +893,16 @@ export class CaseRepository {
             const actividad = await tx.actividades_plan.update({
                 where: { id_actividad },
                 data: { estado: estado.id_detalle, porcentaje },
-                include: { planes_accion: { select: { id_caso: true, codigo_plan: true } } },
+                include: {
+                    planes_accion: {
+                        select: {
+                            id_plan: true,
+                            id_caso: true,
+                            codigo_plan: true,
+                            catalogo_detalle: { select: { nombre: true } },
+                        },
+                    },
+                },
             });
             if (comentario) {
                 await tx.seguimientos.create({ data: { id_actividad, comentario, porcentaje } });
@@ -525,8 +911,8 @@ export class CaseRepository {
                 kind: "seguimiento",
                 actor,
                 actor_rol: "jefe",
-                titulo: `Actividad actualizada — ${estadoNombre}`,
-                detalle: comentario ?? actividad.descripcion,
+                titulo: `Actividad actualizada — ${actividad.planes_accion.codigo_plan}`,
+                detalle: `${estadoNombre}: ${comentario ?? actividad.descripcion}`,
             });
             return actividad;
         });
@@ -614,6 +1000,31 @@ export class CaseRepository {
             return caso;
         });
     }
+    /** Retroceso controlado entre etapas activas, sin borrar datos del expediente. */
+    static async rollbackStage(id_caso, estadoActualNombre, destinoNombre, motivo) {
+        const permitidos = {
+            Investigación: ["Evaluación"],
+            "Plan de Acción": ["Investigación"],
+        };
+        if (!permitidos[estadoActualNombre]?.includes(destinoNombre)) {
+            throw new Error(`No se puede retroceder de "${estadoActualNombre}" a "${destinoNombre}"`);
+        }
+        const estadoDestino = await CaseRepository.findEstado(destinoNombre);
+        return prisma.$transaction(async (tx) => {
+            const caso = await tx.casos_sop.update({
+                where: { id_caso },
+                data: { estado_hallazgo: estadoDestino.id_detalle },
+            });
+            await CaseRepository.pushTimeline(tx, id_caso, {
+                kind: "retroceso",
+                actor: ACTOR_SO,
+                actor_rol: "seguridad",
+                titulo: `Retroceso de etapa — vuelve a ${destinoNombre}`,
+                detalle: `Desde ${estadoActualNombre}. Motivo: ${motivo}`,
+            });
+            return caso;
+        });
+    }
     static async closeCase(id_caso, nota) {
         const estado = await CaseRepository.findEstado("Cerrado");
         return prisma.$transaction(async (tx) => {
@@ -641,6 +1052,35 @@ export class CaseRepository {
             });
         }
         return prisma.anexos_caso.findMany({ where: { id_caso }, orderBy: { fecha_subida: "desc" } });
+    }
+    static async addEvidenceByPlan(id_plan, archivos, actor) {
+        const plan = await prisma.planes_accion.findUnique({
+            where: { id_plan },
+            select: { id_caso: true, codigo_plan: true },
+        });
+        if (!plan)
+            throw new Error(`El plan ${id_plan} no existe`);
+        return prisma.$transaction(async (tx) => {
+            if (archivos.length > 0) {
+                await tx.anexos_caso.createMany({
+                    data: archivos.map((f) => ({
+                        id_caso: plan.id_caso,
+                        nombre_archivo: f.originalname,
+                        ruta_archivo: `/uploads/casos/${f.filename}`,
+                        tipo_archivo: f.mimetype,
+                        peso: Math.round((f.size / 1024) * 100) / 100,
+                    })),
+                });
+                await CaseRepository.pushTimeline(tx, plan.id_caso, {
+                    kind: "seguimiento",
+                    actor,
+                    actor_rol: "jefe",
+                    titulo: `Evidencia adjuntada — ${plan.codigo_plan}`,
+                    detalle: archivos.map((f) => f.originalname).join(", "),
+                });
+            }
+            return tx.anexos_caso.findMany({ where: { id_caso: plan.id_caso }, orderBy: { fecha_subida: "desc" } });
+        });
     }
 }
 //# sourceMappingURL=case.repository.js.map

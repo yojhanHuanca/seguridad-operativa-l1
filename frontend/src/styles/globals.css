@@ -218,6 +218,10 @@ body {
    de acción, que no tienen sentido en un documento. Se marca con
    `data-print="hide"` todo lo que es navegación o acción, y el expediente
    queda como documento: cabecera, stepper, panel lateral y etapa activa. */
+[data-plan-export] {
+  display: none;
+}
+
 @media print {
   @page {
     size: A4;
@@ -232,6 +236,14 @@ body {
   /* Navegación, acciones y overlays no pertenecen al documento impreso. */
   [data-print="hide"] {
     display: none !important;
+  }
+
+  [data-plan-export-root="active"] [data-print-plan-screen] {
+    display: none !important;
+  }
+
+  [data-plan-export-root="active"] [data-plan-export] {
+    display: block !important;
   }
 
   /* Un botón es siempre una acción, nunca contenido: no va al PDF. Lo que

@@ -3,6 +3,7 @@ export interface UserListItem {
   codigo_usuario: string;
   nombre: string;
   correo: string;
+  cargo: string | null;
   telefono: string | null;
   estado: string | null;
   roles: { nombre_rol: string } | null;

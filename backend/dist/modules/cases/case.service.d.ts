@@ -59,17 +59,24 @@ export declare class CaseService {
         })[];
         planes_accion: ({
             actividades_plan: ({
-                seguimientos: {
+                seguimientos: ({
+                    usuarios: {
+                        id_usuario: number;
+                        nombre: string;
+                        cargo: string | null;
+                    } | null;
+                } & {
                     fecha: Date | null;
                     usuario: number | null;
                     comentario: string | null;
                     id_actividad: number;
                     porcentaje: import("@prisma/client/runtime/library").Decimal | null;
                     id_seguimiento: number;
-                }[];
+                })[];
                 usuarios: {
                     id_usuario: number;
                     nombre: string;
+                    cargo: string | null;
                 } | null;
                 catalogo_detalle: {
                     nombre: string;
@@ -92,6 +99,7 @@ export declare class CaseService {
             usuarios: {
                 id_usuario: number;
                 nombre: string;
+                cargo: string | null;
             };
             catalogo_detalle: {
                 nombre: string;
@@ -176,6 +184,7 @@ export declare class CaseService {
                 usuarios: {
                     id_usuario: number;
                     nombre: string;
+                    cargo: string | null;
                 } | null;
             } & {
                 fecha: Date | null;
@@ -188,6 +197,7 @@ export declare class CaseService {
             usuarios: {
                 id_usuario: number;
                 nombre: string;
+                cargo: string | null;
             } | null;
             catalogo_detalle: {
                 nombre: string;
@@ -210,6 +220,7 @@ export declare class CaseService {
         usuarios: {
             id_usuario: number;
             nombre: string;
+            cargo: string | null;
         };
         casos_sop: {
             anexos_caso: {
@@ -347,6 +358,7 @@ export declare class CaseService {
             usuarios: {
                 id_usuario: number;
                 nombre: string;
+                cargo: string | null;
             } | null;
         } & {
             created_at: Date | null;
@@ -361,9 +373,24 @@ export declare class CaseService {
         }) | null;
         planes_accion: ({
             actividades_plan: ({
+                seguimientos: ({
+                    usuarios: {
+                        id_usuario: number;
+                        nombre: string;
+                        cargo: string | null;
+                    } | null;
+                } & {
+                    fecha: Date | null;
+                    usuario: number | null;
+                    comentario: string | null;
+                    id_actividad: number;
+                    porcentaje: import("@prisma/client/runtime/library").Decimal | null;
+                    id_seguimiento: number;
+                })[];
                 usuarios: {
                     id_usuario: number;
                     nombre: string;
+                    cargo: string | null;
                 } | null;
                 catalogo_detalle: {
                     nombre: string;
@@ -386,6 +413,7 @@ export declare class CaseService {
             usuarios: {
                 id_usuario: number;
                 nombre: string;
+                cargo: string | null;
             };
             catalogo_detalle: {
                 nombre: string;
@@ -683,6 +711,25 @@ export declare class CaseService {
         prorroga_estado: string | null;
         prorroga_fecha_sol: Date | null;
     }>;
+    static createPlans(codigo: string, rawBody: unknown): Promise<{
+        estado: number;
+        id_area: number;
+        descripcion: string;
+        created_at: Date | null;
+        id_caso: number;
+        dias_abierto: number | null;
+        fecha_plan: Date;
+        fecha_reprogramada: Date | null;
+        observaciones: string | null;
+        updated_at: Date | null;
+        id_plan: number;
+        codigo_plan: string;
+        responsable: number;
+        prorroga_motivo: string | null;
+        prorroga_fecha: Date | null;
+        prorroga_estado: string | null;
+        prorroga_fecha_sol: Date | null;
+    }[]>;
     static updatePlan(idPlan: string, rawBody: unknown): Promise<{
         estado: number;
         id_area: number;
@@ -768,6 +815,101 @@ export declare class CaseService {
         created_by: number | null;
         updated_at: Date | null;
     }>;
+    static acceptPlanById(idPlan: string, rawBody: unknown): Promise<{
+        estado: number;
+        id_area: number;
+        descripcion: string;
+        created_at: Date | null;
+        id_caso: number;
+        dias_abierto: number | null;
+        fecha_plan: Date;
+        fecha_reprogramada: Date | null;
+        observaciones: string | null;
+        updated_at: Date | null;
+        id_plan: number;
+        codigo_plan: string;
+        responsable: number;
+        prorroga_motivo: string | null;
+        prorroga_fecha: Date | null;
+        prorroga_estado: string | null;
+        prorroga_fecha_sol: Date | null;
+    }>;
+    static completeExecutionByPlan(idPlan: string, rawBody: unknown): Promise<{
+        estado: number;
+        id_area: number;
+        descripcion: string;
+        created_at: Date | null;
+        id_caso: number;
+        dias_abierto: number | null;
+        fecha_plan: Date;
+        fecha_reprogramada: Date | null;
+        observaciones: string | null;
+        updated_at: Date | null;
+        id_plan: number;
+        codigo_plan: string;
+        responsable: number;
+        prorroga_motivo: string | null;
+        prorroga_fecha: Date | null;
+        prorroga_estado: string | null;
+        prorroga_fecha_sol: Date | null;
+    } | null>;
+    static reviewFinalPlanById(idPlan: string, rawBody: unknown): Promise<{
+        estado: number;
+        id_area: number;
+        descripcion: string;
+        created_at: Date | null;
+        id_caso: number;
+        dias_abierto: number | null;
+        fecha_plan: Date;
+        fecha_reprogramada: Date | null;
+        observaciones: string | null;
+        updated_at: Date | null;
+        id_plan: number;
+        codigo_plan: string;
+        responsable: number;
+        prorroga_motivo: string | null;
+        prorroga_fecha: Date | null;
+        prorroga_estado: string | null;
+        prorroga_fecha_sol: Date | null;
+    }>;
+    static requestExtensionByPlan(idPlan: string, rawBody: unknown): Promise<{
+        estado: number;
+        id_area: number;
+        descripcion: string;
+        created_at: Date | null;
+        id_caso: number;
+        dias_abierto: number | null;
+        fecha_plan: Date;
+        fecha_reprogramada: Date | null;
+        observaciones: string | null;
+        updated_at: Date | null;
+        id_plan: number;
+        codigo_plan: string;
+        responsable: number;
+        prorroga_motivo: string | null;
+        prorroga_fecha: Date | null;
+        prorroga_estado: string | null;
+        prorroga_fecha_sol: Date | null;
+    }>;
+    static reviewExtensionByPlan(idPlan: string, rawBody: unknown): Promise<{
+        estado: number;
+        id_area: number;
+        descripcion: string;
+        created_at: Date | null;
+        id_caso: number;
+        dias_abierto: number | null;
+        fecha_plan: Date;
+        fecha_reprogramada: Date | null;
+        observaciones: string | null;
+        updated_at: Date | null;
+        id_plan: number;
+        codigo_plan: string;
+        responsable: number;
+        prorroga_motivo: string | null;
+        prorroga_fecha: Date | null;
+        prorroga_estado: string | null;
+        prorroga_fecha_sol: Date | null;
+    }>;
     static completeExecution(codigo: string, rawBody: unknown): Promise<{
         descripcion: string;
         created_at: Date | null;
@@ -800,7 +942,7 @@ export declare class CaseService {
         observaciones: string | null;
         created_by: number | null;
         updated_at: Date | null;
-    }>;
+    } | null>;
     static keepPending(codigo: string, rawBody: unknown): Promise<{
         descripcion: string;
         created_at: Date | null;
@@ -867,9 +1009,46 @@ export declare class CaseService {
         created_by: number | null;
         updated_at: Date | null;
     }>;
+    static rollbackStage(codigo: string, rawBody: unknown): Promise<{
+        descripcion: string;
+        created_at: Date | null;
+        id_caso: number;
+        codigo_sop: string;
+        titulo: string | null;
+        nombre_reportante: string | null;
+        correo_reportante: string | null;
+        telefono_reportante: string | null;
+        fecha_hallazgo: Date;
+        fecha_evento: Date | null;
+        estado_hallazgo: number;
+        dias_abierto: number | null;
+        procedencia: number;
+        tipo: number;
+        responsable_hallazgo: number | null;
+        tipo_sop: number;
+        subtipo_sop: number | null;
+        peligro: string | null;
+        consecuencia: string | null;
+        clasificacion: string | null;
+        analisis_riesgo: number | null;
+        acr: string | null;
+        area_responsable: number | null;
+        responsable_plan: number | null;
+        estado_plan: number | null;
+        fecha_plan: Date | null;
+        fecha_reprogramada: Date | null;
+        dias_abierto_plan: number | null;
+        observaciones: string | null;
+        created_by: number | null;
+        updated_at: Date | null;
+    }>;
     static updateActivity(idActividad: string, rawBody: unknown): Promise<{
         planes_accion: {
+            catalogo_detalle: {
+                nombre: string;
+            };
             id_caso: number;
+            id_plan: number;
             codigo_plan: string;
         };
     } & {
@@ -959,7 +1138,27 @@ export declare class CaseService {
         actor_rol: string;
         detalle: string | null;
     }[]>;
+    static addPlanComment(idPlan: string, rawBody: unknown): Promise<{
+        id_caso: number;
+        titulo: string;
+        fecha: Date | null;
+        id_evento: number;
+        kind: string;
+        actor: string;
+        actor_rol: string;
+        detalle: string | null;
+    }[]>;
     static addEvidence(codigo: string, files: UploadedFile[]): Promise<{
+        id_caso: number;
+        id_anexo: number;
+        nombre_archivo: string | null;
+        ruta_archivo: string | null;
+        tipo_archivo: string | null;
+        peso: import("@prisma/client/runtime/library").Decimal | null;
+        fecha_subida: Date | null;
+        usuario_subida: number | null;
+    }[]>;
+    static addEvidenceByPlan(idPlan: string, rawBody: unknown, files: UploadedFile[]): Promise<{
         id_caso: number;
         id_anexo: number;
         nombre_archivo: string | null;

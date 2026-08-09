@@ -1,7 +1,9 @@
 import { useMemo, useState, type ReactNode } from "react";
 import {
-  Activity, ClipboardList, Microscope, CheckCircle2, CornerUpLeft, Clock,
+  Activity, ClipboardList, CheckCircle2, CornerUpLeft, Clock,
   Building2, FileText, User as UserIcon, Rocket, AlertTriangle, Timer, Gavel,
+  MessageSquare, Paperclip, Send, ListChecks, Download, ChevronDown, ChevronUp,
+  Image as ImageIcon, Video,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/design-system/primitives/Card";
@@ -9,29 +11,28 @@ import { Button } from "@/design-system/primitives/Button";
 import { Pill } from "@/design-system/primitives/Pill";
 import { EmptyState, Progress } from "@/design-system/primitives/Progress";
 import { Modal } from "@/design-system/primitives/Modal";
-import { Field, Textarea } from "@/design-system/primitives/Input";
+import { Field, Input, Textarea } from "@/design-system/primitives/Input";
 import { StageSection } from "@/features/cases/components/CaseParts";
-import { useCloseCase, useKeepPending, useReopenCase } from "@/features/cases/hooks/useCaseActions";
+import {
+  useAddPlanComment,
+  useCloseCase,
+  useKeepPending,
+  useReopenCase,
+  useReviewFinalPlan,
+  useReviewPlanExtension,
+} from "@/features/cases/hooks/useCaseActions";
+import { parseActivityDescription } from "@/features/cases/lib/activityMeta";
+import { compactPlanCodes, shortPlanCode } from "@/features/cases/lib/planLabels";
 import { ACTOR_ROL_LABEL } from "@/features/cases/lib/workflow";
 import { apiErrorMessage } from "@/lib/api";
 import { formatDate, formatDateTime, relativeTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { EvidencePanel } from "./EvidencePanel";
-import type { ActividadPlan, CaseDetail, PlanAccion } from "@/features/cases/types";
+import { API_ORIGIN } from "./EvidencePanel";
+import type { ActividadPlan, AnexoCaso, CaseDetail, PlanAccion, TimelineEvento } from "@/features/cases/types";
 
 // Portado de pages/seguridad/CaseFile.tsx → ExecutionStage / VerificationStage
 // / ClosedStage. Las tres comparten la lectura del plan ejecutado y se
 // diferencian por las acciones disponibles para Seguridad Operativa.
-function InvBlock({ label, value, tone }: { label: string; value: string; tone?: "critical" }) {
-  return (
-    <div>
-      <p className={cn("text-[11px] font-semibold tracking-wide uppercase mb-1.5", tone === "critical" ? "text-critical-ink" : "text-ink-faint")}>
-        {label}
-      </p>
-      <p className="text-[13.5px] text-ink-soft leading-relaxed">{value}</p>
-    </div>
-  );
-}
 
 /**
  * Avance de una actividad. Se usa el porcentaje real que registró el área; si
@@ -51,6 +52,40 @@ function avancePlan(plan: PlanAccion): number {
   return Math.round(total / plan.actividades_plan.length);
 }
 
+function normalize(value?: string | null): string {
+  return (value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function planFinalizado(plan: PlanAccion): boolean {
+  return normalize(plan.catalogo_detalle.nombre).includes("finaliz");
+}
+
+function planCerrado(plan: PlanAccion): boolean {
+  return normalize(plan.catalogo_detalle.nombre).includes("cerrad");
+}
+
+function planStatus(plan: PlanAccion): { label: string; tone: "brand" | "warning" | "neutral" | "critical" | "info" | "success" } {
+  const estado = normalize(plan.catalogo_detalle.nombre);
+  if (estado.includes("rechaz")) return { label: "Rechazado", tone: "critical" };
+  if (estado.includes("cerrad")) return { label: "Cerrado por SO", tone: "neutral" };
+  if (estado.includes("finaliz")) return { label: "Pendiente de revisión SO", tone: "warning" };
+  if (estado.includes("ejecucion") || estado.includes("aceptad")) return { label: "En ejecución", tone: "brand" };
+  if (estado.includes("enviado") || estado.includes("pendiente")) return { label: "Pendiente de aceptación", tone: "info" };
+  return { label: plan.catalogo_detalle.nombre, tone: "neutral" };
+}
+
+function estadoPlanKey(plan: PlanAccion): "pendiente" | "ejecucion" | "finalizado" | "cerrado" | "otro" {
+  const estado = normalize(plan.catalogo_detalle.nombre);
+  if (estado.includes("cerrad")) return "cerrado";
+  if (estado.includes("finaliz")) return "finalizado";
+  if (estado.includes("ejecucion") || estado.includes("aceptad")) return "ejecucion";
+  if (estado.includes("pendiente") || estado.includes("enviado")) return "pendiente";
+  return "otro";
+}
+
 function avanceCaso(caso: CaseDetail): number {
   const items = caso.planes_accion.flatMap((p) => p.actividades_plan);
   if (items.length === 0) return 0;
@@ -62,6 +97,540 @@ const ACTIVIDAD_TONE: Record<string, "brand" | "warning" | "neutral"> = {
   "En progreso": "warning",
   Pendiente: "neutral",
 };
+
+function contienePlan(evento: TimelineEvento, plan: PlanAccion): boolean {
+  return `${evento.titulo} ${evento.detalle ?? ""}`.includes(plan.codigo_plan);
+}
+
+function timelineDelPlan(caso: CaseDetail, plan: PlanAccion): TimelineEvento[] {
+  return caso.timeline_caso
+    .filter((t) => contienePlan(t, plan))
+    .sort((a, b) => +new Date(b.fecha ?? 0) - +new Date(a.fecha ?? 0));
+}
+
+function descripcionCierre(caso: CaseDetail, plan: PlanAccion): string | null {
+  const evento = timelineDelPlan(caso, plan).find((t) => normalize(t.titulo).includes("finaliz"));
+  const detalle = evento?.detalle ?? "";
+  const match = detalle.match(/descripci[oó]n final:\s*(.+)$/i);
+  return match?.[1]?.trim() || null;
+}
+
+function comentariosActividad(plan: PlanAccion) {
+  return plan.actividades_plan
+    .flatMap((actividad) =>
+      (actividad.seguimientos ?? [])
+        .filter((s) => s.comentario?.trim())
+        .map((s) => ({
+          id: s.id_seguimiento,
+          actividad,
+          comentario: s.comentario?.trim() ?? "",
+          porcentaje: Number(s.porcentaje ?? actividad.porcentaje ?? 0),
+          fecha: s.fecha,
+          usuario: s.usuarios?.nombre ?? actividad.usuarios?.nombre ?? plan.usuarios.nombre,
+        }))
+    )
+    .sort((a, b) => +new Date(b.fecha ?? 0) - +new Date(a.fecha ?? 0));
+}
+
+function nombresEvidenciaDelPlan(caso: CaseDetail, plan: PlanAccion): string[] {
+  const nombres = new Set<string>();
+  for (const evento of timelineDelPlan(caso, plan)) {
+    if (!normalize(evento.titulo).includes("evidencia")) continue;
+    for (const item of (evento.detalle ?? "").split(",")) {
+      const nombre = item.trim();
+      if (nombre) nombres.add(nombre);
+    }
+  }
+  return [...nombres];
+}
+
+function evidenciasDelPlan(caso: CaseDetail, plan: PlanAccion) {
+  const anexosPorNombre = new Map(caso.anexos_caso.map((a) => [a.nombre_archivo ?? "", a]));
+  return nombresEvidenciaDelPlan(caso, plan).map((nombre) => ({
+    nombre,
+    anexo: anexosPorNombre.get(nombre) ?? null,
+  }));
+}
+
+function IconoArchivo({ tipo }: { tipo: string | null }) {
+  if (tipo?.startsWith("image/")) return <ImageIcon className="h-4 w-4" />;
+  if (tipo?.startsWith("video/")) return <Video className="h-4 w-4" />;
+  return <FileText className="h-4 w-4" />;
+}
+
+function FilaAnexoPlan({ nombre, anexo }: { nombre: string; anexo: AnexoCaso | null }) {
+  const contenido = (
+    <>
+      <span className="h-9 w-9 rounded-lg bg-surface-2 text-ink-soft grid place-items-center shrink-0">
+        <IconoArchivo tipo={anexo?.tipo_archivo ?? null} />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[12.5px] font-medium text-ink truncate">{nombre}</span>
+        <span className="block text-[11px] text-ink-quiet">
+          {anexo
+            ? `${anexo.peso ? `${anexo.peso} KB` : "Archivo"}${anexo.fecha_subida ? ` · ${formatDateTime(anexo.fecha_subida)}` : ""}`
+            : "Registrado en bitácora"}
+        </span>
+      </span>
+      {anexo?.ruta_archivo && <Download className="h-3.5 w-3.5 text-ink-faint" />}
+    </>
+  );
+
+  if (!anexo?.ruta_archivo) {
+    return <div className="flex items-center gap-2.5 rounded-lg bg-surface/70 p-2.5">{contenido}</div>;
+  }
+
+  return (
+    <a
+      href={`${API_ORIGIN}${anexo.ruta_archivo}`}
+      target="_blank"
+      rel="noreferrer"
+      className="flex items-center gap-2.5 rounded-lg bg-surface/70 p-2.5 hover:bg-surface-2 transition-colors"
+    >
+      {contenido}
+    </a>
+  );
+}
+
+function PlanMetric({
+  icon,
+  label,
+  value,
+  tone = "neutral",
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  tone?: "neutral" | "brand" | "warning" | "critical";
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-lg border p-3 bg-white",
+        tone === "brand" && "border-brand-200 bg-brand-50/60",
+        tone === "warning" && "border-warning/30 bg-warning-soft/60",
+        tone === "critical" && "border-critical/30 bg-critical-soft/50",
+        tone === "neutral" && "border-line-soft"
+      )}
+    >
+      <div className="flex items-center gap-2 text-ink-soft">
+        {icon}
+        <p className="text-[11px] font-semibold uppercase tracking-wide">{label}</p>
+      </div>
+      <p className="mt-1.5 text-[18px] font-bold text-ink tabular-nums">{value}</p>
+    </div>
+  );
+}
+
+function PlanExecutionBoard({
+  caso,
+  cerrado,
+  openPlanReview,
+}: {
+  caso: CaseDetail;
+  cerrado: boolean;
+  openPlanReview: (plan: PlanAccion, decision: "aprobada" | "rechazada") => void;
+}) {
+  const reviewExtension = useReviewPlanExtension(caso.codigo_sop);
+  const addPlanComment = useAddPlanComment(caso.codigo_sop);
+  const [extensionReview, setExtensionReview] = useState<{ plan: PlanAccion; decision: "aprobada" | "rechazada" } | null>(null);
+  const [extensionNote, setExtensionNote] = useState("");
+  const [activeCommentPlan, setActiveCommentPlan] = useState<number | null>(null);
+  const [planComment, setPlanComment] = useState("");
+  const [expandedPlans, setExpandedPlans] = useState<Set<number>>(() => new Set());
+
+  const stats = useMemo(() => {
+    const total = caso.planes_accion.length;
+    const pendientes = caso.planes_accion.filter((p) => estadoPlanKey(p) === "pendiente").length;
+    const ejecucion = caso.planes_accion.filter((p) => estadoPlanKey(p) === "ejecucion").length;
+    const porRevision = caso.planes_accion.filter((p) => estadoPlanKey(p) === "finalizado").length;
+    const cerrados = caso.planes_accion.filter((p) => estadoPlanKey(p) === "cerrado").length;
+    return { total, pendientes, ejecucion, porRevision, cerrados };
+  }, [caso.planes_accion]);
+
+  const progresoGeneral = avanceCaso(caso);
+
+  const abrirRevisionProrroga = (plan: PlanAccion, decision: "aprobada" | "rechazada") => {
+    setExtensionReview({ plan, decision });
+    setExtensionNote("");
+  };
+
+  const enviarComentario = (plan: PlanAccion) => {
+    const texto = planComment.trim();
+    if (!texto) return;
+    addPlanComment.mutate(
+      { id_plan: plan.id_plan, texto },
+      {
+        onSuccess: () => {
+          toast.success("Comentario agregado al plan");
+          setActiveCommentPlan(null);
+          setPlanComment("");
+        },
+        onError: (e) => toast.error(apiErrorMessage(e, "No se pudo agregar el comentario")),
+      }
+    );
+  };
+
+  const togglePlan = (idPlan: number) => {
+    setExpandedPlans((current) => {
+      const next = new Set(current);
+      if (next.has(idPlan)) next.delete(idPlan);
+      else next.add(idPlan);
+      return next;
+    });
+  };
+
+  return (
+    <>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <PlanMetric icon={<ClipboardList className="h-4 w-4" />} label="Total planes" value={String(stats.total)} />
+        <PlanMetric icon={<Clock className="h-4 w-4" />} label="Pendientes" value={String(stats.pendientes)} />
+        <PlanMetric icon={<Rocket className="h-4 w-4" />} label="En ejecución" value={String(stats.ejecucion)} tone="brand" />
+        <PlanMetric icon={<Gavel className="h-4 w-4" />} label="Por revisar" value={String(stats.porRevision)} tone={stats.porRevision > 0 ? "warning" : "neutral"} />
+        <PlanMetric icon={<CheckCircle2 className="h-4 w-4" />} label="Cerrados" value={String(stats.cerrados)} />
+      </div>
+
+      <div className="mt-4 rounded-xl border border-line bg-surface/50 p-4">
+        <div className="flex items-center justify-between gap-3 mb-2">
+          <p className="text-[12.5px] font-semibold text-ink">Progreso operativo del expediente</p>
+          <span className="text-[20px] font-bold text-brand-700 tabular-nums">{progresoGeneral}%</span>
+        </div>
+        <Progress value={progresoGeneral} tone={progresoGeneral === 100 ? "brand" : "warning"} />
+        <p className="mt-2 text-[11.5px] text-ink-quiet">
+          El porcentaje resume actividades; el cierre del expediente depende de que cada plan quede cerrado por Seguridad Operativa.
+        </p>
+      </div>
+
+      <div className="mt-5 space-y-4">
+        {caso.planes_accion.map((plan, index) => {
+          const estadoPlan = planStatus(plan);
+          const requiereRevision = planFinalizado(plan);
+          const cerradoPorSo = planCerrado(plan);
+          const pendienteProrroga = plan.prorroga_estado === "pendiente";
+          const avance = avancePlan(plan);
+          const comentarios = comentariosActividad(plan);
+          const eventos = timelineDelPlan(caso, plan).filter((t) => {
+            const titulo = normalize(t.titulo);
+            return !titulo.includes("evidencia") && !titulo.includes("actividad actualizada");
+          });
+          const evidencias = evidenciasDelPlan(caso, plan);
+          const cierre = descripcionCierre(caso, plan);
+          const abierto = expandedPlans.has(plan.id_plan);
+
+          return (
+            <div
+              key={plan.id_plan}
+              className={cn(
+                "rounded-xl border p-4 bg-white shadow-sm",
+                requiereRevision && !cerrado && "border-warning/40 bg-warning-soft/15",
+                pendienteProrroga && "border-warning/50",
+                cerradoPorSo && "bg-surface/40"
+              )}
+            >
+              <button
+                type="button"
+                className="flex w-full flex-wrap items-center justify-between gap-4 text-left"
+                aria-expanded={abierto}
+                onClick={() => togglePlan(plan.id_plan)}
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  <span className="font-mono text-[14px] font-bold text-brand-700">{shortPlanCode(plan.codigo_plan)}</span>
+                  <span className="text-[11px] text-ink-faint">Plan {index + 1}</span>
+                  <Pill tone={estadoPlan.tone} dot>{estadoPlan.label}</Pill>
+                  {pendienteProrroga && <Pill tone="warning" dot>Prórroga pendiente</Pill>}
+                </span>
+                <span className="flex min-w-[190px] items-center gap-3">
+                  <span className="min-w-[150px]">
+                    <Progress value={avance} showLabel tone={avance === 100 ? "brand" : "warning"} />
+                  </span>
+                  <span className="text-ink-quiet">{abierto ? <ChevronUp className="h-4.5 w-4.5" /> : <ChevronDown className="h-4.5 w-4.5" />}</span>
+                </span>
+              </button>
+
+              {abierto && (
+                <>
+                  <p className="mt-4 border-t border-line-soft pt-4 text-[14px] font-semibold text-ink leading-snug">{plan.descripcion}</p>
+
+              <div className="mt-4 grid gap-3 md:grid-cols-4">
+                <div className="rounded-lg bg-surface/70 border border-line-soft p-3">
+                  <p className="text-[10.5px] font-semibold uppercase tracking-wide text-ink-faint">Área</p>
+                  <p className="text-[12.5px] font-medium text-ink mt-1">{plan.areas.nombre_area}</p>
+                </div>
+                <div className="rounded-lg bg-surface/70 border border-line-soft p-3">
+                  <p className="text-[10.5px] font-semibold uppercase tracking-wide text-ink-faint">Responsable</p>
+                  <p className="text-[12.5px] font-medium text-ink mt-1">{plan.usuarios.nombre}</p>
+                </div>
+                <div className="rounded-lg bg-surface/70 border border-line-soft p-3">
+                  <p className="text-[10.5px] font-semibold uppercase tracking-wide text-ink-faint">Fecha límite</p>
+                  <p className={cn("text-[12.5px] font-medium mt-1", plan.fecha_reprogramada ? "text-brand-700" : "text-ink")}>
+                    {formatDate(plan.fecha_reprogramada ?? plan.fecha_plan)}
+                  </p>
+                </div>
+                <div className="rounded-lg bg-surface/70 border border-line-soft p-3">
+                  <p className="text-[10.5px] font-semibold uppercase tracking-wide text-ink-faint">Actividades</p>
+                  <p className="text-[12.5px] font-medium text-ink mt-1">{plan.actividades_plan.length}</p>
+                </div>
+              </div>
+
+              {pendienteProrroga && (
+                <div className="mt-4 rounded-lg border border-warning/35 bg-warning-soft/60 p-3">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div className="min-w-0">
+                      <p className="text-[12.5px] font-semibold text-warning-ink">Solicitud de prórroga del área</p>
+                      <p className="mt-1 text-[12px] text-ink-soft leading-relaxed">{plan.prorroga_motivo}</p>
+                      <p className="mt-1 text-[11.5px] text-ink-quiet">
+                        Fecha propuesta: {plan.prorroga_fecha ? formatDate(plan.prorroga_fecha) : "—"}
+                        {plan.prorroga_fecha_sol ? ` · solicitada ${relativeTime(plan.prorroga_fecha_sol)}` : ""}
+                      </p>
+                    </div>
+                    {!cerrado && (
+                      <div className="flex flex-wrap gap-2">
+                        <Button size="sm" onClick={() => abrirRevisionProrroga(plan, "aprobada")} disabled={reviewExtension.isPending}>
+                          <CheckCircle2 className="h-4 w-4" /> Aprobar
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => abrirRevisionProrroga(plan, "rechazada")} disabled={reviewExtension.isPending}>
+                          <CornerUpLeft className="h-4 w-4" /> Rechazar
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {plan.prorroga_estado && plan.prorroga_estado !== "pendiente" && (
+                <div className="mt-4 flex items-start gap-2 rounded-lg bg-surface border border-line-soft p-3">
+                  <Timer className="h-4 w-4 text-ink-faint shrink-0 mt-0.5" />
+                  <div className="min-w-0 text-[12px]">
+                    <span className={cn("font-semibold", plan.prorroga_estado === "aprobada" ? "text-brand-700" : "text-critical-ink")}>
+                      Prórroga {plan.prorroga_estado}
+                    </span>
+                    {plan.prorroga_fecha && ` · fecha solicitada ${formatDate(plan.prorroga_fecha)}`}
+                    {plan.prorroga_motivo && <p className="text-ink-quiet mt-0.5">{plan.prorroga_motivo}</p>}
+                  </div>
+                </div>
+              )}
+
+              {plan.actividades_plan.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-[11px] font-semibold tracking-wide uppercase text-ink-faint mb-2.5 flex items-center gap-1.5">
+                    <ListChecks className="h-3.5 w-3.5" /> Actividades del plan
+                  </p>
+                  <div className="space-y-2">
+                    {plan.actividades_plan.map((act) => {
+                      const parsed = parseActivityDescription(act.descripcion);
+                      return (
+                        <div key={act.id_actividad} className="rounded-lg border border-line-soft bg-surface/40 p-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="text-[13px] font-medium text-ink leading-snug">{parsed.descripcion}</p>
+                              <p className="text-[11px] text-ink-quiet mt-1">
+                                {act.usuarios?.nombre ?? "Sin responsable"}
+                                {act.usuarios?.cargo ? ` · ${act.usuarios.cargo}` : ""}
+                                {parsed.meta.tipoAccion ? ` · ${parsed.meta.tipoAccion}` : ""}
+                                {parsed.meta.areaNombre ? ` · ${parsed.meta.areaNombre}` : ""}
+                                {act.fecha_fin ? ` · vence ${formatDate(act.fecha_fin)}` : ""}
+                              </p>
+                            </div>
+                            <Pill tone={ACTIVIDAD_TONE[act.catalogo_detalle?.nombre ?? "Pendiente"] ?? "neutral"} dot>
+                              {act.catalogo_detalle?.nombre ?? "Pendiente"}
+                            </Pill>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {cierre && (
+                <div className="mt-4 rounded-lg border border-brand-200 bg-brand-50/60 p-3">
+                  <p className="text-[11px] font-semibold tracking-wide uppercase text-brand-700">Descripción final del área</p>
+                  <p className="mt-1 text-[12.5px] text-ink-soft leading-relaxed">{cierre}</p>
+                </div>
+              )}
+
+              <div className="mt-4 grid gap-3 xl:grid-cols-2">
+                <div className="rounded-lg border border-line-soft bg-white p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-[11px] font-semibold tracking-wide uppercase text-ink-faint flex items-center gap-1.5">
+                      <MessageSquare className="h-3.5 w-3.5" /> Seguimiento ({comentarios.length + eventos.length})
+                    </p>
+                  </div>
+                  <div className="mt-2.5 space-y-2">
+                    {comentarios.length === 0 && eventos.length === 0 && (
+                      <p className="rounded-lg border border-dashed border-line bg-surface/40 p-3 text-[12px] text-ink-quiet">
+                        Sin comentarios registrados para este plan.
+                      </p>
+                    )}
+                    {comentarios.slice(0, 4).map((s) => {
+                      const parsed = parseActivityDescription(s.actividad.descripcion);
+                      return (
+                        <div key={`seg-${s.id}`} className="rounded-lg bg-surface/60 p-2.5">
+                          <div className="flex items-start justify-between gap-3">
+                            <p className="text-[12.5px] font-medium text-ink leading-snug">{s.comentario}</p>
+                            <span className="text-[10.5px] text-ink-faint shrink-0">{s.fecha ? relativeTime(s.fecha) : ""}</span>
+                          </div>
+                          <p className="mt-1 text-[10.5px] text-ink-quiet">
+                            {s.usuario} · {s.porcentaje}% · {parsed.descripcion}
+                          </p>
+                        </div>
+                      );
+                    })}
+                    {eventos.slice(0, 3).map((evento) => (
+                      <div key={`evt-${evento.id_evento}`} className="rounded-lg bg-surface/60 p-2.5">
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="text-[12.5px] font-medium text-ink leading-snug">{compactPlanCodes(evento.titulo)}</p>
+                          <span className="text-[10.5px] text-ink-faint shrink-0">{evento.fecha ? relativeTime(evento.fecha) : ""}</span>
+                        </div>
+                        {evento.detalle && <p className="mt-1 text-[12px] text-ink-soft leading-relaxed">{compactPlanCodes(evento.detalle)}</p>}
+                        <p className="mt-1 text-[10.5px] text-ink-quiet">
+                          {ACTOR_ROL_LABEL[evento.actor_rol] ?? evento.actor_rol} · {evento.actor}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-line-soft bg-white p-3">
+                  <p className="text-[11px] font-semibold tracking-wide uppercase text-ink-faint flex items-center gap-1.5">
+                    <Paperclip className="h-3.5 w-3.5" /> Evidencias del plan ({evidencias.length})
+                  </p>
+                  <div className="mt-2.5 space-y-2">
+                    {evidencias.length === 0 && (
+                      <p className="rounded-lg border border-dashed border-line bg-surface/40 p-3 text-[12px] text-ink-quiet">
+                        Sin evidencias vinculadas a este plan.
+                      </p>
+                    )}
+                    {evidencias.map((e) => (
+                      <FilaAnexoPlan key={`${plan.id_plan}-${e.nombre}`} nombre={e.nombre} anexo={e.anexo} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {!cerrado && (
+                <div className="mt-4 rounded-lg border border-line-soft bg-surface/40 p-3">
+                  <p className="text-[11px] font-semibold tracking-wide uppercase text-ink-faint mb-2">
+                    Respuesta de Seguridad Operativa
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Input
+                      value={activeCommentPlan === plan.id_plan ? planComment : ""}
+                      onFocus={() => setActiveCommentPlan(plan.id_plan)}
+                      onChange={(e) => {
+                        setActiveCommentPlan(plan.id_plan);
+                        setPlanComment(e.target.value);
+                      }}
+                      placeholder="Responder o dejar observación para este plan..."
+                    />
+                    <Button
+                      size="md"
+                      disabled={activeCommentPlan !== plan.id_plan || planComment.trim().length < 3 || addPlanComment.isPending}
+                      onClick={() => enviarComentario(plan)}
+                    >
+                      <Send className="h-4 w-4" /> Enviar
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {requiereRevision && !cerrado && (
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-warning/30 bg-warning-soft/60 p-3">
+                  <div className="min-w-0">
+                    <p className="text-[12.5px] font-semibold text-warning-ink">Validación final pendiente</p>
+                    <p className="text-[12px] text-warning-ink/85 mt-0.5">
+                      Este plan fue finalizado por el área. Puede cerrarlo o devolverlo sin afectar a los otros planes.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" onClick={() => openPlanReview(plan, "aprobada")}>
+                      <CheckCircle2 className="h-4 w-4" /> Cerrar plan
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => openPlanReview(plan, "rechazada")}>
+                      <CornerUpLeft className="h-4 w-4" /> Devolver
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {cerradoPorSo && (
+                <p className="mt-4 rounded-lg border border-line-soft bg-surface/70 p-3 text-[12px] text-ink-quiet">
+                  Plan cerrado por Seguridad Operativa. El resto de planes del mismo reporte conserva su estado actual.
+                </p>
+              )}
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <Modal
+        open={!!extensionReview}
+        onClose={() => setExtensionReview(null)}
+        title={extensionReview?.decision === "aprobada" ? "Aprobar prórroga" : "Rechazar prórroga"}
+        subtitle={extensionReview ? `${shortPlanCode(extensionReview.plan.codigo_plan)} · solicitud de ampliación` : undefined}
+        size="sm"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setExtensionReview(null)}>Cancelar</Button>
+            <Button
+              variant={extensionReview?.decision === "rechazada" ? "danger" : "primary"}
+              disabled={!extensionReview || reviewExtension.isPending}
+              onClick={() => {
+                if (!extensionReview) return;
+                reviewExtension.mutate(
+                  {
+                    id_plan: extensionReview.plan.id_plan,
+                    decision: extensionReview.decision,
+                    nota: extensionNote.trim() || undefined,
+                  },
+                  {
+                    onSuccess: () => {
+                      toast.success(extensionReview.decision === "aprobada" ? "Prórroga aprobada" : "Prórroga rechazada");
+                      setExtensionReview(null);
+                      setExtensionNote("");
+                    },
+                    onError: (e) => toast.error(apiErrorMessage(e, "No se pudo resolver la prórroga")),
+                  }
+                );
+              }}
+            >
+              {extensionReview?.decision === "aprobada" ? (
+                <>
+                  <CheckCircle2 className="h-4 w-4" /> Aprobar
+                </>
+              ) : (
+                <>
+                  <CornerUpLeft className="h-4 w-4" /> Rechazar
+                </>
+              )}
+            </Button>
+          </>
+        }
+      >
+        {extensionReview && (
+          <div className="space-y-3">
+            <div className="rounded-lg border border-line bg-surface/50 p-3 text-[12.5px]">
+              <p className="font-semibold text-ink">{extensionReview.plan.prorroga_motivo}</p>
+              <p className="mt-1 text-ink-quiet">
+                Nueva fecha propuesta: {extensionReview.plan.prorroga_fecha ? formatDate(extensionReview.plan.prorroga_fecha) : "—"}
+              </p>
+            </div>
+            <Field label="Nota de decisión" hint="Opcional; queda registrada en la bitácora del plan.">
+              <Textarea
+                value={extensionNote}
+                onChange={(e) => setExtensionNote(e.target.value)}
+                rows={3}
+                placeholder="Motivo de la aprobación o rechazo..."
+              />
+            </Field>
+          </div>
+        )}
+      </Modal>
+    </>
+  );
+}
 
 /** Opción de la decisión final de Verificación. */
 function DecisionCard({
@@ -121,43 +690,33 @@ export function ExecutionSummaryCard({
   panel,
 }: {
   caso: CaseDetail;
-  panel: "ejecucion" | "verificacion" | "cierre";
+  panel: "ejecucion" | "prorroga" | "verificacion" | "cierre";
 }) {
   const enVerificacion = panel === "verificacion";
+  const enProrroga = panel === "prorroga";
   const cerrado = panel === "cierre";
-  const inv = caso.investigacion_caso;
   const progreso = avanceCaso(caso);
   const sinPlan = caso.planes_accion.length === 0;
-
-  // Comentarios de avance que dejó el área al actualizar cada actividad.
-  const seguimiento = useMemo(
-    () =>
-      caso.timeline_caso
-        .filter((t) => t.kind === "seguimiento" || t.kind === "ampliacion")
-        .sort((a, b) => +new Date(b.fecha ?? 0) - +new Date(a.fecha ?? 0)),
-    [caso.timeline_caso]
-  );
+  const todosPlanesCerrados = caso.planes_accion.length > 0 && caso.planes_accion.every(planCerrado);
 
   const closeCase = useCloseCase(caso.codigo_sop);
   const keepPending = useKeepPending(caso.codigo_sop);
+  const reviewFinalPlan = useReviewFinalPlan(caso.codigo_sop);
 
   const [closeOpen, setCloseOpen] = useState(false);
   const [closeNote, setCloseNote] = useState("");
   const [pendingOpen, setPendingOpen] = useState(false);
   const [pendingNote, setPendingNote] = useState("");
+  const [planReview, setPlanReview] = useState<{ plan: PlanAccion; decision: "aprobada" | "rechazada" } | null>(null);
+  const [planReviewNote, setPlanReviewNote] = useState("");
+
+  const openPlanReview = (plan: PlanAccion, decision: "aprobada" | "rechazada") => {
+    setPlanReview({ plan, decision });
+    setPlanReviewNote("");
+  };
 
   return (
     <div className="space-y-4">
-      {inv && (
-        <StageSection title="Investigación" subtitle="Hallazgos y causa raíz." icon={<Microscope className="h-5 w-5" />}>
-          <div className="space-y-4">
-            <InvBlock label="Descripción de evento" value={inv.hallazgos} />
-            <InvBlock label="Causa raíz" value={inv.causa_raiz} tone="critical" />
-            <InvBlock label="Conclusiones" value={inv.conclusiones} />
-          </div>
-        </StageSection>
-      )}
-
       {/* Un caso en Ejecución o Verificación sin plan es una inconsistencia:
           antes esto dejaba el panel central completamente vacío. */}
       {sinPlan && !cerrado && (
@@ -184,115 +743,38 @@ export function ExecutionSummaryCard({
               ? "Revise el cumplimiento de las actividades antes de cerrar el caso."
               : cerrado
                 ? "Actividades ejecutadas por el área responsable."
-                : "El jefe del área ejecuta las actividades. Aquí puede seguir el avance."
+                : enProrroga
+                  ? "Hay una solicitud de prórroga pendiente. Resuelva el plan afectado sin detener la lectura de los demás."
+                  : "El jefe del área ejecuta las actividades. Aquí puede seguir el avance por plan."
           }
-          icon={enVerificacion ? <Activity className="h-5 w-5" /> : <Rocket className="h-5 w-5" />}
+          icon={enVerificacion ? <Activity className="h-5 w-5" /> : enProrroga ? <Timer className="h-5 w-5" /> : <Rocket className="h-5 w-5" />}
           action={
-            <Pill tone={cerrado ? "neutral" : enVerificacion ? "warning" : "brand"} dot>
-              {cerrado ? "Cerrado" : enVerificacion ? "Por verificar" : "En ejecución"}
+            <Pill tone={cerrado ? "neutral" : enVerificacion || enProrroga ? "warning" : "brand"} dot>
+              {cerrado ? "Cerrado" : enVerificacion ? "Por verificar" : enProrroga ? "Prórroga pendiente" : "En ejecución"}
             </Pill>
           }
         >
-          <div className="mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[12px] text-ink-quiet">Progreso general</span>
-            </div>
-            <Progress value={progreso} showLabel tone={progreso === 100 ? "brand" : "warning"} />
-          </div>
-
-          <div className="space-y-3">
-            {caso.planes_accion.map((plan) => (
-              <div key={plan.id_plan} className="rounded-lg border border-line p-3.5">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-mono text-[12px] font-semibold text-brand-700">{plan.codigo_plan}</span>
-                  <Pill tone={plan.catalogo_detalle.nombre === "Cerrado" ? "neutral" : "brand"} dot>
-                    {plan.catalogo_detalle.nombre}
-                  </Pill>
-                </div>
-                <p className="mt-2 text-[13px] text-ink-soft">{plan.descripcion}</p>
-                <p className="mt-1.5 text-[11px] text-ink-quiet">
-                  {plan.areas.nombre_area} · {plan.usuarios.nombre} · vence{" "}
-                  {formatDate(plan.fecha_reprogramada ?? plan.fecha_plan)}
-                  {plan.fecha_reprogramada && " (reprogramada)"}
-                </p>
-
-                {/* Ampliaciones ya resueltas: queda constancia de que la fecha
-                    se movió y por qué, sin tener que abrir la bitácora. */}
-                {plan.prorroga_estado && plan.prorroga_estado !== "pendiente" && (
-                  <div className="mt-2.5 flex items-start gap-2 rounded-lg bg-surface border border-line-soft p-2.5">
-                    <Timer className="h-3.5 w-3.5 text-ink-faint shrink-0 mt-0.5" />
-                    <div className="min-w-0 text-[11.5px]">
-                      <span className={cn("font-semibold", plan.prorroga_estado === "aprobada" ? "text-ink" : "text-critical-ink")}>
-                        Ampliación {plan.prorroga_estado}
-                      </span>
-                      {plan.prorroga_fecha && ` · fecha propuesta ${formatDate(plan.prorroga_fecha)}`}
-                      {plan.prorroga_motivo && <p className="text-ink-quiet mt-0.5">{plan.prorroga_motivo}</p>}
-                    </div>
-                  </div>
-                )}
-
-                {plan.actividades_plan.length > 0 && (
-                  <>
-                    <div className="mt-2.5">
-                      <Progress value={avancePlan(plan)} showLabel />
-                    </div>
-                    <div className="mt-3 space-y-1.5 border-t border-line-soft pt-2.5">
-                      {plan.actividades_plan.map((act) => (
-                        <div key={act.id_actividad} className="flex items-start justify-between gap-2 text-[12.5px]">
-                          <div className="min-w-0">
-                            <span className="text-ink-soft">{act.descripcion}</span>
-                            <p className="text-[10.5px] text-ink-faint mt-0.5">
-                              {act.usuarios?.nombre ?? "Sin responsable"}
-                              {act.fecha_fin ? ` · vence ${formatDate(act.fecha_fin)}` : ""}
-                            </p>
-                          </div>
-                          <Pill tone={ACTIVIDAD_TONE[act.catalogo_detalle?.nombre ?? "Pendiente"] ?? "neutral"} dot>
-                            {act.catalogo_detalle?.nombre ?? "Pendiente"}
-                          </Pill>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Seguimiento del área: los comentarios de avance que registró el
-              Jefe de Área al actualizar cada actividad. */}
-          {seguimiento.length > 0 && (
-            <div className="mt-5 pt-4 border-t border-line-soft">
-              <p className="text-[11px] font-semibold tracking-wide uppercase text-ink-faint mb-2.5">
-                Seguimiento del área ({seguimiento.length})
-              </p>
-              <div className="space-y-2">
-                {seguimiento.map((s) => (
-                  <div key={s.id_evento} className="rounded-lg border border-line-soft bg-surface/50 p-2.5">
-                    <div className="flex items-start justify-between gap-3">
-                      <p className="text-[12.5px] font-medium text-ink leading-snug">{s.titulo}</p>
-                      <span className="text-[10.5px] text-ink-faint shrink-0">
-                        {s.fecha ? relativeTime(s.fecha) : ""}
-                      </span>
-                    </div>
-                    {s.detalle && <p className="text-[12px] text-ink-soft mt-1 leading-relaxed">{s.detalle}</p>}
-                    <p className="text-[10.5px] text-ink-quiet mt-1">
-                      {ACTOR_ROL_LABEL[s.actor_rol] ?? s.actor_rol} · {s.actor}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="mt-4">
-            <EvidencePanel caso={caso} puedeAdjuntar={!cerrado} compact />
-          </div>
+          <PlanExecutionBoard caso={caso} cerrado={cerrado} openPlanReview={openPlanReview} />
         </StageSection>
       )}
 
       {/* Decisión final de Verificación, como tarjetas: cada opción dice qué
           consecuencia tiene, en vez de dos botones sin contexto. */}
-      {enVerificacion && (
+      {enVerificacion && !todosPlanesCerrados && !sinPlan && (
+        <StageSection
+          title="Verificación individual pendiente"
+          subtitle="Antes de cerrar el expediente, Seguridad Operativa debe resolver cada plan por separado."
+          icon={<Gavel className="h-5 w-5" />}
+          action={<Pill tone="warning" dot>Revisar planes</Pill>}
+        >
+          <p className="rounded-lg border border-warning/30 bg-warning-soft/50 p-3 text-[12.5px] text-warning-ink">
+            Hay planes que todavía no fueron cerrados individualmente. Use los botones “Cerrar plan” o “Devolver” en cada
+            tarjeta de plan finalizado.
+          </p>
+        </StageSection>
+      )}
+
+      {enVerificacion && todosPlanesCerrados && (
         <StageSection
           title="Decisión de verificación"
           subtitle="Revise la investigación y el plan ejecutado, y resuelva el expediente."
@@ -329,6 +811,68 @@ export function ExecutionSummaryCard({
       {/* El resumen de cierre y la reapertura viven fuera del bloque de plan:
           un caso cerrado sin plan también debe poder consultarse y reabrirse. */}
       {cerrado && <ClosedSummary caso={caso} />}
+
+      <Modal
+        open={!!planReview}
+        onClose={() => setPlanReview(null)}
+        title={planReview?.decision === "aprobada" ? "Cerrar plan de acción" : "Devolver plan al área"}
+        subtitle={planReview ? `${shortPlanCode(planReview.plan.codigo_plan)} · revisión final individual` : undefined}
+        size="sm"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setPlanReview(null)}>Cancelar</Button>
+            <Button
+              variant={planReview?.decision === "rechazada" ? "danger" : "primary"}
+              disabled={!planReview || reviewFinalPlan.isPending || (planReview.decision === "rechazada" && planReviewNote.trim().length < 5)}
+              onClick={() => {
+                if (!planReview) return;
+                reviewFinalPlan.mutate(
+                  {
+                    id_plan: planReview.plan.id_plan,
+                    decision: planReview.decision,
+                    nota: planReviewNote.trim() || undefined,
+                  },
+                  {
+                    onSuccess: () => {
+                      toast.success(planReview.decision === "aprobada" ? "Plan cerrado por SO" : "Plan devuelto al área");
+                      setPlanReview(null);
+                      setPlanReviewNote("");
+                    },
+                    onError: (e) => toast.error(apiErrorMessage(e, "No se pudo registrar la revisión final")),
+                  }
+                );
+              }}
+            >
+              {planReview?.decision === "aprobada" ? (
+                <>
+                  <CheckCircle2 className="h-4 w-4" /> Confirmar cierre
+                </>
+              ) : (
+                <>
+                  <CornerUpLeft className="h-4 w-4" /> Devolver
+                </>
+              )}
+            </Button>
+          </>
+        }
+      >
+        <Field
+          label={planReview?.decision === "aprobada" ? "Nota de cierre" : "Motivo de devolución"}
+          required={planReview?.decision === "rechazada"}
+          hint={planReview?.decision === "aprobada" ? "Opcional; queda en la bitácora del expediente." : undefined}
+        >
+          <Textarea
+            value={planReviewNote}
+            onChange={(e) => setPlanReviewNote(e.target.value)}
+            rows={3}
+            placeholder={
+              planReview?.decision === "aprobada"
+                ? "Conformidad del plan ejecutado..."
+                : "Indique qué debe corregir el área responsable..."
+            }
+          />
+        </Field>
+      </Modal>
 
       <Modal
         open={closeOpen}
@@ -466,7 +1010,7 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
       {cierre?.fecha && (
         <p className="mt-4 pt-3 border-t border-line-soft text-[11.5px] text-ink-faint">
           Cerrado {formatDateTime(cierre.fecha)}
-          {cierre.detalle ? ` · ${cierre.detalle}` : ""}
+          {cierre.detalle ? ` · ${compactPlanCodes(cierre.detalle)}` : ""}
         </p>
       )}
 
@@ -485,12 +1029,12 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
                 {i < historial.length - 1 && <span className="w-px flex-1 bg-line" />}
               </div>
               <div className="min-w-0 pb-3">
-                <p className="text-[12.5px] font-medium text-ink leading-snug">{t.titulo}</p>
+                <p className="text-[12.5px] font-medium text-ink leading-snug">{compactPlanCodes(t.titulo)}</p>
                 <p className="text-[10.5px] text-ink-quiet mt-0.5">
                   {ACTOR_ROL_LABEL[t.actor_rol] ?? t.actor_rol} · {t.actor}
                   {t.fecha ? ` · ${formatDateTime(t.fecha)}` : ""}
                 </p>
-                {t.detalle && <p className="text-[11.5px] text-ink-soft mt-1 leading-relaxed">{t.detalle}</p>}
+                {t.detalle && <p className="text-[11.5px] text-ink-soft mt-1 leading-relaxed">{compactPlanCodes(t.detalle)}</p>}
               </div>
             </li>
           ))}

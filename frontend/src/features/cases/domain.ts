@@ -22,6 +22,7 @@ export type RiskLevel =
   | "3A" | "3B" | "3C" | "3D" | "3E"
   | "4A" | "4B" | "4C" | "4D" | "4E";
 
+export type RiskBand = "muy_alto" | "alto" | "medio" | "bajo" | "muy_bajo";
 export type RiskCategory = "inaceptable" | "no_deseable" | "aceptable_revision" | "aceptable_sin_revision";
 
 export const STAGE_LABELS: Record<Stage, string> = {
@@ -79,14 +80,66 @@ export const RISK_CATEGORY_TONE: Record<RiskCategory, "critical" | "warning" | "
   aceptable_sin_revision: "success",
 };
 
+export const RISK_BAND_LABELS: Record<RiskBand, string> = {
+  muy_alto: "Riesgo Muy Alto",
+  alto: "Riesgo Alto",
+  medio: "Riesgo Medio",
+  bajo: "Riesgo Bajo",
+  muy_bajo: "Riesgo Muy Bajo",
+};
+
+export const RISK_BAND_STYLES: Record<RiskBand, string> = {
+  muy_alto: "bg-red-600 text-white border-red-700",
+  alto: "bg-yellow-400 text-yellow-950 border-yellow-500",
+  medio: "bg-white text-gray-900 border-gray-300",
+  bajo: "bg-sky-100 text-sky-900 border-sky-300",
+  muy_bajo: "bg-green-200 text-green-950 border-green-300",
+};
+
+export const RISK_BAND_DOT_STYLES: Record<RiskBand, string> = {
+  muy_alto: "bg-red-900",
+  alto: "bg-yellow-700",
+  medio: "bg-gray-400",
+  bajo: "bg-sky-500",
+  muy_bajo: "bg-green-700",
+};
+
+const RISK_CODE_BAND: Record<RiskLevel, RiskBand> = {
+  "1A": "muy_alto",
+  "1B": "muy_alto",
+  "1C": "muy_alto",
+  "2A": "muy_alto",
+  "2B": "muy_alto",
+  "1D": "alto",
+  "2C": "alto",
+  "3A": "alto",
+  "3B": "alto",
+  "2D": "medio",
+  "3C": "medio",
+  "4A": "medio",
+  "4B": "bajo",
+  "4C": "bajo",
+  "4D": "bajo",
+  "4E": "bajo",
+  "1E": "muy_bajo",
+  "2E": "muy_bajo",
+  "3D": "muy_bajo",
+  "3E": "muy_bajo",
+};
+
+export function isRiskLevel(r?: string | null): r is RiskLevel {
+  return !!r && r in RISK_CODE_BAND;
+}
+
+export function riskBand(r: RiskLevel): RiskBand {
+  return RISK_CODE_BAND[r];
+}
+
 export function riskCategory(r: RiskLevel): RiskCategory {
-  // Rojo (Riesgo Muy Alto): 1A, 1B, 1C, 2A, 2B → Inaceptable
-  if (["1A", "1B", "1C", "2A", "2B"].includes(r)) return "inaceptable";
-  // Amarillo (Riesgo Alto): 1D, 2C, 3A, 3B → No Deseable
-  if (["1D", "2C", "3A", "3B"].includes(r)) return "no_deseable";
-  // Blanco (Riesgo Medio): 2D, 3C, 4A → Aceptable con revisión
-  if (["2D", "3C", "4A"].includes(r)) return "aceptable_revision";
-  // Celeste / Verde (Riesgo Bajo y Muy Bajo) → Aceptable sin revisión
+  const band = riskBand(r);
+  if (band === "muy_alto") return "inaceptable";
+  if (band === "alto") return "no_deseable";
+  if (band === "medio") return "aceptable_revision";
   return "aceptable_sin_revision";
 }
 

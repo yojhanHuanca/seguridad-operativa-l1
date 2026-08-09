@@ -29,8 +29,15 @@ export interface ActividadPlan {
   fecha_inicio: string | null;
   fecha_fin: string | null;
   porcentaje: string | null;
-  usuarios: { id_usuario: number; nombre: string } | null;
+  usuarios: { id_usuario: number; nombre: string; cargo: string | null } | null;
   catalogo_detalle: { nombre: string } | null;
+  seguimientos: {
+    id_seguimiento: number;
+    comentario: string | null;
+    porcentaje: string | null;
+    fecha: string | null;
+    usuarios: { id_usuario: number; nombre: string; cargo: string | null } | null;
+  }[];
 }
 
 export interface PlanAccion {
@@ -46,7 +53,7 @@ export interface PlanAccion {
   prorroga_estado: string | null;
   prorroga_fecha_sol: string | null;
   areas: { id_area: number; nombre_area: string };
-  usuarios: { id_usuario: number; nombre: string };
+  usuarios: { id_usuario: number; nombre: string; cargo: string | null };
   catalogo_detalle: { nombre: string };
   actividades_plan: ActividadPlan[];
 }
@@ -56,7 +63,7 @@ export interface InvestigacionCaso {
   causa_raiz: string;
   conclusiones: string;
   observaciones: string | null;
-  usuarios: { id_usuario: number; nombre: string } | null;
+  usuarios: { id_usuario: number; nombre: string; cargo: string | null } | null;
   updated_at: string | null;
 }
 

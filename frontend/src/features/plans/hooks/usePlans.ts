@@ -42,8 +42,20 @@ export function useAcceptPlanById() {
 }
 
 export function useCompleteExecutionByPlan() {
-  return usePlanMutation<{ id_plan: number; actor?: string }>(async ({ id_plan, actor }) => {
-    const { data } = await api.post(`/cases/planes/${id_plan}/complete-execution`, { actor });
+  return usePlanMutation<{ id_plan: number; actor?: string; descripcion: string }>(async ({ id_plan, actor, descripcion }) => {
+    const { data } = await api.post(`/cases/planes/${id_plan}/complete-execution`, { actor, descripcion });
+    return data;
+  });
+}
+
+export function useAddPlanEvidence() {
+  return usePlanMutation<{ id_plan: number; files: File[]; actor?: string }>(async ({ id_plan, files, actor }) => {
+    const form = new FormData();
+    for (const file of files) form.append("evidencia", file);
+    if (actor) form.append("actor", actor);
+    const { data } = await api.post(`/cases/planes/${id_plan}/evidence`, form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     return data;
   });
 }
