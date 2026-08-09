@@ -157,9 +157,18 @@ export function useReviewExtension(codigo: string) {
   });
 }
 
-/** SO resuelve la ampliación de un plan específico sin afectar los demás. */
+/**
+ * SO resuelve la ampliación de un plan específico sin afectar los demás.
+ * `fecha_aprobada` (AAAA-MM-DD) permite otorgar un plazo distinto al pedido;
+ * omitirla aprueba con la fecha que propuso el área.
+ */
 export function useReviewPlanExtension(codigo: string) {
-  return useCaseMutation<{ id_plan: number; decision: "aprobada" | "rechazada"; nota?: string }>(
+  return useCaseMutation<{
+    id_plan: number;
+    decision: "aprobada" | "rechazada";
+    nota?: string;
+    fecha_aprobada?: string;
+  }>(
     codigo,
     async ({ id_plan, ...input }) => {
       const { data } = await api.post(`/cases/planes/${id_plan}/extension/review`, input);

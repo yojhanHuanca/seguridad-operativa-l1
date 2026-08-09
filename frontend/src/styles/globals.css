@@ -160,6 +160,15 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* Dentro de @layer base para que las utilidades de Tailwind puedan
    sobrescribirlas. Fuera de la capa, `font: inherit` (shorthand que resetea
    tamaño, peso y familia) y `color: inherit` ganaban por precedencia y

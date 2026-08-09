@@ -248,6 +248,15 @@ export declare class CaseService {
                 nombre: string;
                 codigo: string | null;
             } | null;
+            timeline_caso: {
+                titulo: string;
+                fecha: Date | null;
+                id_evento: number;
+                kind: string;
+                actor: string;
+                actor_rol: string;
+                detalle: string | null;
+            }[];
         };
         catalogo_detalle: {
             nombre: string;

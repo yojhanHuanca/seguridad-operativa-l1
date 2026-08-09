@@ -53,13 +53,8 @@ export function MyReportsPage() {
             <div className="flex-1">
               <p className="text-[14px] font-semibold text-brand-900">Reporte registrado con éxito</p>
               <p className="mt-0.5 text-[13px] text-brand-800/80">
-                Su caso <span className="font-mono font-semibold">{nuevoCodigo}</span> fue creado y quedó disponible para Seguridad Operativa.
+                Su caso <span className="font-mono font-semibold">{nuevoCodigo}</span> fue creado. Seguridad Operativa continuará con la evaluación.
               </p>
-              <Link to={`/seguridad/casos/${encodeURIComponent(nuevoCodigo)}`}>
-                <Button variant="secondary" size="sm" className="mt-2.5">
-                  Comenzar investigación <ArrowRight className="h-3.5 w-3.5" />
-                </Button>
-              </Link>
             </div>
             <button onClick={() => setParams({})} className="text-[12px] font-medium text-brand-700 hover:text-brand-900">
               Cerrar aviso

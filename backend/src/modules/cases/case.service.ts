@@ -59,6 +59,15 @@ const extensionSchema = z.object({
 const extensionReviewSchema = z.object({
   decision: z.enum(["aprobada", "rechazada"]),
   nota: z.string().trim().max(1000).optional().nullable(),
+  /**
+   * SO puede aprobar la ampliación con un plazo distinto al que pidió el área.
+   * Si no viene, se aprueba con la fecha que propuso el Jefe del Área.
+   */
+  fecha_aprobada: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Use el formato AAAA-MM-DD")
+    .optional()
+    .nullable(),
 });
 
 const planFinalReviewSchema = z.object({
@@ -238,7 +247,7 @@ export class CaseService {
   static async reviewExtensionByPlan(idPlan: string, rawBody: unknown) {
     const dto = extensionReviewSchema.parse(rawBody);
     const id = idPositivo.parse(idPlan);
-    return CaseRepository.reviewExtensionByPlan(id, dto.decision, dto.nota ?? null);
+    return CaseRepository.reviewExtensionByPlan(id, dto.decision, dto.nota ?? null, dto.fecha_aprobada ?? null);
   }
 
   static async completeExecution(codigo: string, rawBody: unknown) {

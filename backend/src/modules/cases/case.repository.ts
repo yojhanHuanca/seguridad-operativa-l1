@@ -113,6 +113,9 @@ type TimelineClient = {
 // TODO(auth): reemplazar por el usuario autenticado cuando exista login real.
 const ACTOR_SO = "Seguridad Operativa";
 
+/** Día calendario de una columna @db.Date, que siempre llega en medianoche UTC. */
+const diaISO = (d: Date) => d.toISOString().slice(0, 10);
+
 export class CaseRepository {
   /** Registra un evento en la bitácora del expediente. */
   static async pushTimeline(client: TimelineClient, id_caso: number, e: TimelineEntry) {
@@ -916,16 +919,58 @@ export class CaseRepository {
     });
   }
 
-  /** SO aprueba o rechaza la prórroga de un plan sin tocar los demás. */
-  static async reviewExtensionByPlan(id_plan: number, decision: "aprobada" | "rechazada", nota: string | null) {
+  /**
+   * SO aprueba o rechaza la prórroga de un plan sin tocar los demás.
+   *
+   * Al aprobar, SO puede correr el plan a `fecha_aprobada` en vez de la fecha
+   * que pidió el área: la solicitud del Jefe es una propuesta, no un plazo
+   * que se acepte tal cual. Sin `fecha_aprobada` vale la fecha propuesta.
+   */
+  static async reviewExtensionByPlan(
+    id_plan: number,
+    decision: "aprobada" | "rechazada",
+    nota: string | null,
+    fecha_aprobada: string | null = null
+  ) {
     const plan = await prisma.planes_accion.findUnique({
       where: { id_plan },
-      select: { id_plan: true, id_caso: true, codigo_plan: true, prorroga_fecha: true, prorroga_estado: true },
+      select: {
+        id_plan: true,
+        id_caso: true,
+        codigo_plan: true,
+        fecha_plan: true,
+        fecha_reprogramada: true,
+        prorroga_fecha: true,
+        prorroga_estado: true,
+      },
     });
     if (!plan) throw new Error(`El plan ${id_plan} no existe`);
     if (plan.prorroga_estado !== "pendiente") {
       throw new Error(`El plan ${plan.codigo_plan} no tiene una prórroga pendiente`);
     }
+
+    // Las columnas son @db.Date: se comparan y guardan como medianoche UTC.
+    const fechaVigente = plan.fecha_reprogramada ?? plan.fecha_plan;
+    const fechaFinal =
+      decision === "aprobada"
+        ? fecha_aprobada
+          ? new Date(`${fecha_aprobada}T00:00:00.000Z`)
+          : plan.prorroga_fecha
+        : null;
+
+    if (decision === "aprobada") {
+      if (!fechaFinal) {
+        throw new Error(`No hay fecha para aprobar la prórroga de ${plan.codigo_plan}`);
+      }
+      if (fechaFinal.getTime() <= fechaVigente.getTime()) {
+        throw new Error(
+          `La nueva fecha debe ser posterior al plazo vigente (${diaISO(fechaVigente)}) para que sea una ampliación`
+        );
+      }
+    }
+
+    const ajustada =
+      !!fechaFinal && !!plan.prorroga_fecha && fechaFinal.getTime() !== plan.prorroga_fecha.getTime();
 
     const [estadoEjecucion, estadoProrroga] = await Promise.all([
       CaseRepository.findEstado("Ejecución"),
@@ -938,7 +983,7 @@ export class CaseRepository {
         data: {
           prorroga_estado: decision,
           updated_at: new Date(),
-          ...(decision === "aprobada" && plan.prorroga_fecha ? { fecha_reprogramada: plan.prorroga_fecha } : {}),
+          ...(fechaFinal ? { fecha_reprogramada: fechaFinal } : {}),
         },
       });
 
@@ -951,15 +996,26 @@ export class CaseRepository {
         data: { estado_hallazgo: pendientes > 0 ? estadoProrroga.id_detalle : estadoEjecucion.id_detalle },
       });
 
+      // La bitácora deja constancia de qué pidió el área y qué otorgó SO,
+      // que es lo que se audita cuando el plazo aprobado no es el propuesto.
+      const resumen =
+        decision === "rechazada"
+          ? `${plan.codigo_plan}: solicitud rechazada, se mantiene el ${diaISO(fechaVigente)}.`
+          : ajustada
+            ? `${plan.codigo_plan}: aprobada al ${diaISO(fechaFinal!)}; el área había pedido el ${diaISO(plan.prorroga_fecha!)}.`
+            : `${plan.codigo_plan}: aprobada al ${diaISO(fechaFinal!)}, según lo pedido por el área.`;
+
       await CaseRepository.pushTimeline(tx, plan.id_caso, {
         kind: "ampliacion",
         actor: ACTOR_SO,
         actor_rol: "seguridad",
         titulo:
-          decision === "aprobada"
-            ? `Ampliación de plazo aprobada — ${plan.codigo_plan}`
-            : `Ampliación de plazo rechazada — ${plan.codigo_plan}`,
-        detalle: nota ? `${plan.codigo_plan}: ${nota}` : `${plan.codigo_plan}: solicitud ${decision}.`,
+          decision === "rechazada"
+            ? `Ampliación de plazo rechazada — ${plan.codigo_plan}`
+            : ajustada
+              ? `Ampliación aprobada con plazo ajustado — ${plan.codigo_plan}`
+              : `Ampliación de plazo aprobada — ${plan.codigo_plan}`,
+        detalle: nota ? `${resumen} ${nota}` : resumen,
       });
 
       return actualizado;
@@ -1193,27 +1249,43 @@ export class CaseRepository {
     if (!plan) throw new Error(`El plan ${id_plan} no existe`);
 
     return prisma.$transaction(async (tx) => {
+      const anexosCreados = [] as Awaited<ReturnType<typeof prisma.anexos_caso.create>>[];
+
       if (archivos.length > 0) {
-        await tx.anexos_caso.createMany({
-          data: archivos.map((f) => ({
-            id_caso: plan.id_caso,
-            nombre_archivo: f.originalname,
-            ruta_archivo: `/uploads/casos/${f.filename}`,
-            tipo_archivo: f.mimetype,
-            peso: Math.round((f.size / 1024) * 100) / 100,
+        for (const f of archivos) {
+          const anexo = await tx.anexos_caso.create({
+            data: {
+              id_caso: plan.id_caso,
+              nombre_archivo: f.originalname,
+              ruta_archivo: `/uploads/casos/${f.filename}`,
+              tipo_archivo: f.mimetype,
+              peso: Math.round((f.size / 1024) * 100) / 100,
+            },
+          });
+          anexosCreados.push(anexo);
+        }
+
+        const detalleHumano = anexosCreados.map((a) => a.nombre_archivo).filter(Boolean).join(", ");
+        const detalleTecnico = {
+          planId: id_plan,
+          planCode: plan.codigo_plan,
+          anexos: anexosCreados.map((a) => ({
+            id_anexo: a.id_anexo,
+            nombre_archivo: a.nombre_archivo,
+            ruta_archivo: a.ruta_archivo,
           })),
-        });
+        };
 
         await CaseRepository.pushTimeline(tx, plan.id_caso, {
           kind: "seguimiento",
           actor,
           actor_rol: "jefe",
           titulo: `Evidencia adjuntada — ${plan.codigo_plan}`,
-          detalle: archivos.map((f) => f.originalname).join(", "),
+          detalle: `${detalleHumano}\n__PLAN_EVIDENCE__:${JSON.stringify(detalleTecnico)}`,
         });
       }
 
-      return tx.anexos_caso.findMany({ where: { id_caso: plan.id_caso }, orderBy: { fecha_subida: "desc" } });
+      return anexosCreados;
     });
   }
 }

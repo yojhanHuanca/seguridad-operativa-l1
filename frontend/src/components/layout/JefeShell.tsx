@@ -168,9 +168,11 @@ export function JefeShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-surface">
       <header className="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-[72px] max-w-[1720px] items-center justify-between gap-7 px-8">
+        {/* Alto = logo (66) + aire. `size` en Logo es el alto real de la imagen,
+            así que la barra ya no reserva espacio muerto. */}
+        <div className="mx-auto flex h-[88px] max-w-[1720px] items-center justify-between gap-7 px-8">
           <Link to="/jefe" className="flex min-w-0 items-center gap-3">
-            <Logo size={110} />
+            <Logo size={66} />
             <span className="hidden h-6 w-px bg-line sm:inline-block" />
             <span className="hidden items-center gap-2 rounded-full bg-brand-50 px-3.5 py-1.5 text-[13.5px] font-medium text-brand-800 sm:flex">
               <Train className="h-4 w-4" /> Portal del Jefe de Área

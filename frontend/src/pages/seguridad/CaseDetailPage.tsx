@@ -12,10 +12,8 @@ import {
   Building2,
   AlertTriangle,
   AlertOctagon,
-  Shield,
   Timer,
   Search,
-  ClipboardList,
   Train,
   Download,
 } from "lucide-react";
@@ -29,7 +27,7 @@ import { WorkflowStepper, InfoRow, InfoCard } from "@/features/cases/components/
 import { useCase } from "@/features/cases/hooks/useCase";
 import { stageFromEstado } from "@/features/cases/domain";
 import { panelForEstado, puede, siguientePaso } from "@/features/cases/lib/workflow";
-import { criterioAceptabilidad, fechaEvaluacion, slaDueDate, slaEstado, diasRestantes, gravedadDerivada } from "@/features/cases/lib/sla";
+import { criterioAceptabilidad, fechaEvaluacion, slaDueDate, slaEstado, diasRestantes } from "@/features/cases/lib/sla";
 import { formatDate, formatDateTime, formatTime } from "@/lib/format";
 import { ReceptionStage } from "./case-detail/ReceptionStage";
 import { TimelinePanel } from "./case-detail/TimelinePanel";
@@ -43,8 +41,8 @@ import { parseActivityDescription } from "@/features/cases/lib/activityMeta";
 import { shortPlanCode } from "@/features/cases/lib/planLabels";
 
 // Portado de pages/seguridad/CaseFile.tsx: cabecera + stepper + panel
-// izquierdo (Información general / Registro SOP / Evento operativo) + panel
-// central por etapa, con los modales de Evidencias y Línea de tiempo.
+// izquierdo (Información general / Evento operativo) + panel central por etapa,
+// con los modales de Evidencias y Línea de tiempo.
 export function CaseDetailPage() {
   const { codigo = "" } = useParams<{ codigo: string }>();
   const { data: caso, isLoading, isError } = useCase(codigo);
@@ -202,78 +200,6 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
               <InfoRow icon={<UserIcon className="h-3.5 w-3.5" />} label="Asignado a" value={caso.usuarios_casos_sop_responsable_hallazgoTousuarios.nombre} />
             )}
             <InfoRow icon={<FileText className="h-3.5 w-3.5" />} label="Creado" value={formatDateTime(caso.created_at)} />
-          </InfoCard>
-
-          <InfoCard
-            title="Registro SOP"
-            action={
-              <Pill tone={stage === "cierre" ? "brand" : "warning"} dot>
-                {estado}
-              </Pill>
-            }
-          >
-            <InfoRow icon={<FileText className="h-3.5 w-3.5" />} label="Tipo de SOP" value={caso.catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle.nombre} />
-            <InfoRow icon={<Flag className="h-3.5 w-3.5" />} label="Subtipo" value={caso.catalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalle?.nombre ?? "—"} />
-            <InfoRow icon={<Building2 className="h-3.5 w-3.5" />} label="Procedencia" value={caso.catalogo_detalle_casos_sop_procedenciaTocatalogo_detalle.nombre} />
-            <InfoRow icon={<AlertTriangle className="h-3.5 w-3.5" />} label="Tipo hallazgo" value={caso.catalogo_detalle_casos_sop_tipoTocatalogo_detalle.nombre} />
-            {caso.clasificacion && <InfoRow icon={<Flag className="h-3.5 w-3.5" />} label="Clasificación" value={caso.clasificacion} />}
-            <InfoRow icon={<Calendar className="h-3.5 w-3.5" />} label="Fecha hallazgo" value={formatDate(caso.fecha_hallazgo)} />
-            <InfoRow icon={<Calendar className="h-3.5 w-3.5" />} label="Fecha evento" value={caso.fecha_evento ? formatDate(caso.fecha_evento) : "—"} />
-            <InfoRow icon={<UserIcon className="h-3.5 w-3.5" />} label="Responsable investigación" value={caso.usuarios_casos_sop_responsable_hallazgoTousuarios?.nombre ?? "—"} />
-            {caso.peligro && <InfoRow icon={<AlertOctagon className="h-3.5 w-3.5" />} label="Peligro" value={caso.peligro} />}
-            {caso.consecuencia && <InfoRow icon={<AlertTriangle className="h-3.5 w-3.5" />} label="Consecuencia" value={caso.consecuencia} />}
-            <InfoRow
-              icon={<Shield className="h-3.5 w-3.5" />}
-              label="Análisis de riesgo"
-              value={riesgo ? `${riesgo.codigo} — ${criterioAceptabilidad(riesgo.nombre, riesgo.codigo) ?? riesgo.nombre}` : "Sin evaluar"}
-            />
-            {riesgo && (
-              <InfoRow
-                icon={<AlertOctagon className="h-3.5 w-3.5" />}
-                label={evaluadoEl ? "Gravedad · plazo desde evaluación" : "Gravedad · plazo desde hallazgo"}
-                value={`${gravedadDerivada(riesgo.nombre, riesgo.codigo) ?? "—"}${slaDue ? ` · vence ${formatDate(slaDue)}` : ""}`}
-              />
-            )}
-            {caso.acr && <InfoRow icon={<FileText className="h-3.5 w-3.5" />} label="ACR" value={caso.acr} />}
-            {caso.planes_accion.length > 0 && (
-              <>
-                <div className="h-px bg-line-soft my-1" />
-                <div className="space-y-2.5">
-                  <div className="flex items-center gap-2 text-ink">
-                    <ClipboardList className="h-3.5 w-3.5 text-ink-faint" />
-                    <p className="text-[11px] text-ink-faint">Planes de acción</p>
-                  </div>
-                  {caso.planes_accion.map((plan) => (
-                    <div key={plan.id_plan} data-print="block" className="rounded-lg border border-line-soft bg-surface/40 p-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="font-mono text-[12px] font-semibold text-brand-700">{shortPlanCode(plan.codigo_plan)}</p>
-                        <Pill tone="info" dot>{plan.catalogo_detalle.nombre}</Pill>
-                      </div>
-                      <p className="mt-2 text-[12.5px] font-medium text-ink">
-                        Responsable: {plan.usuarios.nombre}
-                        {plan.usuarios.cargo ? ` · ${plan.usuarios.cargo}` : ""}
-                      </p>
-                      <p className="mt-1 text-[12px] text-ink-quiet">Área: {plan.areas.nombre_area}</p>
-                      {plan.actividades_plan.length > 0 && (
-                        <div className="mt-2 space-y-1.5 border-t border-line-soft pt-2">
-                          {plan.actividades_plan.map((actividad, index) => {
-                            const parsed = parseActivityDescription(actividad.descripcion);
-                            return (
-                              <div key={actividad.id_actividad} className="text-[11.5px] leading-snug text-ink-soft">
-                                <span className="font-mono font-semibold text-ink-faint">ACT-{String(index + 1).padStart(2, "0")}</span>
-                                <span> · {parsed.descripcion || "Actividad sin descripción"}</span>
-                                <span> · Resp.: {actividad.usuarios?.nombre ?? "Sin responsable"}</span>
-                                {actividad.usuarios?.cargo ? <span> · {actividad.usuarios.cargo}</span> : null}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
           </InfoCard>
 
           {evento && (

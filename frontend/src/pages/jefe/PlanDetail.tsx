@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -33,6 +33,7 @@ import { Modal } from "@/design-system/primitives/Modal";
 import { Field, Input, Textarea } from "@/design-system/primitives/Input";
 import { parseActivityDescription } from "@/features/cases/lib/activityMeta";
 import { compactPlanCodes, shortPlanCode } from "@/features/cases/lib/planLabels";
+import { planEvidenceFiles as extractPlanEvidenceFiles, timelineBelongsToPlan } from "@/features/cases/lib/planEvidence";
 import {
   useAcceptPlanById,
   useAddPlanEvidence,
@@ -228,7 +229,7 @@ function executionComments(plan: PlanItem) {
 }
 
 function eventBelongsToPlan(plan: PlanItem, evento: PlanItem["casos_sop"]["timeline_caso"][number]) {
-  return `${evento.titulo} ${evento.detalle ?? ""}`.includes(plan.codigo_plan);
+  return timelineBelongsToPlan(evento, plan);
 }
 
 function planTimeline(plan: PlanItem) {
@@ -236,19 +237,7 @@ function planTimeline(plan: PlanItem) {
 }
 
 function planEvidenceFiles(plan: PlanItem): AnexoPlanCaso[] {
-  const names = new Set(
-    planTimeline(plan)
-      .filter((evento) => normalize(evento.titulo).includes("evidencia"))
-      .flatMap((evento) => (evento.detalle ?? "").split(","))
-      .map((name) => name.trim())
-      .filter(Boolean)
-  );
-
-  if (names.size === 0) return [];
-  return (plan.casos_sop.anexos_caso ?? []).filter((anexo) => {
-    const name = anexo.nombre_archivo?.trim();
-    return !!name && names.has(name);
-  });
+  return extractPlanEvidenceFiles(plan, plan.casos_sop.timeline_caso ?? [], plan.casos_sop.anexos_caso ?? []);
 }
 
 function planWeight(plan: PlanItem): number {
@@ -555,6 +544,7 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
   const addEvidence = useAddPlanEvidence();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const finalDescriptionDraftKey = useMemo(() => `sigma-l1-plan-${plan.id_plan}-descripcion-cierre`, [plan.id_plan]);
   const [subiendo, setSubiendo] = useState(false);
   const [fileAccept, setFileAccept] = useState(ACCEPT);
   const [executionComment, setExecutionComment] = useState("");
@@ -564,6 +554,11 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
   const [nuevaFecha, setNuevaFecha] = useState(new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10));
   const [justificacion, setJustificacion] = useState("");
   const puedeFinalizar = flow.puedeTrabajar && progreso >= 100;
+  const hasSaveableChanges = flow.puedeTrabajar && (executionComment.trim().length >= 3 || finalDescription.trim().length > 0);
+
+  useEffect(() => {
+    setFinalDescription(window.localStorage.getItem(finalDescriptionDraftKey) ?? "");
+  }, [finalDescriptionDraftKey]);
 
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections((current) => ({ ...current, [section]: !current[section] }));
@@ -603,6 +598,7 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
       {
         onSuccess: () => {
           toast.success("Plan enviado a Seguridad Operativa para revisión");
+          window.localStorage.removeItem(finalDescriptionDraftKey);
           setFinalDescription("");
         },
         onError: (e) => toast.error(apiErrorMessage(e, "No se pudo finalizar el plan")),
@@ -611,28 +607,26 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
   };
 
   const saveChanges = () => {
-    if (flow.pendienteAceptacion) {
-      acceptPlan.mutate(
-        { id_plan: plan.id_plan, actor: ACTOR },
-        {
-          onSuccess: () => toast.success("Plan aceptado, la ejecución ha iniciado"),
-          onError: (e) => toast.error(apiErrorMessage(e, "No se pudo aceptar el plan")),
-        }
-      );
+    if (!flow.puedeTrabajar) {
+      toast.info(flow.pendienteAceptacion ? "Acepta el plan para iniciar la ejecución" : "El estado actual no permite guardar cambios");
       return;
     }
 
-    if (executionComment.trim()) {
+    let saved = false;
+
+    if (executionComment.trim().length >= 3) {
       registerProgress(executionComment);
-      return;
+      saved = true;
     }
 
-    if (puedeFinalizar) {
-      finalizePlan();
-      return;
+    const descripcion = finalDescription.trim();
+    if (descripcion) {
+      window.localStorage.setItem(finalDescriptionDraftKey, descripcion);
+      toast.success("Descripción final guardada como borrador");
+      saved = true;
     }
 
-    toast.info("No hay cambios pendientes por guardar");
+    if (!saved) toast.info("No hay cambios pendientes por guardar");
   };
 
   const onFiles = (files: FileList | null) => {
@@ -1015,10 +1009,10 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
         )}
 
         <Button
-          variant={progreso >= 100 && flow.puedeTrabajar ? "primary" : "outline"}
+          variant={hasSaveableChanges ? "primary" : "outline"}
           size="lg"
           className="w-full"
-          disabled={acceptPlan.isPending || updateActivity.isPending || completeExec.isPending || (!flow.pendienteAceptacion && !flow.puedeTrabajar)}
+          disabled={updateActivity.isPending || completeExec.isPending || !hasSaveableChanges}
           onClick={saveChanges}
         >
           <Save className="h-4.5 w-4.5" /> Guardar cambios

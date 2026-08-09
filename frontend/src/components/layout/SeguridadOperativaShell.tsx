@@ -12,14 +12,13 @@ import {
   ChevronsRight,
   ClipboardCheck,
   Clock,
-  FileText,
+  FilePlus2,
   Folder,
   Gavel,
   Home,
   LayoutDashboard,
   Menu,
   Rocket,
-  Search,
   Timer,
   UserCircle2,
   Users,
@@ -31,12 +30,14 @@ import { Logo } from "@/components/brand/Logo";
 import { useCases } from "@/features/cases/hooks/useCases";
 import { toCaseRow } from "@/features/cases/adapter";
 import { CASE_FILTERS, countByFilter, filterHref, type CaseFilterId } from "@/features/cases/lib/filters";
+import { useUsers } from "@/features/users/hooks/useUsers";
 
 interface NavLink {
   to: string;
   label: string;
   icon: LucideIcon;
   badge?: number;
+  badgeTone?: "brand" | "danger" | "neutral";
   match: (pathname: string, search: string) => boolean;
 }
 
@@ -56,13 +57,13 @@ const PILL_ID = "so-sidebar-active-pill";
 // decide el icono y si el filtro lleva contador de pendientes.
 const FILTER_NAV: Record<CaseFilterId, { icon: LucideIcon; badge: boolean }> = {
   todos: { icon: Folder, badge: false },
-  nuevos: { icon: FileText, badge: true },
+  nuevos: { icon: FilePlus2, badge: true },
   pendientes: { icon: Clock, badge: true },
   investigacion: { icon: Activity, badge: true },
   proceso: { icon: Rocket, badge: true },
   prorrogas: { icon: Timer, badge: true },
   verificacion: { icon: ClipboardCheck, badge: true },
-  cerrados: { icon: CheckCircle2, badge: false },
+  cerrados: { icon: CheckCircle2, badge: true },
 };
 
 export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
@@ -70,6 +71,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSE_KEY) === "1");
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: rawCases } = useCases({});
+  const { data: users } = useUsers();
 
   useEffect(() => {
     localStorage.setItem(COLLAPSE_KEY, collapsed ? "1" : "0");
@@ -83,6 +85,19 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
   // enlaza cada botón, así que el número del badge y lo que abre el filtro
   // siempre coinciden.
   const counts = countByFilter((rawCases ?? []).map(toCaseRow));
+  const activeFilterId = new URLSearchParams(location.search).get("filtro") ?? "todos";
+  const activeFilter = CASE_FILTERS.find((f) => f.id === activeFilterId);
+  const currentPageTitle = getPageTitle(location.pathname);
+  const currentSection =
+    location.pathname === "/seguridad/casos" ? activeFilter?.label ?? "Gestión de Reportes" : currentPageTitle;
+  const notificationCount = counts.nuevos + counts.pendientes + counts.prorrogas + counts.verificacion;
+  const currentUser =
+    users?.find((u) => u.roles?.nombre_rol === "Seguridad Operativa") ??
+    users?.find((u) => u.cargo?.toLowerCase().includes("seguridad operativa")) ??
+    null;
+  const userName = currentUser?.nombre ?? "Analista SO";
+  const userRole = currentUser?.cargo ?? "Seguridad Operativa";
+  const userInitials = initialsFromName(userName);
 
   const groups: NavGroup[] = [
     {
@@ -93,7 +108,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
       links: [
         { to: "/seguridad", label: "Dashboard Ejecutivo", icon: LayoutDashboard, match: (p) => p === "/seguridad" },
         { to: "/seguridad/decisiones", label: "Centro de Decisiones", icon: Gavel, match: (p) => p === "/seguridad/decisiones" },
-        { to: "/seguridad/alertas", label: "Alertas", icon: AlertTriangle, match: (p) => p === "/seguridad/alertas" },
+        { to: "/seguridad/alertas", label: "Alertas", icon: AlertTriangle, badge: notificationCount || undefined, badgeTone: "neutral", match: (p) => p === "/seguridad/alertas" },
       ],
     },
     {
@@ -126,7 +141,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
 
   const standaloneLinks: NavLink[] = [
     { to: "/seguridad/usuarios", label: "Administración de Usuarios", icon: Users, match: (p) => p === "/seguridad/usuarios" },
-    { to: "/seguridad/notificaciones", label: "Notificaciones", icon: Bell, match: (p) => p === "/seguridad/notificaciones" },
+    { to: "/seguridad/notificaciones", label: "Notificaciones", icon: Bell, badge: notificationCount || undefined, badgeTone: "danger", match: (p) => p === "/seguridad/notificaciones" },
     { to: "/seguridad/perfil", label: "Mi Perfil", icon: UserCircle2, match: (p) => p === "/seguridad/perfil" },
   ];
 
@@ -145,21 +160,21 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
         onClick={onNavigate}
         title={collapsed ? link.label : undefined}
         className={cn(
-          "relative flex h-8 items-center gap-2 rounded-lg pl-1.5 pr-2 text-[12.5px] font-medium",
+          "group relative flex h-10 items-center gap-2 rounded-xl pl-2 pr-2.5 text-[13px] font-medium transition-colors hover:bg-surface",
           collapsed && "justify-center px-0"
         )}
       >
         {active && (
           <motion.span
             layoutId={PILL_ID}
-            className="absolute inset-0 rounded-lg bg-brand-50"
+            className="absolute inset-0 rounded-xl bg-brand-50"
             transition={{ type: "spring", stiffness: 520, damping: 38 }}
           />
         )}
         <span
           className={cn(
             "relative z-10 grid h-5 w-5 shrink-0 place-items-center rounded-md transition-colors",
-            active ? "bg-brand-600 text-white" : "text-ink-faint"
+            active ? "bg-brand-600 text-white" : "text-ink-faint group-hover:text-ink-soft"
           )}
         >
           <link.icon className="h-3.5 w-3.5" strokeWidth={active ? 2.25 : 2} />
@@ -170,7 +185,18 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
           </span>
         )}
         {!collapsed && link.badge ? (
-          <span className="relative z-10 grid h-[17px] min-w-[17px] shrink-0 place-items-center rounded-full bg-brand-600 px-1 text-[10px] font-semibold tabular-nums text-white">
+          <span
+            className={cn(
+              "relative z-10 grid h-[20px] min-w-[20px] shrink-0 place-items-center rounded-full px-1.5 text-[10.5px] font-semibold tabular-nums",
+              active
+                ? "bg-brand-200 text-brand-900"
+                : link.badgeTone === "danger"
+                  ? "bg-critical text-white"
+                  : link.badgeTone === "neutral"
+                    ? "bg-surface-2 text-ink-quiet"
+                    : "bg-brand-100 text-brand-700"
+            )}
+          >
             {link.badge}
           </span>
         ) : null}
@@ -180,9 +206,24 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
 
   const sidebarContent = (onNavigate?: () => void) => (
     <>
-      <div className={cn("flex h-14 shrink-0 items-center justify-between border-b border-line px-3.5", collapsed && "justify-center px-2")}>
-        <Link to="/seguridad" onClick={onNavigate} className="min-w-0">
-          <Logo size={26} withWordmark={!collapsed} />
+      <div
+        className={cn(
+          "flex shrink-0 items-center justify-between border-b border-line px-4",
+          collapsed ? "h-16 justify-center px-2" : "h-[112px]"
+        )}
+      >
+        <Link to="/seguridad" onClick={onNavigate} className={cn("min-w-0", !collapsed && "flex items-center gap-3")}>
+          <Logo size={collapsed ? 32 : 66} withWordmark={false} />
+          {!collapsed && (
+            <div className="min-w-0 leading-tight">
+              <p className="font-display text-[17px] font-bold tracking-tight text-ink">
+                SIGMA<span className="text-brand-600"> L1</span>
+              </p>
+              <p className="mt-0.5 max-w-[130px] text-[11.5px] font-medium leading-[1.2] text-ink-quiet">
+                Seguridad Operativa · Metro de Lima
+              </p>
+            </div>
+          )}
         </Link>
         {onNavigate && (
           <button
@@ -196,25 +237,29 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
         )}
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-2.5 py-3">
+      <nav className="scrollbar-none flex-1 overflow-y-auto overscroll-contain px-3 py-4">
         {!collapsed && (
-          <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-faint">Dashboard Ejecutivo</p>
+          <p className="mb-3 px-1.5 text-[10.5px] font-bold uppercase tracking-[0.18em] text-ink-faint">
+            {currentSection}
+          </p>
         )}
 
         {groups.map((group, idx) => {
           const open = collapsed || openGroups[group.id];
+          const groupActive = group.links.some((link) => link.match(location.pathname, location.search));
           return (
-            <div key={group.id} className={cn("mb-1", idx === groups.length - 1 && "mb-0")}>
+            <div key={group.id} className={cn("mb-2", idx === groups.length - 1 && "mb-0")}>
               <button
                 type="button"
                 onClick={() => (collapsed ? undefined : toggleGroup(group.id))}
                 title={collapsed ? group.label : undefined}
                 className={cn(
-                  "flex h-8 w-full items-center gap-2 rounded-lg px-2 text-[12.5px] font-semibold text-ink transition-colors hover:bg-surface",
+                  "flex h-10 w-full items-center gap-2 rounded-xl px-2.5 text-[13px] font-semibold text-ink transition-colors hover:bg-surface",
+                  groupActive && "bg-surface",
                   collapsed && "justify-center px-0"
                 )}
               >
-                <group.icon className="h-4 w-4 shrink-0 text-ink-soft" />
+                <group.icon className={cn("h-4 w-4 shrink-0", groupActive ? "text-brand-700" : "text-ink-soft")} />
                 {!collapsed && (
                   <>
                     <span className="min-w-0 flex-1 truncate text-left">{group.label}</span>
@@ -224,28 +269,33 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
               </button>
 
               {open && (
-                <div className={cn("mt-0.5 space-y-0.5", !collapsed && "pl-1")}>{group.links.map((link) => renderLink(link, onNavigate))}</div>
+                <div className={cn("mt-1 space-y-1", !collapsed && "ml-[18px] border-l border-line-soft pl-3")}>
+                  {group.links.map((link) => renderLink(link, onNavigate))}
+                </div>
               )}
             </div>
           );
         })}
 
-        <div className={cn("mt-3 space-y-0.5 border-t border-line-soft pt-3", collapsed && "border-t-0 pt-1")}>
+        <div className={cn("mt-4 space-y-1 border-t border-line-soft pt-4", collapsed && "border-t-0 pt-1")}>
           {standaloneLinks.map((link) => renderLink(link, onNavigate))}
         </div>
       </nav>
 
-      <div className={cn("shrink-0 border-t border-line p-2.5", collapsed && "px-2")}>
+      <div className={cn("shrink-0 border-t border-line bg-white p-3", collapsed && "px-2")}>
         <Link
           to="/seguridad/perfil"
           onClick={onNavigate}
-          className={cn("flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-surface", collapsed && "justify-center")}
+          className={cn(
+            "flex items-center gap-3 rounded-2xl bg-surface px-3 py-3 transition-colors hover:bg-brand-50",
+            collapsed && "justify-center rounded-xl px-0"
+          )}
         >
-          <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand-100 text-[10.5px] font-bold text-brand-800">AR</div>
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-700 text-[13px] font-bold text-white">{userInitials}</div>
           {!collapsed && (
             <div className="min-w-0 leading-tight">
-              <p className="truncate text-[12px] font-semibold text-ink">Analista SO</p>
-              <p className="truncate text-[10.5px] text-ink-quiet">Seguridad Operativa</p>
+              <p className="truncate text-[13px] font-semibold text-ink">{userName}</p>
+              <p className="mt-0.5 truncate text-[11.5px] text-ink-quiet">{userRole}</p>
             </div>
           )}
         </Link>
@@ -260,7 +310,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
         data-print="hide"
         className={cn(
           "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-line bg-white transition-[width] duration-200 md:flex",
-          collapsed ? "w-[64px]" : "w-[248px]"
+          collapsed ? "w-[64px]" : "w-[296px]"
         )}
       >
         {sidebarContent()}
@@ -279,7 +329,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
       {mobileOpen && (
         <div data-print="hide" className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileOpen(false)} aria-hidden />
-          <aside className="absolute left-0 top-0 flex h-full w-[248px] flex-col bg-white shadow-xl">
+          <aside className="absolute left-0 top-0 flex h-full w-[296px] flex-col bg-white shadow-xl">
             {sidebarContent(() => setMobileOpen(false))}
           </aside>
         </div>
@@ -287,7 +337,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
 
       <div className="min-w-0 flex-1">
         <header data-print="hide" className="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur-xl">
-          <div className="flex h-14 items-center gap-3 px-4 sm:px-6">
+          <div className="flex min-h-[78px] items-center gap-3 px-4 py-3 sm:px-6">
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
@@ -297,12 +347,11 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
               <Menu className="h-4 w-4" />
             </button>
 
-            <div className="flex h-8 min-w-0 max-w-md flex-1 items-center gap-2 rounded-lg border border-line bg-surface px-2.5">
-              <Search className="h-3.5 w-3.5 shrink-0 text-ink-faint" />
-              <input
-                placeholder="Buscar caso por código, título o estación…"
-                className="w-full min-w-0 bg-transparent text-[12.5px] outline-none placeholder:text-ink-faint"
-              />
+            <div className="min-w-0">
+              <p className="text-[11.5px] font-medium text-ink-quiet">
+                SIGMA L1 <span className="px-1.5 text-ink-faint">›</span> {getBreadcrumb(location.pathname)}
+              </p>
+              <p className="mt-0.5 truncate font-display text-[19px] font-bold tracking-tight text-ink">{currentPageTitle}</p>
             </div>
 
             <div className="ml-auto flex items-center gap-2.5">
@@ -315,9 +364,9 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
               </Link>
               <Link to="/seguridad/perfil" className="flex items-center gap-1.5 rounded-lg py-1 pl-1 pr-1.5 hover:bg-surface">
                 <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand-100 text-[10.5px] font-bold text-brand-800">
-                  AR
+                  {userInitials}
                 </div>
-                <span className="hidden text-[12.5px] font-medium text-ink sm:block">Analista SO</span>
+                <span className="hidden text-[12.5px] font-medium text-ink sm:block">{userName}</span>
               </Link>
             </div>
           </div>
@@ -327,4 +376,35 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
       </div>
     </div>
   );
+}
+
+function initialsFromName(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "SO";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+}
+
+function getPageTitle(pathname: string) {
+  if (pathname === "/seguridad") return "Dashboard Ejecutivo";
+  if (pathname.startsWith("/seguridad/casos")) return "Gestión de Casos";
+  if (pathname === "/seguridad/decisiones") return "Centro de Decisiones";
+  if (pathname === "/seguridad/alertas") return "Alertas";
+  if (pathname === "/seguridad/reportes") return "Reportes";
+  if (pathname === "/seguridad/usuarios") return "Administración de Usuarios";
+  if (pathname === "/seguridad/notificaciones") return "Notificaciones";
+  if (pathname === "/seguridad/perfil") return "Mi Perfil";
+  return "Seguridad Operativa";
+}
+
+function getBreadcrumb(pathname: string) {
+  if (pathname === "/seguridad") return "Inicio";
+  if (pathname.startsWith("/seguridad/casos")) return "Inicio / Casos";
+  if (pathname === "/seguridad/decisiones") return "Inicio / Decisiones";
+  if (pathname === "/seguridad/alertas") return "Inicio / Alertas";
+  if (pathname === "/seguridad/reportes") return "Inicio / Reportes";
+  if (pathname === "/seguridad/usuarios") return "Inicio / Usuarios";
+  if (pathname === "/seguridad/notificaciones") return "Inicio / Notificaciones";
+  if (pathname === "/seguridad/perfil") return "Inicio / Perfil";
+  return "Inicio";
 }

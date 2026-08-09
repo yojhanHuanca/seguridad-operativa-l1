@@ -28,10 +28,12 @@ export function ReportanteShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-surface">
       <header className="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-4 px-4 sm:px-6">
+        {/* Alto = logo (66) + aire. `size` en Logo es el alto real de la imagen,
+            así que la barra ya no reserva espacio muerto. */}
+        <div className="mx-auto flex h-[88px] max-w-[1200px] items-center justify-between gap-4 px-4 sm:px-6">
           <div className="flex items-center gap-8">
             <Link to="/reportes">
-              <Logo size={32} />
+              <Logo size={66} />
             </Link>
             <nav className="hidden items-center gap-1 md:flex">
               {NAV.map((item) => (

@@ -36,6 +36,8 @@ export interface CaseFilter {
   match: (c: FiltrableCase) => boolean;
   /** Aparece en el grupo "Gestión de Reportes" del menú lateral. */
   sidebar: boolean;
+  /** Aparece como filtro rápido horizontal en la bandeja. */
+  tab: boolean;
 }
 
 export const CASE_FILTERS: CaseFilter[] = [
@@ -44,32 +46,37 @@ export const CASE_FILTERS: CaseFilter[] = [
     label: "Todos los reportes",
     tabLabel: "Todos",
     match: () => true,
-    sidebar: true,
+    sidebar: false,
+    tab: true,
   },
   {
     id: "nuevos",
     label: "Reportes Nuevos",
     match: (c) => c.stage === "recepcion" || c.stage === "evaluacion",
     sidebar: true,
+    tab: false,
   },
   {
     id: "pendientes",
-    label: "Pendientes de Información",
-    tabLabel: "Pendientes de Info.",
+    label: "Reportes Pendientes",
     match: (c) => c.stage === "pendiente_info",
     sidebar: true,
+    tab: false,
   },
   {
     id: "investigacion",
     label: "En Investigación",
     match: (c) => c.stage === "investigacion",
-    sidebar: true,
+    sidebar: false,
+    tab: true,
   },
   {
     id: "proceso",
-    label: "En Proceso",
+    label: "Reportes en proceso",
+    tabLabel: "En Proceso",
     match: (c) => c.stage === "plan_accion" || c.stage === "ejecucion",
     sidebar: true,
+    tab: false,
   },
   {
     id: "prorrogas",
@@ -77,20 +84,23 @@ export const CASE_FILTERS: CaseFilter[] = [
     // "Prórroga Solicitada" se guarda como estado propio del caso, pero a
     // efectos de etapa sigue siendo Ejecución: es un subconjunto de "En Proceso".
     match: (c) => c.stage === "ejecucion" && c.prorrogaSolicitada,
-    sidebar: true,
+    sidebar: false,
+    tab: true,
   },
   {
     id: "verificacion",
     label: "En Verificación",
     match: (c) => c.stage === "verificacion",
-    sidebar: true,
+    sidebar: false,
+    tab: true,
   },
   {
     id: "cerrados",
-    label: "Cerrados y Rechazados",
+    label: "Reportes Cerrados",
     tabLabel: "Cerrados",
     match: (c) => c.stage === "cierre" || c.stage === "rechazado",
     sidebar: true,
+    tab: false,
   },
 ];
 

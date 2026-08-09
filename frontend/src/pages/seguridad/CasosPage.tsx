@@ -1,10 +1,10 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, Download, FolderKanban, Send, ChevronDown, ChevronUp, ClipboardList, CalendarDays, UserCircle, CheckCircle2 } from "lucide-react";
+import { Search, Download, FolderKanban, Send, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ClipboardList, CalendarDays, UserCircle, CheckCircle2 } from "lucide-react";
 import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
 import { Card } from "@/design-system/primitives/Card";
 import { Button } from "@/design-system/primitives/Button";
-import { Pill, RiskPill, StagePill } from "@/design-system/primitives/Pill";
+import { Pill, StagePill } from "@/design-system/primitives/Pill";
 import { EmptyState } from "@/design-system/primitives/Progress";
 import { useAreas } from "@/features/reports/hooks/useAreas";
 import { useCases } from "@/features/cases/hooks/useCases";
@@ -30,6 +30,9 @@ const QUICK_ACTION: Partial<Record<CaseRow["stage"], string>> = {
   verificacion: "Verificar",
 };
 
+const PAGE_SIZE = 8;
+const TAB_FILTER_IDS = ["todos", "prorrogas", "investigacion", "verificacion"] as const;
+
 export function SoCasosPage() {
   const [params, setParams] = useSearchParams();
   const filtro = resolveFilter(params.get("filtro"));
@@ -37,6 +40,7 @@ export function SoCasosPage() {
   const [areaFilter, setAreaFilter] = useState<string>("");
   const [sort, setSort] = useState<"recent" | "priority" | "sla">("recent");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { data: rawCases, isLoading } = useCases({});
   const { data: areas } = useAreas();
@@ -78,6 +82,25 @@ export function SoCasosPage() {
   }, [cases, filtro, areaFilter, query, sort]);
 
   const counts = useMemo(() => countByFilter(cases), [cases]);
+  const tabFilters = useMemo(
+    () => TAB_FILTER_IDS.map((id) => CASE_FILTERS.find((f) => f.id === id)).filter((f): f is (typeof CASE_FILTERS)[number] => Boolean(f)),
+    []
+  );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const page = Math.min(currentPage, totalPages);
+  const pageStart = (page - 1) * PAGE_SIZE;
+  const pageEnd = Math.min(pageStart + PAGE_SIZE, filtered.length);
+  const paginated = filtered.slice(pageStart, pageStart + PAGE_SIZE);
+
+  useEffect(() => {
+    setCurrentPage(1);
+    setExpandedId(null);
+  }, [filtro.id, areaFilter, query, sort]);
+
+  const goToPage = (nextPage: number) => {
+    setCurrentPage(Math.min(Math.max(nextPage, 1), totalPages));
+    setExpandedId(null);
+  };
 
   return (
     <SeguridadOperativaShell>
@@ -103,7 +126,7 @@ export function SoCasosPage() {
       {/* Pestañas — mismas que el menú lateral (features/cases/lib/filters.ts) */}
       <div className="mt-5 flex items-center gap-2 flex-wrap">
         <div className="flex items-center gap-1 p-1 rounded-xl bg-white border border-line overflow-x-auto scrollbar-none">
-          {CASE_FILTERS.map((f) => (
+          {tabFilters.map((f) => (
             <button
               key={f.id}
               onClick={() => setFilter(f.id)}
@@ -161,7 +184,7 @@ export function SoCasosPage() {
       {/* Table */}
       <Card padded={false} className="mt-4 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-[1180px] w-full text-left">
+          <table className="min-w-[940px] w-full text-left">
             <thead>
               <tr className="bg-surface/60 border-b border-line">
                 <th className="px-4 py-3 text-[11px] font-semibold tracking-wide uppercase text-ink-faint w-[150px]">Código</th>
@@ -169,14 +192,12 @@ export function SoCasosPage() {
                 <th className="px-4 py-3 text-[11px] font-semibold tracking-wide uppercase text-ink-faint">Título</th>
                 <th className="px-4 py-3 text-[11px] font-semibold tracking-wide uppercase text-ink-faint w-[115px]">Reportante</th>
                 <th className="px-4 py-3 text-[11px] font-semibold tracking-wide uppercase text-ink-faint w-[115px]">Estación</th>
-                <th className="px-4 py-3 text-[11px] font-semibold tracking-wide uppercase text-ink-faint w-[130px]">Área</th>
-                <th className="px-4 py-3 text-[11px] font-semibold tracking-wide uppercase text-ink-faint w-[110px]">Riesgo</th>
                 <th className="px-4 py-3 text-[11px] font-semibold tracking-wide uppercase text-ink-faint w-[140px]">Estado</th>
                 <th className="px-4 py-3 text-[11px] font-semibold tracking-wide uppercase text-ink-faint w-[130px]">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line-soft">
-              {filtered.map((c) => {
+              {paginated.map((c) => {
                 const sla = slaEstado(c.slaDueDate, c.stage);
                 const hasPlan = c.planes.length > 0;
                 const isExpanded = expandedId === c.id;
@@ -206,18 +227,6 @@ export function SoCasosPage() {
                       </td>
                       <td className="px-4 py-3.5">
                         <p className="text-[12.5px] text-ink-soft truncate">{c.station}</p>
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <p className="text-[12.5px] text-ink-soft truncate">{c.area ?? "—"}</p>
-                      </td>
-                      <td className="px-4 py-3.5">
-                        {c.risk ? (
-                          <RiskPill risk={c.risk} />
-                        ) : (
-                          <span className="text-[13px] text-ink-faint" title="Sin evaluar">
-                            —
-                          </span>
-                        )}
                       </td>
                       <td className="px-4 py-3.5">
                         <div className="flex flex-col items-start gap-1">
@@ -257,7 +266,7 @@ export function SoCasosPage() {
                     </tr>
                     {isExpanded && hasPlan && (
                       <tr className="bg-surface/60">
-                        <td colSpan={9} className="px-4 py-4">
+                        <td colSpan={7} className="px-4 py-4">
                           <div className="rounded-xl border border-line bg-white p-4 shadow-sm">
                             <p className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
                               <ClipboardList className="h-3.5 w-3.5" /> Planes de acción vinculados
@@ -322,11 +331,44 @@ export function SoCasosPage() {
           />
         )}
         {isLoading && <p className="p-6 text-center text-[13px] text-ink-quiet">Cargando casos…</p>}
-      </Card>
 
-      <p className="mt-3 text-[11.5px] text-ink-quiet">
-        Mostrando {filtered.length} de {cases.length} casos · Filtro: {filtro.label}
-      </p>
+        {!isLoading && filtered.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-white px-4 py-3">
+            <p className="text-[11.5px] text-ink-quiet">
+              Mostrando {pageStart + 1}-{pageEnd} de {filtered.length} casos · Total general: {cases.length} · Filtro: {filtro.label}
+            </p>
+            {totalPages > 1 && (
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  disabled={page === 1}
+                  onClick={() => goToPage(page - 1)}
+                  aria-label="Página anterior"
+                  className="h-8 w-8"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="min-w-[86px] text-center text-[12px] font-medium text-ink-soft">
+                  Página {page} de {totalPages}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  disabled={page === totalPages}
+                  onClick={() => goToPage(page + 1)}
+                  aria-label="Página siguiente"
+                  className="h-8 w-8"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </Card>
     </SeguridadOperativaShell>
   );
 }

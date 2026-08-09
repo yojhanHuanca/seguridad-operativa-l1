@@ -186,6 +186,18 @@ export class CaseRepository {
                         catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { select: { nombre: true } },
                         catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: { select: { codigo: true, nombre: true } },
                         investigacion_caso: { select: { causa_raiz: true, hallazgos: true, conclusiones: true } },
+                        timeline_caso: {
+                            orderBy: { fecha: "desc" },
+                            select: {
+                                id_evento: true,
+                                kind: true,
+                                actor: true,
+                                actor_rol: true,
+                                titulo: true,
+                                detalle: true,
+                                fecha: true,
+                            },
+                        },
                         anexos_caso: {
                             orderBy: { fecha_subida: "desc" },
                             select: {
@@ -1061,25 +1073,39 @@ export class CaseRepository {
         if (!plan)
             throw new Error(`El plan ${id_plan} no existe`);
         return prisma.$transaction(async (tx) => {
+            const anexosCreados = [];
             if (archivos.length > 0) {
-                await tx.anexos_caso.createMany({
-                    data: archivos.map((f) => ({
-                        id_caso: plan.id_caso,
-                        nombre_archivo: f.originalname,
-                        ruta_archivo: `/uploads/casos/${f.filename}`,
-                        tipo_archivo: f.mimetype,
-                        peso: Math.round((f.size / 1024) * 100) / 100,
+                for (const f of archivos) {
+                    const anexo = await tx.anexos_caso.create({
+                        data: {
+                            id_caso: plan.id_caso,
+                            nombre_archivo: f.originalname,
+                            ruta_archivo: `/uploads/casos/${f.filename}`,
+                            tipo_archivo: f.mimetype,
+                            peso: Math.round((f.size / 1024) * 100) / 100,
+                        },
+                    });
+                    anexosCreados.push(anexo);
+                }
+                const detalleHumano = anexosCreados.map((a) => a.nombre_archivo).filter(Boolean).join(", ");
+                const detalleTecnico = {
+                    planId: id_plan,
+                    planCode: plan.codigo_plan,
+                    anexos: anexosCreados.map((a) => ({
+                        id_anexo: a.id_anexo,
+                        nombre_archivo: a.nombre_archivo,
+                        ruta_archivo: a.ruta_archivo,
                     })),
-                });
+                };
                 await CaseRepository.pushTimeline(tx, plan.id_caso, {
                     kind: "seguimiento",
                     actor,
                     actor_rol: "jefe",
                     titulo: `Evidencia adjuntada — ${plan.codigo_plan}`,
-                    detalle: archivos.map((f) => f.originalname).join(", "),
+                    detalle: `${detalleHumano}\n__PLAN_EVIDENCE__:${JSON.stringify(detalleTecnico)}`,
                 });
             }
-            return tx.anexos_caso.findMany({ where: { id_caso: plan.id_caso }, orderBy: { fecha_subida: "desc" } });
+            return anexosCreados;
         });
     }
 }

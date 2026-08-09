@@ -23,6 +23,7 @@ import {
 } from "@/features/cases/hooks/useCaseActions";
 import { parseActivityDescription } from "@/features/cases/lib/activityMeta";
 import { compactPlanCodes, shortPlanCode } from "@/features/cases/lib/planLabels";
+import { planEvidenceFiles, timelineBelongsToPlan } from "@/features/cases/lib/planEvidence";
 import { ACTOR_ROL_LABEL } from "@/features/cases/lib/workflow";
 import { apiErrorMessage } from "@/lib/api";
 import { formatDate, formatDateTime, relativeTime } from "@/lib/format";
@@ -99,7 +100,7 @@ const ACTIVIDAD_TONE: Record<string, "brand" | "warning" | "neutral"> = {
 };
 
 function contienePlan(evento: TimelineEvento, plan: PlanAccion): boolean {
-  return `${evento.titulo} ${evento.detalle ?? ""}`.includes(plan.codigo_plan);
+  return timelineBelongsToPlan(evento, plan);
 }
 
 function timelineDelPlan(caso: CaseDetail, plan: PlanAccion): TimelineEvento[] {
@@ -132,23 +133,10 @@ function comentariosActividad(plan: PlanAccion) {
     .sort((a, b) => +new Date(b.fecha ?? 0) - +new Date(a.fecha ?? 0));
 }
 
-function nombresEvidenciaDelPlan(caso: CaseDetail, plan: PlanAccion): string[] {
-  const nombres = new Set<string>();
-  for (const evento of timelineDelPlan(caso, plan)) {
-    if (!normalize(evento.titulo).includes("evidencia")) continue;
-    for (const item of (evento.detalle ?? "").split(",")) {
-      const nombre = item.trim();
-      if (nombre) nombres.add(nombre);
-    }
-  }
-  return [...nombres];
-}
-
 function evidenciasDelPlan(caso: CaseDetail, plan: PlanAccion) {
-  const anexosPorNombre = new Map(caso.anexos_caso.map((a) => [a.nombre_archivo ?? "", a]));
-  return nombresEvidenciaDelPlan(caso, plan).map((nombre) => ({
-    nombre,
-    anexo: anexosPorNombre.get(nombre) ?? null,
+  return planEvidenceFiles(plan, caso.timeline_caso, caso.anexos_caso).map((anexo) => ({
+    nombre: anexo.nombre_archivo ?? "Archivo adjunto",
+    anexo,
   }));
 }
 
@@ -222,6 +210,16 @@ function PlanMetric({
   );
 }
 
+/** ISO de una columna @db.Date → valor de un `<input type="date">`. */
+const soloFecha = (v?: string | null) => (v ? v.slice(0, 10) : "");
+
+/** Día siguiente a `v`, para el `min` del input: prorrogar es correr la fecha. */
+function diaSiguiente(v?: string | null): string {
+  const base = soloFecha(v);
+  if (!base) return "";
+  return new Date(new Date(`${base}T00:00:00.000Z`).getTime() + 86400000).toISOString().slice(0, 10);
+}
+
 function PlanExecutionBoard({
   caso,
   cerrado,
@@ -235,6 +233,8 @@ function PlanExecutionBoard({
   const addPlanComment = useAddPlanComment(caso.codigo_sop);
   const [extensionReview, setExtensionReview] = useState<{ plan: PlanAccion; decision: "aprobada" | "rechazada" } | null>(null);
   const [extensionNote, setExtensionNote] = useState("");
+  /** Plazo que SO va a otorgar; arranca en el que pidió el área y es editable. */
+  const [extensionDate, setExtensionDate] = useState("");
   const [activeCommentPlan, setActiveCommentPlan] = useState<number | null>(null);
   const [planComment, setPlanComment] = useState("");
   const [expandedPlans, setExpandedPlans] = useState<Set<number>>(() => new Set());
@@ -253,6 +253,7 @@ function PlanExecutionBoard({
   const abrirRevisionProrroga = (plan: PlanAccion, decision: "aprobada" | "rechazada") => {
     setExtensionReview({ plan, decision });
     setExtensionNote("");
+    setExtensionDate(soloFecha(plan.prorroga_fecha));
   };
 
   const enviarComentario = (plan: PlanAccion) => {
@@ -279,6 +280,15 @@ function PlanExecutionBoard({
       return next;
     });
   };
+
+  // Plazo que SO otorga en la prórroga en revisión. Solo es una ampliación si
+  // la fecha corre hacia adelante, así que un plazo igual o anterior al
+  // vigente bloquea la aprobación (el backend valida lo mismo).
+  const planEnRevision = extensionReview?.plan;
+  const plazoVigente = soloFecha(planEnRevision?.fecha_reprogramada ?? planEnRevision?.fecha_plan);
+  const fechaAjustada = !!planEnRevision && extensionDate !== soloFecha(planEnRevision.prorroga_fecha);
+  const fechaOtorgadaInvalida =
+    extensionReview?.decision === "aprobada" && (!extensionDate || extensionDate <= plazoVigente);
 
   return (
     <>
@@ -502,7 +512,7 @@ function PlanExecutionBoard({
                       </p>
                     )}
                     {evidencias.map((e) => (
-                      <FilaAnexoPlan key={`${plan.id_plan}-${e.nombre}`} nombre={e.nombre} anexo={e.anexo} />
+                      <FilaAnexoPlan key={`${plan.id_plan}-${e.anexo?.id_anexo ?? e.nombre}`} nombre={e.nombre} anexo={e.anexo} />
                     ))}
                   </div>
                 </div>
@@ -576,20 +586,30 @@ function PlanExecutionBoard({
             <Button variant="ghost" onClick={() => setExtensionReview(null)}>Cancelar</Button>
             <Button
               variant={extensionReview?.decision === "rechazada" ? "danger" : "primary"}
-              disabled={!extensionReview || reviewExtension.isPending}
+              disabled={!extensionReview || reviewExtension.isPending || fechaOtorgadaInvalida}
               onClick={() => {
-                if (!extensionReview) return;
+                if (!extensionReview || fechaOtorgadaInvalida) return;
+                const aprobando = extensionReview.decision === "aprobada";
                 reviewExtension.mutate(
                   {
                     id_plan: extensionReview.plan.id_plan,
                     decision: extensionReview.decision,
                     nota: extensionNote.trim() || undefined,
+                    // Solo viaja al aprobar: al rechazar no hay plazo que otorgar.
+                    fecha_aprobada: aprobando ? extensionDate : undefined,
                   },
                   {
                     onSuccess: () => {
-                      toast.success(extensionReview.decision === "aprobada" ? "Prórroga aprobada" : "Prórroga rechazada");
+                      toast.success(
+                        !aprobando
+                          ? "Prórroga rechazada"
+                          : fechaAjustada
+                            ? `Prórroga aprobada con plazo ajustado al ${formatDate(extensionDate)}`
+                            : "Prórroga aprobada"
+                      );
                       setExtensionReview(null);
                       setExtensionNote("");
+                      setExtensionDate("");
                     },
                     onError: (e) => toast.error(apiErrorMessage(e, "No se pudo resolver la prórroga")),
                   }
@@ -613,10 +633,44 @@ function PlanExecutionBoard({
           <div className="space-y-3">
             <div className="rounded-lg border border-line bg-surface/50 p-3 text-[12.5px]">
               <p className="font-semibold text-ink">{extensionReview.plan.prorroga_motivo}</p>
-              <p className="mt-1 text-ink-quiet">
-                Nueva fecha propuesta: {extensionReview.plan.prorroga_fecha ? formatDate(extensionReview.plan.prorroga_fecha) : "—"}
-              </p>
+              <div className="mt-2 grid grid-cols-2 gap-3 border-t border-line-soft pt-2 text-ink-quiet">
+                <div>
+                  <p className="text-[10.5px] font-semibold uppercase tracking-wide text-ink-faint">Plazo vigente</p>
+                  <p className="mt-0.5 text-ink">{plazoVigente ? formatDate(plazoVigente) : "—"}</p>
+                </div>
+                <div>
+                  <p className="text-[10.5px] font-semibold uppercase tracking-wide text-ink-faint">Fecha que pide el área</p>
+                  <p className="mt-0.5 font-medium text-warning-ink">
+                    {extensionReview.plan.prorroga_fecha ? formatDate(extensionReview.plan.prorroga_fecha) : "—"}
+                  </p>
+                </div>
+              </div>
             </div>
+
+            {extensionReview.decision === "aprobada" && (
+              <Field
+                label="Plazo que se otorga"
+                required
+                hint={
+                  fechaAjustada
+                    ? "Distinto al solicitado: se otorgará esta fecha y la diferencia queda en la bitácora."
+                    : "Puede modificarlo si el área necesita un plazo distinto al que pidió."
+                }
+                error={
+                  fechaOtorgadaInvalida
+                    ? `Debe ser posterior al plazo vigente${plazoVigente ? ` (${formatDate(plazoVigente)})` : ""}.`
+                    : undefined
+                }
+              >
+                <Input
+                  type="date"
+                  value={extensionDate}
+                  min={diaSiguiente(plazoVigente)}
+                  onChange={(e) => setExtensionDate(e.target.value)}
+                />
+              </Field>
+            )}
+
             <Field label="Nota de decisión" hint="Opcional; queda registrada en la bitácora del plan.">
               <Textarea
                 value={extensionNote}
