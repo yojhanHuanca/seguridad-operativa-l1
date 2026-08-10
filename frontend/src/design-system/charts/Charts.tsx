@@ -1,4 +1,6 @@
-// Portado tal cual del prototipo SIGMA L1 (design-system/charts/Charts.tsx).
+// Portado del prototipo SIGMA L1 (design-system/charts/Charts.tsx), con la
+// animación de entrada alineada al resto de la app.
+import { useReducedMotion } from "framer-motion";
 import {
   Area,
   AreaChart,
@@ -41,6 +43,24 @@ const tooltipStyle = {
 
 const labelStyle = { color: "#767f79", fontSize: 11, marginBottom: 2 };
 const itemStyle = { color: "#182621", fontSize: 12.5, padding: "1px 0" };
+
+/**
+ * Props de animación para las series de recharts.
+ *
+ * recharts anima por defecto pero ignora `prefers-reduced-motion` — no consulta
+ * el media query en ningún momento —, así que hay que apagarla a mano para
+ * quien pidió menos movimiento. La duración se acerca a la de las variantes de
+ * framer-motion para que el dibujado del gráfico y la entrada de la tarjeta que
+ * lo contiene no vayan a ritmos distintos.
+ */
+function useSeriesAnimation() {
+  const reduce = useReducedMotion();
+  return {
+    isAnimationActive: !reduce,
+    animationDuration: 640,
+    animationEasing: "ease-out" as const,
+  };
+}
 
 export function TrendAreaChart({
   data,
@@ -95,6 +115,7 @@ export function TrendBarChart({
   color?: string;
   height?: number;
 }) {
+  const anim = useSeriesAnimation();
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }} barCategoryGap={18}>
@@ -107,7 +128,7 @@ export function TrendBarChart({
           itemStyle={itemStyle}
           cursor={{ fill: CHART_COLORS.surface, fillOpacity: 0.4 }}
         />
-        <Bar dataKey={dataKey} fill={color} radius={[4, 4, 0, 0]} barSize={24} />
+        <Bar dataKey={dataKey} fill={color} radius={[4, 4, 0, 0]} barSize={24} {...anim} />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -144,6 +165,7 @@ export function DonutChart({
   innerRadius?: number;
   outerRadius?: number;
 }) {
+  const anim = useSeriesAnimation();
   return (
     <ResponsiveContainer width="100%" height={height}>
       <PieChart>
@@ -156,6 +178,7 @@ export function DonutChart({
           paddingAngle={2}
           stroke="#fff"
           strokeWidth={2}
+          {...anim}
         >
           {data.map((d, i) => (
             <Cell key={i} fill={d.color} />
@@ -174,6 +197,7 @@ export function HBarsChart({
   data: { name: string; value: number; color?: string }[];
   height?: number;
 }) {
+  const anim = useSeriesAnimation();
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} layout="vertical" margin={{ top: 4, right: 12, left: 8, bottom: 4 }} barCategoryGap={10}>
@@ -194,7 +218,7 @@ export function HBarsChart({
           itemStyle={itemStyle}
           cursor={{ fill: CHART_COLORS.surface, fillOpacity: 0.5 }}
         />
-        <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={14}>
+        <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={14} {...anim}>
           {data.map((d, i) => (
             <Cell key={i} fill={d.color ?? CHART_COLORS.brand} />
           ))}

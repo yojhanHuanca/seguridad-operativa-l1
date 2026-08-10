@@ -12,12 +12,15 @@ import {
   ChevronsRight,
   ClipboardCheck,
   Clock,
+  Download,
   FilePlus2,
   Folder,
   Gavel,
+  Gauge,
   Home,
   LayoutDashboard,
   Menu,
+  PieChart,
   Rocket,
   Timer,
   UserCircle2,
@@ -31,6 +34,7 @@ import { useCases } from "@/features/cases/hooks/useCases";
 import { toCaseRow } from "@/features/cases/adapter";
 import { CASE_FILTERS, countByFilter, filterHref, type CaseFilterId } from "@/features/cases/lib/filters";
 import { useUsers } from "@/features/users/hooks/useUsers";
+import { useNotifications } from "@/features/notifications/hooks/useNotifications";
 
 interface NavLink {
   to: string;
@@ -72,6 +76,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: rawCases } = useCases({});
   const { data: users } = useUsers();
+  const { data: notifications } = useNotifications();
 
   useEffect(() => {
     localStorage.setItem(COLLAPSE_KEY, collapsed ? "1" : "0");
@@ -90,7 +95,12 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
   const currentPageTitle = getPageTitle(location.pathname);
   const currentSection =
     location.pathname === "/seguridad/casos" ? activeFilter?.label ?? "Gestión de Reportes" : currentPageTitle;
-  const notificationCount = counts.nuevos + counts.pendientes + counts.prorrogas + counts.verificacion;
+  // Dos contadores distintos porque son dos cosas distintas: el de Alertas
+  // cuenta casos que esperan una decisión (estado), el de Notificaciones
+  // cuenta avisos sin leer (eventos). Antes ambos badges mostraban este mismo
+  // número y hacían pensar que las dos secciones tenían el mismo contenido.
+  const pendingDecisions = counts.nuevos + counts.pendientes + counts.prorrogas + counts.verificacion;
+  const unreadNotifications = notifications?.no_leidas ?? 0;
   const currentUser =
     users?.find((u) => u.roles?.nombre_rol === "Seguridad Operativa") ??
     users?.find((u) => u.cargo?.toLowerCase().includes("seguridad operativa")) ??
@@ -108,7 +118,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
       links: [
         { to: "/seguridad", label: "Dashboard Ejecutivo", icon: LayoutDashboard, match: (p) => p === "/seguridad" },
         { to: "/seguridad/decisiones", label: "Centro de Decisiones", icon: Gavel, match: (p) => p === "/seguridad/decisiones" },
-        { to: "/seguridad/alertas", label: "Alertas", icon: AlertTriangle, badge: notificationCount || undefined, badgeTone: "neutral", match: (p) => p === "/seguridad/alertas" },
+        { to: "/seguridad/alertas", label: "Alertas", icon: AlertTriangle, badge: pendingDecisions || undefined, badgeTone: "neutral", match: (p) => p === "/seguridad/alertas" },
       ],
     },
     {
@@ -134,14 +144,18 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
       id: "reportes",
       label: "Reportes",
       icon: BarChart3,
-      defaultOpen: false,
-      links: [{ to: "/seguridad/reportes", label: "Indicadores y Estadísticas", icon: BarChart3, match: (p) => p === "/seguridad/reportes" }],
+      defaultOpen: true,
+      links: [
+        { to: "/seguridad/reportes/kpis", label: "KPIs", icon: Gauge, match: (p) => p === "/seguridad/reportes" || p === "/seguridad/reportes/kpis" },
+        { to: "/seguridad/reportes/estadisticas", label: "Estadísticas", icon: PieChart, match: (p) => p === "/seguridad/reportes/estadisticas" },
+        { to: "/seguridad/reportes/exportar", label: "Exportar", icon: Download, match: (p) => p === "/seguridad/reportes/exportar" },
+      ],
     },
   ];
 
   const standaloneLinks: NavLink[] = [
     { to: "/seguridad/usuarios", label: "Administración de Usuarios", icon: Users, match: (p) => p === "/seguridad/usuarios" },
-    { to: "/seguridad/notificaciones", label: "Notificaciones", icon: Bell, badge: notificationCount || undefined, badgeTone: "danger", match: (p) => p === "/seguridad/notificaciones" },
+    { to: "/seguridad/notificaciones", label: "Notificaciones", icon: Bell, badge: unreadNotifications || undefined, badgeTone: "danger", match: (p) => p === "/seguridad/notificaciones" },
     { to: "/seguridad/perfil", label: "Mi Perfil", icon: UserCircle2, match: (p) => p === "/seguridad/perfil" },
   ];
 
@@ -390,7 +404,9 @@ function getPageTitle(pathname: string) {
   if (pathname.startsWith("/seguridad/casos")) return "Gestión de Casos";
   if (pathname === "/seguridad/decisiones") return "Centro de Decisiones";
   if (pathname === "/seguridad/alertas") return "Alertas";
-  if (pathname === "/seguridad/reportes") return "Reportes";
+  if (pathname === "/seguridad/reportes" || pathname === "/seguridad/reportes/kpis") return "KPIs";
+  if (pathname === "/seguridad/reportes/estadisticas") return "Estadísticas";
+  if (pathname === "/seguridad/reportes/exportar") return "Exportar Reportes";
   if (pathname === "/seguridad/usuarios") return "Administración de Usuarios";
   if (pathname === "/seguridad/notificaciones") return "Notificaciones";
   if (pathname === "/seguridad/perfil") return "Mi Perfil";
@@ -402,7 +418,9 @@ function getBreadcrumb(pathname: string) {
   if (pathname.startsWith("/seguridad/casos")) return "Inicio / Casos";
   if (pathname === "/seguridad/decisiones") return "Inicio / Decisiones";
   if (pathname === "/seguridad/alertas") return "Inicio / Alertas";
-  if (pathname === "/seguridad/reportes") return "Inicio / Reportes";
+  if (pathname === "/seguridad/reportes" || pathname === "/seguridad/reportes/kpis") return "Inicio / Reportes / KPIs";
+  if (pathname === "/seguridad/reportes/estadisticas") return "Inicio / Reportes / Estadísticas";
+  if (pathname === "/seguridad/reportes/exportar") return "Inicio / Reportes / Exportar";
   if (pathname === "/seguridad/usuarios") return "Inicio / Usuarios";
   if (pathname === "/seguridad/notificaciones") return "Inicio / Notificaciones";
   if (pathname === "/seguridad/perfil") return "Inicio / Perfil";

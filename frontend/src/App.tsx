@@ -1,7 +1,12 @@
+import { MotionProvider } from "@/design-system/motion/motion";
 import { AppRouter } from "@/routes/AppRouter";
 
 function App() {
-  return <AppRouter />;
+  return (
+    <MotionProvider>
+      <AppRouter />
+    </MotionProvider>
+  );
 }
 
 export default App;

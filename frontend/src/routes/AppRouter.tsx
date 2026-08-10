@@ -9,11 +9,12 @@ import { CaseDetailPage } from "@/pages/seguridad/CaseDetailPage";
 import { JefeHome } from "@/pages/jefe/JefeHome";
 import { PlanDetail } from "@/pages/jefe/PlanDetail";
 import { SoUsuariosPage } from "@/pages/seguridad/UsuariosPage";
+import { ReportExportPage } from "@/pages/seguridad/ReportExportPage";
+import { SoDecisionesPage } from "@/pages/seguridad/DecisionesPage";
+import { SoNotificacionesPage } from "@/pages/seguridad/NotificacionesPage";
 import {
   SoAlertasPage,
-  SoDecisionesPage,
   SoEventosPage,
-  SoNotificacionesPage,
   SoPerfilPage,
   SoPlanesAccionPage,
   SoReportesPage,
@@ -40,6 +41,9 @@ export function AppRouter() {
         <Route path="/seguridad/planes-accion" element={<SoPlanesAccionPage />} />
         <Route path="/seguridad/eventos" element={<SoEventosPage />} />
         <Route path="/seguridad/reportes" element={<SoReportesPage />} />
+        <Route path="/seguridad/reportes/kpis" element={<SoReportesPage />} />
+        <Route path="/seguridad/reportes/estadisticas" element={<SoReportesPage />} />
+        <Route path="/seguridad/reportes/exportar" element={<ReportExportPage />} />
         <Route path="/seguridad/notificaciones" element={<SoNotificacionesPage />} />
         <Route path="/seguridad/perfil" element={<SoPerfilPage />} />
 

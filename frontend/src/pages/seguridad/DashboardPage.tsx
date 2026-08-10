@@ -1,6 +1,7 @@
 // Portado del prototipo SIGMA L1 (pages/seguridad/Dashboard.tsx), conectado a
 // datos reales vía useCases() + toCaseRow en vez del store de localStorage.
 import { useMemo } from "react";
+import { motion } from "framer-motion";
 import {
   FolderClock,
   CalendarClock,
@@ -16,6 +17,9 @@ import { WelcomeBanner } from "@/components/layout/WelcomeBanner";
 import { Card } from "@/design-system/primitives/Card";
 import { Pill, RiskPill } from "@/design-system/primitives/Pill";
 import { Progress } from "@/design-system/primitives/Progress";
+import { Skeleton, SkeletonChart, SkeletonDonut } from "@/design-system/primitives/Skeleton";
+import { CountUp } from "@/design-system/motion/motion";
+import { riseItem, staggerContainer } from "@/design-system/motion/variants";
 import { CHART_COLORS, DonutChart, HBarsChart, TrendBarChart } from "@/design-system/charts/Charts";
 import { IncidentMap } from "@/pages/seguridad/IncidentMap";
 import { useCases } from "@/features/cases/hooks/useCases";
@@ -126,7 +130,12 @@ export function SoDashboardPage() {
         }
       />
 
-      <div className="mt-5 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+      <motion.div
+        className="mt-5 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3"
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+      >
         <KpiCard icon={<FolderClock className="h-4.5 w-4.5" />} label="Pendientes" value={stats.pendientes} delta="Abiertos" deltaTone="info" />
         <KpiCard
           icon={<CalendarClock className="h-4.5 w-4.5" />}
@@ -141,13 +150,14 @@ export function SoDashboardPage() {
         <KpiCard
           icon={<Gauge className="h-4.5 w-4.5" />}
           label="Cumpl. SLA"
-          value={`${stats.slaCompliance}%`}
+          value={stats.slaCompliance}
+          suffix="%"
           delta={stats.slaCompliance >= 85 ? "Saludable" : "Atención"}
           deltaTone={stats.slaCompliance >= 85 ? "brand" : "warning"}
           tone="brand"
           gauge={stats.slaCompliance}
         />
-      </div>
+      </motion.div>
 
       <div className="mt-5 grid lg:grid-cols-3 gap-5">
         <Card className="lg:col-span-2">
@@ -165,7 +175,7 @@ export function SoDashboardPage() {
               Último año
             </Pill>
           </div>
-          {isLoading ? <div className="h-[240px] grid place-items-center text-[13px] text-ink-quiet">Cargando…</div> : <TrendBarChart data={trend} height={240} />}
+          {isLoading ? <SkeletonChart height={240} /> : <TrendBarChart data={trend} height={240} />}
         </Card>
         <Card>
           <div className="flex items-start gap-3 mb-4">
@@ -177,20 +187,31 @@ export function SoDashboardPage() {
               <p className="text-[12.5px] text-ink-quiet mt-0.5">Composición del total de casos</p>
             </div>
           </div>
-          {isLoading || byType.length === 0 ? (
-            <div className="h-[200px] grid place-items-center text-[13px] text-ink-quiet">{isLoading ? "Cargando…" : "Sin datos aún"}</div>
+          {isLoading ? (
+            <SkeletonDonut height={200} />
+          ) : byType.length === 0 ? (
+            <div className="h-[200px] grid place-items-center text-[13px] text-ink-quiet">Sin datos aún</div>
           ) : (
             <>
               <DonutChart data={byType} height={200} />
-              <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5">
+              <motion.div
+                className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5"
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
+              >
                 {byType.map((d) => (
-                  <div key={d.name} className="flex items-center gap-1.5 text-[11.5px] text-ink-soft min-w-0">
+                  <motion.div
+                    key={d.name}
+                    variants={riseItem}
+                    className="flex items-center gap-1.5 text-[11.5px] text-ink-soft min-w-0"
+                  >
                     <span className="h-2 w-2 rounded-full shrink-0" style={{ background: d.color }} />
                     <span className="truncate">{d.name}</span>
                     <span className="ml-auto tabular-nums text-ink-faint">{d.value}</span>
-                  </div>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             </>
           )}
         </Card>
@@ -230,12 +251,29 @@ export function SoDashboardPage() {
             <Pill tone="neutral">Tiempo real</Pill>
           </div>
         </div>
-        <div className="divide-y divide-line-soft max-h-[280px] overflow-y-auto">
-          {recent.length === 0 ? (
-            <p className="p-5 text-[13px] text-ink-quiet text-center">{isLoading ? "Cargando…" : "Aún no hay casos registrados."}</p>
+        <motion.div
+          className="divide-y divide-line-soft max-h-[280px] overflow-y-auto"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+        >
+          {isLoading ? (
+            <div className="p-4 space-y-4">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <Skeleton className="h-8 w-8 rounded-lg shrink-0" />
+                  <div className="flex-1 space-y-1.5">
+                    <Skeleton className="h-3 w-2/5" />
+                    <Skeleton className="h-2.5 w-1/4" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : recent.length === 0 ? (
+            <p className="p-5 text-[13px] text-ink-quiet text-center">Aún no hay casos registrados.</p>
           ) : (
             recent.map((c) => (
-              <div key={c.id} className="flex items-start gap-3 p-4">
+              <motion.div key={c.id} variants={riseItem} className="flex items-start gap-3 p-4">
                 <div className="h-8 w-8 rounded-lg grid place-items-center shrink-0 text-[12px] font-semibold bg-brand-100 text-brand-800">
                   {initialsOf(c.reporter)}
                 </div>
@@ -251,10 +289,10 @@ export function SoDashboardPage() {
                   </p>
                 </div>
                 {c.risk && <RiskPill risk={c.risk} />}
-              </div>
+              </motion.div>
             ))
           )}
-        </div>
+        </motion.div>
       </Card>
     </SeguridadOperativaShell>
   );
@@ -270,6 +308,7 @@ function KpiCard({
   icon,
   label,
   value,
+  suffix,
   delta,
   deltaTone,
   tone = "neutral",
@@ -277,14 +316,16 @@ function KpiCard({
 }: {
   icon: React.ReactNode;
   label: string;
-  value: number | string;
+  value: number;
+  suffix?: string;
   delta?: string;
   deltaTone?: "brand" | "critical" | "warning" | "info" | "neutral";
   tone?: "neutral" | "brand" | "critical" | "warning";
   gauge?: number;
 }) {
   return (
-    <Card className="p-4">
+    <motion.div variants={riseItem} whileHover={{ y: -3 }} transition={{ duration: 0.18 }}>
+      <Card className="p-4 h-full">
       <div className="flex items-center justify-between">
         <div
           className={cn(
@@ -312,13 +353,16 @@ function KpiCard({
           </span>
         )}
       </div>
-      <p className="font-display mt-3 text-[23px] font-bold tabular-nums text-ink leading-none tracking-[-0.02em]">{value}</p>
+      <p className="font-display mt-3 text-[23px] font-bold tabular-nums text-ink leading-none tracking-[-0.02em]">
+        <CountUp value={value} suffix={suffix} />
+      </p>
       <p className="text-[12px] text-ink-quiet mt-1.5">{label}</p>
       {gauge !== undefined && (
         <div className="mt-3">
           <Progress value={gauge} tone={gauge >= 85 ? "brand" : "warning"} showLabel />
         </div>
       )}
-    </Card>
+      </Card>
+    </motion.div>
   );
 }

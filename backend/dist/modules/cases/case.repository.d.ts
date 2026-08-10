@@ -18,9 +18,9 @@ export declare class CaseRepository {
     /** Registra un evento en la bitácora del expediente. */
     static pushTimeline(client: TimelineClient, id_caso: number, e: TimelineEntry): Promise<void>;
     static addComment(id_caso: number, texto: string): Promise<{
-        id_caso: number;
         titulo: string;
         fecha: Date | null;
+        id_caso: number;
         id_evento: number;
         kind: string;
         actor: string;
@@ -29,9 +29,9 @@ export declare class CaseRepository {
     }[]>;
     /** Comentario operativo de SO asociado a un plan específico. */
     static addPlanComment(id_plan: number, texto: string): Promise<{
-        id_caso: number;
         titulo: string;
         fecha: Date | null;
+        id_caso: number;
         id_evento: number;
         kind: string;
         actor: string;
@@ -57,9 +57,9 @@ export declare class CaseRepository {
                 estado: number | null;
                 descripcion: string | null;
                 created_at: Date | null;
+                fecha: Date;
                 updated_at: Date | null;
                 codigo_evento: string | null;
-                fecha: Date;
                 hora: Date | null;
                 anio: number | null;
                 mes: number | null;
@@ -85,10 +85,10 @@ export declare class CaseRepository {
             };
         } & {
             id: number;
+            usuario: number | null;
             id_caso: number;
             id_evento: number;
             fecha_conversion: Date | null;
-            usuario: number | null;
         })[];
         planes_accion: ({
             actividades_plan: ({
@@ -99,8 +99,8 @@ export declare class CaseRepository {
                         cargo: string | null;
                     } | null;
                 } & {
-                    fecha: Date | null;
                     usuario: number | null;
+                    fecha: Date | null;
                     comentario: string | null;
                     id_actividad: number;
                     porcentaje: import("@prisma/client/runtime/library").Decimal | null;
@@ -179,9 +179,10 @@ export declare class CaseRepository {
     } & {
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -190,7 +191,6 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -259,9 +259,9 @@ export declare class CaseRepository {
                 estado: number | null;
                 descripcion: string | null;
                 created_at: Date | null;
+                fecha: Date;
                 updated_at: Date | null;
                 codigo_evento: string | null;
-                fecha: Date;
                 hora: Date | null;
                 anio: number | null;
                 mes: number | null;
@@ -287,10 +287,10 @@ export declare class CaseRepository {
             };
         } & {
             id: number;
+            usuario: number | null;
             id_caso: number;
             id_evento: number;
             fecha_conversion: Date | null;
-            usuario: number | null;
         })[];
         investigacion_caso: ({
             usuarios: {
@@ -318,8 +318,8 @@ export declare class CaseRepository {
                         cargo: string | null;
                     } | null;
                 } & {
-                    fecha: Date | null;
                     usuario: number | null;
+                    fecha: Date | null;
                     comentario: string | null;
                     id_actividad: number;
                     porcentaje: import("@prisma/client/runtime/library").Decimal | null;
@@ -415,9 +415,9 @@ export declare class CaseRepository {
             nombre: string;
         };
         solicitudes_informacion: {
+            mensaje: string;
             id_caso: number;
             id_solicitud: number;
-            mensaje: string;
             respuesta: string | null;
             respondida: boolean;
             estado_previo: string | null;
@@ -425,9 +425,9 @@ export declare class CaseRepository {
             fecha_respuesta: Date | null;
         }[];
         timeline_caso: {
-            id_caso: number;
             titulo: string;
             fecha: Date | null;
+            id_caso: number;
             id_evento: number;
             kind: string;
             actor: string;
@@ -437,9 +437,10 @@ export declare class CaseRepository {
     } & {
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -448,7 +449,6 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -480,8 +480,8 @@ export declare class CaseRepository {
                     cargo: string | null;
                 } | null;
             } & {
-                fecha: Date | null;
                 usuario: number | null;
+                fecha: Date | null;
                 comentario: string | null;
                 id_actividad: number;
                 porcentaje: import("@prisma/client/runtime/library").Decimal | null;
@@ -530,9 +530,9 @@ export declare class CaseRepository {
                 conclusiones: string;
             } | null;
             descripcion: string;
+            titulo: string | null;
             id_caso: number;
             codigo_sop: string;
-            titulo: string | null;
             fecha_hallazgo: Date;
             catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
                 nombre: string;
@@ -627,9 +627,10 @@ export declare class CaseRepository {
     static approve(id_caso: number): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -638,7 +639,6 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -660,9 +660,10 @@ export declare class CaseRepository {
     static addObservation(id_caso: number, texto: string): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -671,7 +672,6 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -693,9 +693,10 @@ export declare class CaseRepository {
     static evaluate(id_caso: number, dto: EvaluateCaseDto): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -704,7 +705,6 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -726,9 +726,10 @@ export declare class CaseRepository {
     static reject(id_caso: number, dto: RejectCaseDto): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -737,7 +738,6 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -757,9 +757,9 @@ export declare class CaseRepository {
         updated_at: Date | null;
     }>;
     static requestInfo(id_caso: number, estadoActualNombre: string, dto: RequestInfoDto): Promise<{
+        mensaje: string;
         id_caso: number;
         id_solicitud: number;
-        mensaje: string;
         respuesta: string | null;
         respondida: boolean;
         estado_previo: string | null;
@@ -767,9 +767,9 @@ export declare class CaseRepository {
         fecha_respuesta: Date | null;
     }>;
     static respondInfo(id_caso: number, id_solicitud: number, dto: RespondInfoDto): Promise<{
+        mensaje: string;
         id_caso: number;
         id_solicitud: number;
-        mensaje: string;
         respuesta: string | null;
         respondida: boolean;
         estado_previo: string | null;
@@ -854,9 +854,10 @@ export declare class CaseRepository {
     static acceptPlan(id_caso: number, actor: string): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -865,7 +866,6 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -967,8 +967,14 @@ export declare class CaseRepository {
         prorroga_estado: string | null;
         prorroga_fecha_sol: Date | null;
     }>;
-    /** SO aprueba o rechaza la prórroga de un plan sin tocar los demás. */
-    static reviewExtensionByPlan(id_plan: number, decision: "aprobada" | "rechazada", nota: string | null): Promise<{
+    /**
+     * SO aprueba o rechaza la prórroga de un plan sin tocar los demás.
+     *
+     * Al aprobar, SO puede correr el plan a `fecha_aprobada` en vez de la fecha
+     * que pidió el área: la solicitud del Jefe es una propuesta, no un plazo
+     * que se acepte tal cual. Sin `fecha_aprobada` vale la fecha propuesta.
+     */
+    static reviewExtensionByPlan(id_plan: number, decision: "aprobada" | "rechazada", nota: string | null, fecha_aprobada?: string | null): Promise<{
         estado: number;
         id_area: number;
         descripcion: string;
@@ -991,9 +997,10 @@ export declare class CaseRepository {
     static completeExecution(id_caso: number, actor: string): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -1002,7 +1009,6 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -1021,6 +1027,40 @@ export declare class CaseRepository {
         created_by: number | null;
         updated_at: Date | null;
     } | null>;
+    /** SO confirma que ya no queda ejecución abierta y mueve el expediente a Verificación. */
+    static sendToVerification(id_caso: number): Promise<{
+        descripcion: string;
+        created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
+        id_caso: number;
+        codigo_sop: string;
+        nombre_reportante: string | null;
+        correo_reportante: string | null;
+        telefono_reportante: string | null;
+        fecha_hallazgo: Date;
+        fecha_evento: Date | null;
+        estado_hallazgo: number;
+        dias_abierto: number | null;
+        procedencia: number;
+        responsable_hallazgo: number | null;
+        tipo_sop: number;
+        subtipo_sop: number | null;
+        peligro: string | null;
+        consecuencia: string | null;
+        clasificacion: string | null;
+        analisis_riesgo: number | null;
+        acr: string | null;
+        area_responsable: number | null;
+        responsable_plan: number | null;
+        estado_plan: number | null;
+        fecha_plan: Date | null;
+        fecha_reprogramada: Date | null;
+        dias_abierto_plan: number | null;
+        observaciones: string | null;
+        created_by: number | null;
+        updated_at: Date | null;
+    }>;
     /** ETAPA 5 — el área actualiza el estado/avance de una actividad del plan. */
     static updateActivity(id_actividad: number, estadoNombre: string, comentario: string | null, actor: string): Promise<{
         planes_accion: {
@@ -1049,9 +1089,10 @@ export declare class CaseRepository {
     }, actor: string): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -1060,7 +1101,6 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -1083,9 +1123,10 @@ export declare class CaseRepository {
     static reviewExtension(id_caso: number, decision: "aprobada" | "rechazada", nota: string | null): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -1094,7 +1135,6 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -1113,13 +1153,14 @@ export declare class CaseRepository {
         created_by: number | null;
         updated_at: Date | null;
     }>;
-    /** ETAPA 6 — SO no da conforme la verificación y devuelve el caso a Ejecución. */
+    /** ETAPA 6 — SO deja constancia y conserva el expediente en Verificación. */
     static keepPending(id_caso: number, motivo?: string | null): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -1128,7 +1169,6 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -1147,13 +1187,14 @@ export declare class CaseRepository {
         created_by: number | null;
         updated_at: Date | null;
     }>;
-    /** ETAPA 7 — reabrir un caso cerrado; vuelve a Verificación. */
-    static reopenCase(id_caso: number, motivo?: string | null): Promise<{
+    /** ETAPA 7 — reabrir un caso cerrado hacia la etapa que SO necesita corregir. */
+    static reopenCase(id_caso: number, motivo?: string | null, destino?: "Recepción" | "Evaluación" | "Investigación" | "Plan de Acción" | "Ejecución" | "Verificación"): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -1162,7 +1203,6 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -1185,9 +1225,10 @@ export declare class CaseRepository {
     static rollbackStage(id_caso: number, estadoActualNombre: string, destinoNombre: "Evaluación" | "Investigación", motivo: string): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -1196,7 +1237,6 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -1218,9 +1258,10 @@ export declare class CaseRepository {
     static closeCase(id_caso: number, nota?: string | null): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -1229,7 +1270,6 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -1248,7 +1288,7 @@ export declare class CaseRepository {
         created_by: number | null;
         updated_at: Date | null;
     }>;
-    static addEvidence(id_caso: number, archivos: UploadedFile[]): Promise<{
+    static addEvidence(id_caso: number, archivos: UploadedFile[], actor?: string): Promise<{
         id_caso: number;
         id_anexo: number;
         nombre_archivo: string | null;

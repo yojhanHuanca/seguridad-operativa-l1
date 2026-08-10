@@ -1,24 +1,8 @@
-import { Activity, AlertTriangle, BarChart3, Bell, Gavel, ListChecks, UserCircle2 } from "lucide-react";
+import { Activity, AlertTriangle, BarChart3, ListChecks, UserCircle2 } from "lucide-react";
 import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
 import { ComingSoon } from "@/components/layout/ComingSoon";
 
-export function SoDecisionesPage() {
-  return (
-    <SeguridadOperativaShell>
-      <ComingSoon
-        icon={Gavel}
-        title="Centro de Decisiones"
-        description="Bandeja unificada de acciones que requieren su aprobación."
-        points={[
-          "Aprobar, rechazar o solicitar información adicional sobre un reporte",
-          "Evaluar el caso con la matriz de riesgo y asignar investigador",
-          "Aprobar o rechazar planes de acción enviados por los jefes de área",
-          "Gestionar solicitudes de ampliación de plazo (SLA)",
-        ]}
-      />
-    </SeguridadOperativaShell>
-  );
-}
+// El Centro de Decisiones ya está implementado en ./DecisionesPage.
 
 export function SoAlertasPage() {
   return (
@@ -73,13 +57,7 @@ export function SoReportesPage() {
   );
 }
 
-export function SoNotificacionesPage() {
-  return (
-    <SeguridadOperativaShell>
-      <ComingSoon icon={Bell} title="Notificaciones" description="Avisos sobre nuevos reportes, plazos y respuestas de las áreas." />
-    </SeguridadOperativaShell>
-  );
-}
+// Notificaciones ya está implementada en ./NotificacionesPage.
 
 export function SoPerfilPage() {
   return (

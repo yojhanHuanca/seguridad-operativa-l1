@@ -29,6 +29,7 @@ import { useCases } from "@/features/cases/hooks/useCases";
 import { toCaseRow, type CaseRow } from "@/features/cases/adapter";
 import { riskCategory, type RiskLevel as DomainRiskLevel } from "@/features/cases/domain";
 import { STATION_COORDS, TALLERES, MAP_W, MAP_H } from "@/lib/stations";
+import { IsometricLineMap } from "./IsometricLineMap";
 import { cn } from "@/lib/utils";
 import { formatDateTime, relativeTime } from "@/lib/format";
 
@@ -158,7 +159,11 @@ export function IncidentMap() {
               </div>
               <div>
                 <p className="text-[15px] font-bold text-ink tracking-tight">Tablero Operativo por Estación</p>
-                <p className="text-[12px] text-ink-quiet mt-0.5">Vista consolidada de Línea 1 · 26 estaciones · 34 km · 2 talleres</p>
+                {/* Derivado del catálogo de estaciones: si la lista cambia, el
+                    subtítulo la sigue en vez de quedarse en una cifra fija. */}
+                <p className="text-[12px] text-ink-quiet mt-0.5">
+                  Vista isométrica · {STATION_COORDS.length} estaciones · {TALLERES.length} talleres · altura = casos abiertos
+                </p>
               </div>
             </div>
             <div className="text-right shrink-0">
@@ -171,175 +176,24 @@ export function IncidentMap() {
           </div>
 
           <div className="relative bg-gradient-to-br from-[#e8f0eb] via-[#e4ece7] to-[#dbe8e0]">
-            <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} className="w-full h-auto block" style={{ minHeight: 460 }}>
-              <defs>
-                <linearGradient id="lineGradL1" x1="0" y1="1" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#14814a" />
-                  <stop offset="50%" stopColor="#1f9d52" />
-                  <stop offset="100%" stopColor="#38a860" />
-                </linearGradient>
-                <linearGradient id="riverGrad" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#a8d4e8" />
-                  <stop offset="50%" stopColor="#b8d8ec" />
-                  <stop offset="100%" stopColor="#c8ddf0" />
-                </linearGradient>
-                <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#f0f5f2" />
-                  <stop offset="100%" stopColor="#e8f0eb" />
-                </linearGradient>
-                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#c4d4cc" strokeWidth="0.5" opacity="0.4" />
-                </pattern>
-                <filter id="markerShadow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="#0c5431" floodOpacity="0.25" />
-                </filter>
-              </defs>
-
-              <rect width={MAP_W} height={MAP_H} fill="url(#bgGrad)" />
-              <rect width={MAP_W} height={MAP_H} fill="url(#grid)" opacity="0.6" />
-
-              <ellipse cx="200" cy="350" rx="120" ry="80" fill="#d4e0d8" opacity="0.3" />
-              <ellipse cx="500" cy="150" rx="150" ry="100" fill="#d4e0d8" opacity="0.3" />
-              <ellipse cx="800" cy="200" rx="130" ry="90" fill="#d4e0d8" opacity="0.3" />
-              <ellipse cx="1100" cy="300" rx="100" ry="70" fill="#d4e0d8" opacity="0.3" />
-
-              <path d="M 0 230 Q 400 260 800 220 T 1220 210" stroke="url(#riverGrad)" strokeWidth="20" fill="none" opacity="0.5" strokeLinecap="round" />
-              <path d="M 0 230 Q 400 260 800 220 T 1220 210" stroke="#8ab4d8" strokeWidth="1" fill="none" opacity="0.4" strokeDasharray="8 6" />
-
-              <g opacity="0.7">
-                <rect x="20" y="462" width="130" height="18" rx="4" fill="#ffffff" opacity="0.85" />
-                <text x="35" y="475" fontSize="9" fill="#4a6a5a" fontWeight="700" letterSpacing="0.5">VILLA EL SALVADOR</text>
-              </g>
-              <g opacity="0.7">
-                <rect x="290" y="305" width="120" height="18" rx="4" fill="#ffffff" opacity="0.85" />
-                <text x="300" y="318" fontSize="9" fill="#4a6a5a" fontWeight="700" letterSpacing="0.5">SURCO · SAN BORJA</text>
-              </g>
-              <g opacity="0.7">
-                <rect x="680" y="70" width="140" height="18" rx="4" fill="#ffffff" opacity="0.85" />
-                <text x="695" y="83" fontSize="9" fill="#4a6a5a" fontWeight="700" letterSpacing="0.5">S.J. DE LURIGANCHO</text>
-              </g>
-              <g opacity="0.7">
-                <rect x="1030" y="365" width="100" height="18" rx="4" fill="#ffffff" opacity="0.85" />
-                <text x="1040" y="378" fontSize="9" fill="#4a6a5a" fontWeight="700" letterSpacing="0.5">BAYÓVAR</text>
-              </g>
-
-              <path d={linePath} stroke="#14814a" strokeWidth="9" fill="none" strokeLinecap="round" opacity="0.12" />
-              <path d={linePath} stroke="url(#lineGradL1)" strokeWidth="5" fill="none" strokeLinecap="round" />
-              <path d={linePath} stroke="#ffffff" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.55" strokeDasharray="3 6" />
-
-              <text x="60" y="468" fontSize="8" fill="#0c5431" fontWeight="600" opacity="0.5">km 0</text>
-              <text x="1150" y="318" fontSize="8" fill="#0c5431" fontWeight="600" opacity="0.5">km 34</text>
-
-              {stations.map((station, idx) => {
-                const risk = RISK_CONFIG[station.riesgo];
-                const isHovered = hovered === station.name;
-                const isSelected = selected?.name === station.name;
-                const hasActive = station.abiertos > 0;
-                const radius = hasActive ? 8 + Math.min(station.abiertos, 4) : 6.5;
-                const labelAbove = idx % 2 === 0;
-                return (
-                  <g
-                    key={station.name}
-                    onClick={() => {
-                      setSelectedStation(station);
-                      setSelectedTaller(null);
-                    }}
-                    onMouseEnter={() => setHovered(station.name)}
-                    onMouseLeave={() => setHovered(null)}
-                    className="cursor-pointer"
-                  >
-                    {station.riesgo === "critico" && hasActive && (
-                      <circle cx={station.x} cy={station.y} r={radius + 6} fill={risk.color} opacity="0.16">
-                        <animate attributeName="r" values={`${radius + 4};${radius + 14};${radius + 4}`} dur="2.2s" repeatCount="indefinite" />
-                        <animate attributeName="opacity" values="0.24;0.05;0.24" dur="2.2s" repeatCount="indefinite" />
-                      </circle>
-                    )}
-                    <circle cx={station.x} cy={station.y} r={radius + 4} fill={risk.color} opacity={hasActive ? 0.14 : 0.08} />
-                    <circle
-                      cx={station.x}
-                      cy={station.y}
-                      r={radius}
-                      fill={hasActive ? risk.color : "#ffffff"}
-                      stroke={risk.color}
-                      strokeWidth={isSelected ? 3.5 : 2.5}
-                      filter="url(#markerShadow)"
-                      style={{ transform: isHovered || isSelected ? "scale(1.2)" : undefined, transformOrigin: `${station.x}px ${station.y}px` }}
-                    />
-                    <text x={station.x} y={station.y + 3.5} textAnchor="middle" fontSize="8.5" fontWeight="700" fill={hasActive ? "#ffffff" : risk.color}>
-                      {idx + 1}
-                    </text>
-                    {hasActive && (
-                      <g>
-                        <rect x={station.x + radius + 3} y={station.y - 9} width={22} height={18} rx={5} fill={risk.color} opacity="0.98" />
-                        <text x={station.x + radius + 14} y={station.y + 4} textAnchor="middle" fontSize="10" fontWeight="700" fill="#fff">
-                          {station.abiertos}
-                        </text>
-                      </g>
-                    )}
-                    <text
-                      x={station.x}
-                      y={labelAbove ? station.y - radius - 8 : station.y + radius + 14}
-                      textAnchor="middle"
-                      fontSize="9"
-                      fontWeight={isHovered || isSelected ? "700" : "500"}
-                      fill={isSelected ? "#0c5431" : "#4a6a5a"}
-                      style={{ pointerEvents: "none" }}
-                    >
-                      {station.name.length > 18 ? station.name.slice(0, 17) + "…" : station.name}
-                    </text>
-                    <text
-                      x={station.x}
-                      y={labelAbove ? station.y - radius - 20 : station.y + radius + 26}
-                      textAnchor="middle"
-                      fontSize="7.5"
-                      fill="#7a9a8a"
-                      opacity="0.6"
-                      style={{ pointerEvents: "none" }}
-                    >
-                      km {station.km}
-                    </text>
-                  </g>
-                );
-              })}
-
-              {TALLERES.map((taller) => {
-                const isHovered = hovered === taller.name;
-                return (
-                  <g
-                    key={taller.name}
-                    onClick={() => {
-                      setSelectedTaller(taller);
-                      setSelectedStation(null);
-                    }}
-                    onMouseEnter={() => setHovered(taller.name)}
-                    onMouseLeave={() => setHovered(null)}
-                    className="cursor-pointer"
-                  >
-                    <circle cx={taller.x} cy={taller.y} r={14} fill="#14814a" opacity="0.06" />
-                    <circle cx={taller.x} cy={taller.y} r={10} fill="#14814a" opacity={isHovered ? 0.2 : 0.1} />
-                    <circle
-                      cx={taller.x}
-                      cy={taller.y}
-                      r={7}
-                      fill="#0c5431"
-                      stroke="#14814a"
-                      strokeWidth={isHovered ? 3 : 2}
-                      filter="url(#markerShadow)"
-                      style={{ transform: isHovered ? "scale(1.15)" : undefined, transformOrigin: `${taller.x}px ${taller.y}px` }}
-                    />
-                    <text x={taller.x} y={taller.y + 2.5} textAnchor="middle" fontSize="8" fontWeight="700" fill="#ffffff">
-                      ⚙
-                    </text>
-                    <text x={taller.x} y={taller.y - 14} textAnchor="middle" fontSize="8.5" fontWeight="700" fill="#0c5431" style={{ pointerEvents: "none" }}>
-                      {taller.name.replace("Taller ", "T. ")}
-                    </text>
-                    <text x={taller.x} y={taller.y + 20} textAnchor="middle" fontSize="7" fontWeight="600" fill="#5a7a6a" style={{ pointerEvents: "none" }}>
-                      {taller.tipo} · {taller.capacidad}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
+            <IsometricLineMap
+              stations={stations}
+              talleres={TALLERES}
+              linePath={linePath}
+              mapW={MAP_W}
+              mapH={MAP_H}
+              hovered={hovered}
+              selectedName={selected?.name ?? null}
+              onHover={setHovered}
+              onSelectStation={(station) => {
+                setSelectedStation(station);
+                setSelectedTaller(null);
+              }}
+              onSelectTaller={(taller) => {
+                setSelectedTaller(taller);
+                setSelectedStation(null);
+              }}
+            />
 
             {selected && (
               <MapPopup

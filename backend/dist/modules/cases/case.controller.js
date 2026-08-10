@@ -195,10 +195,19 @@ export class CaseController {
             return handleError(res, error, "Error al completar la ejecución");
         }
     }
+    static async sendToVerification(req, res) {
+        try {
+            const caso = await CaseService.sendToVerification(param(req, "codigo"));
+            return res.json(ApiResponse.success("Expediente enviado a Verificación", caso));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al enviar el expediente a Verificación");
+        }
+    }
     static async keepPending(req, res) {
         try {
             const caso = await CaseService.keepPending(param(req, "codigo"), req.body);
-            return res.json(ApiResponse.success("Caso devuelto a Ejecución", caso));
+            return res.json(ApiResponse.success("Caso mantenido pendiente en Verificación", caso));
         }
         catch (error) {
             return handleError(res, error, "Error al mantener el caso pendiente");

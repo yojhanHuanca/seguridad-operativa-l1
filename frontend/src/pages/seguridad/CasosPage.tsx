@@ -14,6 +14,7 @@ import { shortPlanCode } from "@/features/cases/lib/planLabels";
 import { slaEstado, diasRestantes } from "@/features/cases/lib/sla";
 import { EVENT_LABELS, TYPE_TONE } from "@/features/cases/domain";
 import { formatDate } from "@/lib/format";
+import { downloadCsv, sufijoFecha } from "@/lib/download";
 import { cn } from "@/lib/utils";
 
 /**
@@ -418,14 +419,5 @@ function exportCsv(rows: CaseRow[]) {
     c.estado,
     formatDate(c.createdAt),
   ]);
-  const csv = [header, ...body]
-    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
-    .join("\n");
-  const blob = new Blob([`﻿${csv}`], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `casos-sop-${new Date().toISOString().slice(0, 10)}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+  downloadCsv(`casos-sop-${sufijoFecha()}.csv`, header, body);
 }

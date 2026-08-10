@@ -20,6 +20,13 @@ const observationSchema = z.object({
 const notaSchema = z.object({
     nota: z.string().trim().max(1000).optional().nullable(),
 });
+const reopenSchema = z.object({
+    nota: z.string().trim().max(1000).optional().nullable(),
+    destino: z
+        .enum(["Recepción", "Evaluación", "Investigación", "Plan de Acción", "Ejecución", "Verificación"])
+        .optional()
+        .default("Verificación"),
+});
 const rollbackSchema = z.object({
     destino: z.enum(["Evaluación", "Investigación"]),
     motivo: z.string().trim().min(5, "Explique el motivo del retroceso").max(1000),
@@ -44,10 +51,29 @@ const extensionSchema = z.object({
 const extensionReviewSchema = z.object({
     decision: z.enum(["aprobada", "rechazada"]),
     nota: z.string().trim().max(1000).optional().nullable(),
+    /**
+     * SO puede aprobar la ampliación con un plazo distinto al que pidió el área.
+     * Si no viene, se aprueba con la fecha que propuso el Jefe del Área.
+     */
+    fecha_aprobada: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/, "Use el formato AAAA-MM-DD")
+        .optional()
+        .nullable(),
 });
-const planFinalReviewSchema = z.object({
+const planFinalReviewSchema = z
+    .object({
     decision: z.enum(["aprobada", "rechazada"]),
     nota: z.string().trim().max(1000).optional().nullable(),
+})
+    .superRefine((value, ctx) => {
+    if (value.decision === "rechazada" && (value.nota?.trim().length ?? 0) < 5) {
+        ctx.addIssue({
+            code: "custom",
+            message: "Indique el motivo de devolución del plan",
+            path: ["nota"],
+        });
+    }
 });
 const requestInfoSchema = z.object({
     mensaje: z.string().trim().min(5, "El mensaje debe tener al menos 5 caracteres").max(500),
@@ -192,12 +218,16 @@ export class CaseService {
     static async reviewExtensionByPlan(idPlan, rawBody) {
         const dto = extensionReviewSchema.parse(rawBody);
         const id = idPositivo.parse(idPlan);
-        return CaseRepository.reviewExtensionByPlan(id, dto.decision, dto.nota ?? null);
+        return CaseRepository.reviewExtensionByPlan(id, dto.decision, dto.nota ?? null, dto.fecha_aprobada ?? null);
     }
     static async completeExecution(codigo, rawBody) {
         const dto = actorSchema.parse(rawBody ?? {});
         const caso = await getCasoBasico(codigo);
         return CaseRepository.completeExecution(caso.id_caso, dto.actor || "Jefe de Área");
+    }
+    static async sendToVerification(codigo) {
+        const caso = await getCasoBasico(codigo);
+        return CaseRepository.sendToVerification(caso.id_caso);
     }
     static async keepPending(codigo, rawBody) {
         const dto = notaSchema.parse(rawBody ?? {});
@@ -205,9 +235,9 @@ export class CaseService {
         return CaseRepository.keepPending(caso.id_caso, dto.nota);
     }
     static async reopenCase(codigo, rawBody) {
-        const dto = notaSchema.parse(rawBody ?? {});
+        const dto = reopenSchema.parse(rawBody ?? {});
         const caso = await getCasoBasico(codigo);
-        return CaseRepository.reopenCase(caso.id_caso, dto.nota);
+        return CaseRepository.reopenCase(caso.id_caso, dto.nota, dto.destino);
     }
     static async rollbackStage(codigo, rawBody) {
         const dto = rollbackSchema.parse(rawBody ?? {});

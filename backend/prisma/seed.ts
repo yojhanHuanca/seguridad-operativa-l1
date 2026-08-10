@@ -264,7 +264,10 @@ async function seedEventoEjemplo() {
 
   const tipoIncidenteId = await findCatalogoDetalleId(catTipoIncidente.id_catalogo, "INGRESO A LA VÍA");
   const ubicacionId = await findCatalogoDetalleId(catUbicacion.id_catalogo, "ESTACIÓN");
-  const lugarId = await findCatalogoDetalleId(catLugar.id_catalogo, "GAM");
+  // Se busca por el nombre completo, no por el código de 3 letras: las filas
+  // que tenían el código metido en `nombre` eran duplicados de un seed viejo
+  // y ya se eliminaron del catálogo.
+  const lugarId = await findCatalogoDetalleId(catLugar.id_catalogo, "Gamarra");
   const personalId = await findCatalogoDetalleId(catPersonal.id_catalogo, "PASAJERO");
   const tipoCausaId = await findCatalogoDetalleId(catTipoCausa.id_catalogo, "FACTOR EXTERNO");
   const posibleCausaId = await findCatalogoDetalleId(catPosibleCausa.id_catalogo, "Recoger objeto");

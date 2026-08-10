@@ -24,9 +24,9 @@ export declare class CaseService {
                 estado: number | null;
                 descripcion: string | null;
                 created_at: Date | null;
+                fecha: Date;
                 updated_at: Date | null;
                 codigo_evento: string | null;
-                fecha: Date;
                 hora: Date | null;
                 anio: number | null;
                 mes: number | null;
@@ -52,10 +52,10 @@ export declare class CaseService {
             };
         } & {
             id: number;
+            usuario: number | null;
             id_caso: number;
             id_evento: number;
             fecha_conversion: Date | null;
-            usuario: number | null;
         })[];
         planes_accion: ({
             actividades_plan: ({
@@ -66,8 +66,8 @@ export declare class CaseService {
                         cargo: string | null;
                     } | null;
                 } & {
-                    fecha: Date | null;
                     usuario: number | null;
+                    fecha: Date | null;
                     comentario: string | null;
                     id_actividad: number;
                     porcentaje: import("@prisma/client/runtime/library").Decimal | null;
@@ -146,9 +146,10 @@ export declare class CaseService {
     } & {
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -157,7 +158,6 @@ export declare class CaseService {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -187,8 +187,8 @@ export declare class CaseService {
                     cargo: string | null;
                 } | null;
             } & {
-                fecha: Date | null;
                 usuario: number | null;
+                fecha: Date | null;
                 comentario: string | null;
                 id_actividad: number;
                 porcentaje: import("@prisma/client/runtime/library").Decimal | null;
@@ -237,9 +237,9 @@ export declare class CaseService {
                 conclusiones: string;
             } | null;
             descripcion: string;
+            titulo: string | null;
             id_caso: number;
             codigo_sop: string;
-            titulo: string | null;
             fecha_hallazgo: Date;
             catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
                 nombre: string;
@@ -330,9 +330,9 @@ export declare class CaseService {
                 estado: number | null;
                 descripcion: string | null;
                 created_at: Date | null;
+                fecha: Date;
                 updated_at: Date | null;
                 codigo_evento: string | null;
-                fecha: Date;
                 hora: Date | null;
                 anio: number | null;
                 mes: number | null;
@@ -358,10 +358,10 @@ export declare class CaseService {
             };
         } & {
             id: number;
+            usuario: number | null;
             id_caso: number;
             id_evento: number;
             fecha_conversion: Date | null;
-            usuario: number | null;
         })[];
         investigacion_caso: ({
             usuarios: {
@@ -389,8 +389,8 @@ export declare class CaseService {
                         cargo: string | null;
                     } | null;
                 } & {
-                    fecha: Date | null;
                     usuario: number | null;
+                    fecha: Date | null;
                     comentario: string | null;
                     id_actividad: number;
                     porcentaje: import("@prisma/client/runtime/library").Decimal | null;
@@ -486,9 +486,9 @@ export declare class CaseService {
             nombre: string;
         };
         solicitudes_informacion: {
+            mensaje: string;
             id_caso: number;
             id_solicitud: number;
-            mensaje: string;
             respuesta: string | null;
             respondida: boolean;
             estado_previo: string | null;
@@ -496,9 +496,9 @@ export declare class CaseService {
             fecha_respuesta: Date | null;
         }[];
         timeline_caso: {
-            id_caso: number;
             titulo: string;
             fecha: Date | null;
+            id_caso: number;
             id_evento: number;
             kind: string;
             actor: string;
@@ -508,9 +508,10 @@ export declare class CaseService {
     } & {
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -519,7 +520,6 @@ export declare class CaseService {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -541,9 +541,10 @@ export declare class CaseService {
     static approve(codigo: string): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -552,7 +553,6 @@ export declare class CaseService {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -574,9 +574,10 @@ export declare class CaseService {
     static addObservation(codigo: string, rawBody: unknown): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -585,7 +586,6 @@ export declare class CaseService {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -607,9 +607,10 @@ export declare class CaseService {
     static evaluate(codigo: string, rawBody: unknown): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -618,7 +619,6 @@ export declare class CaseService {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -640,9 +640,10 @@ export declare class CaseService {
     static reject(codigo: string, rawBody: unknown): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -651,7 +652,6 @@ export declare class CaseService {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -671,9 +671,9 @@ export declare class CaseService {
         updated_at: Date | null;
     }>;
     static requestInfo(codigo: string, rawBody: unknown): Promise<{
+        mensaje: string;
         id_caso: number;
         id_solicitud: number;
-        mensaje: string;
         respuesta: string | null;
         respondida: boolean;
         estado_previo: string | null;
@@ -681,9 +681,9 @@ export declare class CaseService {
         fecha_respuesta: Date | null;
     }>;
     static respondInfo(codigo: string, idSolicitud: string, rawBody: unknown): Promise<{
+        mensaje: string;
         id_caso: number;
         id_solicitud: number;
-        mensaje: string;
         respuesta: string | null;
         respondida: boolean;
         estado_previo: string | null;
@@ -761,9 +761,10 @@ export declare class CaseService {
     static closeCase(codigo: string, rawBody: unknown): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -772,7 +773,6 @@ export declare class CaseService {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -794,9 +794,10 @@ export declare class CaseService {
     static acceptPlan(codigo: string, rawBody: unknown): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -805,7 +806,6 @@ export declare class CaseService {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -922,9 +922,10 @@ export declare class CaseService {
     static completeExecution(codigo: string, rawBody: unknown): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -933,7 +934,6 @@ export declare class CaseService {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -952,12 +952,13 @@ export declare class CaseService {
         created_by: number | null;
         updated_at: Date | null;
     } | null>;
-    static keepPending(codigo: string, rawBody: unknown): Promise<{
+    static sendToVerification(codigo: string): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -966,7 +967,39 @@ export declare class CaseService {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
+        responsable_hallazgo: number | null;
+        tipo_sop: number;
+        subtipo_sop: number | null;
+        peligro: string | null;
+        consecuencia: string | null;
+        clasificacion: string | null;
+        analisis_riesgo: number | null;
+        acr: string | null;
+        area_responsable: number | null;
+        responsable_plan: number | null;
+        estado_plan: number | null;
+        fecha_plan: Date | null;
+        fecha_reprogramada: Date | null;
+        dias_abierto_plan: number | null;
+        observaciones: string | null;
+        created_by: number | null;
+        updated_at: Date | null;
+    }>;
+    static keepPending(codigo: string, rawBody: unknown): Promise<{
+        descripcion: string;
+        created_at: Date | null;
+        titulo: string | null;
         tipo: number;
+        id_caso: number;
+        codigo_sop: string;
+        nombre_reportante: string | null;
+        correo_reportante: string | null;
+        telefono_reportante: string | null;
+        fecha_hallazgo: Date;
+        fecha_evento: Date | null;
+        estado_hallazgo: number;
+        dias_abierto: number | null;
+        procedencia: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -988,9 +1021,10 @@ export declare class CaseService {
     static reopenCase(codigo: string, rawBody: unknown): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -999,7 +1033,6 @@ export declare class CaseService {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -1021,9 +1054,10 @@ export declare class CaseService {
     static rollbackStage(codigo: string, rawBody: unknown): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -1032,7 +1066,6 @@ export declare class CaseService {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -1074,9 +1107,10 @@ export declare class CaseService {
     static requestExtension(codigo: string, rawBody: unknown): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -1085,7 +1119,6 @@ export declare class CaseService {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -1107,9 +1140,10 @@ export declare class CaseService {
     static reviewExtension(codigo: string, rawBody: unknown): Promise<{
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -1118,7 +1152,6 @@ export declare class CaseService {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -1138,9 +1171,9 @@ export declare class CaseService {
         updated_at: Date | null;
     }>;
     static addComment(codigo: string, rawBody: unknown): Promise<{
-        id_caso: number;
         titulo: string;
         fecha: Date | null;
+        id_caso: number;
         id_evento: number;
         kind: string;
         actor: string;
@@ -1148,9 +1181,9 @@ export declare class CaseService {
         detalle: string | null;
     }[]>;
     static addPlanComment(idPlan: string, rawBody: unknown): Promise<{
-        id_caso: number;
         titulo: string;
         fecha: Date | null;
+        id_caso: number;
         id_evento: number;
         kind: string;
         actor: string;

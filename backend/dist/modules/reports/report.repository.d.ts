@@ -16,9 +16,9 @@ export declare class ReportRepository {
                 estado: number | null;
                 descripcion: string | null;
                 created_at: Date | null;
+                fecha: Date;
                 updated_at: Date | null;
                 codigo_evento: string | null;
-                fecha: Date;
                 hora: Date | null;
                 anio: number | null;
                 mes: number | null;
@@ -44,10 +44,10 @@ export declare class ReportRepository {
             };
         } & {
             id: number;
+            usuario: number | null;
             id_caso: number;
             id_evento: number;
             fecha_conversion: Date | null;
-            usuario: number | null;
         })[];
         areas: {
             nombre_area: string;
@@ -63,8 +63,8 @@ export declare class ReportRepository {
             nombre: string;
         };
         solicitudes_informacion: {
-            id_solicitud: number;
             mensaje: string;
+            id_solicitud: number;
             respuesta: string | null;
             respondida: boolean;
             fecha_solicitud: Date | null;
@@ -73,9 +73,10 @@ export declare class ReportRepository {
     } & {
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -84,7 +85,6 @@ export declare class ReportRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -119,9 +119,9 @@ export declare class ReportRepository {
                 estado: number | null;
                 descripcion: string | null;
                 created_at: Date | null;
+                fecha: Date;
                 updated_at: Date | null;
                 codigo_evento: string | null;
-                fecha: Date;
                 hora: Date | null;
                 anio: number | null;
                 mes: number | null;
@@ -147,10 +147,10 @@ export declare class ReportRepository {
             };
         } & {
             id: number;
+            usuario: number | null;
             id_caso: number;
             id_evento: number;
             fecha_conversion: Date | null;
-            usuario: number | null;
         })[];
         areas: {
             nombre_area: string;
@@ -166,8 +166,8 @@ export declare class ReportRepository {
             nombre: string;
         };
         solicitudes_informacion: {
-            id_solicitud: number;
             mensaje: string;
+            id_solicitud: number;
             respuesta: string | null;
             respondida: boolean;
             fecha_solicitud: Date | null;
@@ -176,9 +176,10 @@ export declare class ReportRepository {
     } & {
         descripcion: string;
         created_at: Date | null;
+        titulo: string | null;
+        tipo: number;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -187,7 +188,6 @@ export declare class ReportRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
-        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -236,9 +236,10 @@ export declare class ReportRepository {
         caso: {
             descripcion: string;
             created_at: Date | null;
+            titulo: string | null;
+            tipo: number;
             id_caso: number;
             codigo_sop: string;
-            titulo: string | null;
             nombre_reportante: string | null;
             correo_reportante: string | null;
             telefono_reportante: string | null;
@@ -247,7 +248,6 @@ export declare class ReportRepository {
             estado_hallazgo: number;
             dias_abierto: number | null;
             procedencia: number;
-            tipo: number;
             responsable_hallazgo: number | null;
             tipo_sop: number;
             subtipo_sop: number | null;
@@ -270,9 +270,9 @@ export declare class ReportRepository {
             estado: number | null;
             descripcion: string | null;
             created_at: Date | null;
+            fecha: Date;
             updated_at: Date | null;
             codigo_evento: string | null;
-            fecha: Date;
             hora: Date | null;
             anio: number | null;
             mes: number | null;

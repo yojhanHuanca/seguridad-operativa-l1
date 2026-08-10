@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Activity, ClipboardList, CheckCircle2, CornerUpLeft, Clock,
   Building2, FileText, User as UserIcon, Rocket, AlertTriangle, Timer, Gavel,
@@ -11,7 +11,7 @@ import { Button } from "@/design-system/primitives/Button";
 import { Pill } from "@/design-system/primitives/Pill";
 import { EmptyState, Progress } from "@/design-system/primitives/Progress";
 import { Modal } from "@/design-system/primitives/Modal";
-import { Field, Input, Textarea } from "@/design-system/primitives/Input";
+import { Field, Input, Select, Textarea } from "@/design-system/primitives/Input";
 import { StageSection } from "@/features/cases/components/CaseParts";
 import {
   useAddPlanComment,
@@ -20,6 +20,7 @@ import {
   useReopenCase,
   useReviewFinalPlan,
   useReviewPlanExtension,
+  useSendToVerification,
 } from "@/features/cases/hooks/useCaseActions";
 import { parseActivityDescription } from "@/features/cases/lib/activityMeta";
 import { compactPlanCodes, shortPlanCode } from "@/features/cases/lib/planLabels";
@@ -66,6 +67,14 @@ function planFinalizado(plan: PlanAccion): boolean {
 
 function planCerrado(plan: PlanAccion): boolean {
   return normalize(plan.catalogo_detalle.nombre).includes("cerrad");
+}
+
+function planLegacyListoParaRevision(plan: PlanAccion): boolean {
+  return estadoPlanKey(plan) === "ejecucion" && avancePlan(plan) === 100;
+}
+
+function planRevisablePorSo(plan: PlanAccion): boolean {
+  return !planCerrado(plan) && (planFinalizado(plan) || planLegacyListoParaRevision(plan));
 }
 
 function planStatus(plan: PlanAccion): { label: string; tone: "brand" | "warning" | "neutral" | "critical" | "info" | "success" } {
@@ -180,36 +189,6 @@ function FilaAnexoPlan({ nombre, anexo }: { nombre: string; anexo: AnexoCaso | n
   );
 }
 
-function PlanMetric({
-  icon,
-  label,
-  value,
-  tone = "neutral",
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  tone?: "neutral" | "brand" | "warning" | "critical";
-}) {
-  return (
-    <div
-      className={cn(
-        "rounded-lg border p-3 bg-white",
-        tone === "brand" && "border-brand-200 bg-brand-50/60",
-        tone === "warning" && "border-warning/30 bg-warning-soft/60",
-        tone === "critical" && "border-critical/30 bg-critical-soft/50",
-        tone === "neutral" && "border-line-soft"
-      )}
-    >
-      <div className="flex items-center gap-2 text-ink-soft">
-        {icon}
-        <p className="text-[11px] font-semibold uppercase tracking-wide">{label}</p>
-      </div>
-      <p className="mt-1.5 text-[18px] font-bold text-ink tabular-nums">{value}</p>
-    </div>
-  );
-}
-
 /** ISO de una columna @db.Date → valor de un `<input type="date">`. */
 const soloFecha = (v?: string | null) => (v ? v.slice(0, 10) : "");
 
@@ -223,10 +202,12 @@ function diaSiguiente(v?: string | null): string {
 function PlanExecutionBoard({
   caso,
   cerrado,
+  enVerificacion,
   openPlanReview,
 }: {
   caso: CaseDetail;
   cerrado: boolean;
+  enVerificacion: boolean;
   openPlanReview: (plan: PlanAccion, decision: "aprobada" | "rechazada") => void;
 }) {
   const reviewExtension = useReviewPlanExtension(caso.codigo_sop);
@@ -238,15 +219,6 @@ function PlanExecutionBoard({
   const [activeCommentPlan, setActiveCommentPlan] = useState<number | null>(null);
   const [planComment, setPlanComment] = useState("");
   const [expandedPlans, setExpandedPlans] = useState<Set<number>>(() => new Set());
-
-  const stats = useMemo(() => {
-    const total = caso.planes_accion.length;
-    const pendientes = caso.planes_accion.filter((p) => estadoPlanKey(p) === "pendiente").length;
-    const ejecucion = caso.planes_accion.filter((p) => estadoPlanKey(p) === "ejecucion").length;
-    const porRevision = caso.planes_accion.filter((p) => estadoPlanKey(p) === "finalizado").length;
-    const cerrados = caso.planes_accion.filter((p) => estadoPlanKey(p) === "cerrado").length;
-    return { total, pendientes, ejecucion, porRevision, cerrados };
-  }, [caso.planes_accion]);
 
   const progresoGeneral = avanceCaso(caso);
 
@@ -292,15 +264,7 @@ function PlanExecutionBoard({
 
   return (
     <>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        <PlanMetric icon={<ClipboardList className="h-4 w-4" />} label="Total planes" value={String(stats.total)} />
-        <PlanMetric icon={<Clock className="h-4 w-4" />} label="Pendientes" value={String(stats.pendientes)} />
-        <PlanMetric icon={<Rocket className="h-4 w-4" />} label="En ejecución" value={String(stats.ejecucion)} tone="brand" />
-        <PlanMetric icon={<Gavel className="h-4 w-4" />} label="Por revisar" value={String(stats.porRevision)} tone={stats.porRevision > 0 ? "warning" : "neutral"} />
-        <PlanMetric icon={<CheckCircle2 className="h-4 w-4" />} label="Cerrados" value={String(stats.cerrados)} />
-      </div>
-
-      <div className="mt-4 rounded-xl border border-line bg-surface/50 p-4">
+      <div className="rounded-xl border border-line bg-surface/50 p-4">
         <div className="flex items-center justify-between gap-3 mb-2">
           <p className="text-[12.5px] font-semibold text-ink">Progreso operativo del expediente</p>
           <span className="text-[20px] font-bold text-brand-700 tabular-nums">{progresoGeneral}%</span>
@@ -313,11 +277,14 @@ function PlanExecutionBoard({
 
       <div className="mt-5 space-y-4">
         {caso.planes_accion.map((plan, index) => {
-          const estadoPlan = planStatus(plan);
-          const requiereRevision = planFinalizado(plan);
-          const cerradoPorSo = planCerrado(plan);
-          const pendienteProrroga = plan.prorroga_estado === "pendiente";
           const avance = avancePlan(plan);
+          const requiereRevision = planRevisablePorSo(plan);
+          const cerradoPorSo = planCerrado(plan);
+          const estadoPlan =
+            requiereRevision && !cerradoPorSo
+              ? { label: "Listo para revisión SO", tone: "warning" as const }
+              : planStatus(plan);
+          const pendienteProrroga = plan.prorroga_estado === "pendiente";
           const comentarios = comentariosActividad(plan);
           const eventos = timelineDelPlan(caso, plan).filter((t) => {
             const titulo = normalize(t.titulo);
@@ -549,7 +516,7 @@ function PlanExecutionBoard({
                   <div className="min-w-0">
                     <p className="text-[12.5px] font-semibold text-warning-ink">Validación final pendiente</p>
                     <p className="text-[12px] text-warning-ink/85 mt-0.5">
-                      Este plan fue finalizado por el área. Puede cerrarlo o devolverlo sin afectar a los otros planes.
+                      Este plan está listo para revisión. Puede cerrarlo o devolverlo sin afectar a los otros planes.
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -564,9 +531,16 @@ function PlanExecutionBoard({
               )}
 
               {cerradoPorSo && (
-                <p className="mt-4 rounded-lg border border-line-soft bg-surface/70 p-3 text-[12px] text-ink-quiet">
-                  Plan cerrado por Seguridad Operativa. El resto de planes del mismo reporte conserva su estado actual.
-                </p>
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line-soft bg-surface/70 p-3">
+                  <p className="text-[12px] text-ink-quiet">
+                    Plan cerrado por Seguridad Operativa. El resto de planes del mismo reporte conserva su estado actual.
+                  </p>
+                  {enVerificacion && !cerrado && (
+                    <Button variant="outline" size="sm" onClick={() => openPlanReview(plan, "rechazada")}>
+                      <CornerUpLeft className="h-4 w-4" /> Reabrir plan
+                    </Button>
+                  )}
+                </div>
               )}
                 </>
               )}
@@ -686,6 +660,164 @@ function PlanExecutionBoard({
   );
 }
 
+function VerificationChecklist({
+  caso,
+  progreso,
+  todosPlanesCerrados,
+  onClose,
+  onKeepPending,
+  onReopenCase,
+}: {
+  caso: CaseDetail;
+  progreso: number;
+  todosPlanesCerrados: boolean;
+  onClose: () => void;
+  onKeepPending: () => void;
+  onReopenCase: () => void;
+}) {
+  const total = caso.planes_accion.length;
+  const cerrados = caso.planes_accion.filter(planCerrado).length;
+  const porRevisar = caso.planes_accion.filter(planRevisablePorSo).length;
+  const enEjecucion = caso.planes_accion.filter((plan) => estadoPlanKey(plan) === "ejecucion" && !planRevisablePorSo(plan)).length;
+  const evidencias = caso.planes_accion.reduce((acc, plan) => acc + evidenciasDelPlan(caso, plan).length, 0);
+  const comentariosSo = caso.timeline_caso.filter((evento) => evento.actor_rol === "seguridad" && evento.kind === "comentario").length;
+  const listo = total > 0 && todosPlanesCerrados;
+  const reabribles = caso.planes_accion.filter((plan) => planRevisablePorSo(plan) || planCerrado(plan)).length;
+
+  const checks = [
+    { label: "Planes cerrados por SO", value: `${cerrados}/${total}`, ok: listo },
+    { label: "Pendientes de revisión", value: String(porRevisar), ok: porRevisar === 0 },
+    { label: "En ejecución", value: String(enEjecucion), ok: enEjecucion === 0 },
+    { label: "Avance acumulado", value: `${progreso}%`, ok: progreso === 100 },
+    { label: "Evidencias de planes", value: String(evidencias), ok: evidencias > 0 },
+    { label: "Comentarios SO", value: String(comentariosSo), ok: true },
+  ];
+
+  return (
+    <StageSection
+      title="Verificación final del expediente"
+      subtitle="Cierre disponible cuando cada plan de acción haya sido validado y cerrado por Seguridad Operativa."
+      icon={<Gavel className="h-5 w-5" />}
+      action={<Pill tone={listo ? "brand" : "warning"} dot>{listo ? "Listo para cierre" : "Validación pendiente"}</Pill>}
+    >
+      <div className="rounded-xl border border-line bg-surface/40 p-3.5">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <p className="text-[13px] font-semibold text-ink">Decisión de verificación</p>
+            <p className="mt-0.5 text-[12px] text-ink-quiet">Seleccione el resultado del expediente sin perder el seguimiento por plan.</p>
+          </div>
+          <Pill tone="info" dot>{reabribles} planes revisables</Pill>
+        </div>
+
+        <div className="mt-3 grid gap-2 lg:grid-cols-3">
+          <DecisionCard
+            tone="brand"
+            icon={<CheckCircle2 className="h-4.5 w-4.5" />}
+            title="Cerrar caso"
+            description="Archiva el expediente cuando todos los planes fueron cerrados por Seguridad Operativa."
+            actionLabel="Registrar cierre"
+            disabled={!listo}
+            onClick={onClose}
+          />
+          <DecisionCard
+            tone="warning"
+            icon={<Timer className="h-4.5 w-4.5" />}
+            title="Mantener pendiente"
+            description="Conserva el caso en Verificación y registra una nota de seguimiento."
+            actionLabel="Guardar decisión"
+            onClick={onKeepPending}
+          />
+          <DecisionCard
+            tone="info"
+            icon={<CornerUpLeft className="h-4.5 w-4.5" />}
+            title="Reabrir caso"
+            description="Devuelve a corrección el plan seleccionado y mueve el expediente a Ejecución."
+            actionLabel="Elegir plan"
+            disabled={reabribles === 0}
+            onClick={onReopenCase}
+          />
+        </div>
+      </div>
+
+      <div>
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Condiciones de cierre</p>
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          {checks.map((item) => (
+            <div key={item.label} className="flex items-center justify-between gap-3 rounded-lg border border-line-soft bg-surface/50 px-3 py-2.5">
+              <span className="text-[12px] text-ink-soft">{item.label}</span>
+              <span className={cn("text-[13px] font-semibold tabular-nums", item.ok ? "text-brand-700" : "text-warning-ink")}>
+                {item.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {!listo && (
+        <p className="mt-3 rounded-lg border border-warning/30 bg-warning-soft/50 p-3 text-[12.5px] text-warning-ink">
+          Todavía hay planes abiertos. Cierre o devuelva cada plan desde su tarjeta antes de cerrar el expediente.
+        </p>
+      )}
+    </StageSection>
+  );
+}
+
+function ExecutionVerificationGate({
+  caso,
+  isPending,
+  onSend,
+}: {
+  caso: CaseDetail;
+  isPending: boolean;
+  onSend: () => void;
+}) {
+  const total = caso.planes_accion.length;
+  const listos = caso.planes_accion.filter((plan) => {
+    const key = estadoPlanKey(plan);
+    return key === "finalizado" || key === "cerrado";
+  });
+  const abiertos = caso.planes_accion.filter((plan) => {
+    const key = estadoPlanKey(plan);
+    return key !== "finalizado" && key !== "cerrado";
+  });
+  const prorrogas = caso.planes_accion.filter((plan) => plan.prorroga_estado === "pendiente");
+  const puedePasar = total > 0 && abiertos.length === 0 && prorrogas.length === 0;
+
+  return (
+    <StageSection
+      title="Paso a Verificación"
+      subtitle="Cuando todos los planes quedan finalizados por las áreas, Seguridad Operativa puede abrir la verificación formal del expediente."
+      icon={<Activity className="h-5 w-5" />}
+      action={<Pill tone={puedePasar ? "brand" : "warning"} dot>{puedePasar ? "Listo" : "Pendiente"}</Pill>}
+    >
+      <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
+        <div className="grid gap-2 sm:grid-cols-3">
+          <div className="rounded-lg border border-line-soft bg-surface/50 p-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Planes listos</p>
+            <p className="mt-1 text-[18px] font-bold text-ink tabular-nums">{listos.length}/{total}</p>
+          </div>
+          <div className="rounded-lg border border-line-soft bg-surface/50 p-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">En ejecución</p>
+            <p className={cn("mt-1 text-[18px] font-bold tabular-nums", abiertos.length ? "text-warning-ink" : "text-brand-700")}>{abiertos.length}</p>
+          </div>
+          <div className="rounded-lg border border-line-soft bg-surface/50 p-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Prórrogas pendientes</p>
+            <p className={cn("mt-1 text-[18px] font-bold tabular-nums", prorrogas.length ? "text-warning-ink" : "text-brand-700")}>{prorrogas.length}</p>
+          </div>
+        </div>
+        <Button disabled={!puedePasar || isPending} onClick={onSend} className="lg:min-w-[210px]">
+          <Activity className="h-4 w-4" /> Pasar a Verificación
+        </Button>
+      </div>
+      {!puedePasar && (
+        <p className="mt-3 rounded-lg border border-warning/30 bg-warning-soft/50 p-3 text-[12.5px] text-warning-ink">
+          Para habilitar el paso, cada plan debe estar finalizado por el jefe de área o cerrado por SO, y no debe haber prórrogas pendientes.
+        </p>
+      )}
+    </StageSection>
+  );
+}
+
 /** Opción de la decisión final de Verificación. */
 function DecisionCard({
   tone,
@@ -694,30 +826,54 @@ function DecisionCard({
   description,
   actionLabel,
   onClick,
+  disabled = false,
 }: {
-  tone: "brand" | "critical";
+  tone: "brand" | "critical" | "warning" | "info";
   icon: ReactNode;
   title: string;
   description: string;
   actionLabel: string;
   onClick: () => void;
+  disabled?: boolean;
 }) {
+  const toneClasses = {
+    brand: {
+      button: "border-line hover:border-brand-600 hover:bg-brand-50/40",
+      icon: "bg-brand-50 text-brand-700",
+      action: "text-brand-700",
+    },
+    critical: {
+      button: "border-line hover:border-critical hover:bg-critical-soft/40",
+      icon: "bg-critical-soft text-critical-ink",
+      action: "text-critical-ink",
+    },
+    warning: {
+      button: "border-line hover:border-warning/60 hover:bg-warning-soft/50",
+      icon: "bg-warning-soft text-warning-ink",
+      action: "text-warning-ink",
+    },
+    info: {
+      button: "border-line hover:border-info/40 hover:bg-info-soft/50",
+      icon: "bg-info-soft text-info-ink",
+      action: "text-info-ink",
+    },
+  }[tone];
+
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       className={cn(
-        "text-left rounded-xl border p-4 transition-all hover:shadow-sm",
-        tone === "brand"
-          ? "border-line hover:border-brand-600 hover:bg-brand-50/40"
-          : "border-line hover:border-critical hover:bg-critical-soft/40"
+        "text-left rounded-xl border p-4 transition-all hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:border-line disabled:hover:bg-white disabled:hover:shadow-none",
+        toneClasses.button
       )}
     >
       <div className="flex items-start gap-2.5">
         <span
           className={cn(
             "h-9 w-9 rounded-lg grid place-items-center shrink-0",
-            tone === "brand" ? "bg-brand-50 text-brand-700" : "bg-critical-soft text-critical-ink"
+            toneClasses.icon
           )}
         >
           {icon}
@@ -728,16 +884,28 @@ function DecisionCard({
           <span
             className={cn(
               "inline-block mt-2.5 text-[12px] font-medium",
-              tone === "brand" ? "text-brand-700" : "text-critical-ink"
+              toneClasses.action
             )}
           >
-            {actionLabel} →
+            {disabled ? "No disponible" : `${actionLabel} →`}
           </span>
         </div>
       </div>
     </button>
   );
 }
+
+type VerificationResult = "Conforme" | "Con observación";
+type ReopenTarget = "Recepción" | "Evaluación" | "Investigación" | "Plan de Acción" | "Ejecución" | "Verificación";
+
+const REOPEN_TARGETS: Array<{ value: ReopenTarget; label: string; description: string }> = [
+  { value: "Verificación", label: "Verificación", description: "corregir la revisión final o el cierre" },
+  { value: "Ejecución", label: "Ejecución", description: "corregir avances, evidencias o actividades" },
+  { value: "Plan de Acción", label: "Plan de Acción", description: "ajustar responsables, áreas o actividades" },
+  { value: "Investigación", label: "Investigación", description: "corregir hallazgos, causa raíz o conclusiones" },
+  { value: "Evaluación", label: "Evaluación", description: "revisar riesgo, clasificación o asignación" },
+  { value: "Recepción", label: "Recepción", description: "revisar el expediente desde el inicio" },
+];
 
 export function ExecutionSummaryCard({
   caso,
@@ -756,17 +924,31 @@ export function ExecutionSummaryCard({
   const closeCase = useCloseCase(caso.codigo_sop);
   const keepPending = useKeepPending(caso.codigo_sop);
   const reviewFinalPlan = useReviewFinalPlan(caso.codigo_sop);
+  const sendToVerification = useSendToVerification(caso.codigo_sop);
 
   const [closeOpen, setCloseOpen] = useState(false);
   const [closeNote, setCloseNote] = useState("");
+  const [verificationResult, setVerificationResult] = useState<VerificationResult>("Conforme");
   const [pendingOpen, setPendingOpen] = useState(false);
   const [pendingNote, setPendingNote] = useState("");
+  const [reopenCaseOpen, setReopenCaseOpen] = useState(false);
+  const [reopenCasePlanId, setReopenCasePlanId] = useState("");
+  const [reopenCaseNote, setReopenCaseNote] = useState("");
   const [planReview, setPlanReview] = useState<{ plan: PlanAccion; decision: "aprobada" | "rechazada" } | null>(null);
   const [planReviewNote, setPlanReviewNote] = useState("");
+  const reopenablePlans = caso.planes_accion.filter((plan) => planRevisablePorSo(plan) || planCerrado(plan));
+  const selectedReopenPlan =
+    reopenablePlans.find((plan) => String(plan.id_plan) === reopenCasePlanId) ?? reopenablePlans[0] ?? null;
 
   const openPlanReview = (plan: PlanAccion, decision: "aprobada" | "rechazada") => {
     setPlanReview({ plan, decision });
     setPlanReviewNote("");
+  };
+
+  const openCaseReopen = () => {
+    setReopenCasePlanId(reopenablePlans[0] ? String(reopenablePlans[0].id_plan) : "");
+    setReopenCaseNote("");
+    setReopenCaseOpen(true);
   };
 
   return (
@@ -789,77 +971,49 @@ export function ExecutionSummaryCard({
         </StageSection>
       )}
 
-      {!sinPlan && (
+      {!sinPlan && !cerrado && (
         <StageSection
-          title={enVerificacion || cerrado ? "Plan de Acción ejecutado" : "Ejecución del Plan de Acción"}
+          title={enVerificacion ? "Plan de Acción ejecutado" : "Ejecución del Plan de Acción"}
           subtitle={
             enVerificacion
               ? "Revise el cumplimiento de las actividades antes de cerrar el caso."
-              : cerrado
-                ? "Actividades ejecutadas por el área responsable."
-                : enProrroga
-                  ? "Hay una solicitud de prórroga pendiente. Resuelva el plan afectado sin detener la lectura de los demás."
-                  : "El jefe del área ejecuta las actividades. Aquí puede seguir el avance por plan."
+              : enProrroga
+                ? "Hay una solicitud de prórroga pendiente. Resuelva el plan afectado sin detener la lectura de los demás."
+                : "El jefe del área ejecuta las actividades. Aquí puede seguir el avance por plan."
           }
           icon={enVerificacion ? <Activity className="h-5 w-5" /> : enProrroga ? <Timer className="h-5 w-5" /> : <Rocket className="h-5 w-5" />}
           action={
-            <Pill tone={cerrado ? "neutral" : enVerificacion || enProrroga ? "warning" : "brand"} dot>
-              {cerrado ? "Cerrado" : enVerificacion ? "Por verificar" : enProrroga ? "Prórroga pendiente" : "En ejecución"}
+            <Pill tone={enVerificacion || enProrroga ? "warning" : "brand"} dot>
+              {enVerificacion ? "Por verificar" : enProrroga ? "Prórroga pendiente" : "En ejecución"}
             </Pill>
           }
         >
-          <PlanExecutionBoard caso={caso} cerrado={cerrado} openPlanReview={openPlanReview} />
+          <PlanExecutionBoard caso={caso} cerrado={cerrado} enVerificacion={enVerificacion} openPlanReview={openPlanReview} />
         </StageSection>
       )}
 
-      {/* Decisión final de Verificación, como tarjetas: cada opción dice qué
-          consecuencia tiene, en vez de dos botones sin contexto. */}
-      {enVerificacion && !todosPlanesCerrados && !sinPlan && (
-        <StageSection
-          title="Verificación individual pendiente"
-          subtitle="Antes de cerrar el expediente, Seguridad Operativa debe resolver cada plan por separado."
-          icon={<Gavel className="h-5 w-5" />}
-          action={<Pill tone="warning" dot>Revisar planes</Pill>}
-        >
-          <p className="rounded-lg border border-warning/30 bg-warning-soft/50 p-3 text-[12.5px] text-warning-ink">
-            Hay planes que todavía no fueron cerrados individualmente. Use los botones “Cerrar plan” o “Devolver” en cada
-            tarjeta de plan finalizado.
-          </p>
-        </StageSection>
+      {!enVerificacion && !cerrado && !sinPlan && (
+        <ExecutionVerificationGate
+          caso={caso}
+          isPending={sendToVerification.isPending}
+          onSend={() =>
+            sendToVerification.mutate(undefined, {
+              onSuccess: () => toast.success("Expediente enviado a Verificación"),
+              onError: (e) => toast.error(apiErrorMessage(e, "No se pudo pasar a Verificación")),
+            })
+          }
+        />
       )}
 
-      {enVerificacion && todosPlanesCerrados && (
-        <StageSection
-          title="Decisión de verificación"
-          subtitle="Revise la investigación y el plan ejecutado, y resuelva el expediente."
-          icon={<Gavel className="h-5 w-5" />}
-          action={<Pill tone="warning" dot>Pendiente de decisión</Pill>}
-        >
-          <div className="grid sm:grid-cols-2 gap-3">
-            <DecisionCard
-              tone="brand"
-              icon={<CheckCircle2 className="h-4.5 w-4.5" />}
-              title="Aprobar y cerrar"
-              description="El cumplimiento es conforme. El expediente se archiva con su historial completo."
-              actionLabel="Cerrar caso"
-              onClick={() => setCloseOpen(true)}
-            />
-            <DecisionCard
-              tone="critical"
-              icon={<CornerUpLeft className="h-4.5 w-4.5" />}
-              title="Devolver a ejecución"
-              description="Falta cumplimiento o evidencia. Vuelve al área con un motivo obligatorio."
-              actionLabel="Mantener pendiente"
-              onClick={() => setPendingOpen(true)}
-            />
-          </div>
-          {progreso < 100 && (
-            <p className="mt-3 flex items-start gap-2 rounded-lg bg-warning-soft border border-warning/30 p-3 text-[12px] text-warning-ink">
-              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
-              El plan está al {progreso}%: hay actividades sin completar. Verifique antes de cerrar.
-            </p>
-          )}
-        </StageSection>
+      {enVerificacion && !sinPlan && (
+        <VerificationChecklist
+          caso={caso}
+          progreso={progreso}
+          todosPlanesCerrados={todosPlanesCerrados}
+          onClose={() => setCloseOpen(true)}
+          onKeepPending={() => setPendingOpen(true)}
+          onReopenCase={openCaseReopen}
+        />
       )}
 
       {/* El resumen de cierre y la reapertura viven fuera del bloque de plan:
@@ -869,7 +1023,13 @@ export function ExecutionSummaryCard({
       <Modal
         open={!!planReview}
         onClose={() => setPlanReview(null)}
-        title={planReview?.decision === "aprobada" ? "Cerrar plan de acción" : "Devolver plan al área"}
+        title={
+          planReview?.decision === "aprobada"
+            ? "Cerrar plan de acción"
+            : planReview && planCerrado(planReview.plan)
+              ? "Reabrir plan de acción"
+              : "Devolver plan al área"
+        }
         subtitle={planReview ? `${shortPlanCode(planReview.plan.codigo_plan)} · revisión final individual` : undefined}
         size="sm"
         footer={
@@ -888,7 +1048,13 @@ export function ExecutionSummaryCard({
                   },
                   {
                     onSuccess: () => {
-                      toast.success(planReview.decision === "aprobada" ? "Plan cerrado por SO" : "Plan devuelto al área");
+                      toast.success(
+                        planReview.decision === "aprobada"
+                          ? "Plan cerrado por SO"
+                          : planCerrado(planReview.plan)
+                            ? "Plan reabierto para corrección"
+                            : "Plan devuelto al área"
+                      );
                       setPlanReview(null);
                       setPlanReviewNote("");
                     },
@@ -901,6 +1067,10 @@ export function ExecutionSummaryCard({
                 <>
                   <CheckCircle2 className="h-4 w-4" /> Confirmar cierre
                 </>
+              ) : planReview && planCerrado(planReview.plan) ? (
+                <>
+                  <CornerUpLeft className="h-4 w-4" /> Reabrir plan
+                </>
               ) : (
                 <>
                   <CornerUpLeft className="h-4 w-4" /> Devolver
@@ -911,7 +1081,13 @@ export function ExecutionSummaryCard({
         }
       >
         <Field
-          label={planReview?.decision === "aprobada" ? "Nota de cierre" : "Motivo de devolución"}
+          label={
+            planReview?.decision === "aprobada"
+              ? "Nota de cierre"
+              : planReview && planCerrado(planReview.plan)
+                ? "Motivo de reapertura"
+                : "Motivo de devolución"
+          }
           required={planReview?.decision === "rechazada"}
           hint={planReview?.decision === "aprobada" ? "Opcional; queda en la bitácora del expediente." : undefined}
         >
@@ -922,7 +1098,9 @@ export function ExecutionSummaryCard({
             placeholder={
               planReview?.decision === "aprobada"
                 ? "Conformidad del plan ejecutado..."
-                : "Indique qué debe corregir el área responsable..."
+                : planReview && planCerrado(planReview.plan)
+                  ? "Indique qué no conformidad obliga a reabrir este plan..."
+                  : "Indique qué debe corregir el área responsable..."
             }
           />
         </Field>
@@ -939,62 +1117,147 @@ export function ExecutionSummaryCard({
             <Button variant="ghost" onClick={() => setCloseOpen(false)}>Cancelar</Button>
             <Button
               disabled={closeCase.isPending}
-              onClick={() =>
+              onClick={() => {
+                const nota = [`Resultado de verificación: ${verificationResult}.`, closeNote.trim()].filter(Boolean).join(" ");
                 closeCase.mutate(
-                  { nota: closeNote.trim() || undefined },
+                  { nota },
                   {
                     onSuccess: () => {
                       toast.success("Caso cerrado correctamente");
                       setCloseOpen(false);
+                      setCloseNote("");
+                      setVerificationResult("Conforme");
                     },
                     onError: (e) => toast.error(apiErrorMessage(e, "No se pudo cerrar el caso")),
                   }
-                )
-              }
+                );
+              }}
             >
               <CheckCircle2 className="h-4 w-4" /> Confirmar cierre
             </Button>
           </>
         }
       >
-        <Field label="Nota de cierre" hint="Opcional — queda en la bitácora">
-          <Textarea value={closeNote} onChange={(e) => setCloseNote(e.target.value)} rows={3} placeholder="Conclusión de la verificación…" />
-        </Field>
+        <div className="space-y-3">
+          <Field label="Resultado de verificación" required>
+            <Select value={verificationResult} onChange={(e) => setVerificationResult(e.target.value as VerificationResult)}>
+              <option value="Conforme">Conforme</option>
+              <option value="Con observación">Con observación</option>
+            </Select>
+          </Field>
+          <Field label="Nota de cierre" hint="Opcional — queda en la bitácora">
+            <Textarea value={closeNote} onChange={(e) => setCloseNote(e.target.value)} rows={3} placeholder="Conclusión de la verificación..." />
+          </Field>
+          <p className="rounded-lg border border-line-soft bg-surface/50 p-3 text-[12px] text-ink-quiet">
+            Si hay una no conformidad, cierre este modal y reabra el plan específico desde su tarjeta.
+          </p>
+        </div>
       </Modal>
 
       <Modal
         open={pendingOpen}
         onClose={() => setPendingOpen(false)}
-        title="Devolver a ejecución"
-        subtitle={`${caso.codigo_sop} · indique qué falta para dar conforme`}
+        title="Mantener pendiente"
+        subtitle={`${caso.codigo_sop} · permanece en Verificación`}
         size="sm"
         footer={
           <>
             <Button variant="ghost" onClick={() => setPendingOpen(false)}>Cancelar</Button>
             <Button
-              variant="danger"
-              disabled={!pendingNote.trim() || keepPending.isPending}
+              disabled={keepPending.isPending}
               onClick={() =>
                 keepPending.mutate(
-                  { nota: pendingNote.trim() },
+                  { nota: pendingNote.trim() || undefined },
                   {
                     onSuccess: () => {
-                      toast.success("Caso devuelto a Ejecución");
+                      toast.success("Caso mantenido pendiente en Verificación");
                       setPendingOpen(false);
+                      setPendingNote("");
                     },
-                    onError: (e) => toast.error(apiErrorMessage(e, "No se pudo devolver el caso")),
+                    onError: (e) => toast.error(apiErrorMessage(e, "No se pudo mantener pendiente el caso")),
                   }
                 )
               }
             >
-              <CornerUpLeft className="h-4 w-4" /> Devolver
+              <Timer className="h-4 w-4" /> Guardar decisión
             </Button>
           </>
         }
       >
-        <Field label="Motivo" required>
-          <Textarea value={pendingNote} onChange={(e) => setPendingNote(e.target.value)} rows={3} placeholder="¿Qué falta para dar conforme la verificación?" />
-        </Field>
+        <div className="space-y-3">
+          <Field label="Nota de seguimiento" hint="Opcional — queda en la bitácora sin cambiar de etapa">
+            <Textarea
+              value={pendingNote}
+              onChange={(e) => setPendingNote(e.target.value)}
+              rows={3}
+              placeholder="Ej. Se mantiene pendiente hasta validar una evidencia adicional..."
+            />
+          </Field>
+          <p className="rounded-lg border border-warning/30 bg-warning-soft/50 p-3 text-[12px] text-warning-ink">
+            Esta opción no cierra ni devuelve el expediente: solo deja constancia y conserva la etapa de Verificación.
+          </p>
+        </div>
+      </Modal>
+
+      <Modal
+        open={reopenCaseOpen}
+        onClose={() => setReopenCaseOpen(false)}
+        title="Reabrir caso para corrección"
+        subtitle={`${caso.codigo_sop} · se devolverá a Ejecución`}
+        size="sm"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setReopenCaseOpen(false)}>Cancelar</Button>
+            <Button
+              variant="danger"
+              disabled={!selectedReopenPlan || reopenCaseNote.trim().length < 5 || reviewFinalPlan.isPending}
+              onClick={() => {
+                if (!selectedReopenPlan) return;
+                reviewFinalPlan.mutate(
+                  {
+                    id_plan: selectedReopenPlan.id_plan,
+                    decision: "rechazada",
+                    nota: reopenCaseNote.trim(),
+                  },
+                  {
+                    onSuccess: () => {
+                      toast.success("Caso reabierto para corrección");
+                      setReopenCaseOpen(false);
+                      setReopenCasePlanId("");
+                      setReopenCaseNote("");
+                    },
+                    onError: (e) => toast.error(apiErrorMessage(e, "No se pudo reabrir el caso")),
+                  }
+                );
+              }}
+            >
+              <CornerUpLeft className="h-4 w-4" /> Reabrir caso
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <div className="rounded-lg border border-warning/30 bg-warning-soft/50 p-3 text-[12px] text-warning-ink">
+            Reabrir desde Verificación conserva el historial y devuelve a Ejecución el plan que necesita corrección.
+          </div>
+          <Field label="Plan a corregir" required>
+            <Select value={reopenCasePlanId} onChange={(e) => setReopenCasePlanId(e.target.value)}>
+              {reopenablePlans.map((plan) => (
+                <option key={plan.id_plan} value={plan.id_plan}>
+                  {shortPlanCode(plan.codigo_plan)} · {plan.areas.nombre_area} · {planStatus(plan).label}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Motivo de reapertura" required hint="Mínimo 5 caracteres — quedará en la bitácora">
+            <Textarea
+              value={reopenCaseNote}
+              onChange={(e) => setReopenCaseNote(e.target.value)}
+              rows={4}
+              placeholder="Explique qué evidencia, actividad o validación requiere corrección..."
+            />
+          </Field>
+        </div>
       </Modal>
     </div>
   );
@@ -1005,6 +1268,7 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
   const reopen = useReopenCase(caso.codigo_sop);
   const [reopenOpen, setReopenOpen] = useState(false);
   const [reopenNote, setReopenNote] = useState("");
+  const [reopenTarget, setReopenTarget] = useState<ReopenTarget>("Verificación");
 
   const creado = new Date(caso.created_at);
   const cierre = caso.timeline_caso.find((t) => t.kind === "cierre");
@@ -1012,6 +1276,26 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
   const dias = Math.max(1, Math.round((cerradoAt.getTime() - creado.getTime()) / 86400000));
 
   const participantes = Array.from(new Set(caso.timeline_caso.map((t) => t.actor).filter(Boolean)));
+  const areasResponsables = Array.from(
+    new Set(
+      caso.planes_accion
+        .map((plan) => plan.areas?.nombre_area?.trim())
+        .filter((nombre): nombre is string => !!nombre)
+    )
+  );
+  const areasValue =
+    areasResponsables.length === 0
+      ? "—"
+      : areasResponsables.length === 1
+        ? areasResponsables[0]
+        : `${areasResponsables.length} áreas`;
+  const evidenciasPlanes = new Set<string>();
+  for (const plan of caso.planes_accion) {
+    for (const evidencia of evidenciasDelPlan(caso, plan)) {
+      evidenciasPlanes.add(evidencia.anexo?.id_anexo ? `id:${evidencia.anexo.id_anexo}` : `${plan.id_plan}:${evidencia.nombre}`);
+    }
+  }
+
   // Orden cronológico ascendente: en un cierre se lee el recorrido del caso
   // de principio a fin, al revés que en el modal de bitácora.
   const historial = [...caso.timeline_caso].sort((a, b) => +new Date(a.fecha ?? 0) - +new Date(b.fecha ?? 0));
@@ -1021,10 +1305,15 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
 
   const resumen = [
     { label: "Tiempo total de atención", value: dias === 1 ? "1 día" : `${dias} días`, icon: Clock },
-    { label: "Área responsable", value: caso.areas?.nombre_area ?? "—", icon: Building2 },
+    {
+      label: areasResponsables.length > 1 ? "Áreas responsables" : "Área responsable",
+      value: areasValue,
+      icon: Building2,
+      detail: areasResponsables.length > 1 ? areasResponsables.join(", ") : undefined,
+    },
     { label: "Responsables participantes", value: String(participantes.length), icon: UserIcon, detail: participantes.join(", ") },
-    { label: "Actividades del plan", value: String(actividades), icon: ClipboardList },
-    { label: "Evidencias adjuntas", value: String(caso.anexos_caso.length), icon: FileText },
+    { label: caso.planes_accion.length > 1 ? "Actividades de planes" : "Actividades del plan", value: String(actividades), icon: ClipboardList },
+    { label: "Evidencias de planes", value: String(evidenciasPlanes.size), icon: FileText },
     { label: "Comentarios registrados", value: String(comentarios), icon: Activity },
   ];
 
@@ -1044,6 +1333,20 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
         </div>
       }
     >
+      <div className="close-success-card rounded-2xl border border-brand-200 bg-brand-50/70 px-5 py-7 text-center">
+        <span className="close-success-icon mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-brand-700 text-white shadow-[0_14px_34px_-16px_rgba(15,107,62,0.8)]">
+          <svg className="h-12 w-12" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+            <circle className="close-success-ring" cx="24" cy="24" r="17" stroke="currentColor" strokeWidth="3.5" opacity="0.95" />
+            <path className="close-success-check" d="M16.5 24.5l5.1 5.1L32.5 18.7" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
+        <p className="mt-4 text-[13px] font-semibold uppercase tracking-wide text-brand-700 animate-[fadeIn_0.4s_ease-out_0.38s_both]">Caso cerrado correctamente</p>
+        <p className="mt-1 font-mono text-[28px] font-bold tracking-tight text-ink animate-[fadeIn_0.42s_ease-out_0.5s_both]">{caso.codigo_sop}</p>
+        <p className="mx-auto mt-2 max-w-xl text-[13px] leading-relaxed text-ink-soft">
+          El expediente quedó archivado con su historial, planes de acción, evidencias y comentarios registrados.
+        </p>
+      </div>
+
       <div className="grid sm:grid-cols-2 gap-3">
         {resumen.map((r) => (
           <Card key={r.label} padded={false} className="p-3.5 shadow-none">
@@ -1097,7 +1400,7 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
 
       <div className="mt-4 pt-4 border-t border-line-soft flex items-center justify-between gap-3 flex-wrap">
         <p className="text-[11.5px] text-ink-quiet">
-          Reabrir devuelve el caso a Verificación y queda registrado en la bitácora.
+          Reabrir conserva el historial y permite elegir la etapa exacta a corregir.
         </p>
         <Button variant="outline" size="sm" onClick={() => setReopenOpen(true)}>
           <CornerUpLeft className="h-4 w-4" /> Reabrir caso
@@ -1107,22 +1410,24 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
       <Modal
         open={reopenOpen}
         onClose={() => setReopenOpen(false)}
-        title="Reabrir caso"
-        subtitle={`${caso.codigo_sop} · volverá a Verificación`}
+        title="Reabrir caso para edición"
+        subtitle={`${caso.codigo_sop} · seleccione la etapa de retorno`}
         size="sm"
         footer={
           <>
             <Button variant="ghost" onClick={() => setReopenOpen(false)}>Cancelar</Button>
             <Button
-              disabled={!reopenNote.trim() || reopen.isPending}
+              variant="danger"
+              disabled={reopenNote.trim().length < 5 || reopen.isPending}
               onClick={() =>
                 reopen.mutate(
-                  { nota: reopenNote.trim() },
+                  { nota: reopenNote.trim(), destino: reopenTarget },
                   {
                     onSuccess: () => {
-                      toast.success("Caso reabierto, vuelve a Verificación");
+                      toast.success(`Caso reabierto a ${reopenTarget}`);
                       setReopenOpen(false);
                       setReopenNote("");
+                      setReopenTarget("Verificación");
                     },
                     onError: (e) => toast.error(apiErrorMessage(e, "No se pudo reabrir el caso")),
                   }
@@ -1134,14 +1439,28 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
           </>
         }
       >
-        <Field label="Motivo de la reapertura" required hint="Queda en la bitácora del expediente">
-          <Textarea
-            value={reopenNote}
-            onChange={(e) => setReopenNote(e.target.value)}
-            rows={3}
-            placeholder="¿Por qué se reabre el caso? Ej. reincidencia del hallazgo en la misma estación…"
-          />
-        </Field>
+        <div className="space-y-4">
+          <div className="rounded-lg border border-warning/30 bg-warning-soft/50 p-3 text-[12px] leading-relaxed text-warning-ink">
+            Toda la información anterior se conserva. La reapertura solo cambia la etapa del expediente y registra el motivo en la bitácora.
+          </div>
+          <Field label="Etapa a la que desea volver" required>
+            <Select value={reopenTarget} onChange={(e) => setReopenTarget(e.target.value as ReopenTarget)}>
+              {REOPEN_TARGETS.map((target) => (
+                <option key={target.value} value={target.value}>
+                  {target.label} — {target.description}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Motivo de la reapertura" required hint="Mínimo 5 caracteres — queda en la bitácora del expediente">
+            <Textarea
+              value={reopenNote}
+              onChange={(e) => setReopenNote(e.target.value)}
+              rows={4}
+              placeholder="Explique por qué se reabre el caso y qué se debe corregir..."
+            />
+          </Field>
+        </div>
       </Modal>
     </StageSection>
   );

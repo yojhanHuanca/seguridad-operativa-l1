@@ -20,6 +20,7 @@ export declare class CaseController {
     static requestExtensionByPlan(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static reviewExtensionByPlan(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static completeExecution(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
+    static sendToVerification(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static keepPending(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static reopen(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static rollbackStage(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;

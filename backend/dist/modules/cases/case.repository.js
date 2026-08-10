@@ -1,4 +1,5 @@
 import prisma from "../../lib/prisma.js";
+import { NotificationRepository } from "../notifications/notification.repository.js";
 const LIST_INCLUDE = {
     catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { select: { nombre: true, color: true } },
     catalogo_detalle_casos_sop_tipoTocatalogo_detalle: { select: { nombre: true } },
@@ -89,6 +90,8 @@ const DETAIL_INCLUDE = {
 };
 // TODO(auth): reemplazar por el usuario autenticado cuando exista login real.
 const ACTOR_SO = "Seguridad Operativa";
+/** Día calendario de una columna @db.Date, que siempre llega en medianoche UTC. */
+const diaISO = (d) => d.toISOString().slice(0, 10);
 export class CaseRepository {
     /** Registra un evento en la bitácora del expediente. */
     static async pushTimeline(client, id_caso, e) {
@@ -462,6 +465,12 @@ export class CaseRepository {
                         titulo: "Plan de Acción enviado a Jefe de Área",
                         detalle: `${codigo_plan} · pendiente de aceptación por el área responsable.`,
                     });
+                    await NotificationRepository.emitir(tx, {
+                        para: { id_usuario: dto.responsable },
+                        tipo: "plan_asignado",
+                        titulo: `Nuevo plan asignado: ${codigo_plan}`,
+                        mensaje: `${dto.descripcion} Debe aceptarlo para iniciar la ejecución.`,
+                    });
                     return plan;
                 });
             }
@@ -671,6 +680,12 @@ export class CaseRepository {
                     ? `${plan.codigo_plan} aceptado. Todos los planes del reporte pueden ejecutarse.`
                     : `${plan.codigo_plan} aceptado. Este plan inicia ejecución; el caso espera la aceptación de los demás planes.`,
             });
+            await NotificationRepository.emitir(tx, {
+                para: { rol: "Seguridad Operativa" },
+                tipo: "plan_aceptado",
+                titulo: `${plan.codigo_plan} aceptado por el área`,
+                mensaje: `${actor} aceptó el plan y arrancó la ejecución. ${plan.descripcion}`,
+            });
             return actualizado;
         });
     }
@@ -726,6 +741,12 @@ export class CaseRepository {
                 titulo: `Plan de acción finalizado por el área — ${plan.codigo_plan}`,
                 detalle: `Descripción final: ${descripcionCierre}`,
             });
+            await NotificationRepository.emitir(tx, {
+                para: { rol: "Seguridad Operativa" },
+                tipo: "ejecucion_completada",
+                titulo: `${plan.codigo_plan} finalizado, pendiente de revisión`,
+                mensaje: `${actor} terminó la ejecución. Descripción final: ${descripcionCierre}`,
+            });
             return tx.planes_accion.findUnique({ where: { id_plan } });
         });
     }
@@ -737,16 +758,38 @@ export class CaseRepository {
                 id_plan: true,
                 id_caso: true,
                 codigo_plan: true,
+                responsable: true,
                 catalogo_detalle: { select: { nombre: true } },
+                actividades_plan: {
+                    select: {
+                        porcentaje: true,
+                        catalogo_detalle: { select: { nombre: true } },
+                    },
+                },
             },
         });
         if (!plan)
             throw new Error(`El plan ${id_plan} no existe`);
-        if (plan.catalogo_detalle.nombre !== "Finalizado") {
-            throw new Error(`El plan ${plan.codigo_plan} debe estar Finalizado para revisión final`);
+        const estadoActual = plan.catalogo_detalle.nombre.toLowerCase();
+        const estaFinalizado = estadoActual.includes("finaliz");
+        const estaCerrado = estadoActual.includes("cerrad");
+        const estaEnEjecucion = estadoActual.includes("ejecucion") || estadoActual.includes("aceptad");
+        const actividadesCompletadas = plan.actividades_plan.length > 0 &&
+            plan.actividades_plan.every((actividad) => {
+                const avance = Number(actividad.porcentaje ?? 0);
+                const estadoActividad = actividad.catalogo_detalle?.nombre?.toLowerCase() ?? "";
+                return avance >= 100 || estadoActividad.includes("complet");
+            });
+        const listoPorAvance = estaEnEjecucion && actividadesCompletadas;
+        if (decision === "aprobada" && !estaFinalizado && !listoPorAvance) {
+            throw new Error(`El plan ${plan.codigo_plan} debe estar Finalizado para poder cerrarlo`);
         }
-        const [estadoCasoVerificacion, estadoPlanCerrado, estadoPlanEnEjecucion, estadoActEnProgreso] = await Promise.all([
+        if (decision === "rechazada" && !estaFinalizado && !estaCerrado && !listoPorAvance) {
+            throw new Error(`El plan ${plan.codigo_plan} debe estar Finalizado o Cerrado para devolverlo al área`);
+        }
+        const [estadoCasoVerificacion, estadoCasoEjecucion, estadoPlanCerrado, estadoPlanEnEjecucion, estadoActEnProgreso] = await Promise.all([
             CaseRepository.findEstado("Verificación"),
+            CaseRepository.findEstado("Ejecución"),
             CaseRepository.findEstadoPlan("Cerrado"),
             CaseRepository.findEstadoPlan("En Ejecución"),
             CaseRepository.findEstadoActividad("En progreso"),
@@ -765,6 +808,7 @@ export class CaseRepository {
                     where: { id_plan },
                     data: { estado: estadoActEnProgreso.id_detalle, porcentaje: 50 },
                 });
+                await tx.casos_sop.update({ where: { id_caso: plan.id_caso }, data: { estado_hallazgo: estadoCasoEjecucion.id_detalle } });
             }
             let todosCerrados = false;
             if (aprobado) {
@@ -782,14 +826,29 @@ export class CaseRepository {
                 actor_rol: "seguridad",
                 titulo: aprobado
                     ? `Plan de acción cerrado por Seguridad Operativa — ${plan.codigo_plan}`
-                    : `Plan de acción devuelto al área — ${plan.codigo_plan}`,
+                    : estaCerrado
+                        ? `Plan de acción reabierto por Seguridad Operativa — ${plan.codigo_plan}`
+                        : `Plan de acción devuelto al área — ${plan.codigo_plan}`,
                 detalle: nota
                     ? `${plan.codigo_plan}: ${nota}`
                     : aprobado
                         ? todosCerrados
                             ? `${plan.codigo_plan} cerrado. Todos los planes están cerrados y el caso pasa a Verificación.`
                             : `${plan.codigo_plan} cerrado. Otros planes del reporte siguen pendientes.`
-                        : `${plan.codigo_plan} requiere correcciones antes del cierre.`,
+                        : estaCerrado
+                            ? `${plan.codigo_plan} fue reabierto y vuelve a ejecución para correcciones.`
+                            : `${plan.codigo_plan} requiere correcciones antes del cierre.`,
+            });
+            await NotificationRepository.emitir(tx, {
+                para: { id_usuario: plan.responsable },
+                tipo: "plan_revisado",
+                titulo: aprobado
+                    ? `${plan.codigo_plan} cerrado por Seguridad Operativa`
+                    : `${plan.codigo_plan} devuelto para correcciones`,
+                mensaje: nota ??
+                    (aprobado
+                        ? "Seguridad Operativa dio conforme al cierre del plan."
+                        : "Seguridad Operativa devolvió el plan a ejecución."),
             });
             return actualizado;
         });
@@ -822,20 +881,57 @@ export class CaseRepository {
                 titulo: "Solicitud de ampliación de plazo",
                 detalle: `${plan.codigo_plan}. Nueva fecha: ${dto.nueva_fecha}. Justificación: ${dto.justificacion}`,
             });
+            await NotificationRepository.emitir(tx, {
+                para: { rol: "Seguridad Operativa" },
+                tipo: "prorroga_solicitada",
+                titulo: `Prórroga solicitada en ${plan.codigo_plan}`,
+                mensaje: `${actor} pide mover el plazo al ${dto.nueva_fecha}. Motivo: ${dto.justificacion}`,
+            });
             return actualizado;
         });
     }
-    /** SO aprueba o rechaza la prórroga de un plan sin tocar los demás. */
-    static async reviewExtensionByPlan(id_plan, decision, nota) {
+    /**
+     * SO aprueba o rechaza la prórroga de un plan sin tocar los demás.
+     *
+     * Al aprobar, SO puede correr el plan a `fecha_aprobada` en vez de la fecha
+     * que pidió el área: la solicitud del Jefe es una propuesta, no un plazo
+     * que se acepte tal cual. Sin `fecha_aprobada` vale la fecha propuesta.
+     */
+    static async reviewExtensionByPlan(id_plan, decision, nota, fecha_aprobada = null) {
         const plan = await prisma.planes_accion.findUnique({
             where: { id_plan },
-            select: { id_plan: true, id_caso: true, codigo_plan: true, prorroga_fecha: true, prorroga_estado: true },
+            select: {
+                id_plan: true,
+                id_caso: true,
+                codigo_plan: true,
+                responsable: true,
+                fecha_plan: true,
+                fecha_reprogramada: true,
+                prorroga_fecha: true,
+                prorroga_estado: true,
+            },
         });
         if (!plan)
             throw new Error(`El plan ${id_plan} no existe`);
         if (plan.prorroga_estado !== "pendiente") {
             throw new Error(`El plan ${plan.codigo_plan} no tiene una prórroga pendiente`);
         }
+        // Las columnas son @db.Date: se comparan y guardan como medianoche UTC.
+        const fechaVigente = plan.fecha_reprogramada ?? plan.fecha_plan;
+        const fechaFinal = decision === "aprobada"
+            ? fecha_aprobada
+                ? new Date(`${fecha_aprobada}T00:00:00.000Z`)
+                : plan.prorroga_fecha
+            : null;
+        if (decision === "aprobada") {
+            if (!fechaFinal) {
+                throw new Error(`No hay fecha para aprobar la prórroga de ${plan.codigo_plan}`);
+            }
+            if (fechaFinal.getTime() <= fechaVigente.getTime()) {
+                throw new Error(`La nueva fecha debe ser posterior al plazo vigente (${diaISO(fechaVigente)}) para que sea una ampliación`);
+            }
+        }
+        const ajustada = !!fechaFinal && !!plan.prorroga_fecha && fechaFinal.getTime() !== plan.prorroga_fecha.getTime();
         const [estadoEjecucion, estadoProrroga] = await Promise.all([
             CaseRepository.findEstado("Ejecución"),
             CaseRepository.findEstado("Prórroga Solicitada"),
@@ -846,7 +942,7 @@ export class CaseRepository {
                 data: {
                     prorroga_estado: decision,
                     updated_at: new Date(),
-                    ...(decision === "aprobada" && plan.prorroga_fecha ? { fecha_reprogramada: plan.prorroga_fecha } : {}),
+                    ...(fechaFinal ? { fecha_reprogramada: fechaFinal } : {}),
                 },
             });
             const pendientes = await tx.planes_accion.count({
@@ -856,14 +952,35 @@ export class CaseRepository {
                 where: { id_caso: plan.id_caso },
                 data: { estado_hallazgo: pendientes > 0 ? estadoProrroga.id_detalle : estadoEjecucion.id_detalle },
             });
+            // La bitácora deja constancia de qué pidió el área y qué otorgó SO,
+            // que es lo que se audita cuando el plazo aprobado no es el propuesto.
+            const resumen = decision === "rechazada"
+                ? `${plan.codigo_plan}: solicitud rechazada, se mantiene el ${diaISO(fechaVigente)}.`
+                : ajustada
+                    ? `${plan.codigo_plan}: aprobada al ${diaISO(fechaFinal)}; el área había pedido el ${diaISO(plan.prorroga_fecha)}.`
+                    : `${plan.codigo_plan}: aprobada al ${diaISO(fechaFinal)}, según lo pedido por el área.`;
             await CaseRepository.pushTimeline(tx, plan.id_caso, {
                 kind: "ampliacion",
                 actor: ACTOR_SO,
                 actor_rol: "seguridad",
-                titulo: decision === "aprobada"
-                    ? `Ampliación de plazo aprobada — ${plan.codigo_plan}`
-                    : `Ampliación de plazo rechazada — ${plan.codigo_plan}`,
-                detalle: nota ? `${plan.codigo_plan}: ${nota}` : `${plan.codigo_plan}: solicitud ${decision}.`,
+                titulo: decision === "rechazada"
+                    ? `Ampliación de plazo rechazada — ${plan.codigo_plan}`
+                    : ajustada
+                        ? `Ampliación aprobada con plazo ajustado — ${plan.codigo_plan}`
+                        : `Ampliación de plazo aprobada — ${plan.codigo_plan}`,
+                detalle: nota ? `${resumen} ${nota}` : resumen,
+            });
+            // Al jefe le importa el desenlace, y sobre todo si el plazo otorgado no
+            // es el que pidió: de eso depende cómo reorganiza su ejecución.
+            await NotificationRepository.emitir(tx, {
+                para: { id_usuario: plan.responsable },
+                tipo: "prorroga_resuelta",
+                titulo: decision === "rechazada"
+                    ? `Prórroga rechazada en ${plan.codigo_plan}`
+                    : ajustada
+                        ? `Prórroga aprobada con otro plazo en ${plan.codigo_plan}`
+                        : `Prórroga aprobada en ${plan.codigo_plan}`,
+                mensaje: nota ? `${resumen} ${nota}` : resumen,
             });
             return actualizado;
         });
@@ -895,6 +1012,47 @@ export class CaseRepository {
                 detalle: "Los planes quedaron pendientes de revisión final individual por Seguridad Operativa.",
             });
             return tx.casos_sop.findUnique({ where: { id_caso } });
+        });
+    }
+    /** SO confirma que ya no queda ejecución abierta y mueve el expediente a Verificación. */
+    static async sendToVerification(id_caso) {
+        const estadoVerificacion = await CaseRepository.findEstado("Verificación");
+        return prisma.$transaction(async (tx) => {
+            const planes = await tx.planes_accion.findMany({
+                where: { id_caso },
+                select: {
+                    codigo_plan: true,
+                    prorroga_estado: true,
+                    catalogo_detalle: { select: { nombre: true } },
+                },
+                orderBy: { created_at: "asc" },
+            });
+            if (planes.length === 0) {
+                throw new Error("No se puede pasar a Verificación sin planes de acción");
+            }
+            const conProrrogaPendiente = planes.filter((plan) => plan.prorroga_estado === "pendiente");
+            if (conProrrogaPendiente.length > 0) {
+                throw new Error(`Resuelva las prórrogas pendientes antes de pasar a Verificación: ${conProrrogaPendiente.map((p) => p.codigo_plan).join(", ")}`);
+            }
+            const abiertos = planes.filter((plan) => {
+                const estado = plan.catalogo_detalle.nombre.toLowerCase();
+                return !estado.includes("finaliz") && !estado.includes("cerrad");
+            });
+            if (abiertos.length > 0) {
+                throw new Error(`Aún hay planes en ejecución o pendientes: ${abiertos.map((p) => p.codigo_plan).join(", ")}`);
+            }
+            const caso = await tx.casos_sop.update({
+                where: { id_caso },
+                data: { estado_hallazgo: estadoVerificacion.id_detalle },
+            });
+            await CaseRepository.pushTimeline(tx, id_caso, {
+                kind: "seguimiento",
+                actor: ACTOR_SO,
+                actor_rol: "seguridad",
+                titulo: "Expediente enviado a Verificación",
+                detalle: "Todos los planes de acción quedaron listos para validación final por Seguridad Operativa.",
+            });
+            return caso;
         });
     }
     /** ETAPA 5 — el área actualiza el estado/avance de una actividad del plan. */
@@ -982,32 +1140,32 @@ export class CaseRepository {
             return caso;
         });
     }
-    /** ETAPA 6 — SO no da conforme la verificación y devuelve el caso a Ejecución. */
+    /** ETAPA 6 — SO deja constancia y conserva el expediente en Verificación. */
     static async keepPending(id_caso, motivo) {
-        const estado = await CaseRepository.findEstado("Ejecución");
+        const estado = await CaseRepository.findEstado("Verificación");
         return prisma.$transaction(async (tx) => {
             const caso = await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estado.id_detalle } });
             await CaseRepository.pushTimeline(tx, id_caso, {
                 kind: "seguimiento",
                 actor: ACTOR_SO,
                 actor_rol: "seguridad",
-                titulo: "Caso mantenido pendiente",
-                detalle: motivo ?? "Seguridad Operativa devolvió el caso a ejecución para seguimiento.",
+                titulo: "Caso mantenido pendiente en Verificación",
+                detalle: motivo ?? "Seguridad Operativa mantiene el expediente pendiente de verificación.",
             });
             return caso;
         });
     }
-    /** ETAPA 7 — reabrir un caso cerrado; vuelve a Verificación. */
-    static async reopenCase(id_caso, motivo) {
-        const estado = await CaseRepository.findEstado("Verificación");
+    /** ETAPA 7 — reabrir un caso cerrado hacia la etapa que SO necesita corregir. */
+    static async reopenCase(id_caso, motivo, destino = "Verificación") {
+        const estado = await CaseRepository.findEstado(destino);
         return prisma.$transaction(async (tx) => {
             const caso = await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estado.id_detalle } });
             await CaseRepository.pushTimeline(tx, id_caso, {
                 kind: "reapertura",
                 actor: ACTOR_SO,
                 actor_rol: "seguridad",
-                titulo: "Caso reabierto",
-                detalle: motivo ?? "El caso vuelve a verificación.",
+                titulo: `Caso reabierto a ${destino}`,
+                detalle: motivo ? `${motivo} · Etapa destino: ${destino}.` : `El caso vuelve a ${destino}.`,
             });
             return caso;
         });
@@ -1038,8 +1196,18 @@ export class CaseRepository {
         });
     }
     static async closeCase(id_caso, nota) {
-        const estado = await CaseRepository.findEstado("Cerrado");
+        const [estado, estadoPlanCerrado] = await Promise.all([
+            CaseRepository.findEstado("Cerrado"),
+            CaseRepository.findEstadoPlan("Cerrado"),
+        ]);
         return prisma.$transaction(async (tx) => {
+            const [totalPlanes, planesAbiertos] = await Promise.all([
+                tx.planes_accion.count({ where: { id_caso } }),
+                tx.planes_accion.count({ where: { id_caso, estado: { not: estadoPlanCerrado.id_detalle } } }),
+            ]);
+            if (totalPlanes > 0 && planesAbiertos > 0) {
+                throw new Error("No se puede cerrar el expediente hasta que todos los planes de acción estén cerrados por Seguridad Operativa");
+            }
             const caso = await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estado.id_detalle } });
             await CaseRepository.pushTimeline(tx, id_caso, {
                 kind: "cierre",
@@ -1051,19 +1219,42 @@ export class CaseRepository {
             return caso;
         });
     }
-    static async addEvidence(id_caso, archivos) {
-        if (archivos.length > 0) {
-            await prisma.anexos_caso.createMany({
-                data: archivos.map((f) => ({
-                    id_caso,
-                    nombre_archivo: f.originalname,
-                    ruta_archivo: `/uploads/casos/${f.filename}`,
-                    tipo_archivo: f.mimetype,
-                    peso: Math.round((f.size / 1024) * 100) / 100,
-                })),
-            });
-        }
-        return prisma.anexos_caso.findMany({ where: { id_caso }, orderBy: { fecha_subida: "desc" } });
+    static async addEvidence(id_caso, archivos, actor = ACTOR_SO) {
+        return prisma.$transaction(async (tx) => {
+            const anexosCreados = [];
+            for (const f of archivos) {
+                const anexo = await tx.anexos_caso.create({
+                    data: {
+                        id_caso,
+                        nombre_archivo: f.originalname,
+                        ruta_archivo: `/uploads/casos/${f.filename}`,
+                        tipo_archivo: f.mimetype,
+                        peso: Math.round((f.size / 1024) * 100) / 100,
+                    },
+                });
+                anexosCreados.push(anexo);
+            }
+            if (anexosCreados.length > 0) {
+                const detalleHumano = anexosCreados.map((a) => a.nombre_archivo).filter(Boolean).join(", ");
+                const detalleTecnico = {
+                    origin: "seguridad",
+                    actor,
+                    anexos: anexosCreados.map((a) => ({
+                        id_anexo: a.id_anexo,
+                        nombre_archivo: a.nombre_archivo,
+                        ruta_archivo: a.ruta_archivo,
+                    })),
+                };
+                await CaseRepository.pushTimeline(tx, id_caso, {
+                    kind: "seguimiento",
+                    actor,
+                    actor_rol: "seguridad",
+                    titulo: "Evidencia adjuntada al expediente",
+                    detalle: `${detalleHumano}\n__CASE_EVIDENCE__:${JSON.stringify(detalleTecnico)}`,
+                });
+            }
+            return tx.anexos_caso.findMany({ where: { id_caso }, orderBy: { fecha_subida: "desc" } });
+        });
     }
     static async addEvidenceByPlan(id_plan, archivos, actor) {
         const plan = await prisma.planes_accion.findUnique({

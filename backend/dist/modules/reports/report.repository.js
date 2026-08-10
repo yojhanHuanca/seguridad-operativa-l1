@@ -1,4 +1,5 @@
 import prisma from "../../lib/prisma.js";
+import { NotificationRepository } from "../notifications/notification.repository.js";
 const DIAS = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
 const LIST_INCLUDE = {
     catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { select: { nombre: true, color: true } },
@@ -143,6 +144,12 @@ export class ReportRepository {
                             titulo: "Reporte registrado por trabajador",
                             detalle: `${codigo_sop} creado. Enviado a la bandeja de Seguridad Operativa.`,
                         },
+                    });
+                    await NotificationRepository.emitir(tx, {
+                        para: { rol: "Seguridad Operativa" },
+                        tipo: "reporte_nuevo",
+                        titulo: `Nuevo reporte ${codigo_sop}`,
+                        mensaje: `${titulo}. Registrado por ${esIdentificado ? dto.nombre_reportante?.trim() || "un reportante identificado" : "un reportante anónimo"}. Pendiente de recepción.`,
                     });
                     if (archivos.length > 0) {
                         await tx.anexos_caso.createMany({

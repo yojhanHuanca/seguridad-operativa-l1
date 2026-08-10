@@ -218,6 +218,13 @@ export function useCompleteExecution(codigo: string) {
   });
 }
 
+export function useSendToVerification(codigo: string) {
+  return useCaseMutation<void>(codigo, async () => {
+    const { data } = await api.post(`/cases/${encodeURIComponent(codigo)}/send-verification`);
+    return data;
+  });
+}
+
 export function useKeepPending(codigo: string) {
   return useCaseMutation<{ nota?: string }>(codigo, async (input) => {
     const { data } = await api.post(`/cases/${encodeURIComponent(codigo)}/keep-pending`, input ?? {});
@@ -226,7 +233,7 @@ export function useKeepPending(codigo: string) {
 }
 
 export function useReopenCase(codigo: string) {
-  return useCaseMutation<{ nota?: string }>(codigo, async (input) => {
+  return useCaseMutation<{ nota?: string; destino?: string }>(codigo, async (input) => {
     const { data } = await api.post(`/cases/${encodeURIComponent(codigo)}/reopen`, input ?? {});
     return data;
   });
@@ -249,4 +256,3 @@ export function useAddCaseEvidence(codigo: string) {
     return data;
   });
 }
-
