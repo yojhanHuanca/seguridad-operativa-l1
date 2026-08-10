@@ -1,11 +1,12 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, Download, FolderKanban, Send, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ClipboardList, CalendarDays, UserCircle, CheckCircle2 } from "lucide-react";
+import { Search, Download, FolderKanban, Plus, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ClipboardList, CalendarDays, UserCircle, CheckCircle2 } from "lucide-react";
 import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
 import { Card } from "@/design-system/primitives/Card";
 import { Button } from "@/design-system/primitives/Button";
 import { Pill, StagePill } from "@/design-system/primitives/Pill";
 import { EmptyState } from "@/design-system/primitives/Progress";
+import { NuevoReporteModal } from "@/features/reports/components/NuevoReporteModal";
 import { useAreas } from "@/features/reports/hooks/useAreas";
 import { useCases } from "@/features/cases/hooks/useCases";
 import { toCaseRow, type CaseRow } from "@/features/cases/adapter";
@@ -42,6 +43,7 @@ export function SoCasosPage() {
   const [sort, setSort] = useState<"recent" | "priority" | "sla">("recent");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [nuevoOpen, setNuevoOpen] = useState(false);
 
   const { data: rawCases, isLoading } = useCases({});
   const { data: areas } = useAreas();
@@ -113,11 +115,9 @@ export function SoCasosPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Link to="/reportes/nuevo">
-            <Button size="sm">
-              <Send className="h-4 w-4" /> Nuevo Reporte
-            </Button>
-          </Link>
+          <Button size="sm" onClick={() => setNuevoOpen(true)}>
+            <Plus className="h-4 w-4" /> Nuevo Reporte
+          </Button>
           <Button variant="outline" size="sm" onClick={() => exportCsv(filtered)}>
             <Download className="h-4 w-4" /> Exportar lista
           </Button>
@@ -370,6 +370,8 @@ export function SoCasosPage() {
           </div>
         )}
       </Card>
+
+      <NuevoReporteModal open={nuevoOpen} onClose={() => setNuevoOpen(false)} />
     </SeguridadOperativaShell>
   );
 }

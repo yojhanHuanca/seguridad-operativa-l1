@@ -62,7 +62,12 @@ export interface PlanItem {
     fecha_hallazgo: string;
     catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { nombre: string };
     catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: { codigo: string | null; nombre: string } | null;
-    investigacion_caso: { causa_raiz: string; hallazgos: string; conclusiones: string } | null;
+    investigacion_caso: {
+      causa_raiz: string;
+      hallazgos: string;
+      conclusiones: string;
+      observaciones: string | null;
+    } | null;
     timeline_caso: TimelinePlanCaso[];
     anexos_caso: AnexoPlanCaso[];
   };

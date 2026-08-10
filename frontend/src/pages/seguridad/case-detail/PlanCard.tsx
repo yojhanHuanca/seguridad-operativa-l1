@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BriefcaseBusiness, ClipboardList, Plus, Search, Send, Trash2, UserRound, FileSearch } from "lucide-react";
+import { BriefcaseBusiness, ClipboardList, Plus, Rocket, Search, Send, Trash2, UserRound, FileSearch } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/design-system/primitives/Button";
 import { Modal } from "@/design-system/primitives/Modal";
@@ -8,10 +8,10 @@ import { Field, Input, Select, Textarea } from "@/design-system/primitives/Input
 import { StageSection } from "@/features/cases/components/CaseParts";
 import { useAreas } from "@/features/reports/hooks/useAreas";
 import { useUsers } from "@/features/users/hooks/useUsers";
-import { useCreatePlans, useUpdatePlan, type PlanActivityInput } from "@/features/cases/hooks/useCaseActions";
+import { useCreatePlans, useStartExecution, useUpdatePlan, type PlanActivityInput } from "@/features/cases/hooks/useCaseActions";
 import { encodeActivityDescription, parseActivityDescription } from "@/features/cases/lib/activityMeta";
 import { shortPlanCode } from "@/features/cases/lib/planLabels";
-import { puedeModificarPlan } from "@/features/cases/lib/workflow";
+import { planTomadoPorArea, puedeModificarPlan } from "@/features/cases/lib/workflow";
 import { apiErrorMessage } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -179,6 +179,8 @@ export function PlanCard({ caso }: { caso: CaseDetail }) {
                 <InvBlock label="Descripción de evento" value={inv.hallazgos} />
                 <InvBlock label="Causa raíz" value={inv.causa_raiz} tone="critical" />
                 <InvBlock label="Conclusiones" value={inv.conclusiones} />
+                {/* Opcional en el formulario, así que solo se muestra si se llenó. */}
+                {inv.observaciones && <InvBlock label="Observaciones" value={inv.observaciones} />}
               </div>
             </div>
           )}
@@ -190,6 +192,8 @@ export function PlanCard({ caso }: { caso: CaseDetail }) {
               setFormOpen(true);
             }}
           />
+
+          <IniciarEjecucion caso={caso} />
 
           <div className="mt-4 flex items-center justify-end gap-2 flex-wrap">
             <Button
@@ -223,6 +227,56 @@ export function PlanCard({ caso }: { caso: CaseDetail }) {
         />
       )}
     </StageSection>
+  );
+}
+
+/**
+ * Adelanta el caso a Ejecución sin esperar a que todas las áreas acepten.
+ *
+ * Antes el expediente solo avanzaba cuando el último jefe aceptaba, así que un
+ * área podía estar ejecutando mientras el caso seguía figurando en "Plan de
+ * Acción". Con un plan aceptado ya hay trabajo real en marcha y SO puede
+ * reflejarlo. Los planes que faltan no se tocan: siguen esperando a su jefe.
+ */
+function IniciarEjecucion({ caso }: { caso: CaseDetail }) {
+  const iniciar = useStartExecution(caso.codigo_sop);
+
+  const aceptados = caso.planes_accion.filter((p) => planTomadoPorArea(p.catalogo_detalle?.nombre));
+  const pendientes = caso.planes_accion.length - aceptados.length;
+
+  // Sin ningún plan aceptado no hay ejecución que iniciar (el backend valida
+  // lo mismo); con todos aceptados el caso ya pasó solo a Ejecución.
+  if (aceptados.length === 0 || pendientes === 0) return null;
+
+  return (
+    <div className="mt-4 rounded-xl border border-brand-200 bg-brand-50/50 p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[12.5px] font-semibold text-brand-800">
+            {aceptados.length} de {caso.planes_accion.length} planes ya fueron aceptados
+          </p>
+          <p className="mt-1 text-[12px] text-ink-soft leading-relaxed">
+            Puede iniciar la ejecución ahora sin esperar a las demás áreas. Los {pendientes} plan(es) pendientes siguen
+            vigentes y su jefe podrá aceptarlos después, con el caso ya en Ejecución.
+          </p>
+          <p className="mt-1.5 text-[11.5px] text-ink-quiet">
+            Aceptados: {aceptados.map((p) => shortPlanCode(p.codigo_plan)).join(", ")}
+          </p>
+        </div>
+        <Button
+          size="sm"
+          disabled={iniciar.isPending}
+          onClick={() =>
+            iniciar.mutate(undefined, {
+              onSuccess: () => toast.success(`El caso pasó a Ejecución con ${aceptados.length} plan(es) en marcha`),
+              onError: (e) => toast.error(apiErrorMessage(e, "No se pudo iniciar la ejecución")),
+            })
+          }
+        >
+          <Rocket className="h-4 w-4" /> Iniciar ejecución
+        </Button>
+      </div>
+    </div>
   );
 }
 
@@ -281,12 +335,11 @@ function PlanDisplay({ caso, onEdit }: { caso: CaseDetail; onEdit: (idPlan: numb
           <div className="pt-3 mt-3 border-t border-line-soft">
             <p className="text-[11px] font-semibold tracking-wide uppercase text-ink-faint mb-2.5">Actividades del plan</p>
             <div className="space-y-2">
-              {plan.actividades_plan.map((it, i) => {
+              {plan.actividades_plan.map((it) => {
                 const parsed = parseActivityDescription(it.descripcion);
                 return (
                   <div key={it.id_actividad} className="rounded-lg bg-surface border border-line p-3 text-sm">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-semibold text-brand-700">ACT-{String(i + 1).padStart(2, "0")}</span>
+                    <div className="flex items-center justify-end mb-2">
                       <Pill tone={it.catalogo_detalle?.nombre === "Completado" ? "brand" : "neutral"} dot>
                         {it.catalogo_detalle?.nombre ?? "Pendiente"}
                       </Pill>
@@ -382,6 +435,22 @@ function PlanForm({
   const actividadesValidas = actividades.filter(actividadCompleta);
   const puedeEnviar = actividades.length > 0 && actividadesValidas.length === actividades.length;
 
+  /**
+   * Código que realmente va a recibir cada plan del formulario.
+   *
+   * El backend numera continuando desde los planes que el caso ya tiene
+   * (`createPlans` hace count + i + 1), así que la vista previa tiene que
+   * hacer lo mismo. Numerar por el índice del borrador mostraba PLA-01 en un
+   * caso reabierto que ya tenía dos planes cerrados, y el plan terminaba
+   * guardándose como PLA-03: la pantalla decía una cosa y la base otra.
+   *
+   * En edición no hay número que calcular: se muestra el código real del plan.
+   */
+  const codigoPlanPrevisto = (i: number) =>
+    plan
+      ? shortPlanCode(plan.codigo_plan)
+      : `PLA-${String(caso.planes_accion.length + i + 1).padStart(2, "0")}`;
+
   const updateActividad = (i: number, patch: Partial<PlanFormActivityInput>) =>
     setActividades((prev) => prev.map((a, idx) => (idx === i ? { ...a, ...patch } : a)));
 
@@ -453,7 +522,7 @@ function PlanForm({
             <div key={i} className="rounded-xl border border-line bg-white p-4">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <span className="font-mono text-[13px] font-semibold text-ink-faint">
-                  PLA-{String(i + 1).padStart(2, "0")}
+                  {codigoPlanPrevisto(i)}
                 </span>
                 {actividades.length > 1 && (
                   <button
@@ -582,7 +651,7 @@ function PlanForm({
                 <div key={i} className="rounded-lg border border-line p-3">
                   <div className="flex items-start justify-between gap-3">
                     <span className="font-mono text-[11.5px] font-semibold text-brand-700 shrink-0">
-                      PLA-{String(i + 1).padStart(2, "0")}
+                      {codigoPlanPrevisto(i)}
                     </span>
                     <Pill tone="brand" dot>{a.tipo_accion}</Pill>
                   </div>

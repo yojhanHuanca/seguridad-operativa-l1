@@ -218,6 +218,17 @@ export function useCompleteExecution(codigo: string) {
   });
 }
 
+/**
+ * SO arranca la Ejecución con los planes que ya aceptaron las áreas, sin
+ * esperar a las que faltan. Los planes pendientes siguen vigentes.
+ */
+export function useStartExecution(codigo: string) {
+  return useCaseMutation<void>(codigo, async () => {
+    const { data } = await api.post(`/cases/${encodeURIComponent(codigo)}/start-execution`);
+    return data;
+  });
+}
+
 export function useSendToVerification(codigo: string) {
   return useCaseMutation<void>(codigo, async () => {
     const { data } = await api.post(`/cases/${encodeURIComponent(codigo)}/send-verification`);

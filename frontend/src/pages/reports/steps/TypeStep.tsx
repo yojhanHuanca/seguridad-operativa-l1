@@ -1,20 +1,11 @@
 import type { UseFormReturn } from "react-hook-form";
-import { AlertTriangle, Flag, HelpCircle, Lightbulb, ShieldAlert, Wrench, type LucideIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Field } from "@/features/reports/components/Field";
 import { SelectedCheck } from "@/features/reports/components/SelectedCheck";
+import { iconoTipoReporte } from "@/features/reports/lib/tipoIcons";
 import { cn } from "@/lib/utils";
 import type { ReportFormValues } from "@/features/reports/schema";
 import type { CatalogGroup } from "@/features/reports/types";
-
-const ICONS: Record<string, LucideIcon> = {
-  Accidente: AlertTriangle,
-  Incidente: Flag,
-  "Condición Insegura": Wrench,
-  Hallazgo: Lightbulb,
-  "Acto Inseguro": ShieldAlert,
-  Otro: HelpCircle,
-};
 
 export function TypeStep({
   form,
@@ -37,7 +28,7 @@ export function TypeStep({
       <Field label="Tipo de reporte" required error={errors.id_tipo?.message}>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {items.map((item) => {
-            const Icon = ICONS[item.nombre] ?? HelpCircle;
+            const Icon = iconoTipoReporte(item.nombre);
             const active = tipoValue === item.id_detalle;
             return (
               <button

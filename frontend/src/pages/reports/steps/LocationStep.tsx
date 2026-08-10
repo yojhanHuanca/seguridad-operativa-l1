@@ -75,46 +75,44 @@ export function LocationStep({
         </div>
       </Field>
 
+      {/* El lugar específico (andén, boletería, coche…) solo aplica a una
+          estación; en patio taller no se pregunta. */}
       {tipoUbicacion === "estacion" && (
         <>
           <Field label="Estación" required error={errors.id_lugar?.message} className="mt-4">
             <CatalogSelect control={form.control} name="id_lugar" items={estaciones} placeholder="Selecciona una estación…" />
           </Field>
 
-
+          <Field label="Lugar específico" error={errors.id_lugar_especifico?.message} hint="Opcional" className="mt-4">
+            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+              {lugaresEspecificos.map((item) => {
+                const active = lugarEspecificoValue === item.id_detalle;
+                return (
+                  <button
+                    key={item.id_detalle}
+                    type="button"
+                    onClick={() =>
+                      form.setValue("id_lugar_especifico", active ? undefined : item.id_detalle, { shouldValidate: true })
+                    }
+                    className={cn(
+                      "flex h-11 items-center gap-2 rounded-lg border px-3.5 text-[12.5px] font-medium transition-all duration-200 active:scale-[0.97]",
+                      active
+                        ? "border-brand-600 bg-brand-50 text-brand-800"
+                        : "border-border bg-card text-ink-soft hover:border-ink-faint hover:bg-secondary/40"
+                    )}
+                  >
+                    {item.nombre}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
         </>
       )}
 
       {tipoUbicacion === "patio_taller" && (
         <Field label="Patio Taller" required error={errors.id_lugar?.message} className="mt-4">
           <CatalogSelect control={form.control} name="id_lugar" items={patios} placeholder="Selecciona un patio…" />
-        </Field>
-      )}
-
-      {tipoUbicacion && (
-        <Field label="Lugar específico" error={errors.id_lugar_especifico?.message} hint="Opcional" className="mt-4">
-          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
-            {lugaresEspecificos.map((item) => {
-              const active = lugarEspecificoValue === item.id_detalle;
-              return (
-                <button
-                  key={item.id_detalle}
-                  type="button"
-                  onClick={() =>
-                    form.setValue("id_lugar_especifico", active ? undefined : item.id_detalle, { shouldValidate: true })
-                  }
-                  className={cn(
-                    "flex h-11 items-center gap-2 rounded-lg border px-3.5 text-[12.5px] font-medium transition-all duration-200 active:scale-[0.97]",
-                    active
-                      ? "border-brand-600 bg-brand-50 text-brand-800"
-                      : "border-border bg-card text-ink-soft hover:border-ink-faint hover:bg-secondary/40"
-                  )}
-                >
-                  {item.nombre}
-                </button>
-              );
-            })}
-          </div>
         </Field>
       )}
     </Card>

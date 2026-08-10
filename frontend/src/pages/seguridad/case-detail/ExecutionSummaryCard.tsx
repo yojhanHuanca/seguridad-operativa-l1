@@ -23,7 +23,7 @@ import {
   useSendToVerification,
 } from "@/features/cases/hooks/useCaseActions";
 import { parseActivityDescription } from "@/features/cases/lib/activityMeta";
-import { compactPlanCodes, shortPlanCode } from "@/features/cases/lib/planLabels";
+import { compactPlanCodes, numeroDePlan, shortPlanCode } from "@/features/cases/lib/planLabels";
 import { planEvidenceFiles, timelineBelongsToPlan } from "@/features/cases/lib/planEvidence";
 import { ACTOR_ROL_LABEL } from "@/features/cases/lib/workflow";
 import { apiErrorMessage } from "@/lib/api";
@@ -312,7 +312,10 @@ function PlanExecutionBoard({
               >
                 <span className="flex min-w-0 items-center gap-2">
                   <span className="font-mono text-[14px] font-bold text-brand-700">{shortPlanCode(plan.codigo_plan)}</span>
-                  <span className="text-[11px] text-ink-faint">Plan {index + 1}</span>
+                  {/* El número sale del código del plan, no de la posición en
+                      la lista: si algún plan falta, la posición y el código
+                      dejan de coincidir y la fila diría "Plan 2 · PLA-03". */}
+                  <span className="text-[11px] text-ink-faint">Plan {numeroDePlan(plan.codigo_plan) ?? index + 1}</span>
                   <Pill tone={estadoPlan.tone} dot>{estadoPlan.label}</Pill>
                   {pendienteProrroga && <Pill tone="warning" dot>Prórroga pendiente</Pill>}
                 </span>
@@ -1347,6 +1350,15 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
         </p>
       </div>
 
+      <div className="mt-4 pt-4 border-t border-line-soft flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-[11.5px] text-ink-quiet">
+          Reabrir conserva el historial y permite elegir la etapa exacta a corregir.
+        </p>
+        <Button variant="outline" size="sm" onClick={() => setReopenOpen(true)}>
+          <CornerUpLeft className="h-4 w-4" /> Reabrir caso
+        </Button>
+      </div>
+
       <div className="grid sm:grid-cols-2 gap-3">
         {resumen.map((r) => (
           <Card key={r.label} padded={false} className="p-3.5 shadow-none">
@@ -1396,15 +1408,6 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
             </li>
           ))}
         </ol>
-      </div>
-
-      <div className="mt-4 pt-4 border-t border-line-soft flex items-center justify-between gap-3 flex-wrap">
-        <p className="text-[11.5px] text-ink-quiet">
-          Reabrir conserva el historial y permite elegir la etapa exacta a corregir.
-        </p>
-        <Button variant="outline" size="sm" onClick={() => setReopenOpen(true)}>
-          <CornerUpLeft className="h-4 w-4" /> Reabrir caso
-        </Button>
       </div>
 
       <Modal

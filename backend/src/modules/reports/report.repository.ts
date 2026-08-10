@@ -122,6 +122,10 @@ export class ReportRepository {
           const codigo_sop = `SOP ${String(totalAnio + 1).padStart(2, "0")}-${year}`;
 
           const esIdentificado = dto.modalidad === "identificado";
+          // Registrado por el analista desde el panel de SO: el caso nace con
+          // su firma en la bitácora en vez de la del reportante de campo.
+          const esRegistroSO = dto.origen === "seguridad_operativa";
+          const nombreReportante = dto.nombre_reportante?.trim() || null;
           const ubicacionTitulo = [lugar.nombre, lugarEspecifico?.nombre].filter(Boolean).join(" · ");
           const titulo = `${tipoReporte.nombre} en ${ubicacionTitulo}`;
 
@@ -136,7 +140,7 @@ export class ReportRepository {
               tipo: tipoDefault.id_detalle,
               descripcion: dto.descripcion,
               tipo_sop: tipoSopDefault.id_detalle,
-              nombre_reportante: esIdentificado ? dto.nombre_reportante?.trim() || null : null,
+              nombre_reportante: esIdentificado ? nombreReportante : null,
               correo_reportante: esIdentificado ? dto.correo_reportante?.trim().toLowerCase() || null : null,
               telefono_reportante: esIdentificado ? dto.telefono_reportante?.trim() || null : null,
               // responsable_hallazgo / created_by: TODO(auth) — asignar req.user?.id_usuario cuando exista login real.
@@ -148,14 +152,18 @@ export class ReportRepository {
             data: { id_evento: evento.id_evento, id_caso: caso.id_caso },
           });
 
+          const actorReportante = esIdentificado ? nombreReportante || "Reportante Identificado" : "Reporte Anónimo";
+
           await tx.timeline_caso.create({
             data: {
               id_caso: caso.id_caso,
               kind: "creado",
-              actor: esIdentificado ? dto.nombre_reportante?.trim() || "Reportante Identificado" : "Reporte Anónimo",
-              actor_rol: "reportante",
-              titulo: "Reporte registrado por trabajador",
-              detalle: `${codigo_sop} creado. Enviado a la bandeja de Seguridad Operativa.`,
+              actor: esRegistroSO ? nombreReportante || "Seguridad Operativa" : actorReportante,
+              actor_rol: esRegistroSO ? "seguridad" : "reportante",
+              titulo: esRegistroSO ? "Reporte registrado por Seguridad Operativa" : "Reporte registrado por trabajador",
+              detalle: esRegistroSO
+                ? `${codigo_sop} creado desde el panel de Seguridad Operativa. Queda en la bandeja para su recepción.`
+                : `${codigo_sop} creado. Enviado a la bandeja de Seguridad Operativa.`,
             },
           });
 
@@ -164,7 +172,11 @@ export class ReportRepository {
             tipo: "reporte_nuevo",
             titulo: `Nuevo reporte ${codigo_sop}`,
             mensaje: `${titulo}. Registrado por ${
-              esIdentificado ? dto.nombre_reportante?.trim() || "un reportante identificado" : "un reportante anónimo"
+              esRegistroSO
+                ? `${nombreReportante || "Seguridad Operativa"} (Seguridad Operativa)`
+                : esIdentificado
+                  ? nombreReportante || "un reportante identificado"
+                  : "un reportante anónimo"
             }. Pendiente de recepción.`,
           });
 

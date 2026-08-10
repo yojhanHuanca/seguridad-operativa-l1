@@ -200,6 +200,15 @@ export class CaseController {
     }
   }
 
+  static async startExecution(req: Request, res: Response) {
+    try {
+      const caso = await CaseService.startExecution(param(req, "codigo"));
+      return res.json(ApiResponse.success("El caso pasó a Ejecución", caso));
+    } catch (error) {
+      return handleError(res, error, "Error al iniciar la ejecución del caso");
+    }
+  }
+
   static async sendToVerification(req: Request, res: Response) {
     try {
       const caso = await CaseService.sendToVerification(param(req, "codigo"));
@@ -302,6 +311,21 @@ export class CaseController {
       return res.status(201).json(ApiResponse.success("Evidencia adjuntada correctamente", anexos));
     } catch (error) {
       return handleError(res, error, "Error al adjuntar evidencia");
+    }
+  }
+
+  static async addPlanUpdate(req: Request, res: Response) {
+    try {
+      const files = ((req.files as Express.Multer.File[] | undefined) ?? []).map((f) => ({
+        originalname: f.originalname,
+        filename: f.filename,
+        mimetype: f.mimetype,
+        size: f.size,
+      }));
+      const resultado = await CaseService.addPlanUpdate(param(req, "idPlan"), req.body, files);
+      return res.status(201).json(ApiResponse.success("Actualización registrada correctamente", resultado));
+    } catch (error) {
+      return handleError(res, error, "Error al registrar la actualización del plan");
     }
   }
 

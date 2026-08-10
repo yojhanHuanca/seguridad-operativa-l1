@@ -42,10 +42,12 @@ export function useAcceptPlanById() {
 }
 
 export function useCompleteExecutionByPlan() {
-  return usePlanMutation<{ id_plan: number; actor?: string; descripcion: string }>(async ({ id_plan, actor, descripcion }) => {
-    const { data } = await api.post(`/cases/planes/${id_plan}/complete-execution`, { actor, descripcion });
-    return data;
-  });
+  return usePlanMutation<{ id_plan: number; actor?: string; descripcion: string; comentario?: string }>(
+    async ({ id_plan, actor, descripcion, comentario }) => {
+      const { data } = await api.post(`/cases/planes/${id_plan}/complete-execution`, { actor, descripcion, comentario });
+      return data;
+    }
+  );
 }
 
 export function useAddPlanEvidence() {
@@ -58,6 +60,25 @@ export function useAddPlanEvidence() {
     });
     return data;
   });
+}
+
+/**
+ * Actualización adicional sobre un plan ya cerrado por el área: descripción
+ * nueva y evidencias nuevas, sin tocar lo ya registrado.
+ */
+export function useAddPlanUpdate() {
+  return usePlanMutation<{ id_plan: number; descripcion: string; files: File[]; actor?: string }>(
+    async ({ id_plan, descripcion, files, actor }) => {
+      const form = new FormData();
+      form.append("descripcion", descripcion);
+      for (const file of files) form.append("evidencia", file);
+      if (actor) form.append("actor", actor);
+      const { data } = await api.post(`/cases/planes/${id_plan}/actualizacion`, form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return data;
+    }
+  );
 }
 
 export function useRequestPlanExtension() {

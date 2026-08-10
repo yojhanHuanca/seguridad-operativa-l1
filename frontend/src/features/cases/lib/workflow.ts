@@ -23,6 +23,7 @@ export type CaseAction =
   | "registrar_investigacion"
   | "crear_plan"
   | "modificar_plan"
+  | "iniciar_ejecucion"
   | "resolver_prorroga"
   | "cerrar"
   | "devolver_ejecucion"
@@ -86,8 +87,9 @@ const ESTADOS: Record<string, EstadoSpec> = {
   },
   "Plan de Acción": {
     panel: "plan",
-    acciones: ["crear_plan", "modificar_plan", "retroceder", ...BITACORA],
-    siguiente: "El plan queda pendiente de aceptación del Jefe de Área; al aceptarlo arranca la Ejecución.",
+    acciones: ["crear_plan", "modificar_plan", "iniciar_ejecucion", "retroceder", ...BITACORA],
+    siguiente:
+      "El plan queda pendiente de aceptación del Jefe de Área. Con al menos uno aceptado, SO puede iniciar la Ejecución sin esperar al resto.",
   },
   Ejecución: {
     panel: "ejecucion",
@@ -148,6 +150,21 @@ export function siguientePaso(estado: string): string | null {
  */
 export function puedeModificarPlan(estadoPlan: string | null | undefined): boolean {
   return estadoPlan === "Pendiente" || estadoPlan === "Enviado" || estadoPlan === "Rechazado";
+}
+
+/**
+ * El área ya tomó el plan: lo aceptó y desde ahí en adelante (en ejecución,
+ * finalizado o cerrado). Es el mismo criterio que aplica el backend en
+ * `startExecution` para saber si hay ejecución real en marcha, y por eso se
+ * compara sin acentos: los nombres vienen del catálogo y no siempre coinciden
+ * carácter por carácter ("Ejecución" / "En Ejecucion").
+ */
+export function planTomadoPorArea(estadoPlan: string | null | undefined): boolean {
+  const e = (estadoPlan ?? "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+  return e.includes("aceptad") || e.includes("ejecucion") || e.includes("finaliz") || e.includes("cerrad");
 }
 
 /** Etiqueta legible del rol que ejecutó una acción en la bitácora. */

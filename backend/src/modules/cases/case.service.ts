@@ -44,12 +44,22 @@ const actorSchema = z.object({
   actor: z.string().trim().max(150).optional().default(""),
 });
 
+const planUpdateSchema = z.object({
+  actor: z.string().trim().max(150).optional().default(""),
+  descripcion: z.preprocess(
+    (value) => (typeof value === "string" ? value : ""),
+    z.string().trim().min(10, "Describa la actualización").max(2000)
+  ),
+});
+
 const completePlanSchema = z.object({
   actor: z.string().trim().max(150).optional().default(""),
   descripcion: z.preprocess(
     (value) => (typeof value === "string" ? value : ""),
     z.string().trim().min(10, "Describa el cierre de ejecución").max(2000)
   ),
+  /** Opcional a pedido del cliente: acompaña al cierre, no lo bloquea. */
+  comentario: z.string().trim().max(1000).optional().nullable(),
 });
 
 const activityUpdateSchema = z.object({
@@ -227,6 +237,12 @@ export class CaseService {
     return CaseRepository.closeCase(caso.id_caso, dto.nota);
   }
 
+  /** SO arranca la Ejecución con los planes ya aceptados, sin esperar al resto. */
+  static async startExecution(codigo: string) {
+    const caso = await getCasoBasico(codigo);
+    return CaseRepository.startExecution(caso.id_caso);
+  }
+
   static async acceptPlan(codigo: string, rawBody: unknown) {
     const dto = actorSchema.parse(rawBody ?? {});
     const caso = await getCasoBasico(codigo);
@@ -243,7 +259,12 @@ export class CaseService {
   static async completeExecutionByPlan(idPlan: string, rawBody: unknown) {
     const dto = completePlanSchema.parse(rawBody ?? {});
     const id = idPositivo.parse(idPlan);
-    return CaseRepository.completeExecutionByPlan(id, dto.actor || "Jefe de Área", dto.descripcion);
+    return CaseRepository.completeExecutionByPlan(
+      id,
+      dto.actor || "Jefe de Área",
+      dto.descripcion,
+      dto.comentario?.trim() || null
+    );
   }
 
   static async reviewFinalPlanById(idPlan: string, rawBody: unknown) {
@@ -334,6 +355,13 @@ export class CaseService {
   static async addEvidence(codigo: string, files: UploadedFile[]) {
     const caso = await getCasoBasico(codigo);
     return CaseRepository.addEvidence(caso.id_caso, files);
+  }
+
+  /** Actualización adicional del jefe sobre un plan ya cerrado por el área. */
+  static async addPlanUpdate(idPlan: string, rawBody: unknown, files: UploadedFile[]) {
+    const dto = planUpdateSchema.parse(rawBody ?? {});
+    const id = idPositivo.parse(idPlan);
+    return CaseRepository.addPlanUpdate(id, dto.descripcion, files, dto.actor || "Jefe de Área");
   }
 
   static async addEvidenceByPlan(idPlan: string, rawBody: unknown, files: UploadedFile[]) {

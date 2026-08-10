@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/design-system/primitives/Button";
 import { Field, Textarea } from "@/design-system/primitives/Input";
 import { useAddComment } from "@/features/cases/hooks/useCaseActions";
+import { humanEvidenceDetail } from "@/features/cases/lib/planEvidence";
 import { compactPlanCodes } from "@/features/cases/lib/planLabels";
 import { ACTOR_ROL_LABEL } from "@/features/cases/lib/workflow";
 import { apiErrorMessage } from "@/lib/api";
@@ -107,7 +108,11 @@ export function TimelinePanel({ caso, puedeComentar = true }: { caso: CaseDetail
                   </span>
                 </div>
                 {t.detalle && (
-                  <p className="text-[12px] text-ink-soft mt-1.5 leading-relaxed bg-surface/60 rounded-md p-2">{compactPlanCodes(t.detalle)}</p>
+                  // Los eventos que enlazan evidencias llevan un payload JSON
+                  // técnico al final del detalle; aquí solo va el texto legible.
+                  <p className="text-[12px] text-ink-soft mt-1.5 leading-relaxed bg-surface/60 rounded-md p-2">
+                    {compactPlanCodes(humanEvidenceDetail(t.detalle))}
+                  </p>
                 )}
               </div>
             );

@@ -83,6 +83,8 @@ export type TimelineKind =
   | "ejecucion"
   | "ampliacion"
   | "seguimiento"
+  /** Actualización adicional que el jefe apila sobre un plan ya cerrado. */
+  | "actualizacion"
   | "cierre"
   | "reapertura"
   | "retroceso"

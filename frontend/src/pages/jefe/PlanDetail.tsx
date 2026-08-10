@@ -11,12 +11,9 @@ import {
   ChevronUp,
   Check,
   ClipboardList,
-  Download,
   FileText,
   Image as ImageIcon,
-  MessageSquare,
   Microscope,
-  Plus,
   Save,
   Timer,
   Upload,
@@ -32,11 +29,17 @@ import { Progress } from "@/design-system/primitives/Progress";
 import { Modal } from "@/design-system/primitives/Modal";
 import { Field, Input, Textarea } from "@/design-system/primitives/Input";
 import { parseActivityDescription } from "@/features/cases/lib/activityMeta";
-import { compactPlanCodes, shortPlanCode } from "@/features/cases/lib/planLabels";
-import { planEvidenceFiles as extractPlanEvidenceFiles, timelineBelongsToPlan } from "@/features/cases/lib/planEvidence";
+import { shortPlanCode } from "@/features/cases/lib/planLabels";
+import {
+  evidenciasDelEvento,
+  humanEvidenceDetail,
+  planEvidenceFiles as extractPlanEvidenceFiles,
+  timelineBelongsToPlan,
+} from "@/features/cases/lib/planEvidence";
 import {
   useAcceptPlanById,
   useAddPlanEvidence,
+  useAddPlanUpdate,
   useCompleteExecutionByPlan,
   usePlans,
   useRequestPlanExtension,
@@ -44,7 +47,7 @@ import {
 } from "@/features/plans/hooks/usePlans";
 import type { RiskLevel } from "@/features/cases/domain";
 import { apiErrorMessage } from "@/lib/api";
-import { daysUntil, formatDate, formatDateTime } from "@/lib/format";
+import { daysUntil, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { AnexoPlanCaso, PlanActividad, PlanItem } from "@/features/plans/types";
 
@@ -184,50 +187,6 @@ function detailStatus(flow: ReturnType<typeof planFlow>, progreso: number): { la
   return { label: "Pendiente", tone: "info" };
 }
 
-function nextActivityForProgress(plan: PlanItem): PlanActividad | null {
-  return (
-    plan.actividades_plan.find((actividad) => activityProgressValue(actividad) < 100) ??
-    plan.actividades_plan[0] ??
-    null
-  );
-}
-
-function nextAutoActivityState(activity: PlanActividad): string {
-  return activityProgressValue(activity) >= 50 ? "Completado" : "En progreso";
-}
-
-function executionComments(plan: PlanItem) {
-  const activityComments = plan.actividades_plan
-    .flatMap((actividad) =>
-      (actividad.seguimientos ?? []).map((seguimiento) => ({
-        id: `seg-${seguimiento.id_seguimiento}`,
-        role: "jefe" as const,
-        text: seguimiento.comentario ?? "Seguimiento sin comentario",
-        actor: seguimiento.usuarios?.nombre ?? actividad.usuarios?.nombre ?? "Jefe de Área",
-        meta: [
-          parseActivityDescription(actividad.descripcion).descripcion,
-          seguimiento.porcentaje ? `${seguimiento.porcentaje}%` : null,
-        ].filter(Boolean).join(" · "),
-        fecha: seguimiento.fecha,
-      }))
-    );
-
-  const soComments = planTimeline(plan)
-    .filter((evento) => evento.actor_rol === "seguridad" && evento.kind === "comentario")
-    .map((evento) => ({
-      id: `evt-${evento.id_evento}`,
-      role: "seguridad" as const,
-      text: evento.detalle ?? evento.titulo,
-      actor: evento.actor || "Seguridad Operativa",
-      meta: "Respuesta de Seguridad Operativa",
-      fecha: evento.fecha,
-    }));
-
-  return [...activityComments, ...soComments].sort(
-    (a, b) => new Date(b.fecha ?? 0).getTime() - new Date(a.fecha ?? 0).getTime()
-  );
-}
-
 function eventBelongsToPlan(plan: PlanItem, evento: PlanItem["casos_sop"]["timeline_caso"][number]) {
   return timelineBelongsToPlan(evento, plan);
 }
@@ -236,8 +195,81 @@ function planTimeline(plan: PlanItem) {
   return (plan.casos_sop.timeline_caso ?? []).filter((evento) => eventBelongsToPlan(plan, evento));
 }
 
-function planEvidenceFiles(plan: PlanItem): AnexoPlanCaso[] {
-  return extractPlanEvidenceFiles(plan, plan.casos_sop.timeline_caso ?? [], plan.casos_sop.anexos_caso ?? []);
+/** Tope de actualizaciones que el jefe puede apilar; el backend valida lo mismo. */
+const MAX_ACTUALIZACIONES = 4;
+
+interface PlanUpdate {
+  id: string;
+  etiqueta: string;
+  descripcion: string;
+  actor: string;
+  fecha: string | null;
+  evidencias: AnexoPlanCaso[];
+}
+
+/**
+ * Historial de actualizaciones del plan, de la más antigua a la más reciente.
+ *
+ * La primera es la descripción de cierre que el jefe mandó al finalizar; las
+ * siguientes son las que apiló después. Todas son de solo lectura: una vez
+ * enviadas no se editan ni se borran, por eso se arman desde el timeline y no
+ * desde un estado editable.
+ */
+function planUpdates(plan: PlanItem): PlanUpdate[] {
+  const anexos = plan.casos_sop.anexos_caso ?? [];
+  const eventos = planTimeline(plan);
+
+  const original = eventos
+    .filter((e) => e.kind === "seguimiento" && normalize(e.titulo).includes("finalizado por el area"))
+    .map((e) => ({
+      id: `cierre-${e.id_evento}`,
+      etiqueta: "Actualización original",
+      descripcion: (e.detalle ?? "").replace(/^Descripción final:\s*/i, "").trim(),
+      actor: e.actor || "Jefe de Área",
+      fecha: e.fecha,
+      evidencias: [] as AnexoPlanCaso[],
+    }));
+
+  // El timeline llega en orden descendente, así que hay que ordenar ANTES de
+  // numerar: si no, la actualización más nueva quedaba etiquetada como la 1.
+  // A igualdad de fecha desempata el id_evento, que sí es incremental.
+  const adicionales = eventos
+    .filter((e) => e.kind === "actualizacion")
+    .sort((a, b) => +new Date(a.fecha ?? 0) - +new Date(b.fecha ?? 0) || a.id_evento - b.id_evento)
+    .map((e, i) => ({
+      id: `act-${e.id_evento}`,
+      etiqueta: `Actualización ${i + 1}`,
+      descripcion: humanEvidenceDetail(e.detalle),
+      actor: e.actor || "Jefe de Área",
+      fecha: e.fecha,
+      evidencias: evidenciasDelEvento(e, anexos),
+    }));
+
+  // Las evidencias que no vinieron con una actualización adicional (las que el
+  // jefe subió en el cierre) pertenecen a la original: sin esto quedaban
+  // guardadas pero sin mostrarse en ninguna parte de la pantalla.
+  const yaAsignadas = new Set(adicionales.flatMap((a) => a.evidencias.map((x) => x.id_anexo)));
+  const sueltas = extractPlanEvidenceFiles(plan, plan.casos_sop.timeline_caso ?? [], anexos).filter(
+    (a) => !yaAsignadas.has(a.id_anexo)
+  );
+
+  if (sueltas.length > 0) {
+    if (original.length > 0) original[0]!.evidencias = sueltas;
+    else
+      return [
+        {
+          id: "evidencias-plan",
+          etiqueta: "Evidencias del plan",
+          descripcion: "Evidencias cargadas durante la ejecución.",
+          actor: plan.usuarios?.nombre ?? "Jefe de Área",
+          fecha: sueltas[0]?.fecha_subida ?? null,
+          evidencias: sueltas,
+        },
+        ...adicionales,
+      ];
+  }
+
+  return [...original, ...adicionales];
 }
 
 function planWeight(plan: PlanItem): number {
@@ -289,29 +321,80 @@ function IconoArchivo({ tipo }: { tipo: string | null }) {
   return <FileText className="h-4.5 w-4.5" />;
 }
 
-function FilaAnexo({ anexo }: { anexo: AnexoPlanCaso }) {
+/**
+ * Miniatura real del adjunto en vez del icono genérico.
+ *
+ * Antes toda evidencia se veía igual —un cuadradito con el icono del tipo—,
+ * así que al subir una foto no se veía la foto. Ahora la imagen se muestra, el
+ * video renderiza su primer fotograma con `preload="metadata"` (sin descargar
+ * el archivo entero) y el PDF su primera página con el visor nativo. Si algo
+ * no carga, cae al icono de siempre.
+ *
+ * El contenido va con `pointer-events-none` para que el clic siga yendo al
+ * enlace que abre el archivo completo.
+ */
+function VistaPreviaAnexo({ anexo }: { anexo: AnexoPlanCaso }) {
+  const [falloCarga, setFalloCarga] = useState(false);
+  const url = anexo.ruta_archivo ? `${API_ORIGIN}${anexo.ruta_archivo}` : "";
+  const tipo = anexo.tipo_archivo ?? "";
+  const puedePrevisualizar = !!url && !falloCarga;
+
+  const marco = "grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-lg bg-surface-2 text-ink-soft";
+
+  if (puedePrevisualizar && tipo.startsWith("image/")) {
+    return (
+      <div className={marco}>
+        <img src={url} alt={anexo.nombre_archivo ?? "Evidencia"} loading="lazy" onError={() => setFalloCarga(true)} className="h-full w-full object-cover" />
+      </div>
+    );
+  }
+
+  if (puedePrevisualizar && tipo.startsWith("video/")) {
+    return (
+      <div className={marco}>
+        <video src={url} muted playsInline preload="metadata" onError={() => setFalloCarga(true)} className="pointer-events-none h-full w-full object-cover" />
+      </div>
+    );
+  }
+
+  if (puedePrevisualizar && tipo === "application/pdf") {
+    return (
+      <div className={marco}>
+        {/* El visor nativo se escala para que entre la primera página. */}
+        <iframe
+          src={`${url}#toolbar=0&navpanes=0&view=FitH`}
+          title={anexo.nombre_archivo ?? "Documento"}
+          tabIndex={-1}
+          className="pointer-events-none h-[224px] w-[224px] origin-top-left scale-[0.25] border-0 bg-white"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={marco}>
+      <IconoArchivo tipo={anexo.tipo_archivo} />
+    </div>
+  );
+}
+
+/**
+ * Versión compacta de la evidencia: solo la miniatura, para mostrarla en fila
+ * debajo de los botones de carga sin que la tarjeta crezca a lo alto.
+ */
+function MiniaturaAnexo({ anexo }: { anexo: AnexoPlanCaso }) {
   return (
     <a
       href={`${API_ORIGIN}${anexo.ruta_archivo ?? ""}`}
       target="_blank"
       rel="noreferrer"
+      title={anexo.nombre_archivo ?? "Archivo adjunto"}
       className={cn(
-        "group flex items-center gap-2.5 rounded-lg p-2.5 transition-colors hover:bg-surface",
+        "block rounded-lg ring-1 ring-line-soft transition-shadow hover:ring-brand-300",
         !anexo.ruta_archivo && "pointer-events-none opacity-60"
       )}
     >
-      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-surface-2 text-ink-soft">
-        <IconoArchivo tipo={anexo.tipo_archivo} />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-[13px] font-medium text-ink">{anexo.nombre_archivo ?? "Archivo adjunto"}</p>
-        <p className="text-[11.5px] text-ink-quiet">
-          {anexo.peso ? `${anexo.peso} KB` : ""}
-          {anexo.peso && anexo.fecha_subida ? " · " : ""}
-          {anexo.fecha_subida ? formatDateTime(anexo.fecha_subida) : ""}
-        </p>
-      </div>
-      <Download className="h-3.5 w-3.5 text-ink-faint opacity-0 transition-opacity group-hover:opacity-100" />
+      <VistaPreviaAnexo anexo={anexo} />
     </a>
   );
 }
@@ -531,10 +614,15 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
   const fin = planEnd(plan);
   const priority = priorityInfo(plan);
   const revision = reviewState(flow);
-  const anexos = planEvidenceFiles(plan);
-  const comentarios = executionComments(plan);
-  const targetActivity = nextActivityForProgress(plan);
-  const evidenciasBloqueadas = flow.finalizado || flow.cerrado || flow.rechazado || flow.enVerificacion || flow.prorrogaPendiente;
+  const actualizaciones = planUpdates(plan);
+  // Lo adjuntado al plan que todavía no forma parte de una actualización
+  // adicional: es lo que el jefe acaba de subir en el formulario de cierre.
+  const evidenciasDelCierre = extractPlanEvidenceFiles(
+    plan,
+    plan.casos_sop.timeline_caso ?? [],
+    plan.casos_sop.anexos_caso ?? []
+  );
+  const adicionales = actualizaciones.filter((a) => a.etiqueta !== "Actualización original").length;
   const vencido = daysUntil(limite) < 0 && !flow.finalizado && !flow.cerrado && !flow.rechazado && !flow.enVerificacion;
 
   const acceptPlan = useAcceptPlanById();
@@ -542,48 +630,70 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
   const requestExt = useRequestPlanExtension();
   const updateActivity = useUpdateActivity();
   const addEvidence = useAddPlanEvidence();
+  const addUpdate = useAddPlanUpdate();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const finalDescriptionDraftKey = useMemo(() => `sigma-l1-plan-${plan.id_plan}-descripcion-cierre`, [plan.id_plan]);
   const [subiendo, setSubiendo] = useState(false);
   const [fileAccept, setFileAccept] = useState(ACCEPT);
-  const [executionComment, setExecutionComment] = useState("");
   const [finalDescription, setFinalDescription] = useState("");
+  const [comentarioCierre, setComentarioCierre] = useState("");
+  const [updateOpen, setUpdateOpen] = useState(false);
+  const [updateDescription, setUpdateDescription] = useState("");
+  const [updateFiles, setUpdateFiles] = useState<File[]>([]);
+  const [updateAccept, setUpdateAccept] = useState(ACCEPT);
+  const updateFileRef = useRef<HTMLInputElement>(null);
   const [extOpen, setExtOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState({ info: true, execution: true });
   const [nuevaFecha, setNuevaFecha] = useState(new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10));
   const [justificacion, setJustificacion] = useState("");
-  const puedeFinalizar = flow.puedeTrabajar && progreso >= 100;
-  const hasSaveableChanges = flow.puedeTrabajar && (executionComment.trim().length >= 3 || finalDescription.trim().length > 0);
+  // Ya no se exige 100% de avance: el cliente indicó que un plan puede
+  // ejecutarse y finalizarse el mismo día, así que el cierre depende solo del
+  // estado del flujo y de que haya una descripción.
+  const puedeFinalizar = flow.puedeTrabajar;
+  const hasSaveableChanges = flow.puedeTrabajar && finalDescription.trim().length > 0;
 
   useEffect(() => {
     setFinalDescription(window.localStorage.getItem(finalDescriptionDraftKey) ?? "");
   }, [finalDescriptionDraftKey]);
 
-  const toggleSection = (section: keyof typeof expandedSections) => {
-    setExpandedSections((current) => ({ ...current, [section]: !current[section] }));
+  const openUpdatePicker = (accept: string) => {
+    setUpdateAccept(accept);
+    window.setTimeout(() => updateFileRef.current?.click(), 0);
   };
 
-  const registerProgress = (comentario: string) => {
-    const texto = comentario.trim();
-    if (!targetActivity || !texto || !flow.puedeTrabajar) return;
+  const cerrarActualizacion = () => {
+    setUpdateOpen(false);
+    setUpdateDescription("");
+    setUpdateFiles([]);
+  };
 
-    const estado = nextAutoActivityState(targetActivity);
-    updateActivity.mutate(
-      { id_actividad: targetActivity.id_actividad, estado, comentario: texto, actor: ACTOR },
+  const enviarActualizacion = () => {
+    addUpdate.mutate(
+      {
+        id_plan: plan.id_plan,
+        descripcion: updateDescription.trim(),
+        files: updateFiles,
+        actor: plan.usuarios?.nombre ?? "Jefe de Área",
+      },
       {
         onSuccess: () => {
-          toast.success(estado === "Completado" ? "Avance completado" : "Avance registrado");
-          setExecutionComment("");
+          toast.success("Actualización registrada y bloqueada");
+          cerrarActualizacion();
         },
-        onError: (err) => toast.error(apiErrorMessage(err, "No se pudo actualizar la actividad")),
+        onError: (e) => toast.error(apiErrorMessage(e, "No se pudo registrar la actualización")),
       }
     );
   };
 
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections((current) => ({ ...current, [section]: !current[section] }));
+  };
+
+
   const finalizePlan = () => {
     if (!puedeFinalizar) {
-      toast.error("Completa todas las actividades antes de finalizar el plan");
+      toast.error("El estado actual del plan no permite finalizarlo");
       return;
     }
 
@@ -594,12 +704,13 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
     }
 
     completeExec.mutate(
-      { id_plan: plan.id_plan, actor: ACTOR, descripcion },
+      { id_plan: plan.id_plan, actor: ACTOR, descripcion, comentario: comentarioCierre.trim() || undefined },
       {
         onSuccess: () => {
           toast.success("Plan enviado a Seguridad Operativa para revisión");
           window.localStorage.removeItem(finalDescriptionDraftKey);
           setFinalDescription("");
+          setComentarioCierre("");
         },
         onError: (e) => toast.error(apiErrorMessage(e, "No se pudo finalizar el plan")),
       }
@@ -613,11 +724,6 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
     }
 
     let saved = false;
-
-    if (executionComment.trim().length >= 3) {
-      registerProgress(executionComment);
-      saved = true;
-    }
 
     const descripcion = finalDescription.trim();
     if (descripcion) {
@@ -770,7 +876,6 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
                 <InfoRow label="Tiempo estimado" value={estimatedDuration(inicio, fin)} />
                 <InfoRow label="Prioridad" value={<Pill tone={priority.tone} dot>{priority.label}</Pill>} />
                 <InfoRow label="Estado de revisión" value={<Pill tone={revision.tone} dot>{revision.label}</Pill>} />
-                <InfoRow label="Responsable" value={plan.usuarios.nombre} />
                 <InfoRow label="Fecha de envío" value={plan.created_at ? formatDate(plan.created_at) : formatDate(plan.fecha_plan)} />
                 {caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle?.codigo && (
                   <InfoRow
@@ -788,134 +893,72 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
               <div>
                 <div className="mb-4 flex items-center gap-3">
                   <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-2 text-brand-700">
-                    <Microscope className="h-4.5 w-4.5" />
-                  </span>
-                  <h2 className="text-[17px] font-semibold text-ink">Investigación</h2>
-                </div>
-                {caso.investigacion_caso ? (
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <InfoTile label="Causa raíz" value={caso.investigacion_caso.causa_raiz} />
-                    <InfoTile label="Descripción técnica" value={plan.descripcion || caso.investigacion_caso.conclusiones} />
-                    <InfoTile label="Hallazgos" value={caso.investigacion_caso.hallazgos} wide />
-                  </div>
-                ) : (
-                  <InfoTile label="Investigación" value="La investigación del caso aún no está registrada." wide />
-                )}
-              </div>
-
-              <div>
-                <div className="mb-4 flex items-center gap-3">
-                  <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-2 text-brand-700">
                     <ClipboardList className="h-4.5 w-4.5" />
                   </span>
                   <h2 className="text-[17px] font-semibold text-ink">Actividades del plan</h2>
                 </div>
                 <div className="rounded-xl border border-line-soft bg-surface/60 px-4 py-4">
-                  <div className="grid gap-x-10 gap-y-4 md:grid-cols-2">
-                    <InfoRow label="Responsable" value={plan.usuarios.nombre} />
-                    <InfoRow label="Tipo" value={planTipoAccion(plan)} />
-                    <InfoRow label="Área" value={plan.areas.nombre_area} />
-                    <InfoRow label="Inicio" value={formatDate(inicio)} />
-                    <InfoRow label="Fin" value={formatDate(fin)} />
-                  </div>
-                  <div className="mt-4">
-                    <InfoRow label="Descripción" value={plan.descripcion} />
-                  </div>
+                  {plan.actividades_plan.length > 0 ? (
+                    <div className="space-y-3">
+                      {plan.actividades_plan.map((actividad) => {
+                        const parsed = parseActivityDescription(actividad.descripcion);
+                        return (
+                          <div key={actividad.id_actividad} className="rounded-lg border border-line-soft bg-white/70 px-3 py-3">
+                            <p className="text-[14px] leading-relaxed text-ink">
+                              {parsed.descripcion || plan.descripcion || "Sin descripción registrada."}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <InfoRow label="Descripción" value={plan.descripcion || "Sin descripción registrada."} />
+                  )}
                   {plan.observaciones && (
-                    <div className="mt-5 rounded-xl border border-line-soft bg-white/70 px-4 py-3.5">
+                    <div className="mt-4 rounded-lg border border-line-soft bg-white/70 px-3 py-3">
                       <InfoRow label="Observaciones" value={plan.observaciones} />
                     </div>
                   )}
                 </div>
               </div>
-            </div>
-          )}
-        </Card>
-
-        <Card padded={false} className="overflow-hidden border-line-soft shadow-sm">
-          <div className="px-5 pt-4">
-            <SectionHeader
-              icon={<MessageSquare className="h-4.5 w-4.5" />}
-              title="Comentarios de Ejecución"
-              open={expandedSections.execution}
-              onToggle={() => toggleSection("execution")}
-            />
-          </div>
-          {expandedSections.execution && (
-            <div className="space-y-5 px-5 pb-5 pt-5">
-              <div>
-                <div className="mb-2.5 flex items-center justify-between gap-3">
-                  <p className="text-[12px] font-semibold uppercase tracking-wider text-ink-faint">Comentarios de ejecución</p>
-                  <span className="text-[12px] font-medium text-ink-quiet">{progreso}% avance</span>
-                </div>
-                <Progress value={progreso} className="mb-3" />
-                <div className="mb-3 space-y-2">
-                  {comentarios.length > 0 ? (
-                    comentarios.map((item) => (
-                      <div
-                        key={item.id}
-                        className={cn(
-                          "rounded-lg border px-3 py-2",
-                          item.role === "seguridad" ? "border-brand-100 bg-brand-50/70" : "border-line-soft bg-surface/70"
-                        )}
-                      >
-                        <p className="text-[13px] text-ink">{compactPlanCodes(item.text)}</p>
-                        <p className="mt-1 text-[11.5px] text-ink-faint">
-                          {item.actor}
-                          {item.meta ? ` · ${compactPlanCodes(item.meta)}` : ""}
-                          {item.fecha ? ` · ${formatDateTime(item.fecha)}` : ""}
-                        </p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="rounded-lg border border-dashed border-line bg-surface px-3 py-3 text-[13px] text-ink-quiet">No hay comentarios registrados</p>
-                  )}
-                </div>
-                <div className="grid gap-2 md:grid-cols-[1fr_auto]">
-                  <Input
-                    value={executionComment}
-                    disabled={!flow.puedeTrabajar || updateActivity.isPending}
-                    onChange={(event) => setExecutionComment(event.target.value)}
-                    placeholder={flow.puedeTrabajar ? "Agregar comentario..." : "La ejecución está bloqueada por el estado actual"}
-                  />
-                  <Button
-                    size="md"
-                    disabled={!flow.puedeTrabajar || updateActivity.isPending || executionComment.trim().length < 3}
-                    onClick={() => registerProgress(executionComment)}
-                  >
-                    <Plus className="h-4 w-4" /> Agregar
-                  </Button>
-                </div>
-              </div>
 
               <div>
-                <p className="mb-3 text-[12px] font-semibold uppercase tracking-wider text-ink-faint">
-                  Evidencias de ejecución <span className="text-ink-quiet">({anexos.length})</span>
-                </p>
-                {anexos.length > 0 ? (
-                  <div className="space-y-2">
-                    {anexos.map((a) => <FilaAnexo key={a.id_anexo} anexo={a} />)}
+                <div className="mb-4 flex items-center gap-3">
+                  <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-2 text-brand-700">
+                    <Microscope className="h-4.5 w-4.5" />
+                  </span>
+                  <h2 className="text-[17px] font-semibold text-ink">Investigación</h2>
+                </div>
+                {caso.investigacion_caso ? (
+                  // Se muestran los cuatro campos de la investigación con las
+                  // mismas etiquetas del formulario que llena Seguridad
+                  // Operativa (InvestigationCard), para que el jefe lea lo
+                  // mismo que se escribió. Antes había una "Descripción
+                  // técnica" que en realidad traía `plan.descripcion`: no es un
+                  // campo de la investigación, ya se muestra arriba como
+                  // "Descripción" y llegaba con el prefijo del tipo de acción
+                  // sin decodificar ("Preventiva: ...").
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <InfoTile label="Descripción de evento" value={caso.investigacion_caso.hallazgos} />
+                    <InfoTile label="Causa raíz" value={caso.investigacion_caso.causa_raiz} />
+                    <InfoTile
+                      label="Conclusiones"
+                      value={caso.investigacion_caso.conclusiones}
+                      wide={!caso.investigacion_caso.observaciones}
+                    />
+                    {caso.investigacion_caso.observaciones && (
+                      <InfoTile label="Observaciones" value={caso.investigacion_caso.observaciones} />
+                    )}
                   </div>
                 ) : (
-                  <p className="rounded-lg border border-dashed border-line bg-surface px-3 py-3 text-[13px] text-ink-quiet">No hay evidencias registradas</p>
-                )}
-                {!evidenciasBloqueadas && (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <Button variant="outline" size="md" disabled={subiendo} onClick={() => openEvidencePicker(ACCEPT_IMAGES)}>
-                      <Upload className="h-4 w-4" /> Agregar Foto
-                    </Button>
-                    <Button variant="outline" size="md" disabled={subiendo} onClick={() => openEvidencePicker(ACCEPT_VIDEOS)}>
-                      <Upload className="h-4 w-4" /> Agregar Video
-                    </Button>
-                    <Button variant="outline" size="md" disabled={subiendo} onClick={() => openEvidencePicker(ACCEPT_DOCUMENTS)}>
-                      <Upload className="h-4 w-4" /> Agregar Documento
-                    </Button>
-                  </div>
+                  <InfoTile label="Investigación" value="La investigación del caso aún no está registrada." wide />
                 )}
               </div>
             </div>
           )}
         </Card>
+
+       
 
         {(flow.puedeTrabajar || flow.finalizado) && (
           <Card className={cn("border-line-soft shadow-sm", puedeFinalizar && "border-brand-100 bg-brand-50/30")}>
@@ -928,13 +971,13 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
                   <div>
                     <h2 className="text-[17px] font-semibold text-ink">Cierre de ejecución</h2>
                     <p className="mt-0.5 text-[13px] text-ink-quiet">
-                      Se habilita cuando todas las actividades del plan llegan al 100%.
+                      Describa lo ejecutado y adjunte la evidencia que lo sustente.
                     </p>
                   </div>
                 </div>
               </div>
-              <Pill tone={puedeFinalizar ? "success" : flow.finalizado ? "warning" : "info"} dot>
-                {flow.finalizado ? "En revisión SO" : puedeFinalizar ? "Listo para enviar" : `${progreso}% avance`}
+              <Pill tone={flow.finalizado ? "warning" : "success"} dot>
+                {flow.finalizado ? "En revisión SO" : "Listo para enviar"}
               </Pill>
             </div>
 
@@ -944,6 +987,19 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
               </p>
             ) : (
               <div className="mt-4 space-y-4">
+                {/* Opcional y solo en el cierre original: las actualizaciones
+                    posteriores llevan únicamente descripción y evidencias. */}
+                {/* Una sola línea y sin repetir "opcional" en label, hint y
+                    placeholder: ocupaba tres veces el espacio que necesita. */}
+                <Field label="Comentario (opcional)">
+                  <Input
+                    value={comentarioCierre}
+                    onChange={(e) => setComentarioCierre(e.target.value)}
+                    disabled={!puedeFinalizar || completeExec.isPending}
+                    placeholder="Comentario breve del área"
+                  />
+                </Field>
+
                 <Field label="Descripción final de ejecución" required>
                   <Textarea
                     value={finalDescription}
@@ -989,6 +1045,16 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
                       <Upload className="h-4 w-4" /> Agregar Documento
                     </Button>
                   </div>
+
+                  {/* Lo ya adjuntado, en fila y compacto: al subir varias no
+                      crece hacia abajo, se acomodan una al lado de la otra. */}
+                  {evidenciasDelCierre.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {evidenciasDelCierre.map((a) => (
+                        <MiniaturaAnexo key={a.id_anexo} anexo={a} />
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line-soft pt-4">
@@ -1024,6 +1090,89 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
           </p>
         )}
       </div>
+
+      <Modal
+        open={updateOpen}
+        onClose={cerrarActualizacion}
+        title="Agregar nueva actualización"
+        subtitle={`${shortPlanCode(plan.codigo_plan)} · quedan ${MAX_ACTUALIZACIONES - adicionales} de ${MAX_ACTUALIZACIONES}`}
+        footer={
+          <>
+            <Button variant="ghost" onClick={cerrarActualizacion}>
+              Cancelar
+            </Button>
+            <Button
+              disabled={updateDescription.trim().length < 10 || addUpdate.isPending}
+              onClick={enviarActualizacion}
+            >
+              <Save className="h-4.5 w-4.5" /> Registrar actualización
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          {/* Advertencia obligatoria antes de crear cada actualización. */}
+          <p className="rounded-lg border border-warning/30 bg-warning-soft px-3 py-3 text-[13px] text-warning-ink">
+            La información ya registrada no podrá modificarse. Esta actualización se agrega al mismo plan{" "}
+            {shortPlanCode(plan.codigo_plan)} y, una vez enviada, también quedará bloqueada.
+          </p>
+
+          <Field label="Descripción de la actualización" required>
+            <Textarea
+              value={updateDescription}
+              onChange={(e) => setUpdateDescription(e.target.value)}
+              rows={4}
+              placeholder="Describa la información que agrega sobre la ejecución de este plan."
+            />
+          </Field>
+
+          <div className="rounded-xl border border-line-soft bg-white/70 px-4 py-3.5">
+            <p className="text-[12px] font-semibold uppercase tracking-wider text-ink-faint">Evidencias de esta actualización</p>
+            <p className="mt-1 text-[13px] text-ink-quiet">
+              Se guardan junto a esta actualización; las de las anteriores no se tocan.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button variant="outline" size="md" onClick={() => openUpdatePicker(ACCEPT_IMAGES)}>
+                <Upload className="h-4 w-4" /> Agregar Foto
+              </Button>
+              <Button variant="outline" size="md" onClick={() => openUpdatePicker(ACCEPT_VIDEOS)}>
+                <Upload className="h-4 w-4" /> Agregar Video
+              </Button>
+              <Button variant="outline" size="md" onClick={() => openUpdatePicker(ACCEPT_DOCUMENTS)}>
+                <Upload className="h-4 w-4" /> Agregar Documento
+              </Button>
+            </div>
+            {updateFiles.length > 0 && (
+              <ul className="mt-3 space-y-1">
+                {updateFiles.map((f, i) => (
+                  <li key={`${f.name}-${i}`} className="flex items-center justify-between gap-3 text-[12.5px] text-ink">
+                    <span className="truncate">{f.name}</span>
+                    <button
+                      type="button"
+                      className="text-[11.5px] text-critical hover:underline"
+                      onClick={() => setUpdateFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                    >
+                      Quitar
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      </Modal>
+
+      <input
+        ref={updateFileRef}
+        type="file"
+        multiple
+        accept={updateAccept}
+        className="hidden"
+        onChange={(e) => {
+          setUpdateFiles((prev) => [...prev, ...Array.from(e.target.files ?? [])]);
+          e.target.value = "";
+        }}
+      />
 
       <Modal
         open={extOpen}

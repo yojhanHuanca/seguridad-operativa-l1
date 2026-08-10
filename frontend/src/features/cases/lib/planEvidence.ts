@@ -49,6 +49,35 @@ function parseEvidencePayload(detalle: string | null | undefined): EvidencePaylo
   }
 }
 
+/**
+ * Anexos que referencia un único evento del timeline.
+ *
+ * `planEvidenceFiles` junta todas las evidencias del plan; esto sirve cuando
+ * hay que mostrarlas separadas por la actualización que las trajo, que es como
+ * el jefe las cargó.
+ */
+export function evidenciasDelEvento<T extends PlanEvidenceAnexo>(
+  evento: PlanEvidenceTimeline,
+  anexos: T[]
+): T[] {
+  const payload = parseEvidencePayload(evento.detalle);
+  if (!payload?.anexos?.length) return [];
+
+  const byId = new Map(anexos.map((a) => [a.id_anexo, a]));
+  const byPath = new Map(anexos.map((a) => [a.ruta_archivo ?? "", a]));
+  const vistos = new Set<number>();
+  const out: T[] = [];
+
+  for (const ref of payload.anexos) {
+    const encontrado = (ref.id_anexo ? byId.get(ref.id_anexo) : undefined) ?? byPath.get(ref.ruta_archivo ?? "");
+    if (encontrado && !vistos.has(encontrado.id_anexo)) {
+      vistos.add(encontrado.id_anexo);
+      out.push(encontrado);
+    }
+  }
+  return out;
+}
+
 export function timelineBelongsToPlan(evento: PlanEvidenceTimeline, plan: PlanEvidencePlan): boolean {
   const payload = parseEvidencePayload(evento.detalle);
   if (payload) {

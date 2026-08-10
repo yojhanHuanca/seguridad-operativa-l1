@@ -20,6 +20,9 @@ export interface Area {
   nombre_area: string;
 }
 
+/** Desde dónde se registró el reporte (ver backend: report.types.ts). */
+export type ReportOrigin = "reportante" | "seguridad_operativa";
+
 export interface CreateReportResult {
   codigo_sop: string;
   id_caso: number;

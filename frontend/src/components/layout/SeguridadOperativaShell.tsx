@@ -33,7 +33,7 @@ import { Logo } from "@/components/brand/Logo";
 import { useCases } from "@/features/cases/hooks/useCases";
 import { toCaseRow } from "@/features/cases/adapter";
 import { CASE_FILTERS, countByFilter, filterHref, type CaseFilterId } from "@/features/cases/lib/filters";
-import { useUsers } from "@/features/users/hooks/useUsers";
+import { useCurrentSoUser } from "@/features/users/hooks/useCurrentSoUser";
 import { useNotifications } from "@/features/notifications/hooks/useNotifications";
 
 interface NavLink {
@@ -75,7 +75,6 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSE_KEY) === "1");
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: rawCases } = useCases({});
-  const { data: users } = useUsers();
   const { data: notifications } = useNotifications();
 
   useEffect(() => {
@@ -101,13 +100,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
   // número y hacían pensar que las dos secciones tenían el mismo contenido.
   const pendingDecisions = counts.nuevos + counts.pendientes + counts.prorrogas + counts.verificacion;
   const unreadNotifications = notifications?.no_leidas ?? 0;
-  const currentUser =
-    users?.find((u) => u.roles?.nombre_rol === "Seguridad Operativa") ??
-    users?.find((u) => u.cargo?.toLowerCase().includes("seguridad operativa")) ??
-    null;
-  const userName = currentUser?.nombre ?? "Analista SO";
-  const userRole = currentUser?.cargo ?? "Seguridad Operativa";
-  const userInitials = initialsFromName(userName);
+  const { nombre: userName, cargo: userRole, iniciales: userInitials } = useCurrentSoUser();
 
   const groups: NavGroup[] = [
     {
@@ -390,13 +383,6 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
       </div>
     </div>
   );
-}
-
-function initialsFromName(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "SO";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
 }
 
 function getPageTitle(pathname: string) {

@@ -1,10 +1,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, type ApiEnvelope } from "@/lib/api";
 import type { ReportFormValues } from "../schema";
-import type { CreateReportResult } from "../types";
+import type { CreateReportResult, ReportOrigin } from "../types";
 
 interface CreateReportInput {
-  values: ReportFormValues;
+  /**
+   * Los mismos campos siempre. `origen` solo le dice al backend quién firma el
+   * caso en la bitácora: el trabajador desde el wizard, o el analista desde el
+   * panel de Seguridad Operativa. Si se omite, el backend asume "reportante".
+   */
+  values: ReportFormValues & { origen?: ReportOrigin };
   files: File[];
 }
 
@@ -31,6 +36,11 @@ export function useCreateReport() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["catalogs"] });
       queryClient.invalidateQueries({ queryKey: ["reports"] });
+      // El caso entra a la bandeja de SO y dispara su aviso: sin esto, el
+      // reporte recién creado desde el panel no aparecía en la lista ni en los
+      // contadores del menú hasta recargar.
+      queryClient.invalidateQueries({ queryKey: ["cases"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
     },
   });
 }
