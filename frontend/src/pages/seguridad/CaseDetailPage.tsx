@@ -111,6 +111,10 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
   const ayuda = siguientePaso(estado);
   const motivoRechazo = caso.timeline_caso.find((t) => t.kind === "rechazado")?.detalle ?? caso.observaciones;
   const puedeExportarPlan = caso.planes_accion.length > 0;
+  const areasCaso = uniqueValues([
+    caso.areas?.nombre_area,
+    ...caso.planes_accion.map((plan) => plan.areas?.nombre_area),
+  ]);
 
   useEffect(() => {
     if (!exportPlanActive) return;
@@ -190,7 +194,7 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
         <div className="space-y-4 lg:sticky lg:top-24">
           <InfoCard title="Información general">
             <InfoRow icon={<Flag className="h-3.5 w-3.5" />} label="Tipo de evento" value={caso.catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle?.nombre ?? "—"} />
-            <InfoRow icon={<Building2 className="h-3.5 w-3.5" />} label="Área" value={caso.areas?.nombre_area ?? "—"} />
+            <InfoRow icon={<Building2 className="h-3.5 w-3.5" />} label="Área" value={areasCaso} />
             <InfoRow icon={<MapPin className="h-3.5 w-3.5" />} label="Estación" value={evento?.catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle?.nombre ?? "—"} />
             <InfoRow icon={<MapPin className="h-3.5 w-3.5" />} label="Ubicación" value={evento?.catalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalle?.nombre ?? "—"} />
             <InfoRow icon={<Calendar className="h-3.5 w-3.5" />} label="Fecha" value={formatDate(evento?.fecha ?? caso.fecha_hallazgo)} />

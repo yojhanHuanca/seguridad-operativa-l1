@@ -30,6 +30,7 @@ router.post("/:codigo/extension", CaseController.requestExtension);
 router.post("/:codigo/extension/review", CaseController.reviewExtension);
 router.post("/:codigo/accept-plan", CaseController.acceptPlan);
 router.post("/:codigo/complete-execution", CaseController.completeExecution);
+router.post("/:codigo/send-verification", CaseController.sendToVerification);
 router.post("/:codigo/keep-pending", CaseController.keepPending);
 router.post("/:codigo/reopen", CaseController.reopen);
 router.post("/:codigo/rollback", CaseController.rollbackStage);

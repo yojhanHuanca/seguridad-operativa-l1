@@ -107,7 +107,7 @@ const ESTADOS: Record<string, EstadoSpec> = {
   Cerrado: {
     panel: "cierre",
     acciones: ["reabrir", "comentar"],
-    siguiente: "El expediente está archivado. Puede reabrirse con motivo; vuelve a Verificación.",
+    siguiente: "El expediente está archivado. Puede reabrirse con motivo hacia la etapa que requiera corrección.",
   },
   Rechazado: {
     panel: "rechazado",
