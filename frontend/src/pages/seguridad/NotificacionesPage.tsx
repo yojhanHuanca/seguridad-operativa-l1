@@ -155,12 +155,12 @@ function FilaNotificacion({ n, onLeer }: { n: Notificacion; onLeer: () => void }
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <p className={cn("text-[13.5px] leading-snug text-ink", sinLeer ? "font-bold" : "font-semibold")}>{n.titulo}</p>
+              <p className={cn("text-[13.5px] leading-snug text-ink break-words", sinLeer ? "font-bold" : "font-semibold")}>{n.titulo}</p>
               {sinLeer && (
                 <span className="h-2 w-2 rounded-full bg-brand-600 shrink-0" aria-label="Sin leer" />
               )}
             </div>
-            <p className="mt-1 text-[12.5px] text-ink-soft leading-relaxed">{n.mensaje}</p>
+            <p className="mt-1 text-[12.5px] text-ink-soft leading-relaxed break-words">{n.mensaje}</p>
             {n.fecha && (
               <p className="mt-1.5 text-[11px] text-ink-faint" title={formatDateTime(n.fecha)}>
                 {relativeTime(n.fecha)}

@@ -57,7 +57,7 @@ function PendingRequestCard({ item }: { item: RequestItem }) {
             <span className="text-[12px] text-ink-faint">·</span>
             <span className="truncate text-[12.5px] font-medium text-ink">{item.report.titulo || item.report.descripcion}</span>
           </div>
-          <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">
+          <p className="mt-2 text-[13px] leading-relaxed text-ink-soft break-words">
             <span className="font-semibold text-ink">Solicitud:</span> {item.solicitud.mensaje}
           </p>
           <p className="mt-1.5 text-[11.5px] text-ink-quiet">Solicitada {formatDate(item.solicitud.fecha_solicitud)}</p>

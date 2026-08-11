@@ -336,7 +336,7 @@ function FilaDecision({ caso, onRechazar }: { caso: CaseRow; onRechazar: () => v
             {/* Los casos sin `titulo` propio caen a la descripción completa
                 (ver deriveTitle en el adapter), que puede ser un párrafo
                 entero: se recorta a dos líneas para no romper la fila. */}
-            <p className="mt-1.5 line-clamp-2 text-[13.5px] font-semibold text-ink leading-snug">{caso.title}</p>
+            <p className="mt-1.5 line-clamp-2 break-all text-[13.5px] font-semibold text-ink leading-snug">{caso.title}</p>
             <p className="mt-1 text-[12px] text-ink-quiet">
               {spec.pide}
               {caso.station && ` · ${caso.station}`}

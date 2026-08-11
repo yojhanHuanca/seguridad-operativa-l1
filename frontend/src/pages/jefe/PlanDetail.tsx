@@ -30,7 +30,7 @@ import { Progress } from "@/design-system/primitives/Progress";
 import { Modal } from "@/design-system/primitives/Modal";
 import { Field, Input, Textarea } from "@/design-system/primitives/Input";
 import { parseActivityDescription } from "@/features/cases/lib/activityMeta";
-import { compactPlanCodes, shortPlanCode } from "@/features/cases/lib/planLabels";
+import { compactPlanCodes, numeroDePlan, shortPlanCode } from "@/features/cases/lib/planLabels";
 import { progresoPorHitos } from "@/features/cases/lib/planProgress";
 import {
   evidenciasDelEvento,
@@ -317,19 +317,35 @@ function InfoRow({ label, value }: { label: string; value?: ReactNode }) {
   return (
     <div>
       <p className="mb-1 text-[11.5px] font-semibold uppercase tracking-wider text-ink-faint">{label}</p>
-      <p className="text-[14px] font-medium text-ink">{value ?? "-"}</p>
+      <p className="text-[14px] font-medium text-ink break-words">{value ?? "-"}</p>
     </div>
   );
 }
 
-function SectionHeader({ icon, title, open, onToggle }: { icon: ReactNode; title: string; open: boolean; onToggle: () => void }) {
+function SectionHeader({
+  icon,
+  title,
+  open,
+  onToggle,
+  extra,
+}: {
+  icon: ReactNode;
+  title: string;
+  open: boolean;
+  onToggle: () => void;
+  /** Contenido centrado entre el título y el chevron (p. ej. la prioridad del plan). */
+  extra?: ReactNode;
+}) {
   return (
-    <button type="button" onClick={onToggle} className="flex w-full items-center justify-between gap-4 text-left">
-      <span className="flex items-center gap-3">
+    <button type="button" onClick={onToggle} className="flex w-full items-center gap-4 text-left">
+      <span className="flex flex-1 items-center gap-3">
         <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-2 text-brand-700">{icon}</span>
         <h2 className="text-[17px] font-semibold text-ink">{title}</h2>
       </span>
-      <span className="text-ink-quiet">{open ? <ChevronUp className="h-4.5 w-4.5" /> : <ChevronDown className="h-4.5 w-4.5" />}</span>
+      {extra && <span className="flex flex-1 justify-center">{extra}</span>}
+      <span className="flex flex-1 items-center justify-end text-ink-quiet">
+        {open ? <ChevronUp className="h-4.5 w-4.5" /> : <ChevronDown className="h-4.5 w-4.5" />}
+      </span>
     </button>
   );
 }
@@ -338,7 +354,7 @@ function InfoTile({ label, value, wide }: { label: string; value?: ReactNode; wi
   return (
     <div className={cn("rounded-xl border border-line-soft bg-surface/60 px-4 py-3.5", wide && "md:col-span-2")}>
       <p className="mb-2 text-[11.5px] font-semibold uppercase tracking-wider text-ink-faint">{label}</p>
-      <div className="text-[14px] leading-relaxed text-ink">{value ?? "-"}</div>
+      <div className="text-[14px] leading-relaxed text-ink break-words">{value ?? "-"}</div>
     </div>
   );
 }
@@ -524,7 +540,13 @@ export function PlanDetail() {
 
 function PlanSelectionContent({ codigo, plans }: { codigo: string; plans: PlanItem[] }) {
   const sortedPlans = useMemo(
-    () => [...plans].sort((a, b) => planWeight(a) - planWeight(b) || daysUntil(planEnd(a)) - daysUntil(planEnd(b))),
+    () =>
+      [...plans].sort(
+        (a, b) =>
+          planWeight(a) - planWeight(b) ||
+          daysUntil(planEnd(a)) - daysUntil(planEnd(b)) ||
+          (numeroDePlan(a.codigo_plan) ?? 0) - (numeroDePlan(b.codigo_plan) ?? 0)
+      ),
     [plans]
   );
   const caso = plans[0]?.casos_sop;
@@ -548,7 +570,7 @@ function PlanSelectionContent({ codigo, plans }: { codigo: string; plans: PlanIt
       <Card padded={false} className="overflow-hidden border-line-soft shadow-sm">
         <div className="border-b border-line-soft bg-surface/70 px-5 py-4">
           <p className="text-[15px] font-semibold text-ink">Seleccione un plan para ver el detalle:</p>
-          <p className="mt-1 line-clamp-1 text-[13.5px] text-ink-quiet">{caso?.titulo?.trim() || caso?.descripcion}</p>
+          <p className="mt-1 line-clamp-1 break-all text-[13.5px] text-ink-quiet">{caso?.titulo?.trim() || caso?.descripcion}</p>
         </div>
         <div className="space-y-3 p-5">
           {sortedPlans.map((plan) => (
@@ -584,7 +606,7 @@ function PlanChoiceCard({ codigo, plan }: { codigo: string; plan: PlanItem }) {
             >
               {shortPlanCode(plan.codigo_plan)}
             </Link>
-            <p className="mt-1 line-clamp-1 text-[13.5px] text-ink-quiet">{plan.descripcion}</p>
+            <p className="mt-1 line-clamp-1 break-all text-[13.5px] text-ink-quiet">{plan.descripcion}</p>
           </div>
         </div>
         <Pill tone={status.tone} dot>{status.label}</Pill>
@@ -936,28 +958,20 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
               title="Información del Plan"
               open={expandedSections.info}
               onToggle={() => toggleSection("info")}
+              extra={
+                <Pill tone={priority.tone} dot>
+                  {priority.label}
+                </Pill>
+              }
             />
           </div>
           {expandedSections.info && (
             <div className="space-y-6 px-5 pb-5 pt-5">
-              <div className="grid gap-x-10 gap-y-6 md:grid-cols-3">
+              <div className="grid gap-x-6 gap-y-4 md:grid-cols-4">
                 <InfoRow label="Tipo" value={planTipoAccion(plan)} />
-                <InfoRow label="Elaborado por" value="No registrado" />
-                <InfoRow label="Área responsable" value={plan.areas.nombre_area} />
                 <InfoRow label="Inicio" value={formatDate(inicio)} />
-                <InfoRow
-                  label="Fin"
-                  value={
-                    <span className={cn(daysUntil(fin) <= 3 && !flow.cerrado ? "font-semibold text-critical" : "text-ink")}>
-                      {daysUntil(fin) <= 3 && !flow.cerrado && <AlertCircle className="mr-1 inline h-3.5 w-3.5 align-[-2px]" />}
-                      {formatDate(fin)}
-                    </span>
-                  }
-                />
-                <InfoRow label="Tiempo estimado" value={estimatedDuration(inicio, fin)} />
-                <InfoRow label="Prioridad" value={<Pill tone={priority.tone} dot>{priority.label}</Pill>} />
+                <InfoRow label="Elaborado por" value="No registrado" />
                 <InfoRow label="Estado de revisión" value={<Pill tone={revision.tone} dot>{revision.label}</Pill>} />
-                <InfoRow label="Fecha de envío" value={plan.created_at ? formatDate(plan.created_at) : formatDate(plan.fecha_plan)} />
                 {caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle?.codigo && (
                   <InfoRow
                     label="Riesgo"
@@ -969,6 +983,17 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
                     }
                   />
                 )}
+                <InfoRow
+                  label="Fin"
+                  value={
+                    <span className={cn(daysUntil(fin) <= 3 && !flow.cerrado ? "font-semibold text-critical" : "text-ink")}>
+                      {daysUntil(fin) <= 3 && !flow.cerrado && <AlertCircle className="mr-1 inline h-3.5 w-3.5 align-[-2px]" />}
+                      {formatDate(fin)}
+                    </span>
+                  }
+                />
+                <InfoRow label="Tiempo estimado" value={estimatedDuration(inicio, fin)} />
+                <InfoRow label="Fecha de envío" value={plan.created_at ? formatDate(plan.created_at) : formatDate(plan.fecha_plan)} />
               </div>
 
               <div>
@@ -985,20 +1010,29 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
                         const parsed = parseActivityDescription(actividad.descripcion);
                         return (
                           <div key={actividad.id_actividad} className="rounded-lg border border-line-soft bg-white/70 px-3 py-3">
-                            <p className="text-[14px] leading-relaxed text-ink">
-                              {parsed.descripcion || plan.descripcion || "Sin descripción registrada."}
-                            </p>
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <p className="text-[14px] leading-relaxed text-ink break-words">
+                                  {parsed.descripcion || plan.descripcion || "Sin descripción registrada."}
+                                </p>
+                                <p className="mt-1 text-[11px] text-ink-quiet">
+                                  {actividad.usuarios?.nombre ?? "Sin responsable"}
+                                  {actividad.usuarios?.cargo ? ` · ${actividad.usuarios.cargo}` : ""}
+                                  {(parsed.meta.tipoAccion ?? planTipoAccion(plan)) && ` · ${parsed.meta.tipoAccion ?? planTipoAccion(plan)}`}
+                                  {(parsed.meta.areaNombre ?? plan.areas.nombre_area) && ` · ${parsed.meta.areaNombre ?? plan.areas.nombre_area}`}
+                                  {actividad.fecha_fin && ` · vence ${formatDate(actividad.fecha_fin)}`}
+                                </p>
+                              </div>
+                              <Pill tone={actividad.catalogo_detalle?.nombre === "Completado" ? "brand" : "neutral"} dot>
+                                {actividad.catalogo_detalle?.nombre ?? "Pendiente"}
+                              </Pill>
+                            </div>
                           </div>
                         );
                       })}
                     </div>
                   ) : (
                     <InfoRow label="Descripción" value={plan.descripcion || "Sin descripción registrada."} />
-                  )}
-                  {plan.observaciones && (
-                    <div className="mt-4 rounded-lg border border-line-soft bg-white/70 px-3 py-3">
-                      <InfoRow label="Observaciones" value={plan.observaciones} />
-                    </div>
                   )}
                 </div>
               </div>
@@ -1250,7 +1284,7 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
                       {registro.fecha ? formatDate(registro.fecha) : "Sin fecha"}
                     </span>
                   </div>
-                  <p className="mt-2 whitespace-pre-line text-[14px] leading-relaxed text-ink">
+                  <p className="mt-2 whitespace-pre-line text-[14px] leading-relaxed text-ink break-words">
                     {registro.descripcion || "Sin descripción registrada."}
                   </p>
                   {registro.evidencias.length > 0 && (

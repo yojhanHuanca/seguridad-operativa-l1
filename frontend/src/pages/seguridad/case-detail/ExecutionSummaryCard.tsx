@@ -24,7 +24,7 @@ import {
 } from "@/features/cases/hooks/useCaseActions";
 import { parseActivityDescription } from "@/features/cases/lib/activityMeta";
 import { compactPlanCodes, numeroDePlan, shortPlanCode } from "@/features/cases/lib/planLabels";
-import { humanEvidenceDetail, planEvidenceFiles, timelineBelongsToPlan } from "@/features/cases/lib/planEvidence";
+import { evidenciasDelEvento, humanEvidenceDetail, planEvidenceFiles, timelineBelongsToPlan } from "@/features/cases/lib/planEvidence";
 import { progresoPorHitos } from "@/features/cases/lib/planProgress";
 import { ACTOR_ROL_LABEL } from "@/features/cases/lib/workflow";
 import { apiErrorMessage } from "@/lib/api";
@@ -160,11 +160,36 @@ function comentariosActividad(plan: PlanAccion) {
     .sort((a, b) => +new Date(b.fecha ?? 0) - +new Date(a.fecha ?? 0));
 }
 
+/**
+ * Evidencias del plan agrupadas por el evento del timeline que las trajo
+ * (una actualización del área, el cierre, etc.), con el título de ese evento
+ * como etiqueta.
+ *
+ * Antes solo se leían los eventos cuyo título incluía la palabra "evidencia",
+ * así que las fotos adjuntas a una "Actualización N" quedaban invisibles acá
+ * aunque el jefe sí las viera en su panel: se recorren todos los eventos del
+ * plan y se extraen sus anexos del payload JSON, con `planEvidenceFiles` como
+ * respaldo para evidencia vieja que no llevaba ese payload.
+ */
 function evidenciasDelPlan(caso: CaseDetail, plan: PlanAccion) {
-  return planEvidenceFiles(plan, caso.timeline_caso, caso.anexos_caso).map((anexo) => ({
-    nombre: anexo.nombre_archivo ?? "Archivo adjunto",
-    anexo,
-  }));
+  const usedIds = new Set<number>();
+  const out: { nombre: string; anexo: AnexoCaso; etiqueta: string }[] = [];
+
+  for (const evento of timelineDelPlan(caso, plan)) {
+    for (const anexo of evidenciasDelEvento(evento, caso.anexos_caso)) {
+      if (usedIds.has(anexo.id_anexo)) continue;
+      usedIds.add(anexo.id_anexo);
+      out.push({ nombre: anexo.nombre_archivo ?? "Archivo adjunto", anexo, etiqueta: compactPlanCodes(evento.titulo) });
+    }
+  }
+
+  for (const anexo of planEvidenceFiles(plan, caso.timeline_caso, caso.anexos_caso)) {
+    if (usedIds.has(anexo.id_anexo)) continue;
+    usedIds.add(anexo.id_anexo);
+    out.push({ nombre: anexo.nombre_archivo ?? "Archivo adjunto", anexo, etiqueta: "Evidencia del plan" });
+  }
+
+  return out;
 }
 
 function IconoArchivo({ tipo }: { tipo: string | null }) {
@@ -173,13 +198,61 @@ function IconoArchivo({ tipo }: { tipo: string | null }) {
   return <FileText className="h-4 w-4" />;
 }
 
-function FilaAnexoPlan({ nombre, anexo }: { nombre: string; anexo: AnexoCaso | null }) {
+/**
+ * Miniatura real del adjunto en la fila de evidencias: antes toda evidencia
+ * mostraba el mismo icono genérico, así que una foto subida por el área no se
+ * veía como foto. Si la imagen/video falla al cargar, cae al icono de siempre.
+ */
+function MiniaturaArchivo({ anexo }: { anexo: AnexoCaso | null }) {
+  const [falloCarga, setFalloCarga] = useState(false);
+  const url = anexo?.ruta_archivo ? `${API_ORIGIN}${anexo.ruta_archivo}` : "";
+  const tipo = anexo?.tipo_archivo ?? "";
+  const puedePrevisualizar = !!url && !falloCarga;
+
+  if (puedePrevisualizar && tipo.startsWith("image/")) {
+    return (
+      <span className="h-9 w-9 rounded-lg overflow-hidden bg-surface-2 grid place-items-center shrink-0">
+        <img
+          src={url}
+          alt={anexo?.nombre_archivo ?? "Evidencia"}
+          loading="lazy"
+          onError={() => setFalloCarga(true)}
+          className="h-full w-full object-cover"
+        />
+      </span>
+    );
+  }
+
+  if (puedePrevisualizar && tipo.startsWith("video/")) {
+    return (
+      <span className="h-9 w-9 rounded-lg overflow-hidden bg-surface-2 grid place-items-center shrink-0">
+        <video
+          src={url}
+          muted
+          playsInline
+          preload="metadata"
+          onError={() => setFalloCarga(true)}
+          className="pointer-events-none h-full w-full object-cover"
+        />
+      </span>
+    );
+  }
+
+  return (
+    <span className="h-9 w-9 rounded-lg bg-surface-2 text-ink-soft grid place-items-center shrink-0">
+      <IconoArchivo tipo={anexo?.tipo_archivo ?? null} />
+    </span>
+  );
+}
+
+function FilaAnexoPlan({ nombre, anexo, etiqueta }: { nombre: string; anexo: AnexoCaso | null; etiqueta?: string }) {
   const contenido = (
     <>
-      <span className="h-9 w-9 rounded-lg bg-surface-2 text-ink-soft grid place-items-center shrink-0">
-        <IconoArchivo tipo={anexo?.tipo_archivo ?? null} />
-      </span>
+      <MiniaturaArchivo anexo={anexo} />
       <span className="min-w-0 flex-1">
+        {etiqueta && (
+          <span className="block text-[10px] font-semibold uppercase tracking-wide text-brand-700 truncate">{etiqueta}</span>
+        )}
         <span className="block text-[12.5px] font-medium text-ink truncate">{nombre}</span>
         <span className="block text-[11px] text-ink-quiet">
           {anexo
@@ -355,7 +428,7 @@ function PlanExecutionBoard({
 
               {abierto && (
                 <>
-                  <p className="mt-4 border-t border-line-soft pt-4 text-[14px] font-semibold text-ink leading-snug">{plan.descripcion}</p>
+                  <p className="mt-4 border-t border-line-soft pt-4 text-[14px] font-semibold text-ink leading-snug break-words">{plan.descripcion}</p>
 
               <div className="mt-4 grid gap-3 md:grid-cols-4">
                 <div className="rounded-lg bg-surface/70 border border-line-soft p-3">
@@ -383,7 +456,7 @@ function PlanExecutionBoard({
                   <div className="flex items-start justify-between gap-3 flex-wrap">
                     <div className="min-w-0">
                       <p className="text-[12.5px] font-semibold text-warning-ink">Solicitud de prórroga del área</p>
-                      <p className="mt-1 text-[12px] text-ink-soft leading-relaxed">{plan.prorroga_motivo}</p>
+                      <p className="mt-1 text-[12px] text-ink-soft leading-relaxed break-words">{plan.prorroga_motivo}</p>
                       <p className="mt-1 text-[11.5px] text-ink-quiet">
                         Fecha propuesta: {plan.prorroga_fecha ? formatDate(plan.prorroga_fecha) : "—"}
                         {plan.prorroga_fecha_sol ? ` · solicitada ${relativeTime(plan.prorroga_fecha_sol)}` : ""}
@@ -411,7 +484,7 @@ function PlanExecutionBoard({
                       Prórroga {plan.prorroga_estado}
                     </span>
                     {plan.prorroga_fecha && ` · fecha solicitada ${formatDate(plan.prorroga_fecha)}`}
-                    {plan.prorroga_motivo && <p className="text-ink-quiet mt-0.5">{plan.prorroga_motivo}</p>}
+                    {plan.prorroga_motivo && <p className="text-ink-quiet mt-0.5 break-words">{plan.prorroga_motivo}</p>}
                   </div>
                 </div>
               )}
@@ -428,7 +501,7 @@ function PlanExecutionBoard({
                         <div key={act.id_actividad} className="rounded-lg border border-line-soft bg-surface/40 p-3">
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
-                              <p className="text-[13px] font-medium text-ink leading-snug">{parsed.descripcion}</p>
+                              <p className="text-[13px] font-medium text-ink leading-snug break-words">{parsed.descripcion}</p>
                               <p className="text-[11px] text-ink-quiet mt-1">
                                 {act.usuarios?.nombre ?? "Sin responsable"}
                                 {act.usuarios?.cargo ? ` · ${act.usuarios.cargo}` : ""}
@@ -451,7 +524,7 @@ function PlanExecutionBoard({
               {cierre && (
                 <div className="mt-4 rounded-lg border border-brand-200 bg-brand-50/60 p-3">
                   <p className="text-[11px] font-semibold tracking-wide uppercase text-brand-700">Descripción final del área</p>
-                  <p className="mt-1 text-[12.5px] text-ink-soft leading-relaxed">{cierre}</p>
+                  <p className="mt-1 text-[12.5px] text-ink-soft leading-relaxed break-words">{cierre}</p>
                 </div>
               )}
 
@@ -473,7 +546,7 @@ function PlanExecutionBoard({
                       return (
                         <div key={`seg-${s.id}`} className="rounded-lg bg-surface/60 p-2.5">
                           <div className="flex items-start justify-between gap-3">
-                            <p className="text-[12.5px] font-medium text-ink leading-snug">{s.comentario}</p>
+                            <p className="text-[12.5px] font-medium text-ink leading-snug break-words">{s.comentario}</p>
                             <span className="text-[10.5px] text-ink-faint shrink-0">{s.fecha ? relativeTime(s.fecha) : ""}</span>
                           </div>
                           <p className="mt-1 text-[10.5px] text-ink-quiet">
@@ -485,11 +558,11 @@ function PlanExecutionBoard({
                     {eventos.slice(0, 3).map((evento) => (
                       <div key={`evt-${evento.id_evento}`} className="rounded-lg bg-surface/60 p-2.5">
                         <div className="flex items-start justify-between gap-3">
-                          <p className="text-[12.5px] font-medium text-ink leading-snug">{compactPlanCodes(evento.titulo)}</p>
+                          <p className="text-[12.5px] font-medium text-ink leading-snug break-words">{compactPlanCodes(evento.titulo)}</p>
                           <span className="text-[10.5px] text-ink-faint shrink-0">{evento.fecha ? relativeTime(evento.fecha) : ""}</span>
                         </div>
                         {evento.detalle && (
-                          <p className="mt-1 text-[12px] text-ink-soft leading-relaxed">
+                          <p className="mt-1 text-[12px] text-ink-soft leading-relaxed break-words">
                             {compactPlanCodes(humanEvidenceDetail(evento.detalle))}
                           </p>
                         )}
@@ -512,7 +585,12 @@ function PlanExecutionBoard({
                       </p>
                     )}
                     {evidencias.map((e) => (
-                      <FilaAnexoPlan key={`${plan.id_plan}-${e.anexo?.id_anexo ?? e.nombre}`} nombre={e.nombre} anexo={e.anexo} />
+                      <FilaAnexoPlan
+                        key={`${plan.id_plan}-${e.anexo?.id_anexo ?? e.nombre}`}
+                        nombre={e.nombre}
+                        anexo={e.anexo}
+                        etiqueta={e.etiqueta}
+                      />
                     ))}
                   </div>
                 </div>
@@ -1398,8 +1476,8 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
               </span>
               <div className="min-w-0">
                 <p className="text-[11px] text-ink-faint">{r.label}</p>
-                <p className="text-[14px] font-semibold text-ink mt-0.5">{r.value}</p>
-                {r.detail && <p className="text-[11px] text-ink-quiet mt-1 leading-snug">{r.detail}</p>}
+                <p className="text-[14px] font-semibold text-ink mt-0.5 break-words">{r.value}</p>
+                {r.detail && <p className="text-[11px] text-ink-quiet mt-1 leading-snug break-words">{r.detail}</p>}
               </div>
             </div>
           </Card>
@@ -1407,7 +1485,7 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
       </div>
 
       {cierre?.fecha && (
-        <p className="mt-4 pt-3 border-t border-line-soft text-[11.5px] text-ink-faint">
+        <p className="mt-4 pt-3 border-t border-line-soft text-[11.5px] text-ink-faint break-words">
           Cerrado {formatDateTime(cierre.fecha)}
           {cierre.detalle ? ` · ${compactPlanCodes(humanEvidenceDetail(cierre.detalle))}` : ""}
         </p>
@@ -1428,13 +1506,13 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
                 {i < historial.length - 1 && <span className="w-px flex-1 bg-line" />}
               </div>
               <div className="min-w-0 pb-3">
-                <p className="text-[12.5px] font-medium text-ink leading-snug">{compactPlanCodes(t.titulo)}</p>
+                <p className="text-[12.5px] font-medium text-ink leading-snug break-words">{compactPlanCodes(t.titulo)}</p>
                 <p className="text-[10.5px] text-ink-quiet mt-0.5">
                   {ACTOR_ROL_LABEL[t.actor_rol] ?? t.actor_rol} · {t.actor}
                   {t.fecha ? ` · ${formatDateTime(t.fecha)}` : ""}
                 </p>
                 {t.detalle && (
-                  <p className="text-[11.5px] text-ink-soft mt-1 leading-relaxed">
+                  <p className="text-[11.5px] text-ink-soft mt-1 leading-relaxed break-words">
                     {compactPlanCodes(humanEvidenceDetail(t.detalle))}
                   </p>
                 )}

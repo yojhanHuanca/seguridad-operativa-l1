@@ -5,12 +5,23 @@ import { JefeShell } from "@/components/layout/JefeShell";
 import { Card } from "@/design-system/primitives/Card";
 import { Pill } from "@/design-system/primitives/Pill";
 import { usePlans } from "@/features/plans/hooks/usePlans";
+import {
+  hasPendingExtension,
+  isClosed,
+  isExecuting,
+  isFinalized,
+  isInVerification,
+  isPendingAcceptance,
+  isRejected,
+  matchesStatus,
+  normalize,
+  type StatusFilter,
+} from "@/features/plans/lib/planStatus";
 import { daysUntil, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { PlanItem } from "@/features/plans/types";
 
 type PillTone = "neutral" | "brand" | "critical" | "warning" | "info" | "success";
-type StatusFilter = "todos" | "pendientes" | "ejecucion" | "verificacion" | "cerrados";
 
 type CaseRow = {
   codigo: string;
@@ -25,64 +36,6 @@ const FILTERS: { id: StatusFilter; label: string; href: string }[] = [
   { id: "verificacion", label: "En Verificación", href: "/jefe?estado=verificacion" },
   { id: "cerrados", label: "Cerrados", href: "/jefe?estado=cerrados" },
 ];
-
-function normalize(value?: string | null): string {
-  return (value ?? "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-}
-
-function caseStage(p: PlanItem): string {
-  return p.casos_sop.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre;
-}
-
-function planState(p: PlanItem): string {
-  return p.catalogo_detalle.nombre;
-}
-
-function isFinalized(p: PlanItem): boolean {
-  return normalize(planState(p)).includes("finaliz");
-}
-
-function isInVerification(p: PlanItem): boolean {
-  const estado = normalize(planState(p));
-  return isFinalized(p) || (!estado.includes("cerrad") && normalize(caseStage(p)).includes("verificacion"));
-}
-
-function isClosed(p: PlanItem): boolean {
-  return normalize(caseStage(p)).includes("cierre") || normalize(caseStage(p)).includes("cerrado") || normalize(planState(p)).includes("cerrado");
-}
-
-function isRejected(p: PlanItem): boolean {
-  return normalize(caseStage(p)).includes("rechaz") || normalize(planState(p)).includes("rechaz");
-}
-
-function hasPendingExtension(p: PlanItem): boolean {
-  return p.prorroga_estado === "pendiente";
-}
-
-function isAccepted(p: PlanItem): boolean {
-  const estado = normalize(planState(p));
-  return estado.includes("aceptad") || estado.includes("ejecucion");
-}
-
-function isPendingAcceptance(p: PlanItem): boolean {
-  const estado = normalize(planState(p));
-  return !isClosed(p) && !isRejected(p) && !isInVerification(p) && !hasPendingExtension(p) && !isAccepted(p) && (estado.includes("enviado") || estado.includes("pendiente") || !estado);
-}
-
-function isExecuting(p: PlanItem): boolean {
-  return isAccepted(p) && !isClosed(p) && !isRejected(p) && !isInVerification(p) && !hasPendingExtension(p);
-}
-
-function matchesStatus(p: PlanItem, filter: StatusFilter): boolean {
-  if (filter === "todos") return true;
-  if (filter === "pendientes") return isPendingAcceptance(p);
-  if (filter === "ejecucion") return isExecuting(p) || hasPendingExtension(p);
-  if (filter === "verificacion") return isInVerification(p);
-  return isClosed(p);
-}
 
 function calcProgress(p: PlanItem): number {
   const total = p.actividades_plan.length;
@@ -248,7 +201,7 @@ export function JefeHome() {
                           </Link>
                         </td>
                         <td className="px-4 py-3.5">
-                          <span className="line-clamp-1 text-[14.5px] font-medium text-ink">{row.titulo}</span>
+                          <span className="line-clamp-1 break-all text-[14.5px] font-medium text-ink">{row.titulo}</span>
                         </td>
                         <td className="px-4 py-3.5">
                           <Pill tone={status.tone} dot>{status.label}</Pill>

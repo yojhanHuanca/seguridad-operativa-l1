@@ -294,7 +294,7 @@ export function SoCasosPage() {
                                             {plan.prorroga_estado === "pendiente" ? "Prórroga pendiente" : plan.catalogo_detalle.nombre}
                                           </Pill>
                                         </div>
-                                        <p className="mt-1 line-clamp-2 text-[12.5px] font-medium leading-snug text-ink">{plan.descripcion}</p>
+                                        <p className="mt-1 line-clamp-2 break-all text-[12.5px] font-medium leading-snug text-ink">{plan.descripcion}</p>
                                         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11.5px] text-ink-quiet">
                                           <span className="inline-flex items-center gap-1"><UserCircle className="h-3.5 w-3.5" /> {plan.usuarios.nombre}</span>
                                           <span>{plan.areas.nombre_area}</span>

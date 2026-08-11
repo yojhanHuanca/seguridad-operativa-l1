@@ -98,7 +98,7 @@ export function TimelinePanel({ caso, puedeComentar = true }: { caso: CaseDetail
                 >
                   <TimelineIcon kind={t.kind} />
                 </div>
-                <p className="text-[12.5px] font-semibold text-ink leading-tight">{compactPlanCodes(t.titulo)}</p>
+                <p className="text-[12.5px] font-semibold text-ink leading-tight break-words">{compactPlanCodes(t.titulo)}</p>
                 <div className="flex items-center gap-1.5 flex-wrap mt-1">
                   <span className={cn("rounded px-1.5 py-0.5 text-[10px] font-semibold", estilo.etiqueta)}>
                     {ACTOR_ROL_LABEL[t.actor_rol] ?? t.actor_rol}
@@ -110,7 +110,7 @@ export function TimelinePanel({ caso, puedeComentar = true }: { caso: CaseDetail
                 {t.detalle && (
                   // Los eventos que enlazan evidencias llevan un payload JSON
                   // técnico al final del detalle; aquí solo va el texto legible.
-                  <p className="text-[12px] text-ink-soft mt-1.5 leading-relaxed bg-surface/60 rounded-md p-2">
+                  <p className="text-[12px] text-ink-soft mt-1.5 leading-relaxed break-words bg-surface/60 rounded-md p-2">
                     {compactPlanCodes(humanEvidenceDetail(t.detalle))}
                   </p>
                 )}

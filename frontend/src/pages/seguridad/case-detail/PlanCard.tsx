@@ -35,7 +35,7 @@ function InvBlock({ label, value, tone }: { label: string; value: string; tone?:
       <p className={cn("text-[11px] font-semibold tracking-wide uppercase mb-1.5", tone === "critical" ? "text-critical-ink" : "text-ink-faint")}>
         {label}
       </p>
-      <p className="text-[13.5px] text-ink-soft leading-relaxed">{value}</p>
+      <p className="text-[13.5px] text-ink-soft leading-relaxed break-words">{value}</p>
     </div>
   );
 }
@@ -321,15 +321,15 @@ function PlanDisplay({ caso, onEdit }: { caso: CaseDetail; onEdit: (idPlan: numb
               <span className="font-medium">{plan.catalogo_detalle.nombre}</span>
             </div>
             {plan.observaciones && (
-              <div>
+              <div className="min-w-0">
                 <span className="text-ink-quiet">Observaciones:</span>{" "}
-                <span className="font-medium">{plan.observaciones}</span>
+                <span className="font-medium break-words">{plan.observaciones}</span>
               </div>
             )}
           </div>
 
           {plan.descripcion && (
-            <p className="mt-3 text-[13px] text-ink-soft leading-relaxed">{plan.descripcion}</p>
+            <p className="mt-3 text-[13px] text-ink-soft leading-relaxed break-words">{plan.descripcion}</p>
           )}
 
           <div className="pt-3 mt-3 border-t border-line-soft">
@@ -363,7 +363,7 @@ function PlanDisplay({ caso, onEdit }: { caso: CaseDetail; onEdit: (idPlan: numb
                       </div>
                     </div>
                     {parsed.descripcion && (
-                      <div className="mt-2 text-xs">
+                      <div className="mt-2 text-xs break-words">
                         <span className="text-ink-quiet">Descripción:</span> {parsed.descripcion}
                       </div>
                     )}

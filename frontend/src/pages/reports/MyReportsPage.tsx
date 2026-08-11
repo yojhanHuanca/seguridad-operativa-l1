@@ -149,7 +149,7 @@ export function MyReportsPage() {
                       <Mail className="mt-0.5 h-4 w-4 shrink-0 text-warning-ink" />
                       <div className="min-w-0 flex-1">
                         <p className="text-[12.5px] font-semibold text-warning-ink">Seguridad Operativa solicita información</p>
-                        <p className="mt-0.5 line-clamp-2 text-[12px] text-ink-soft">{solicitudPendiente.mensaje}</p>
+                        <p className="mt-0.5 line-clamp-2 break-all text-[12px] text-ink-soft">{solicitudPendiente.mensaje}</p>
                         <Link to="/reportes/notificaciones">
                           <Button variant="secondary" size="sm" className="mt-2.5">
                             Responder solicitud <ArrowRight className="h-3.5 w-3.5" />

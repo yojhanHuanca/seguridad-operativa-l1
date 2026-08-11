@@ -21,7 +21,7 @@ function InvBlock({ label, value, tone }: { label: string; value: string; tone?:
       <p className={cn("text-[11px] font-semibold tracking-wide uppercase mb-1.5", tone === "critical" ? "text-critical-ink" : "text-ink-faint")}>
         {label}
       </p>
-      <p className="text-[13.5px] text-ink-soft leading-relaxed">{value}</p>
+      <p className="text-[13.5px] text-ink-soft leading-relaxed break-words">{value}</p>
     </div>
   );
 }

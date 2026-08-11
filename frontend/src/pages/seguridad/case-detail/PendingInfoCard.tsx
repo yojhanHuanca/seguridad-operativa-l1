@@ -36,7 +36,7 @@ export function PendingInfoCard({ caso }: { caso: CaseDetail }) {
           <AlertCircle className="h-5 w-5 text-warning-ink shrink-0 mt-0.5" />
           <div className="min-w-0">
             <p className="text-[13.5px] font-semibold text-ink">Solicitud enviada</p>
-            <p className="text-[13px] text-ink-soft mt-1 leading-relaxed">{solicitud.mensaje}</p>
+            <p className="text-[13px] text-ink-soft mt-1 leading-relaxed break-words">{solicitud.mensaje}</p>
             <p className="text-[11.5px] text-ink-quiet mt-2">
               Solicitada {solicitud.fecha_solicitud ? relativeTime(solicitud.fecha_solicitud) : ""}
             </p>

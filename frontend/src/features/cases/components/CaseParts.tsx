@@ -153,7 +153,7 @@ export function DescriptionBlock({ description }: { description: string }) {
     <div className="space-y-4">
       <div>
         <p className="text-[11px] font-semibold tracking-wide uppercase text-ink-faint mb-1.5">Descripción del evento</p>
-        <p className="text-[13.5px] text-ink-soft leading-relaxed">{description}</p>
+        <p className="text-[13.5px] text-ink-soft leading-relaxed break-words">{description}</p>
       </div>
     </div>
   );

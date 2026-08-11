@@ -517,7 +517,7 @@ function ReporteCreado({ codigo }: { codigo: string }) {
 
       <div className="mt-4">
         <p className="text-[11px] font-medium uppercase tracking-wide text-ink-faint">Descripción</p>
-        <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">{caso.descripcion}</p>
+        <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft break-words">{caso.descripcion}</p>
       </div>
 
       <div className="mt-4 border-t border-line-soft pt-3">
