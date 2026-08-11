@@ -53,13 +53,12 @@ export function InvestigationCard({ caso }: { caso: CaseDetail }) {
   // Aviso en color cuando la investigación está lista pero aún no hay plan.
   const sinPlan = caso.planes_accion.length === 0;
   const [editMode, setEditMode] = useState(!inv);
-  const [findings, setFindings] = useState(inv?.hallazgos ?? "");
   const [rootCause, setRootCause] = useState(inv?.causa_raiz ?? "");
   const [conclusions, setConclusions] = useState(inv?.conclusiones ?? "");
   const [observations, setObservations] = useState(inv?.observaciones ?? "");
 
   const save = useSaveInvestigation(caso.codigo_sop);
-  const canSave = findings.trim() && rootCause.trim() && conclusions.trim();
+  const canSave = rootCause.trim() && conclusions.trim();
 
   // Ya registrada y sin editar: vista de solo lectura.
   if (inv && !editMode) {
@@ -88,7 +87,6 @@ export function InvestigationCard({ caso }: { caso: CaseDetail }) {
         {sinPlan && <SinPlanAviso />}
         <div className="space-y-4">
           <InvBlock label="Riesgo evaluado" value={riesgoLabel} />
-          <InvBlock label="Descripción de evento" value={inv.hallazgos} />
           <InvBlock label="Causa raíz" value={inv.causa_raiz} tone="critical" />
           <InvBlock label="Conclusiones" value={inv.conclusiones} />
           {inv.observaciones && <InvBlock label="Observaciones" value={inv.observaciones} />}
@@ -125,9 +123,6 @@ export function InvestigationCard({ caso }: { caso: CaseDetail }) {
       {sinPlan && <SinPlanAviso />}
       <div className="space-y-4">
         <InvBlock label="Riesgo evaluado" value={riesgoLabel} />
-        <Field label="Descripción de evento" required>
-          <Textarea value={findings} onChange={(e) => setFindings(e.target.value)} placeholder="¿Qué se encontró durante la inspección?" rows={3} />
-        </Field>
         <Field label="Causa raíz" required>
           <Textarea value={rootCause} onChange={(e) => setRootCause(e.target.value)} placeholder="¿Cuál es la causa originaria del evento?" rows={2} />
         </Field>
@@ -149,7 +144,6 @@ export function InvestigationCard({ caso }: { caso: CaseDetail }) {
             onClick={() =>
               save.mutate(
                 {
-                  hallazgos: findings.trim(),
                   causa_raiz: rootCause.trim(),
                   conclusiones: conclusions.trim(),
                   observaciones: observations.trim() || undefined,

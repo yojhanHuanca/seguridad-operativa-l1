@@ -100,7 +100,7 @@ export function InfoRow({ icon, label, value }: { icon: ReactNode; label: string
       <span className="text-ink-faint mt-0.5">{icon}</span>
       <div className="flex-1 min-w-0">
         <p className="text-[11px] text-ink-faint">{label}</p>
-        <p className="text-[12.5px] text-ink font-medium leading-snug mt-0.5">{value}</p>
+        <p className="text-[12.5px] text-ink font-medium leading-snug mt-0.5 break-words">{value}</p>
       </div>
     </div>
   );

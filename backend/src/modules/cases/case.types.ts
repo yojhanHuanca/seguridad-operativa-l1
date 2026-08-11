@@ -7,6 +7,7 @@ export interface EvaluateCaseDto {
   id_area?: number | null | undefined; // areas.id_area -> casos_sop.area_responsable
   id_responsable?: number | null | undefined; // usuarios.id_usuario -> casos_sop.responsable_hallazgo
   clasificacion: string; // texto libre del selector de Evaluación -> casos_sop.clasificacion
+  descripcion_evento: string; // casos_sop.descripcion_evento -> se copia como hallazgos al guardar la investigación
   peligro?: string | null | undefined;
   consecuencia?: string | null | undefined;
   observaciones?: string | null | undefined;
@@ -30,7 +31,6 @@ export interface RespondInfoDto {
 }
 
 export interface SaveInvestigationDto {
-  hallazgos: string;
   causa_raiz: string;
   conclusiones: string;
   observaciones?: string | null | undefined;

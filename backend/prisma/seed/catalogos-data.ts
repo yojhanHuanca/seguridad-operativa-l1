@@ -384,8 +384,8 @@ export const CATALOGOS: CatalogGroup[] = [
       "No viene del CSV — son los 8 valores exactos del paso 'Ubicación' (campo opcional 'Lugar específico') del wizard ya desplegado en sigma-l1-metromet.vercel.app.",
     items: [
       { nombre: "Andén" },
-      // El cliente pidió "Coche" en vez de "Vagón" (terminología de Línea 1).
-      { nombre: "Coche" },
+      // El cliente pidió "Tren" en vez de "Vagón"/"Coche" (terminología de Línea 1).
+      { nombre: "Tren" },
       { nombre: "Escalera eléctrica" },
       { nombre: "Ascensor" },
       { nombre: "Boletería" },

@@ -446,6 +446,7 @@ export class CaseRepository {
         data: {
           analisis_riesgo: dto.id_riesgo,
           clasificacion: dto.clasificacion,
+          descripcion_evento: dto.descripcion_evento,
           estado_hallazgo: estado.id_detalle,
           ...(dto.id_area != null ? { area_responsable: dto.id_area } : {}),
           ...(dto.id_responsable != null ? { responsable_hallazgo: dto.id_responsable } : {}),
@@ -527,18 +528,23 @@ export class CaseRepository {
   static async saveInvestigation(id_caso: number, dto: SaveInvestigationDto) {
     const estado = await CaseRepository.findEstado("Plan de Acción");
     return prisma.$transaction(async (tx) => {
+      // La descripción del evento se escribió en Evaluación; acá solo se
+      // copia como "hallazgos" para no duplicar el campo en el formulario.
+      const caso = await tx.casos_sop.findUniqueOrThrow({ where: { id_caso }, select: { descripcion_evento: true } });
+      const hallazgos = caso.descripcion_evento?.trim() || "Sin descripción registrada en Evaluación.";
+
       const investigacion = await tx.investigacion_caso.upsert({
         where: { id_caso },
         create: {
           id_caso,
-          hallazgos: dto.hallazgos,
+          hallazgos,
           causa_raiz: dto.causa_raiz,
           conclusiones: dto.conclusiones,
           observaciones: dto.observaciones ?? null,
           investigador: dto.investigador ?? null,
         },
         update: {
-          hallazgos: dto.hallazgos,
+          hallazgos,
           causa_raiz: dto.causa_raiz,
           conclusiones: dto.conclusiones,
           observaciones: dto.observaciones ?? null,

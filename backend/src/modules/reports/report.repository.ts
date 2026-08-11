@@ -93,9 +93,10 @@ export class ReportRepository {
           // El wizard no pide Área, Tipo SOP ni Tipo (No Conformidad/
           // Observación) — Seguridad Operativa los define al derivar el
           // caso, en la etapa de Evaluación.
-          const [estadoRecepcion, procedencia, tipoSopDefault, tipoDefault, tipoReporte, lugar, lugarEspecifico] =
+          const [estadoRecepcion, estadoEvaluacion, procedencia, tipoSopDefault, tipoDefault, tipoReporte, lugar, lugarEspecifico] =
             await Promise.all([
               tx.catalogo_detalle.findFirst({ where: { nombre: "Recepción", catalogos: { nombre: "Estado Hallazgo" } } }),
+              tx.catalogo_detalle.findFirst({ where: { nombre: "Evaluación", catalogos: { nombre: "Estado Hallazgo" } } }),
               tx.catalogo_detalle.findFirst({ where: { nombre: "Incidencias", catalogos: { nombre: "Procedencia" } } }),
               tx.catalogo_detalle.findFirst({ where: { nombre: "Hallazgo", catalogos: { nombre: "Tipo SOP" } } }),
               tx.catalogo_detalle.findFirst({ where: { nombre: "Observación", catalogos: { nombre: "Tipo" } } }),
@@ -106,6 +107,7 @@ export class ReportRepository {
                 : Promise.resolve(null),
             ]);
           if (!estadoRecepcion) throw new Error("Falta el estado 'Recepción' en el catálogo 'Estado Hallazgo'");
+          if (!estadoEvaluacion) throw new Error("Falta el estado 'Evaluación' en el catálogo 'Estado Hallazgo'");
           if (!procedencia) throw new Error("Falta el valor 'Incidencias' en el catálogo 'Procedencia'");
           if (!tipoSopDefault) throw new Error("Falta el valor 'Hallazgo' en el catálogo 'Tipo SOP'");
           if (!tipoDefault) throw new Error("Falta el valor 'Observación' en el catálogo 'Tipo'");
@@ -123,8 +125,11 @@ export class ReportRepository {
 
           const esIdentificado = dto.modalidad === "identificado";
           // Registrado por el analista desde el panel de SO: el caso nace con
-          // su firma en la bitácora en vez de la del reportante de campo.
+          // su firma en la bitácora en vez de la del reportante de campo, y
+          // se salta Recepción (esa etapa es para filtrar reportes que llegan
+          // de afuera; un caso que ya crea SO no necesita ese filtro).
           const esRegistroSO = dto.origen === "seguridad_operativa";
+          const estadoInicial = esRegistroSO ? estadoEvaluacion : estadoRecepcion;
           const nombreReportante = dto.nombre_reportante?.trim() || null;
           const ubicacionTitulo = [lugar.nombre, lugarEspecifico?.nombre].filter(Boolean).join(" · ");
           const titulo = `${tipoReporte.nombre} en ${ubicacionTitulo}`;
@@ -135,7 +140,7 @@ export class ReportRepository {
               titulo,
               fecha_hallazgo: ahora,
               fecha_evento: ahora,
-              estado_hallazgo: estadoRecepcion.id_detalle,
+              estado_hallazgo: estadoInicial.id_detalle,
               procedencia: procedencia.id_detalle,
               tipo: tipoDefault.id_detalle,
               descripcion: dto.descripcion,
@@ -162,7 +167,7 @@ export class ReportRepository {
               actor_rol: esRegistroSO ? "seguridad" : "reportante",
               titulo: esRegistroSO ? "Reporte registrado por Seguridad Operativa" : "Reporte registrado por trabajador",
               detalle: esRegistroSO
-                ? `${codigo_sop} creado desde el panel de Seguridad Operativa. Queda en la bandeja para su recepción.`
+                ? `${codigo_sop} creado desde el panel de Seguridad Operativa. Pasa directo a Evaluación.`
                 : `${codigo_sop} creado. Enviado a la bandeja de Seguridad Operativa.`,
             },
           });
@@ -177,7 +182,7 @@ export class ReportRepository {
                 : esIdentificado
                   ? nombreReportante || "un reportante identificado"
                   : "un reportante anónimo"
-            }. Pendiente de recepción.`,
+            }. ${esRegistroSO ? "Pendiente de evaluación." : "Pendiente de recepción."}`,
           });
 
           if (archivos.length > 0) {

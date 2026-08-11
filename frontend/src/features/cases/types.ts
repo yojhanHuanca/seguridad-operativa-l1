@@ -118,6 +118,7 @@ export interface EventoOperativoDetalle {
 export interface CaseDetail extends CaseListItem {
   peligro: string | null;
   consecuencia: string | null;
+  descripcion_evento: string | null;
   clasificacion: string | null;
   acr: string | null;
   observaciones: string | null;

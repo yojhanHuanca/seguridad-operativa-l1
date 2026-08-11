@@ -9,6 +9,7 @@ const evaluateSchema = z.object({
   id_area: idPositivo.optional().nullable(),
   id_responsable: idPositivo.optional().nullable(),
   clasificacion: z.string().trim().min(1, "Seleccione una clasificación").max(200),
+  descripcion_evento: z.string().trim().min(5, "Describa el evento"),
   peligro: z.string().trim().max(1000).optional().nullable(),
   consecuencia: z.string().trim().max(1000).optional().nullable(),
   observaciones: z.string().trim().max(2000).optional().nullable(),
@@ -119,7 +120,8 @@ const respondInfoSchema = z.object({
 });
 
 const investigationSchema = z.object({
-  hallazgos: z.string().trim().min(5, "Describa los hallazgos"),
+  // La descripción del evento ("hallazgos") se escribe en Evaluación
+  // (casos_sop.descripcion_evento) y se copia acá al guardar la investigación.
   causa_raiz: z.string().trim().min(5, "Describa la causa raíz"),
   conclusiones: z.string().trim().min(5, "Describa las conclusiones"),
   observaciones: z.string().trim().max(1000).optional().nullable(),

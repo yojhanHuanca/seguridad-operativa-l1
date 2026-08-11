@@ -27,6 +27,7 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
   const [classification, setClassification] = useState(caso.clasificacion ?? "");
   const [requiresInvestigation, setRequiresInvestigation] = useState(true);
   const [observations, setObservations] = useState("");
+  const [descripcionEvento, setDescripcionEvento] = useState(caso.descripcion_evento ?? "");
   const [peligro, setPeligro] = useState(caso.peligro ?? "");
   const [consecuencia, setConsecuencia] = useState(caso.consecuencia ?? "");
 
@@ -34,7 +35,11 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
     ? classification.slice(9).trim()
     : classification.trim();
   const motivoOmision = observations.trim();
-  const canSave = cleanClassification.length > 0 && idRiesgo != null && (requiresInvestigation || motivoOmision.length > 0);
+  const canSave =
+    cleanClassification.length > 0 &&
+    idRiesgo != null &&
+    descripcionEvento.trim().length > 0 &&
+    (requiresInvestigation || motivoOmision.length > 0);
 
   const riesgoSel = riesgoItems.find((r) => r.id_detalle === idRiesgo);
   const risk = riesgoSel?.codigo as RiskLevel | undefined;
@@ -67,6 +72,19 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
         </p>
       </div>
 
+      {/* Antes se escribía recién en Investigación ("hallazgos"); se adelanta
+          acá porque el evento ya se conoce desde la evaluación y el resto del
+          análisis (peligro, consecuencia) se redacta a partir de esta
+          descripción. */}
+      <Field label="Descripción de evento" required>
+        <Textarea
+          value={descripcionEvento}
+          onChange={(e) => setDescripcionEvento(e.target.value)}
+          placeholder="¿Qué se encontró durante la inspección o qué ocurrió?"
+          rows={3}
+        />
+      </Field>
+
       <Field label="Peligro">
         <Textarea value={peligro} onChange={(e) => setPeligro(e.target.value)} placeholder="Identifique el peligro o fuente de riesgo…" rows={2} />
       </Field>
@@ -77,7 +95,7 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
 
       {/* Matriz 4×5 (severidad 1-4 × probabilidad A-E), como en el prototipo:
           se elige la celda directamente en vez de buscarla en una lista. */}
-      <Field label="Análisis de riesgo (matriz 1A-4E)" required>
+      <Field label="Riesgo evaluado (matriz 1A-4E)" required>
         {riesgoItems.length > 0 ? (
           <RiskMatrixPicker items={riesgoItems} value={idRiesgo} onChange={setIdRiesgo} />
         ) : (
@@ -185,6 +203,7 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
               {
                 id_riesgo: Number(idRiesgo),
                 clasificacion: cleanClassification,
+                descripcion_evento: descripcionEvento.trim(),
                 peligro: peligro.trim() || null,
                 consecuencia: consecuencia.trim() || null,
                 observaciones: requiresInvestigation ? null : motivoOmision,

@@ -176,7 +176,6 @@ export function PlanCard({ caso }: { caso: CaseDetail }) {
                     <RiskPill risk={risk} showCategory />
                   </div>
                 )}
-                <InvBlock label="Descripción de evento" value={inv.hallazgos} />
                 <InvBlock label="Causa raíz" value={inv.causa_raiz} tone="critical" />
                 <InvBlock label="Conclusiones" value={inv.conclusiones} />
                 {/* Opcional en el formulario, así que solo se muestra si se llenó. */}

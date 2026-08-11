@@ -541,36 +541,51 @@ function PlanExecutionBoard({
                         Sin comentarios registrados para este plan.
                       </p>
                     )}
-                    {comentarios.slice(0, 4).map((s) => {
-                      const parsed = parseActivityDescription(s.actividad.descripcion);
-                      return (
-                        <div key={`seg-${s.id}`} className="rounded-lg bg-surface/60 p-2.5">
-                          <div className="flex items-start justify-between gap-3">
-                            <p className="text-[12.5px] font-medium text-ink leading-snug break-words">{s.comentario}</p>
-                            <span className="text-[10.5px] text-ink-faint shrink-0">{s.fecha ? relativeTime(s.fecha) : ""}</span>
+                    {/* Comentarios de avance y eventos del timeline se mezclaban
+                        en dos bloques separados (primero todos los comentarios,
+                        después los eventos) sin importar la fecha, así que la
+                        conversación no se leía en orden. Ahora salen todos
+                        juntos, más reciente primero. */}
+                    {[
+                      ...comentarios.map((s) => ({
+                        key: `seg-${s.id}`,
+                        fecha: s.fecha,
+                        node: (
+                          <div className="rounded-lg bg-surface/60 p-2.5">
+                            <div className="flex items-start justify-between gap-3">
+                              <p className="text-[12.5px] font-medium text-ink leading-snug break-words">{s.comentario}</p>
+                              <span className="text-[10.5px] text-ink-faint shrink-0">{s.fecha ? relativeTime(s.fecha) : ""}</span>
+                            </div>
+                            <p className="mt-1 text-[10.5px] text-ink-quiet">
+                              {s.usuario} · {s.porcentaje}%
+                            </p>
                           </div>
-                          <p className="mt-1 text-[10.5px] text-ink-quiet">
-                            {s.usuario} · {s.porcentaje}% · {parsed.descripcion}
-                          </p>
-                        </div>
-                      );
-                    })}
-                    {eventos.slice(0, 3).map((evento) => (
-                      <div key={`evt-${evento.id_evento}`} className="rounded-lg bg-surface/60 p-2.5">
-                        <div className="flex items-start justify-between gap-3">
-                          <p className="text-[12.5px] font-medium text-ink leading-snug break-words">{compactPlanCodes(evento.titulo)}</p>
-                          <span className="text-[10.5px] text-ink-faint shrink-0">{evento.fecha ? relativeTime(evento.fecha) : ""}</span>
-                        </div>
-                        {evento.detalle && (
-                          <p className="mt-1 text-[12px] text-ink-soft leading-relaxed break-words">
-                            {compactPlanCodes(humanEvidenceDetail(evento.detalle))}
-                          </p>
-                        )}
-                        <p className="mt-1 text-[10.5px] text-ink-quiet">
-                          {ACTOR_ROL_LABEL[evento.actor_rol] ?? evento.actor_rol} · {evento.actor}
-                        </p>
-                      </div>
-                    ))}
+                        ),
+                      })),
+                      ...eventos.map((evento) => ({
+                        key: `evt-${evento.id_evento}`,
+                        fecha: evento.fecha,
+                        node: (
+                          <div className="rounded-lg bg-surface/60 p-2.5">
+                            <div className="flex items-start justify-between gap-3">
+                              <p className="text-[12.5px] font-medium text-ink leading-snug break-words">{compactPlanCodes(evento.titulo)}</p>
+                              <span className="text-[10.5px] text-ink-faint shrink-0">{evento.fecha ? relativeTime(evento.fecha) : ""}</span>
+                            </div>
+                            {evento.detalle && (
+                              <p className="mt-1 text-[12px] text-ink-soft leading-relaxed break-words">
+                                {compactPlanCodes(humanEvidenceDetail(evento.detalle))}
+                              </p>
+                            )}
+                            <p className="mt-1 text-[10.5px] text-ink-quiet">
+                              {ACTOR_ROL_LABEL[evento.actor_rol] ?? evento.actor_rol} · {evento.actor}
+                            </p>
+                          </div>
+                        ),
+                      })),
+                    ]
+                      .sort((a, b) => +new Date(b.fecha ?? 0) - +new Date(a.fecha ?? 0))
+                      .slice(0, 6)
+                      .map((item) => <div key={item.key}>{item.node}</div>)}
                   </div>
                 </div>
 

@@ -19,6 +19,7 @@ export interface EvaluateInput {
   id_area?: number | null;
   id_responsable?: number | null;
   clasificacion: string;
+  descripcion_evento: string;
   peligro?: string | null;
   consecuencia?: string | null;
   observaciones?: string | null;
@@ -48,7 +49,6 @@ export interface RollbackStageInput {
 }
 
 export interface InvestigationInput {
-  hallazgos: string;
   causa_raiz: string;
   conclusiones: string;
   observaciones?: string;

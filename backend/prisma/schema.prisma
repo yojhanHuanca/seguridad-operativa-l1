@@ -98,6 +98,11 @@ model casos_sop {
   subtipo_sop                                                  Int?
   peligro                                                      String?
   consecuencia                                                 String?
+  // Descripción del evento redactada por Seguridad Operativa en Evaluación
+  // (antes vivía como "hallazgos" en investigacion_caso; se adelantó porque
+  // ese dato ya se conoce desde la evaluación, no hace falta esperar a la
+  // investigación para escribirlo).
+  descripcion_evento                                           String?
   // Clasificación libre que asigna Seguridad Operativa en la etapa de
   // Evaluación (ej. "Hallazgo · Caída", "No conformidad"). Es más granular
   // que `tipo`, que solo distingue No Conformidad / Observación.

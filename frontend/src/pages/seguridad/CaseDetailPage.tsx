@@ -401,18 +401,6 @@ function PlanActionPrintDocument({ caso }: { caso: CaseDetail }) {
       </section>
 
       <section className="mt-6">
-        <h2 className="border-b border-line pb-2 text-[18px] font-bold text-brand-800">Objetivo del Plan de Acción</h2>
-        <div className="mt-3 space-y-2 text-[14px] leading-relaxed">
-          {caso.planes_accion.map((plan) => (
-            <p key={plan.id_plan}>
-              <span className="font-mono font-semibold text-brand-800">{shortPlanCode(plan.codigo_plan)}</span>{" "}
-              <span>{planTipoAccion(plan)} — {planDescripcion(plan)}</span>
-            </p>
-          ))}
-        </div>
-      </section>
-
-      <section className="mt-6">
         <h2 className="border-b border-line pb-2 text-[18px] font-bold text-brand-800">Actividades</h2>
         <table className="mt-3 w-full border-collapse text-left text-[13px]">
           <thead>

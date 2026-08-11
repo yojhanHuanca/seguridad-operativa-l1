@@ -352,9 +352,9 @@ function SectionHeader({
 
 function InfoTile({ label, value, wide }: { label: string; value?: ReactNode; wide?: boolean }) {
   return (
-    <div className={cn("rounded-xl border border-line-soft bg-surface/60 px-4 py-3.5", wide && "md:col-span-2")}>
-      <p className="mb-2 text-[11.5px] font-semibold uppercase tracking-wider text-ink-faint">{label}</p>
-      <div className="text-[14px] leading-relaxed text-ink break-words">{value ?? "-"}</div>
+    <div className={cn("rounded-lg border border-line-soft bg-surface/60 px-3 py-2", wide && "md:col-span-2")}>
+      <p className="mb-0.5 text-[10.5px] font-semibold uppercase tracking-wider text-ink-faint">{label}</p>
+      <div className="text-[13px] leading-snug text-ink break-words">{value ?? "-"}</div>
     </div>
   );
 }
@@ -1045,16 +1045,13 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
                   <h2 className="text-[17px] font-semibold text-ink">Investigación</h2>
                 </div>
                 {caso.investigacion_caso ? (
-                  // Se muestran los cuatro campos de la investigación con las
-                  // mismas etiquetas del formulario que llena Seguridad
-                  // Operativa (InvestigationCard), para que el jefe lea lo
-                  // mismo que se escribió. Antes había una "Descripción
-                  // técnica" que en realidad traía `plan.descripcion`: no es un
-                  // campo de la investigación, ya se muestra arriba como
-                  // "Descripción" y llegaba con el prefijo del tipo de acción
-                  // sin decodificar ("Preventiva: ...").
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <InfoTile label="Descripción de evento" value={caso.investigacion_caso.hallazgos} />
+                  // Se muestran los campos de la investigación con las mismas
+                  // etiquetas del formulario que llena Seguridad Operativa
+                  // (InvestigationCard), para que el jefe lea lo mismo que se
+                  // escribió. La descripción del evento ya no es un campo de
+                  // la investigación (se escribe en Evaluación) y se muestra
+                  // arriba, en la sección del plan.
+                  <div className="grid gap-2.5 md:grid-cols-2">
                     <InfoTile label="Causa raíz" value={caso.investigacion_caso.causa_raiz} />
                     <InfoTile
                       label="Conclusiones"

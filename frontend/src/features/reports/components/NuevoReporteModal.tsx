@@ -146,7 +146,6 @@ export function NuevoReporteModal({ open, onClose }: { open: boolean; onClose: (
         open={open}
         onClose={cerrar}
         title="Reporte registrado"
-        subtitle="Así quedó guardado el reporte."
         size="lg"
         footer={
           <>
@@ -367,7 +366,7 @@ export function NuevoReporteModal({ open, onClose }: { open: boolean; onClose: (
                 <Textarea
                   rows={5}
                   maxLength={300}
-                  placeholder="Describa brevemente lo observado."
+                  placeholder="Describa brevemente lo observado y el riesgo que puede generar."
                   {...form.register("descripcion")}
                 />
               </Field>
@@ -400,28 +399,30 @@ export function NuevoReporteModal({ open, onClose }: { open: boolean; onClose: (
                 Su nombre queda registrado en el reporte y en la bitácora del caso.
               </p>
 
-              <div className="mt-4 space-y-3 rounded-xl border border-line-soft p-4">
+              <div className="mt-3 space-y-3 rounded-xl border border-line-soft p-3.5">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
                   Resumen del reporte
                 </p>
-                <ResumenRow
-                  label="Tipo de reporte"
-                  value={nombreCatalogo(catalogs.byName, "Tipo de Reporte", valores.id_tipo)}
-                />
-                <ResumenRow
-                  label={esPatio ? "Patio Taller" : "Estación"}
-                  value={nombreCatalogo(catalogs.byName, "Lugar de Incidente", valores.id_lugar)}
-                />
-                {!esPatio && (
-                  <ResumenRow
-                    label="Lugar específico"
-                    value={nombreCatalogo(catalogs.byName, "Lugar Específico", valores.id_lugar_especifico)}
+                <div className="grid gap-x-6 gap-y-3 sm:grid-cols-3">
+                  <CampoCreado
+                    label="Tipo de reporte"
+                    value={nombreCatalogo(catalogs.byName, "Tipo de Reporte", valores.id_tipo)}
                   />
-                )}
-                <ResumenRow label="Evidencias" value={files.length > 0 ? `${files.length} archivo(s)` : "—"} />
-                <div>
-                  <p className="text-[11.5px] text-ink-quiet">Descripción</p>
-                  <p className="mt-1 text-[12.5px] leading-snug text-ink">{descripcion || "—"}</p>
+                  <CampoCreado
+                    label={esPatio ? "Patio Taller" : "Estación"}
+                    value={nombreCatalogo(catalogs.byName, "Lugar de Incidente", valores.id_lugar)}
+                  />
+                  {!esPatio && (
+                    <CampoCreado
+                      label="Lugar específico"
+                      value={nombreCatalogo(catalogs.byName, "Lugar Específico", valores.id_lugar_especifico)}
+                    />
+                  )}
+                  <CampoCreado label="Evidencias" value={files.length > 0 ? `${files.length} archivo(s)` : "—"} />
+                </div>
+                <div className="pt-1">
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-ink-faint">Descripción</p>
+                  <p className="mt-0.5 break-words text-[12.5px] leading-snug text-ink">{descripcion || "—"}</p>
                 </div>
               </div>
 
@@ -433,15 +434,6 @@ export function NuevoReporteModal({ open, onClose }: { open: boolean; onClose: (
         </div>
       )}
     </Modal>
-  );
-}
-
-function ResumenRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-start justify-between gap-3">
-      <p className="shrink-0 text-[11.5px] text-ink-quiet">{label}</p>
-      <p className="min-w-0 break-words text-right text-[12.5px] font-medium text-ink">{value}</p>
-    </div>
   );
 }
 
@@ -481,7 +473,9 @@ function ReporteCreado({ codigo }: { codigo: string }) {
             <StagePill stage={stageFromEstado(estado)} />
           </div>
           <p className="mt-1 text-[12px] text-ink-quiet">
-            Ya está en la bandeja de Seguridad Operativa, pendiente de recepción.
+            {estado === "Recepción"
+              ? "Ya está en la bandeja de Seguridad Operativa, pendiente de recepción."
+              : "Pasó directo a Evaluación."}
           </p>
         </div>
       </div>
@@ -490,7 +484,7 @@ function ReporteCreado({ codigo }: { codigo: string }) {
         {caso.titulo?.trim() || "Reporte registrado"}
       </p>
 
-      <div className="mt-3 grid gap-x-6 gap-y-3 sm:grid-cols-2">
+      <div className="mt-3 grid gap-x-6 gap-y-3 sm:grid-cols-3">
         <CampoCreado
           label="Tipo de reporte"
           value={evento?.catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle?.nombre ?? "—"}
