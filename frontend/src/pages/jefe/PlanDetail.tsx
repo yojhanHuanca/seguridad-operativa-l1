@@ -18,7 +18,6 @@ import {
   Save,
   Timer,
   Upload,
-  UserRound,
   Video,
   X,
 } from "lucide-react";
@@ -32,6 +31,7 @@ import { Modal } from "@/design-system/primitives/Modal";
 import { Field, Input, Textarea } from "@/design-system/primitives/Input";
 import { parseActivityDescription } from "@/features/cases/lib/activityMeta";
 import { compactPlanCodes, shortPlanCode } from "@/features/cases/lib/planLabels";
+import { progresoPorHitos } from "@/features/cases/lib/planProgress";
 import {
   evidenciasDelEvento,
   humanEvidenceDetail,
@@ -86,10 +86,15 @@ function activityProgressValue(activity: PlanActividad): number {
 }
 
 function calcProgress(plan: PlanItem): number {
-  const items = plan.actividades_plan ?? [];
-  if (items.length === 0) return 0;
-  const total = items.reduce((acc, item) => acc + activityProgressValue(item), 0);
-  return Math.round(total / items.length);
+  const flow = planFlow(plan);
+  const eventos = planTimeline(plan);
+  return progresoPorHitos({
+    aceptado: flow.aceptado,
+    finalizado: flow.finalizado || flow.cerrado || flow.enVerificacion,
+    detenido: flow.rechazado,
+    comentarios: eventos.filter((e) => e.kind === "comentario").length,
+    evidencias: extractPlanEvidenceFiles(plan, plan.casos_sop.timeline_caso ?? [], plan.casos_sop.anexos_caso ?? []).length,
+  });
 }
 
 function planTipoAccion(plan: PlanItem): string {
@@ -587,12 +592,6 @@ function PlanChoiceCard({ codigo, plan }: { codigo: string; plan: PlanItem }) {
 
       <div className="mt-4 grid gap-x-8 gap-y-3 text-[13.5px] md:grid-cols-2 xl:grid-cols-4">
         <div className="flex items-center gap-2 text-ink-soft">
-          <UserRound className="h-3.5 w-3.5 text-ink-faint" />
-          <span>Responsable:</span>
-          <span className="font-semibold text-ink">{plan.usuarios.nombre}</span>
-          {plan.usuarios.cargo && <span className="text-ink-faint">· {plan.usuarios.cargo}</span>}
-        </div>
-        <div className="flex items-center gap-2 text-ink-soft">
           <Building2 className="h-3.5 w-3.5 text-ink-faint" />
           <span>Área:</span>
           <span className="font-semibold text-ink">{plan.areas.nombre_area}</span>
@@ -691,6 +690,7 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
   const [fileAccept, setFileAccept] = useState(ACCEPT);
   const [finalDescription, setFinalDescription] = useState("");
   const [comentarioCierre, setComentarioCierre] = useState("");
+  const [historialAbierto, setHistorialAbierto] = useState(true);
   const [updateOpen, setUpdateOpen] = useState(false);
   const [updateDescription, setUpdateDescription] = useState("");
   const [updateFiles, setUpdateFiles] = useState<File[]>([]);
@@ -1210,7 +1210,9 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
           </Card>
         )}
 
-        {registrosEnviados.length > 0 && (
+        {/* Incluye el cierre original, no solo las adicionales: el jefe tiene
+            que poder releer lo que envio antes de agregar una correccion. */}
+        {actualizaciones.length > 0 && (
           <Card className="border-line-soft shadow-sm">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -1224,10 +1226,23 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
                   </p>
                 </div>
               </div>
+
+              {/* El historial puede llegar a cinco registros con sus evidencias:
+                  se puede plegar para no empujar el resto de la pantalla. */}
+              <button
+                type="button"
+                onClick={() => setHistorialAbierto((v) => !v)}
+                aria-expanded={historialAbierto}
+                aria-label={historialAbierto ? "Ocultar historial" : "Mostrar historial"}
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-ink-quiet transition-colors hover:bg-surface-2 hover:text-ink"
+              >
+                {historialAbierto ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </button>
             </div>
 
+            {historialAbierto && (
             <div className="mt-4 space-y-3">
-              {registrosEnviados.map((registro) => (
+              {actualizaciones.map((registro) => (
                 <div key={registro.id} className="rounded-xl border border-line-soft bg-surface/50 px-4 py-3.5">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-[13px] font-semibold text-ink">{registro.etiqueta}</p>
@@ -1248,6 +1263,7 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
                 </div>
               ))}
             </div>
+            )}
           </Card>
         )}
 

@@ -25,6 +25,7 @@ import {
 import { parseActivityDescription } from "@/features/cases/lib/activityMeta";
 import { compactPlanCodes, numeroDePlan, shortPlanCode } from "@/features/cases/lib/planLabels";
 import { humanEvidenceDetail, planEvidenceFiles, timelineBelongsToPlan } from "@/features/cases/lib/planEvidence";
+import { progresoPorHitos } from "@/features/cases/lib/planProgress";
 import { ACTOR_ROL_LABEL } from "@/features/cases/lib/workflow";
 import { apiErrorMessage } from "@/lib/api";
 import { formatDate, formatDateTime, relativeTime } from "@/lib/format";
@@ -48,10 +49,20 @@ function avanceActividad(act: ActividadPlan): number {
   return estado === "Completado" ? 100 : estado === "En progreso" ? 50 : 0;
 }
 
-function avancePlan(plan: PlanAccion): number {
-  if (plan.actividades_plan.length === 0) return 0;
-  const total = plan.actividades_plan.reduce((acc, a) => acc + avanceActividad(a), 0);
-  return Math.round(total / plan.actividades_plan.length);
+/**
+ * Mismo cálculo por hitos que ve el Jefe del Área, para que ambos paneles
+ * muestren el mismo número. Necesita el caso porque los comentarios y las
+ * evidencias del plan viven en el timeline del expediente.
+ */
+function avancePlanEnCaso(caso: CaseDetail, plan: PlanAccion): number {
+  const key = estadoPlanKey(plan);
+  const eventos = timelineDelPlan(caso, plan);
+  return progresoPorHitos({
+    aceptado: key === "ejecucion" || key === "finalizado" || key === "cerrado",
+    finalizado: key === "finalizado" || key === "cerrado",
+    comentarios: eventos.filter((e) => e.kind === "comentario").length,
+    evidencias: evidenciasDelPlan(caso, plan).length,
+  });
 }
 
 function normalize(value?: string | null): string {
@@ -70,7 +81,11 @@ function planCerrado(plan: PlanAccion): boolean {
 }
 
 function planLegacyListoParaRevision(plan: PlanAccion): boolean {
-  return estadoPlanKey(plan) === "ejecucion" && avancePlan(plan) === 100;
+  // Planes viejos que quedaron con todas sus actividades al 100% sin pasar por
+  // el cierre; el avance por hitos no aplica acá, se mira el dato original.
+  if (plan.actividades_plan.length === 0) return false;
+  const porActividades = plan.actividades_plan.reduce((acc, a) => acc + avanceActividad(a), 0) / plan.actividades_plan.length;
+  return estadoPlanKey(plan) === "ejecucion" && Math.round(porActividades) === 100;
 }
 
 function planRevisablePorSo(plan: PlanAccion): boolean {
@@ -280,7 +295,8 @@ function PlanExecutionBoard({
 
       <div className="mt-5 space-y-4">
         {caso.planes_accion.map((plan, index) => {
-          const avance = avancePlan(plan);
+          const avance = avancePlanEnCaso(caso, plan);
+          const actualizacionesDelPlan = timelineDelPlan(caso, plan).filter((e) => e.kind === "actualizacion").length;
           const requiereRevision = planRevisablePorSo(plan);
           const cerradoPorSo = planCerrado(plan);
           const estadoPlan =
@@ -321,6 +337,13 @@ function PlanExecutionBoard({
                   <span className="text-[11px] text-ink-faint">Plan {numeroDePlan(plan.codigo_plan) ?? index + 1}</span>
                   <Pill tone={estadoPlan.tone} dot>{estadoPlan.label}</Pill>
                   {pendienteProrroga && <Pill tone="warning" dot>Prórroga pendiente</Pill>}
+                  {/* Avisa que el área agregó información después del cierre,
+                      para que SO sepa que hay algo nuevo que leer. */}
+                  {actualizacionesDelPlan > 0 && (
+                    <Pill tone="info" dot>
+                      Actualizado ({actualizacionesDelPlan})
+                    </Pill>
+                  )}
                 </span>
                 <span className="flex min-w-[190px] items-center gap-3">
                   <span className="min-w-[150px]">
