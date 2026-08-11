@@ -144,21 +144,118 @@ export class CaseRepository {
   }
 
   /** Comentario operativo de SO asociado a un plan específico. */
-  static async addPlanComment(id_plan: number, texto: string) {
+  /**
+   * Comentario sobre un plan. Lo usan los dos lados: SO desde el expediente y
+   * el Jefe del Área desde su panel, por eso el rol es parámetro y no fijo.
+   *
+   * Cuando lo escribe el jefe también queda en `seguimientos`, que es la tabla
+   * de comentarios de la actividad, además del timeline que ve SO.
+   */
+  static async addPlanComment(id_plan: number, texto: string, rol: "seguridad" | "jefe" = "seguridad", actor?: string) {
     const plan = await prisma.planes_accion.findUnique({
       where: { id_plan },
-      select: { id_caso: true, codigo_plan: true },
+      select: {
+        id_caso: true,
+        codigo_plan: true,
+        actividades_plan: { select: { id_actividad: true }, orderBy: { id_actividad: "asc" }, take: 1 },
+      },
     });
     if (!plan) throw new Error(`El plan ${id_plan} no existe`);
 
-    await CaseRepository.pushTimeline(prisma, plan.id_caso, {
-      kind: "comentario",
-      actor: ACTOR_SO,
-      actor_rol: "seguridad",
-      titulo: `Comentario SO — ${plan.codigo_plan}`,
-      detalle: texto,
+    const esJefe = rol === "jefe";
+    const quien = actor?.trim() || (esJefe ? "Jefe de Área" : ACTOR_SO);
+
+    await prisma.$transaction(async (tx) => {
+      await CaseRepository.pushTimeline(tx, plan.id_caso, {
+        kind: "comentario",
+        actor: quien,
+        actor_rol: rol,
+        titulo: esJefe ? `Comentario del área — ${plan.codigo_plan}` : `Comentario SO — ${plan.codigo_plan}`,
+        detalle: texto,
+      });
+
+      if (esJefe && plan.actividades_plan[0]) {
+        await tx.seguimientos.create({
+          data: { id_actividad: plan.actividades_plan[0].id_actividad, comentario: texto, porcentaje: null },
+        });
+      }
+
+      if (esJefe) {
+        await NotificationRepository.emitir(tx, {
+          para: { rol: "Seguridad Operativa" },
+          tipo: "ejecucion_completada",
+          titulo: `Comentario del área en ${plan.codigo_plan}`,
+          mensaje: `${quien}: ${texto}`,
+        });
+      }
     });
+
     return prisma.timeline_caso.findMany({ where: { id_caso: plan.id_caso }, orderBy: { fecha: "desc" } });
+  }
+
+  /**
+   * Quita una evidencia del plan antes de que el cierre se envíe a SO.
+   *
+   * Solo se permite mientras el plan sigue abierto: una vez finalizado, lo
+   * enviado queda bloqueado y no se puede eliminar. Se borra el anexo y se
+   * limpia su referencia del payload del timeline para que no quede apuntando
+   * a un archivo que ya no existe.
+   */
+  static async removePlanEvidence(id_plan: number, id_anexo: number, actor: string) {
+    const plan = await prisma.planes_accion.findUnique({
+      where: { id_plan },
+      select: { id_caso: true, codigo_plan: true, catalogo_detalle: { select: { nombre: true } } },
+    });
+    if (!plan) throw new Error(`El plan ${id_plan} no existe`);
+
+    const estado = (plan.catalogo_detalle?.nombre ?? "").toLowerCase();
+    if (estado.includes("finaliz") || estado.includes("cerrad")) {
+      throw new Error(`${plan.codigo_plan} ya fue enviado a Seguridad Operativa; sus evidencias no se pueden eliminar`);
+    }
+
+    const anexo = await prisma.anexos_caso.findUnique({
+      where: { id_anexo },
+      select: { id_anexo: true, id_caso: true, nombre_archivo: true },
+    });
+    if (!anexo || anexo.id_caso !== plan.id_caso) {
+      throw new Error("La evidencia no existe o no pertenece a este plan");
+    }
+
+    return prisma.$transaction(async (tx) => {
+      // El enlace evidencia↔plan vive en el detalle del timeline; hay que
+      // sacar la referencia de ahí o el archivo seguiría listándose.
+      const eventos = await tx.timeline_caso.findMany({
+        where: { id_caso: plan.id_caso, detalle: { contains: `"id_anexo":${id_anexo}` } },
+        select: { id_evento: true, detalle: true },
+      });
+
+      for (const evento of eventos) {
+        const [humano, tecnico] = (evento.detalle ?? "").split("__PLAN_EVIDENCE__:");
+        if (!tecnico) continue;
+        try {
+          const payload = JSON.parse(tecnico.trim());
+          payload.anexos = (payload.anexos ?? []).filter((a: { id_anexo?: number }) => a.id_anexo !== id_anexo);
+          await tx.timeline_caso.update({
+            where: { id_evento: evento.id_evento },
+            data: { detalle: `${humano ?? ""}__PLAN_EVIDENCE__:${JSON.stringify(payload)}` },
+          });
+        } catch {
+          // Payload ilegible: se deja como está antes que corromperlo.
+        }
+      }
+
+      await tx.anexos_caso.delete({ where: { id_anexo } });
+
+      await CaseRepository.pushTimeline(tx, plan.id_caso, {
+        kind: "seguimiento",
+        actor,
+        actor_rol: "jefe",
+        titulo: `Evidencia eliminada — ${plan.codigo_plan}`,
+        detalle: `Se quitó "${anexo.nombre_archivo ?? "archivo"}" antes del envío a revisión.`,
+      });
+
+      return { id_anexo };
+    });
   }
 
   static async findAll(filtros: CaseListFilters) {

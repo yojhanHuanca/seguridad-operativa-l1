@@ -197,10 +197,13 @@ export function useAddComment(codigo: string) {
 
 /** Comentario de SO asociado a un plan de acción puntual. */
 export function useAddPlanComment(codigo: string) {
-  return useCaseMutation<{ id_plan: number; texto: string }>(codigo, async ({ id_plan, texto }) => {
-    const { data } = await api.post(`/cases/planes/${id_plan}/comment`, { texto });
-    return data;
-  });
+  return useCaseMutation<{ id_plan: number; texto: string; rol?: "seguridad" | "jefe"; actor?: string }>(
+    codigo,
+    async ({ id_plan, texto, rol, actor }) => {
+      const { data } = await api.post(`/cases/planes/${id_plan}/comment`, { texto, rol, actor });
+      return data;
+    }
+  );
 }
 
 /** Acciones del Jefe del Área (portal propio pendiente; se exponen ya para el ciclo). */

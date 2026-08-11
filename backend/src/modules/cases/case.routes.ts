@@ -24,6 +24,7 @@ router.post("/planes/:idPlan/review-final", CaseController.reviewFinalPlanById);
 router.post("/planes/:idPlan/extension", CaseController.requestExtensionByPlan);
 router.post("/planes/:idPlan/extension/review", CaseController.reviewExtensionByPlan);
 router.post("/planes/:idPlan/comment", CaseController.addPlanComment);
+router.delete("/planes/:idPlan/evidence/:idAnexo", CaseController.removePlanEvidence);
 router.post("/planes/:idPlan/evidence", uploadEvidencia.array("evidencia", 10), CaseController.addEvidenceByPlan);
 router.post("/planes/:idPlan/actualizacion", uploadEvidencia.array("evidencia", 10), CaseController.addPlanUpdate);
 router.patch("/actividades/:idActividad", CaseController.updateActivity);

@@ -14,11 +14,13 @@ import {
   FileText,
   Image as ImageIcon,
   Microscope,
+  Plus,
   Save,
   Timer,
   Upload,
   UserRound,
   Video,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { JefeShell } from "@/components/layout/JefeShell";
@@ -29,7 +31,7 @@ import { Progress } from "@/design-system/primitives/Progress";
 import { Modal } from "@/design-system/primitives/Modal";
 import { Field, Input, Textarea } from "@/design-system/primitives/Input";
 import { parseActivityDescription } from "@/features/cases/lib/activityMeta";
-import { shortPlanCode } from "@/features/cases/lib/planLabels";
+import { compactPlanCodes, shortPlanCode } from "@/features/cases/lib/planLabels";
 import {
   evidenciasDelEvento,
   humanEvidenceDetail,
@@ -42,12 +44,13 @@ import {
   useAddPlanUpdate,
   useCompleteExecutionByPlan,
   usePlans,
+  useRemovePlanEvidence,
   useRequestPlanExtension,
-  useUpdateActivity,
 } from "@/features/plans/hooks/usePlans";
+import { useAddPlanComment } from "@/features/cases/hooks/useCaseActions";
 import type { RiskLevel } from "@/features/cases/domain";
 import { apiErrorMessage } from "@/lib/api";
-import { daysUntil, formatDate } from "@/lib/format";
+import { daysUntil, formatDate, formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { AnexoPlanCaso, PlanActividad, PlanItem } from "@/features/plans/types";
 
@@ -224,7 +227,7 @@ function planUpdates(plan: PlanItem): PlanUpdate[] {
     .map((e) => ({
       id: `cierre-${e.id_evento}`,
       etiqueta: "Actualización original",
-      descripcion: (e.detalle ?? "").replace(/^Descripción final:\s*/i, "").trim(),
+      descripcion: humanEvidenceDetail(e.detalle).replace(/^Descripción final:\s*/i, "").trim(),
       actor: e.actor || "Jefe de Área",
       fecha: e.fecha,
       evidencias: [] as AnexoPlanCaso[],
@@ -253,23 +256,43 @@ function planUpdates(plan: PlanItem): PlanUpdate[] {
     (a) => !yaAsignadas.has(a.id_anexo)
   );
 
-  if (sueltas.length > 0) {
-    if (original.length > 0) original[0]!.evidencias = sueltas;
-    else
-      return [
-        {
-          id: "evidencias-plan",
-          etiqueta: "Evidencias del plan",
-          descripcion: "Evidencias cargadas durante la ejecución.",
-          actor: plan.usuarios?.nombre ?? "Jefe de Área",
-          fecha: sueltas[0]?.fecha_subida ?? null,
-          evidencias: sueltas,
-        },
-        ...adicionales,
-      ];
+  // Solo se cuelgan del cierre real. Antes, si todavía no había cierre, se
+  // fabricaba una entrada "Evidencias del plan" con una descripción inventada:
+  // aparecía en el historial de lo enviado sin que se hubiera enviado nada, y
+  // repetía las mismas miniaturas que ya se ven bajo los botones de carga.
+  if (sueltas.length > 0 && original.length > 0) {
+    original[0]!.evidencias = sueltas;
   }
 
   return [...original, ...adicionales];
+}
+
+interface MensajePlan {
+  id: number;
+  rol: "seguridad" | "jefe";
+  autor: string;
+  texto: string;
+  fecha: string | null;
+}
+
+/**
+ * Hilo de comentarios del plan, del más antiguo al más nuevo.
+ *
+ * Salen del timeline con `kind: "comentario"`, que es donde escriben los dos
+ * lados: Seguridad Operativa desde el expediente y el jefe desde este panel.
+ * El rol define de qué lado se pinta el mensaje.
+ */
+function planMensajes(plan: PlanItem): MensajePlan[] {
+  return planTimeline(plan)
+    .filter((e) => e.kind === "comentario")
+    .map((e) => ({
+      id: e.id_evento,
+      rol: e.actor_rol === "jefe" ? ("jefe" as const) : ("seguridad" as const),
+      autor: e.actor || (e.actor_rol === "jefe" ? "Jefe de Área" : "Seguridad Operativa"),
+      texto: humanEvidenceDetail(e.detalle) || e.titulo,
+      fecha: e.fecha,
+    }))
+    .sort((a, b) => +new Date(a.fecha ?? 0) - +new Date(b.fecha ?? 0) || a.id - b.id);
 }
 
 function planWeight(plan: PlanItem): number {
@@ -382,20 +405,46 @@ function VistaPreviaAnexo({ anexo }: { anexo: AnexoPlanCaso }) {
  * Versión compacta de la evidencia: solo la miniatura, para mostrarla en fila
  * debajo de los botones de carga sin que la tarjeta crezca a lo alto.
  */
-function MiniaturaAnexo({ anexo }: { anexo: AnexoPlanCaso }) {
+function MiniaturaAnexo({
+  anexo,
+  onQuitar,
+  quitando,
+}: {
+  anexo: AnexoPlanCaso;
+  /** Si viene, se muestra la × para descartar la evidencia. */
+  onQuitar?: () => void;
+  quitando?: boolean;
+}) {
   return (
-    <a
-      href={`${API_ORIGIN}${anexo.ruta_archivo ?? ""}`}
-      target="_blank"
-      rel="noreferrer"
-      title={anexo.nombre_archivo ?? "Archivo adjunto"}
-      className={cn(
-        "block rounded-lg ring-1 ring-line-soft transition-shadow hover:ring-brand-300",
-        !anexo.ruta_archivo && "pointer-events-none opacity-60"
+    <div className="relative">
+      <a
+        href={`${API_ORIGIN}${anexo.ruta_archivo ?? ""}`}
+        target="_blank"
+        rel="noreferrer"
+        title={anexo.nombre_archivo ?? "Archivo adjunto"}
+        className={cn(
+          "block rounded-lg ring-1 ring-line-soft transition-shadow hover:ring-brand-300",
+          !anexo.ruta_archivo && "pointer-events-none opacity-60"
+        )}
+      >
+        <VistaPreviaAnexo anexo={anexo} />
+      </a>
+
+      {/* Solo aparece mientras la evidencia todavía se puede descartar; una vez
+          enviada a SO el adjunto queda bloqueado igual que la descripción. */}
+      {onQuitar && (
+        <button
+          type="button"
+          onClick={onQuitar}
+          disabled={quitando}
+          title={`Quitar ${anexo.nombre_archivo ?? "evidencia"}`}
+          aria-label={`Quitar ${anexo.nombre_archivo ?? "evidencia"}`}
+          className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-white text-ink-quiet shadow ring-1 ring-line transition-colors hover:bg-critical hover:text-white disabled:opacity-50"
+        >
+          <X className="h-3 w-3" />
+        </button>
       )}
-    >
-      <VistaPreviaAnexo anexo={anexo} />
-    </a>
+    </div>
   );
 }
 
@@ -622,15 +671,19 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
     plan.casos_sop.timeline_caso ?? [],
     plan.casos_sop.anexos_caso ?? []
   );
-  const adicionales = actualizaciones.filter((a) => a.etiqueta !== "Actualización original").length;
+  const mensajes = planMensajes(plan);
+  const registrosEnviados = actualizaciones.filter((a) => a.etiqueta !== "Actualización original");
+  const adicionales = registrosEnviados.length;
+  const puedeAgregarActualizacion = flow.finalizado && registrosEnviados.length < MAX_ACTUALIZACIONES;
   const vencido = daysUntil(limite) < 0 && !flow.finalizado && !flow.cerrado && !flow.rechazado && !flow.enVerificacion;
 
   const acceptPlan = useAcceptPlanById();
   const completeExec = useCompleteExecutionByPlan();
   const requestExt = useRequestPlanExtension();
-  const updateActivity = useUpdateActivity();
   const addEvidence = useAddPlanEvidence();
   const addUpdate = useAddPlanUpdate();
+  const removeEvidence = useRemovePlanEvidence();
+  const addPlanComment = useAddPlanComment(caso.codigo_sop);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const finalDescriptionDraftKey = useMemo(() => `sigma-l1-plan-${plan.id_plan}-descripcion-cierre`, [plan.id_plan]);
@@ -666,6 +719,35 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
     setUpdateOpen(false);
     setUpdateDescription("");
     setUpdateFiles([]);
+  };
+
+  const quitarEvidencia = (anexo: AnexoPlanCaso) => {
+    removeEvidence.mutate(
+      { id_plan: plan.id_plan, id_anexo: anexo.id_anexo, actor: plan.usuarios?.nombre ?? ACTOR },
+      {
+        onSuccess: () => toast.success(`Se quitó ${anexo.nombre_archivo ?? "la evidencia"}`),
+        onError: (e) => toast.error(apiErrorMessage(e, "No se pudo quitar la evidencia")),
+      }
+    );
+  };
+
+  const enviarComentario = () => {
+    const texto = comentarioCierre.trim();
+    if (!texto) {
+      toast.error("Escribe un comentario antes de enviar.");
+      return;
+    }
+
+    addPlanComment.mutate(
+      { id_plan: plan.id_plan, texto, rol: "jefe", actor: plan.usuarios?.nombre ?? ACTOR },
+      {
+        onSuccess: () => {
+          toast.success("Comentario enviado a Seguridad Operativa");
+          setComentarioCierre("");
+        },
+        onError: (e) => toast.error(apiErrorMessage(e, "No se pudo enviar el comentario")),
+      }
+    );
   };
 
   const enviarActualizacion = () => {
@@ -781,7 +863,6 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
           className="hidden"
           onChange={(e) => onFiles(e.target.files)}
         />
-
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex min-w-0 items-center gap-4">
             <Link
@@ -982,9 +1063,26 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
             </div>
 
             {flow.finalizado ? (
-              <p className="mt-4 rounded-lg border border-warning/30 bg-warning-soft px-3 py-3 text-[13px] text-warning-ink">
-                Este plan ya fue finalizado por el área y está pendiente de revisión final por Seguridad Operativa.
-              </p>
+              <div className="mt-4 rounded-lg border border-warning/30 bg-warning-soft px-3 py-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-[13px] text-warning-ink">
+                    Este plan ya fue finalizado por el área y está pendiente de revisión final por Seguridad Operativa.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!puedeAgregarActualizacion}
+                    onClick={() => setUpdateOpen(true)}
+                  >
+                    <Plus className="h-4 w-4" /> Nueva actualización
+                  </Button>
+                </div>
+                {!puedeAgregarActualizacion && (
+                  <p className="mt-2 text-[12px] text-warning-ink/80">
+                    Ya se alcanzó el límite de actualizaciones adicionales para este plan.
+                  </p>
+                )}
+              </div>
             ) : (
               <div className="mt-4 space-y-4">
                 {/* Opcional y solo en el cierre original: las actualizaciones
@@ -992,13 +1090,46 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
                 {/* Una sola línea y sin repetir "opcional" en label, hint y
                     placeholder: ocupaba tres veces el espacio que necesita. */}
                 <Field label="Comentario (opcional)">
-                  <Input
-                    value={comentarioCierre}
-                    onChange={(e) => setComentarioCierre(e.target.value)}
-                    disabled={!puedeFinalizar || completeExec.isPending}
-                    placeholder="Comentario breve del área"
-                  />
+                  {/* Hilo arriba y caja de escritura abajo, como un chat. El
+                      alto está acotado con scroll propio para que la
+                      conversación no empuje al resto del formulario. */}
+                  {mensajes.length > 0 && (
+                    <div className="mb-2 max-h-36 space-y-1.5 overflow-y-auto rounded-lg border border-line-soft bg-surface/60 p-2">
+                      {mensajes.map((m) => (
+                        <div
+                          key={m.id}
+                          className={cn(
+                            "rounded-md px-2.5 py-1.5",
+                            m.rol === "seguridad" ? "bg-brand-50 ring-1 ring-brand-100" : "bg-white ring-1 ring-line-soft"
+                          )}
+                        >
+                          <p className="text-[12.5px] leading-snug text-ink">{compactPlanCodes(m.texto)}</p>
+                          <p className="mt-0.5 text-[10.5px] text-ink-faint">
+                            {m.rol === "seguridad" ? "Seguridad Operativa" : m.autor}
+                            {m.fecha ? ` · ${formatDateTime(m.fecha)}` : ""}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={comentarioCierre}
+                      onChange={(e) => setComentarioCierre(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && comentarioCierre.trim()) enviarComentario();
+                      }}
+                      disabled={addPlanComment.isPending}
+                      placeholder="Escriba un comentario para Seguridad Operativa"
+                      className="flex-1"
+                    />
+                    <Button size="md" disabled={!comentarioCierre.trim() || addPlanComment.isPending} onClick={enviarComentario}>
+                      <Plus className="h-4 w-4" /> Agregar
+                    </Button>
+                  </div>
                 </Field>
+
+
 
                 <Field label="Descripción final de ejecución" required>
                   <Textarea
@@ -1051,7 +1182,12 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
                   {evidenciasDelCierre.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2">
                       {evidenciasDelCierre.map((a) => (
-                        <MiniaturaAnexo key={a.id_anexo} anexo={a} />
+                        <MiniaturaAnexo
+                          key={a.id_anexo}
+                          anexo={a}
+                          quitando={removeEvidence.isPending}
+                          onQuitar={() => quitarEvidencia(a)}
+                        />
                       ))}
                     </div>
                   )}
@@ -1074,21 +1210,57 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
           </Card>
         )}
 
+        {registrosEnviados.length > 0 && (
+          <Card className="border-line-soft shadow-sm">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-2 text-brand-700">
+                  <FileText className="h-4.5 w-4.5" />
+                </span>
+                <div>
+                  <h2 className="text-[17px] font-semibold text-ink">Historial enviado</h2>
+                  <p className="mt-0.5 text-[13px] text-ink-quiet">
+                    Las descripciones ya enviadas quedan bloqueadas; cualquier corrección se agrega como nuevo registro.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              {registrosEnviados.map((registro) => (
+                <div key={registro.id} className="rounded-xl border border-line-soft bg-surface/50 px-4 py-3.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-[13px] font-semibold text-ink">{registro.etiqueta}</p>
+                    <span className="text-[12px] text-ink-faint">
+                      {registro.fecha ? formatDate(registro.fecha) : "Sin fecha"}
+                    </span>
+                  </div>
+                  <p className="mt-2 whitespace-pre-line text-[14px] leading-relaxed text-ink">
+                    {registro.descripcion || "Sin descripción registrada."}
+                  </p>
+                  {registro.evidencias.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {registro.evidencias.map((anexo) => (
+                        <MiniaturaAnexo key={anexo.id_anexo} anexo={anexo} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
+
         <Button
           variant={hasSaveableChanges ? "primary" : "outline"}
           size="lg"
           className="w-full"
-          disabled={updateActivity.isPending || completeExec.isPending || !hasSaveableChanges}
+          disabled={completeExec.isPending || !hasSaveableChanges}
           onClick={saveChanges}
         >
           <Save className="h-4.5 w-4.5" /> Guardar cambios
         </Button>
-
-        {flow.finalizado && (
-          <p className="rounded-xl border border-warning/30 bg-warning-soft px-4 py-3 text-[13.5px] text-warning-ink">
-            Plan finalizado; pendiente de revisión final de Seguridad Operativa.
-          </p>
-        )}
       </div>
 
       <Modal
@@ -1122,6 +1294,7 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
               value={updateDescription}
               onChange={(e) => setUpdateDescription(e.target.value)}
               rows={4}
+              disabled={addUpdate.isPending}
               placeholder="Describa la información que agrega sobre la ejecución de este plan."
             />
           </Field>
@@ -1129,28 +1302,46 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
           <div className="rounded-xl border border-line-soft bg-white/70 px-4 py-3.5">
             <p className="text-[12px] font-semibold uppercase tracking-wider text-ink-faint">Evidencias de esta actualización</p>
             <p className="mt-1 text-[13px] text-ink-quiet">
-              Se guardan junto a esta actualización; las de las anteriores no se tocan.
+              Se guardan junto a este nuevo registro; las evidencias anteriores no se modifican.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <Button variant="outline" size="md" onClick={() => openUpdatePicker(ACCEPT_IMAGES)}>
+              <Button
+                variant="outline"
+                size="md"
+                disabled={addUpdate.isPending || updateFiles.length >= MAX_ARCHIVOS}
+                onClick={() => openUpdatePicker(ACCEPT_IMAGES)}
+              >
                 <Upload className="h-4 w-4" /> Agregar Foto
               </Button>
-              <Button variant="outline" size="md" onClick={() => openUpdatePicker(ACCEPT_VIDEOS)}>
+              <Button
+                variant="outline"
+                size="md"
+                disabled={addUpdate.isPending || updateFiles.length >= MAX_ARCHIVOS}
+                onClick={() => openUpdatePicker(ACCEPT_VIDEOS)}
+              >
                 <Upload className="h-4 w-4" /> Agregar Video
               </Button>
-              <Button variant="outline" size="md" onClick={() => openUpdatePicker(ACCEPT_DOCUMENTS)}>
+              <Button
+                variant="outline"
+                size="md"
+                disabled={addUpdate.isPending || updateFiles.length >= MAX_ARCHIVOS}
+                onClick={() => openUpdatePicker(ACCEPT_DOCUMENTS)}
+              >
                 <Upload className="h-4 w-4" /> Agregar Documento
               </Button>
             </div>
             {updateFiles.length > 0 && (
-              <ul className="mt-3 space-y-1">
-                {updateFiles.map((f, i) => (
-                  <li key={`${f.name}-${i}`} className="flex items-center justify-between gap-3 text-[12.5px] text-ink">
-                    <span className="truncate">{f.name}</span>
+              <ul className="mt-3 space-y-1.5">
+                {updateFiles.map((file, index) => (
+                  <li
+                    key={`${file.name}-${file.size}-${index}`}
+                    className="flex items-center justify-between gap-3 rounded-lg bg-surface/70 px-3 py-2 text-[12.5px] text-ink"
+                  >
+                    <span className="truncate">{file.name}</span>
                     <button
                       type="button"
-                      className="text-[11.5px] text-critical hover:underline"
-                      onClick={() => setUpdateFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                      className="shrink-0 text-[11.5px] font-medium text-critical hover:underline"
+                      onClick={() => setUpdateFiles((prev) => prev.filter((_, idx) => idx !== index))}
                     >
                       Quitar
                     </button>
@@ -1159,6 +1350,7 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
               </ul>
             )}
           </div>
+
         </div>
       </Modal>
 

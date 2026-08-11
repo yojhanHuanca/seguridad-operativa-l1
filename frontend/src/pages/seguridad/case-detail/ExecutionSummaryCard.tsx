@@ -24,7 +24,7 @@ import {
 } from "@/features/cases/hooks/useCaseActions";
 import { parseActivityDescription } from "@/features/cases/lib/activityMeta";
 import { compactPlanCodes, numeroDePlan, shortPlanCode } from "@/features/cases/lib/planLabels";
-import { planEvidenceFiles, timelineBelongsToPlan } from "@/features/cases/lib/planEvidence";
+import { humanEvidenceDetail, planEvidenceFiles, timelineBelongsToPlan } from "@/features/cases/lib/planEvidence";
 import { ACTOR_ROL_LABEL } from "@/features/cases/lib/workflow";
 import { apiErrorMessage } from "@/lib/api";
 import { formatDate, formatDateTime, relativeTime } from "@/lib/format";
@@ -120,8 +120,11 @@ function timelineDelPlan(caso: CaseDetail, plan: PlanAccion): TimelineEvento[] {
 
 function descripcionCierre(caso: CaseDetail, plan: PlanAccion): string | null {
   const evento = timelineDelPlan(caso, plan).find((t) => normalize(t.titulo).includes("finaliz"));
-  const detalle = evento?.detalle ?? "";
-  const match = detalle.match(/descripci[oó]n final:\s*(.+)$/i);
+  const detalle = humanEvidenceDetail(evento?.detalle ?? "");
+  // Se corta en el fin de línea, no en el fin del texto: el detalle puede
+  // traer un "Comentario: ..." en la línea siguiente y con `(.+)$` el match
+  // fallaba por completo, dejando el cierre sin descripción.
+  const match = detalle.match(/descripci[oó]n final:\s*([^\n]+)/i);
   return match?.[1]?.trim() || null;
 }
 
@@ -462,7 +465,11 @@ function PlanExecutionBoard({
                           <p className="text-[12.5px] font-medium text-ink leading-snug">{compactPlanCodes(evento.titulo)}</p>
                           <span className="text-[10.5px] text-ink-faint shrink-0">{evento.fecha ? relativeTime(evento.fecha) : ""}</span>
                         </div>
-                        {evento.detalle && <p className="mt-1 text-[12px] text-ink-soft leading-relaxed">{compactPlanCodes(evento.detalle)}</p>}
+                        {evento.detalle && (
+                          <p className="mt-1 text-[12px] text-ink-soft leading-relaxed">
+                            {compactPlanCodes(humanEvidenceDetail(evento.detalle))}
+                          </p>
+                        )}
                         <p className="mt-1 text-[10.5px] text-ink-quiet">
                           {ACTOR_ROL_LABEL[evento.actor_rol] ?? evento.actor_rol} · {evento.actor}
                         </p>
@@ -1379,7 +1386,7 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
       {cierre?.fecha && (
         <p className="mt-4 pt-3 border-t border-line-soft text-[11.5px] text-ink-faint">
           Cerrado {formatDateTime(cierre.fecha)}
-          {cierre.detalle ? ` · ${compactPlanCodes(cierre.detalle)}` : ""}
+          {cierre.detalle ? ` · ${compactPlanCodes(humanEvidenceDetail(cierre.detalle))}` : ""}
         </p>
       )}
 
@@ -1403,7 +1410,11 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
                   {ACTOR_ROL_LABEL[t.actor_rol] ?? t.actor_rol} · {t.actor}
                   {t.fecha ? ` · ${formatDateTime(t.fecha)}` : ""}
                 </p>
-                {t.detalle && <p className="text-[11.5px] text-ink-soft mt-1 leading-relaxed">{compactPlanCodes(t.detalle)}</p>}
+                {t.detalle && (
+                  <p className="text-[11.5px] text-ink-soft mt-1 leading-relaxed">
+                    {compactPlanCodes(humanEvidenceDetail(t.detalle))}
+                  </p>
+                )}
               </div>
             </li>
           ))}

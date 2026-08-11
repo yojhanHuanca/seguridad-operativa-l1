@@ -44,6 +44,13 @@ const actorSchema = z.object({
   actor: z.string().trim().max(150).optional().default(""),
 });
 
+/** El comentario del plan lo escriben los dos lados; el rol define quién. */
+const planCommentSchema = z.object({
+  texto: z.string().trim().min(1, "Escriba el comentario").max(1000),
+  rol: z.enum(["seguridad", "jefe"]).optional().default("seguridad"),
+  actor: z.string().trim().max(150).optional(),
+});
+
 const planUpdateSchema = z.object({
   actor: z.string().trim().max(150).optional().default(""),
   descripcion: z.preprocess(
@@ -347,9 +354,19 @@ export class CaseService {
   }
 
   static async addPlanComment(idPlan: string, rawBody: unknown) {
-    const dto = observationSchema.parse(rawBody);
+    const dto = planCommentSchema.parse(rawBody);
     const id = idPositivo.parse(idPlan);
-    return CaseRepository.addPlanComment(id, dto.texto);
+    return CaseRepository.addPlanComment(id, dto.texto, dto.rol, dto.actor);
+  }
+
+  /** El jefe quita una evidencia equivocada, antes de enviar el cierre a SO. */
+  static async removePlanEvidence(idPlan: string, idAnexo: string, rawBody: unknown) {
+    const dto = actorSchema.parse(rawBody ?? {});
+    return CaseRepository.removePlanEvidence(
+      idPositivo.parse(idPlan),
+      idPositivo.parse(idAnexo),
+      dto.actor || "Jefe de Área"
+    );
   }
 
   static async addEvidence(codigo: string, files: UploadedFile[]) {

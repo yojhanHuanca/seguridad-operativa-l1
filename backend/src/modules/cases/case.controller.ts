@@ -290,6 +290,15 @@ export class CaseController {
     }
   }
 
+  static async removePlanEvidence(req: Request, res: Response) {
+    try {
+      const r = await CaseService.removePlanEvidence(param(req, "idPlan"), param(req, "idAnexo"), req.body);
+      return res.json(ApiResponse.success("Evidencia eliminada", r));
+    } catch (error) {
+      return handleError(res, error, "Error al eliminar la evidencia");
+    }
+  }
+
   static async addPlanComment(req: Request, res: Response) {
     try {
       const timeline = await CaseService.addPlanComment(param(req, "idPlan"), req.body);

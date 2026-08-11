@@ -81,6 +81,14 @@ export function useAddPlanUpdate() {
   );
 }
 
+/** El jefe quita una evidencia equivocada antes de enviar el cierre a SO. */
+export function useRemovePlanEvidence() {
+  return usePlanMutation<{ id_plan: number; id_anexo: number; actor?: string }>(async ({ id_plan, id_anexo, actor }) => {
+    const { data } = await api.delete(`/cases/planes/${id_plan}/evidence/${id_anexo}`, { data: { actor } });
+    return data;
+  });
+}
+
 export function useRequestPlanExtension() {
   return usePlanMutation<{ id_plan: number; nueva_fecha: string; justificacion: string; actor?: string }>(
     async ({ id_plan, ...body }) => {
