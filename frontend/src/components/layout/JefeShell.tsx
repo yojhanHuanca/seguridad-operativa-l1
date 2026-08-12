@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
-import { Activity, Bell, Building2, Calendar, CheckCircle2, ChevronRight, Clock, FolderKanban, Plus, Timer, Train, TrendingUp } from "lucide-react";
+import { Activity, Bell, Building2, Calendar, CheckCircle2, ChevronRight, Clock, ExternalLink, FolderKanban, Plus, Timer, Train, TrendingUp } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { Card } from "@/design-system/primitives/Card";
 import { usePlans } from "@/features/plans/hooks/usePlans";
@@ -100,6 +100,16 @@ function JefeSidebar() {
             })}
           </div>
         </Card>
+
+        <a
+          href="https://sofia.lineauno.pe/"
+          target="_blank"
+          rel="noreferrer"
+          className="flex h-11 items-center gap-3 rounded-lg border border-line-soft bg-white px-4 text-[14px] font-medium text-ink-soft shadow-sm transition-colors hover:bg-surface hover:text-ink"
+        >
+          <ExternalLink className="h-4 w-4" />
+          <span className="flex-1">SOFIA</span>
+        </a>
 
         <Card className="p-5">
           <div className="mb-4 flex items-center gap-2">

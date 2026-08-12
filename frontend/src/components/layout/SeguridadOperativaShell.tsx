@@ -13,6 +13,7 @@ import {
   ClipboardCheck,
   Clock,
   Download,
+  ExternalLink,
   FilePlus2,
   Folder,
   Gavel,
@@ -43,6 +44,8 @@ interface NavLink {
   badge?: number;
   badgeTone?: "brand" | "danger" | "neutral";
   match: (pathname: string, search: string) => boolean;
+  /** Enlace externo: se abre en pestaña nueva y nunca se marca como activo. */
+  external?: boolean;
 }
 
 interface NavGroup {
@@ -147,6 +150,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
   ];
 
   const standaloneLinks: NavLink[] = [
+    { to: "https://sofia.lineauno.pe/", label: "SOFIA", icon: ExternalLink, external: true, match: () => false },
     { to: "/seguridad/usuarios", label: "Administración de Usuarios", icon: Users, match: (p) => p === "/seguridad/usuarios" },
     { to: "/seguridad/notificaciones", label: "Notificaciones", icon: Bell, badge: unreadNotifications || undefined, badgeTone: "danger", match: (p) => p === "/seguridad/notificaciones" },
     { to: "/seguridad/perfil", label: "Mi Perfil", icon: UserCircle2, match: (p) => p === "/seguridad/perfil" },
@@ -160,10 +164,14 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
 
   const renderLink = (link: NavLink, onNavigate?: () => void) => {
     const active = link.match(location.pathname, location.search);
+    const LinkTag = link.external ? "a" : Link;
+    const linkProps = link.external
+      ? { href: link.to, target: "_blank", rel: "noreferrer" }
+      : { to: link.to };
     return (
-      <Link
+      <LinkTag
         key={link.to}
-        to={link.to}
+        {...(linkProps as never)}
         onClick={onNavigate}
         title={collapsed ? link.label : undefined}
         className={cn(
@@ -207,7 +215,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
             {link.badge}
           </span>
         ) : null}
-      </Link>
+      </LinkTag>
     );
   };
 
