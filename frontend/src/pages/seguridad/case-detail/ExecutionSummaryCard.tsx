@@ -535,7 +535,7 @@ function PlanExecutionBoard({
                       <MessageSquare className="h-3.5 w-3.5" /> Seguimiento ({comentarios.length + eventos.length})
                     </p>
                   </div>
-                  <div className="mt-2.5 space-y-2">
+                  <div className="mt-2.5 max-h-72 space-y-2 overflow-y-auto pr-1">
                     {comentarios.length === 0 && eventos.length === 0 && (
                       <p className="rounded-lg border border-dashed border-line bg-surface/40 p-3 text-[12px] text-ink-quiet">
                         Sin comentarios registrados para este plan.
@@ -545,7 +545,9 @@ function PlanExecutionBoard({
                         en dos bloques separados (primero todos los comentarios,
                         después los eventos) sin importar la fecha, así que la
                         conversación no se leía en orden. Ahora salen todos
-                        juntos, más reciente primero. */}
+                        juntos, más reciente primero, con scroll propio en vez
+                        de cortar a los primeros 6 y empujar el resto de la
+                        pantalla. */}
                     {[
                       ...comentarios.map((s) => ({
                         key: `seg-${s.id}`,
@@ -556,9 +558,8 @@ function PlanExecutionBoard({
                               <p className="text-[12.5px] font-medium text-ink leading-snug break-words">{s.comentario}</p>
                               <span className="text-[10.5px] text-ink-faint shrink-0">{s.fecha ? relativeTime(s.fecha) : ""}</span>
                             </div>
-                            <p className="mt-1 text-[10.5px] text-ink-quiet">
-                              {s.usuario} · {s.porcentaje}%
-                            </p>
+                            {/* El porcentaje de avance no aporta al comentario en sí. */}
+                            <p className="mt-1 text-[10.5px] text-ink-quiet">{s.usuario}</p>
                           </div>
                         ),
                       })),
@@ -584,7 +585,6 @@ function PlanExecutionBoard({
                       })),
                     ]
                       .sort((a, b) => +new Date(b.fecha ?? 0) - +new Date(a.fecha ?? 0))
-                      .slice(0, 6)
                       .map((item) => <div key={item.key}>{item.node}</div>)}
                   </div>
                 </div>

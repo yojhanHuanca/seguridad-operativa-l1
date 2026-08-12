@@ -16,14 +16,14 @@ export function DetailStep({ form }: { form: UseFormReturn<ReportFormValues> }) 
     <Card className="p-5">
       <div className="mb-4">
         <h2 className="text-lg font-bold text-ink">Cuéntanos brevemente qué ocurrió</h2>
-        <p className="text-sm text-ink-quiet">Solo describe lo que observaste.</p>
+        <p className="text-sm text-ink-quiet">Describe lo observado y el riesgo potencial.</p>
       </div>
 
       <Field label="Descripción" required error={errors.descripcion?.message}>
         <Textarea
           rows={6}
           maxLength={300}
-          placeholder="Describa brevemente lo observado y el riesgo que puede generar."
+          placeholder="Describe brevemente lo que observaste y el riesgo que podría generar (ej. resbalón, incendio, parada de servicio)."
           className="transition-colors"
           {...register("descripcion")}
         />
