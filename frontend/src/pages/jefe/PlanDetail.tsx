@@ -203,6 +203,30 @@ function planTimeline(plan: PlanItem) {
   return (plan.casos_sop.timeline_caso ?? []).filter((evento) => eventBelongsToPlan(plan, evento));
 }
 
+/**
+ * Anexos del registro inicial del reporte, sin las evidencias que Jefes de
+ * otras áreas (u otros planes de este mismo caso) fueron subiendo durante la
+ * ejecución. `caso.anexos_caso` trae todo mezclado, así que se descarta lo que
+ * ya está referenciado por algún evento "evidencia" del timeline, sea del
+ * plan que sea.
+ */
+function reportOnlyAnexos(caso: PlanItem["casos_sop"]): AnexoPlanCaso[] {
+  const usedIds = new Set<number>();
+  const usedNames = new Set<string>();
+
+  for (const evento of caso.timeline_caso ?? []) {
+    if (!evento.titulo.toLowerCase().includes("evidencia")) continue;
+    for (const anexo of evidenciasDelEvento(evento, caso.anexos_caso)) usedIds.add(anexo.id_anexo);
+    for (const name of humanEvidenceDetail(evento.detalle).split(",").map((n) => n.trim()).filter(Boolean)) {
+      usedNames.add(name);
+    }
+  }
+
+  return caso.anexos_caso.filter(
+    (anexo) => !usedIds.has(anexo.id_anexo) && !(anexo.nombre_archivo && usedNames.has(anexo.nombre_archivo.trim()))
+  );
+}
+
 /** Tope de actualizaciones que el jefe puede apilar; el backend valida lo mismo. */
 const MAX_ACTUALIZACIONES = 4;
 
@@ -593,59 +617,59 @@ function PlanChoiceCard({ codigo, plan }: { codigo: string; plan: PlanItem }) {
   const acceptPlan = useAcceptPlanById();
 
   return (
-    <article className="rounded-xl border border-line-soft bg-white p-4 shadow-sm transition-colors hover:border-brand-200">
+    <article className="rounded-xl border border-line-soft bg-white p-3 shadow-sm transition-colors hover:border-brand-200">
       <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-start gap-3">
-          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
-            <ClipboardList className="h-5 w-5" />
+        <div className="flex min-w-0 items-start gap-2.5">
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700">
+            <ClipboardList className="h-4 w-4" />
           </div>
           <div className="min-w-0">
             <Link
               to={`/jefe/planes/${encodeURIComponent(codigo)}?plan=${plan.id_plan}`}
-              className="font-mono text-[17px] font-bold text-brand-700 transition-colors hover:text-brand-800 hover:underline"
+              className="font-mono text-[15px] font-bold text-brand-700 transition-colors hover:text-brand-800 hover:underline"
             >
               {shortPlanCode(plan.codigo_plan)}
             </Link>
-            <p className="mt-1 line-clamp-1 break-all text-[13.5px] text-ink-quiet">{plan.descripcion}</p>
+            <p className="mt-0.5 line-clamp-1 break-all text-[12.5px] text-ink-quiet">{plan.descripcion}</p>
           </div>
         </div>
         <Pill tone={status.tone} dot>{status.label}</Pill>
       </div>
 
-      <div className="mt-4 grid gap-x-8 gap-y-3 text-[13.5px] md:grid-cols-2 xl:grid-cols-4">
-        <div className="flex items-center gap-2 text-ink-soft">
-          <Building2 className="h-3.5 w-3.5 text-ink-faint" />
+      <div className="mt-3 grid gap-x-6 gap-y-2 text-[12.5px] md:grid-cols-2 xl:grid-cols-5">
+        <div className="flex items-center gap-1.5 text-ink-soft">
+          <Building2 className="h-3 w-3 text-ink-faint" />
           <span>Área:</span>
           <span className="font-semibold text-ink">{plan.areas.nombre_area}</span>
         </div>
-        <div className="flex items-center gap-2 text-ink-soft">
-          <ClipboardList className="h-3.5 w-3.5 text-ink-faint" />
+        <div className="flex items-center gap-1.5 text-ink-soft">
+          <ClipboardList className="h-3 w-3 text-ink-faint" />
           <span>Tipo:</span>
           <span className="font-semibold text-ink">{planTipoAccion(plan)}</span>
         </div>
-        <div className="flex items-center gap-2 text-ink-soft">
-          <AlertTriangle className="h-3.5 w-3.5 text-ink-faint" />
+        <div className="flex items-center gap-1.5 text-ink-soft">
+          <AlertTriangle className="h-3 w-3 text-ink-faint" />
           <span>Riesgo:</span>
           <Pill tone={priority.tone} dot>{priority.label}</Pill>
         </div>
-        <div className="flex items-center gap-2 text-ink-soft">
-          <CalendarClock className="h-3.5 w-3.5 text-ink-faint" />
+        <div className="flex items-center gap-1.5 text-ink-soft">
+          <CalendarClock className="h-3 w-3 text-ink-faint" />
           <span>Inicio:</span>
           <span className="font-medium text-ink">{formatDate(inicio)}</span>
         </div>
-        <div className="flex items-center gap-2 text-ink-soft">
-          <Timer className="h-3.5 w-3.5 text-ink-faint" />
+        <div className="flex items-center gap-1.5 text-ink-soft">
+          <Timer className="h-3 w-3 text-ink-faint" />
           <span>{vencido ? "Vencido:" : "Fin:"}</span>
           <span className={cn("font-medium", vencido ? "text-critical" : "text-ink")}>{formatDate(fin)}</span>
         </div>
       </div>
 
-      <div className="mt-4 flex items-center gap-3">
-        <Progress value={progreso} className="h-2 flex-1" />
-        <span className="w-12 text-right text-[12px] font-semibold text-ink-soft">{progreso}%</span>
+      <div className="mt-3 flex items-center gap-3">
+        <Progress value={progreso} className="h-1.5 flex-1" />
+        <span className="w-12 text-right text-[11.5px] font-semibold text-ink-soft">{progreso}%</span>
       </div>
 
-      <div className="mt-4 flex flex-wrap justify-end gap-2">
+      <div className="mt-3 flex flex-wrap justify-end gap-2">
         {flow.pendienteAceptacion && (
           <Button
             size="sm"
@@ -676,6 +700,7 @@ function PlanChoiceCard({ codigo, plan }: { codigo: string; plan: PlanItem }) {
 
 function PlanDetailContent({ plan }: { plan: PlanItem }) {
   const caso = plan.casos_sop;
+  const reportEvidence = useMemo(() => reportOnlyAnexos(caso), [caso]);
   const flow = planFlow(plan);
   const limite = plan.fecha_reprogramada ?? planEnd(plan);
   const progreso = calcProgress(plan);
@@ -996,44 +1021,67 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
                 <InfoRow label="Fecha de envío" value={plan.created_at ? formatDate(plan.created_at) : formatDate(plan.fecha_plan)} />
               </div>
 
-              <div>
-                <div className="mb-4 flex items-center gap-3">
-                  <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-2 text-brand-700">
-                    <ClipboardList className="h-4.5 w-4.5" />
-                  </span>
-                  <h2 className="text-[17px] font-semibold text-ink">Actividades del plan</h2>
-                </div>
-                <div className="rounded-xl border border-line-soft bg-surface/60 px-4 py-4">
-                  {plan.actividades_plan.length > 0 ? (
-                    <div className="space-y-3">
-                      {plan.actividades_plan.map((actividad) => {
-                        const parsed = parseActivityDescription(actividad.descripcion);
-                        return (
-                          <div key={actividad.id_actividad} className="rounded-lg border border-line-soft bg-white/70 px-3 py-3">
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="min-w-0">
-                                <p className="text-[14px] leading-relaxed text-ink break-words">
-                                  {parsed.descripcion || plan.descripcion || "Sin descripción registrada."}
-                                </p>
-                                <p className="mt-1 text-[11px] text-ink-quiet">
-                                  {actividad.usuarios?.nombre ?? "Sin responsable"}
-                                  {actividad.usuarios?.cargo ? ` · ${actividad.usuarios.cargo}` : ""}
-                                  {(parsed.meta.tipoAccion ?? planTipoAccion(plan)) && ` · ${parsed.meta.tipoAccion ?? planTipoAccion(plan)}`}
-                                  {(parsed.meta.areaNombre ?? plan.areas.nombre_area) && ` · ${parsed.meta.areaNombre ?? plan.areas.nombre_area}`}
-                                  {actividad.fecha_fin && ` · vence ${formatDate(actividad.fecha_fin)}`}
-                                </p>
+              <div className="grid gap-6 md:grid-cols-2">
+                <div>
+                  <div className="mb-4 flex items-center gap-3">
+                    <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-2 text-brand-700">
+                      <ClipboardList className="h-4.5 w-4.5" />
+                    </span>
+                    <h2 className="text-[17px] font-semibold text-ink">Actividades del plan</h2>
+                  </div>
+                  <div className="rounded-xl border border-line-soft bg-surface/60 px-4 py-4">
+                    {plan.actividades_plan.length > 0 ? (
+                      <div className="space-y-3">
+                        {plan.actividades_plan.map((actividad) => {
+                          const parsed = parseActivityDescription(actividad.descripcion);
+                          return (
+                            <div key={actividad.id_actividad} className="rounded-lg border border-line-soft bg-white/70 px-3 py-3">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <p className="text-[14px] leading-relaxed text-ink break-words">
+                                    {parsed.descripcion || plan.descripcion || "Sin descripción registrada."}
+                                  </p>
+                                  <p className="mt-1 text-[11px] text-ink-quiet break-words">
+                                    {actividad.usuarios?.nombre ?? "Sin responsable"}
+                                    {actividad.usuarios?.cargo ? ` · ${actividad.usuarios.cargo}` : ""}
+                                    {(parsed.meta.tipoAccion ?? planTipoAccion(plan)) && ` · ${parsed.meta.tipoAccion ?? planTipoAccion(plan)}`}
+                                    {(parsed.meta.areaNombre ?? plan.areas.nombre_area) && ` · ${parsed.meta.areaNombre ?? plan.areas.nombre_area}`}
+                                    {actividad.fecha_fin && ` · vence ${formatDate(actividad.fecha_fin)}`}
+                                  </p>
+                                </div>
+                                <Pill tone={actividad.catalogo_detalle?.nombre === "Completado" ? "brand" : "neutral"} dot>
+                                  {actividad.catalogo_detalle?.nombre ?? "Pendiente"}
+                                </Pill>
                               </div>
-                              <Pill tone={actividad.catalogo_detalle?.nombre === "Completado" ? "brand" : "neutral"} dot>
-                                {actividad.catalogo_detalle?.nombre ?? "Pendiente"}
-                              </Pill>
                             </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <InfoRow label="Descripción" value={plan.descripcion || "Sin descripción registrada."} />
-                  )}
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <InfoRow label="Descripción" value={plan.descripcion || "Sin descripción registrada."} />
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-4 flex items-center gap-3">
+                    <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-2 text-brand-700">
+                      <FileText className="h-4.5 w-4.5" />
+                    </span>
+                    <h2 className="text-[17px] font-semibold text-ink">Descripción del reporte</h2>
+                  </div>
+                  <div className="flex flex-wrap items-start gap-4 rounded-xl border border-line-soft bg-surface/60 px-4 py-4">
+                    <p className="min-w-0 flex-1 text-[13.5px] leading-relaxed text-ink-soft break-words">
+                      {caso.descripcion || "Sin descripción registrada."}
+                    </p>
+                    {reportEvidence.length > 0 && (
+                      <div className="flex shrink-0 flex-wrap gap-2.5 border-l border-line-soft pl-4">
+                        {reportEvidence.map((anexo) => (
+                          <MiniaturaAnexo key={anexo.id_anexo} anexo={anexo} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 

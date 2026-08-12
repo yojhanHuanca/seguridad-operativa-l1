@@ -29,6 +29,7 @@ import { stageFromEstado } from "@/features/cases/domain";
 import { panelForEstado, puede, siguientePaso } from "@/features/cases/lib/workflow";
 import { criterioAceptabilidad, fechaEvaluacion, slaDueDate, slaEstado, diasRestantes } from "@/features/cases/lib/sla";
 import { formatDate, formatDateTime, formatTime } from "@/lib/format";
+import { useCurrentSoUser } from "@/features/users/hooks/useCurrentSoUser";
 import { ReceptionStage } from "./case-detail/ReceptionStage";
 import { TimelinePanel } from "./case-detail/TimelinePanel";
 import { PendingInfoCard } from "./case-detail/PendingInfoCard";
@@ -315,6 +316,18 @@ function latestPlanLimit(caso: CaseDetail): string | null {
   return dates[0] ?? null;
 }
 
+function formatDateCompact(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "—";
+  const isDateOnly = /T00:00:00(\.000)?Z$/.test(iso) || /^\d{4}-\d{2}-\d{2}$/.test(iso);
+  return d.toLocaleDateString("es-PE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+    ...(isDateOnly ? { timeZone: "UTC" as const } : {}),
+  });
+}
+
 function uniqueValues(values: Array<string | null | undefined>): string {
   const clean = Array.from(new Set(values.map((value) => value?.trim()).filter(Boolean) as string[]));
   return clean.length > 0 ? clean.join(", ") : "—";
@@ -336,10 +349,11 @@ function PlanActionPrintDocument({ caso }: { caso: CaseDetail }) {
   const evento = caso.evento_caso[0]?.eventos_operativos;
   const riesgo = caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle;
   const fechaLimite = latestPlanLimit(caso);
+  const { nombre: usuarioSoNombre } = useCurrentSoUser();
   const elaboradoPor =
     caso.usuarios_casos_sop_responsable_planTousuarios?.nombre ??
     caso.usuarios_casos_sop_responsable_hallazgoTousuarios?.nombre ??
-    "Seguridad Operativa";
+    usuarioSoNombre;
   const rows: PlanExportRow[] = caso.planes_accion.flatMap((plan): PlanExportRow[] => {
     if (plan.actividades_plan.length === 0) {
       return [{
@@ -385,11 +399,11 @@ function PlanActionPrintDocument({ caso }: { caso: CaseDetail }) {
 
       <section className="mt-7">
         <h2 className="border-b border-line pb-2 text-[18px] font-bold text-brand-800">Información del expediente</h2>
-        <div className="mt-3 grid grid-cols-2 gap-x-16 gap-y-3">
+        <div className="mt-3 grid grid-cols-3 gap-x-10 gap-y-3">
           <PrintField label="Código" value={caso.codigo_sop} />
           <PrintField label="Tipo de incidencia" value={caso.catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle.nombre} />
           <PrintField label="Estación" value={evento?.catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle?.nombre ?? "—"} />
-          <PrintField label="Área responsable" value={uniqueValues(caso.planes_accion.map((plan) => plan.areas.nombre_area))} />
+          <PrintField label="Área encargada" value={uniqueValues(caso.planes_accion.map((plan) => plan.areas.nombre_area))} />
           <PrintField
             label="Análisis de riesgo"
             value={riesgo ? `${riesgo.codigo ?? "—"} — ${criterioAceptabilidad(riesgo.nombre, riesgo.codigo) ?? riesgo.nombre}` : "Sin evaluar"}
@@ -402,7 +416,17 @@ function PlanActionPrintDocument({ caso }: { caso: CaseDetail }) {
 
       <section className="mt-6">
         <h2 className="border-b border-line pb-2 text-[18px] font-bold text-brand-800">Actividades</h2>
-        <table className="mt-3 w-full border-collapse text-left text-[13px]">
+        <table className="mt-3 w-full table-fixed border-collapse text-left text-[12px]">
+          <colgroup>
+            <col className="w-[8%]" />
+            <col className="w-[21%]" />
+            <col className="w-[13%]" />
+            <col className="w-[10%]" />
+            <col className="w-[13%]" />
+            <col className="w-[12%]" />
+            <col className="w-[12%]" />
+            <col className="w-[11%]" />
+          </colgroup>
           <thead>
             <tr className="bg-surface">
               <PrintTh>Código</PrintTh>
@@ -418,14 +442,14 @@ function PlanActionPrintDocument({ caso }: { caso: CaseDetail }) {
           <tbody>
             {rows.map((row, index) => (
               <tr key={`${row.plan.id_plan}-${row.actividad?.id_actividad ?? index}`}>
-                <PrintTd className="font-mono">{shortPlanCode(row.plan.codigo_plan)}</PrintTd>
-                <PrintTd className="font-semibold">{row.descripcion}</PrintTd>
-                <PrintTd>{row.responsable}</PrintTd>
-                <PrintTd>{row.tipo}</PrintTd>
-                <PrintTd>{row.area}</PrintTd>
-                <PrintTd>{row.inicio ? formatDate(row.inicio) : "—"}</PrintTd>
-                <PrintTd>{row.limite ? formatDate(row.limite) : "—"}</PrintTd>
-                <PrintTd>{row.estado}</PrintTd>
+                <PrintTd className="whitespace-nowrap font-mono">{shortPlanCode(row.plan.codigo_plan)}</PrintTd>
+                <PrintTd className="break-words font-semibold">{row.descripcion}</PrintTd>
+                <PrintTd className="break-words">{row.responsable}</PrintTd>
+                <PrintTd className="break-words">{row.tipo}</PrintTd>
+                <PrintTd className="break-words">{row.area}</PrintTd>
+                <PrintTd className="whitespace-nowrap">{row.inicio ? formatDateCompact(row.inicio) : "—"}</PrintTd>
+                <PrintTd className="whitespace-nowrap">{row.limite ? formatDateCompact(row.limite) : "—"}</PrintTd>
+                <PrintTd className="whitespace-nowrap">{row.estado}</PrintTd>
               </tr>
             ))}
           </tbody>
@@ -449,9 +473,9 @@ function PrintField({ label, value }: { label: string; value: string }) {
 }
 
 function PrintTh({ children }: { children: ReactNode }) {
-  return <th className="border border-line px-2.5 py-2 text-[12px] font-bold text-ink">{children}</th>;
+  return <th className="border border-line px-1.5 py-2 text-[11px] font-bold text-ink">{children}</th>;
 }
 
 function PrintTd({ children, className }: { children: ReactNode; className?: string }) {
-  return <td className={`border border-line px-2.5 py-2 align-top text-ink ${className ?? ""}`}>{children}</td>;
+  return <td className={`border border-line px-1.5 py-2 align-top text-ink ${className ?? ""}`}>{children}</td>;
 }

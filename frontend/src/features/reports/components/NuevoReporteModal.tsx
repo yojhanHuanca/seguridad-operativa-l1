@@ -403,7 +403,7 @@ export function NuevoReporteModal({ open, onClose }: { open: boolean; onClose: (
                 <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
                   Resumen del reporte
                 </p>
-                <div className="grid gap-x-6 gap-y-3 sm:grid-cols-3">
+                <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
                   <CampoCreado
                     label="Tipo de reporte"
                     value={nombreCatalogo(catalogs.byName, "Tipo de Reporte", valores.id_tipo)}

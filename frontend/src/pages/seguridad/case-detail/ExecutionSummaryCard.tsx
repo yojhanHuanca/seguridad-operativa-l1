@@ -13,6 +13,7 @@ import { EmptyState, Progress } from "@/design-system/primitives/Progress";
 import { Modal } from "@/design-system/primitives/Modal";
 import { Field, Input, Select, Textarea } from "@/design-system/primitives/Input";
 import { StageSection } from "@/features/cases/components/CaseParts";
+import { useCurrentSoUser } from "@/features/users/hooks/useCurrentSoUser";
 import {
   useAddPlanComment,
   useCloseCase,
@@ -303,6 +304,7 @@ function PlanExecutionBoard({
 }) {
   const reviewExtension = useReviewPlanExtension(caso.codigo_sop);
   const addPlanComment = useAddPlanComment(caso.codigo_sop);
+  const { nombre: usuarioSoNombre } = useCurrentSoUser();
   const [extensionReview, setExtensionReview] = useState<{ plan: PlanAccion; decision: "aprobada" | "rechazada" } | null>(null);
   const [extensionNote, setExtensionNote] = useState("");
   /** Plazo que SO va a otorgar; arranca en el que pidió el área y es editable. */
@@ -323,7 +325,7 @@ function PlanExecutionBoard({
     const texto = planComment.trim();
     if (!texto) return;
     addPlanComment.mutate(
-      { id_plan: plan.id_plan, texto },
+      { id_plan: plan.id_plan, texto, actor: usuarioSoNombre },
       {
         onSuccess: () => {
           toast.success("Comentario agregado al plan");
@@ -377,11 +379,16 @@ function PlanExecutionBoard({
               ? { label: "Listo para revisión SO", tone: "warning" as const }
               : planStatus(plan);
           const pendienteProrroga = plan.prorroga_estado === "pendiente";
-          const comentarios = comentariosActividad(plan);
           const eventos = timelineDelPlan(caso, plan).filter((t) => {
             const titulo = normalize(t.titulo);
             return !titulo.includes("evidencia") && !titulo.includes("actividad actualizada");
           });
+          // El backend guarda cada comentario/actualización del jefe dos veces
+          // (en `seguimientos` y en el timeline del caso) para que el jefe vea
+          // su hilo y SO vea la bitácora. Acá se leen ambas fuentes, así que
+          // sin este filtro el mismo mensaje aparecía duplicado.
+          const eventTexts = new Set(eventos.map((e) => normalize(humanEvidenceDetail(e.detalle) || e.titulo)));
+          const comentarios = comentariosActividad(plan).filter((c) => !eventTexts.has(normalize(c.comentario)));
           const evidencias = evidenciasDelPlan(caso, plan);
           const cierre = descripcionCierre(caso, plan);
           const abierto = expandedPlans.has(plan.id_plan);
