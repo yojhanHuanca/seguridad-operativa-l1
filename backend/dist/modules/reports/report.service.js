@@ -15,6 +15,7 @@ export const createReportSchema = z
     nombre_reportante: z.string().trim().max(150).optional().nullable(),
     correo_reportante: z.string().trim().email("Ingrese un correo válido").max(150).optional().nullable().or(z.literal("")),
     telefono_reportante: z.string().trim().max(20).optional().nullable(),
+    origen: z.enum(["reportante", "seguridad_operativa"]).default("reportante"),
 })
     .refine((data) => data.modalidad !== "identificado" || !!data.nombre_reportante?.trim(), {
     message: "El nombre completo es obligatorio para un reporte identificado",

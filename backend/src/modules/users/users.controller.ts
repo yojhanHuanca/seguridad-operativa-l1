@@ -39,4 +39,14 @@ export class UsersController {
        return res.status(500).json(ApiResponse.error(error instanceof Error ? error.message : "Error al crear el usuario", error));
     }
   }
+
+  static async update(req: Request, res: Response) {
+    try {
+      const id = Number(req.params.id);
+      const user = await UsersService.updateUser(id, req.body);
+      return res.json(ApiResponse.success("Usuario actualizado correctamente", user));
+    } catch (error) {
+      return res.status(500).json(ApiResponse.error(error instanceof Error ? error.message : "Error al actualizar el usuario", error));
+    }
+  }
 }

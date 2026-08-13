@@ -6,6 +6,7 @@ const evaluateSchema = z.object({
     id_area: idPositivo.optional().nullable(),
     id_responsable: idPositivo.optional().nullable(),
     clasificacion: z.string().trim().min(1, "Seleccione una clasificación").max(200),
+    descripcion_evento: z.string().trim().min(5, "Describa el evento"),
     peligro: z.string().trim().max(1000).optional().nullable(),
     consecuencia: z.string().trim().max(1000).optional().nullable(),
     observaciones: z.string().trim().max(2000).optional().nullable(),
@@ -16,6 +17,9 @@ const rejectSchema = z.object({
 });
 const observationSchema = z.object({
     texto: z.string().trim().min(3, "Escriba la observación"),
+});
+const updateTipoSchema = z.object({
+    id_tipo: idPositivo,
 });
 const notaSchema = z.object({
     nota: z.string().trim().max(1000).optional().nullable(),
@@ -34,9 +38,21 @@ const rollbackSchema = z.object({
 const actorSchema = z.object({
     actor: z.string().trim().max(150).optional().default(""),
 });
+/** El comentario del plan lo escriben los dos lados; el rol define quién. */
+const planCommentSchema = z.object({
+    texto: z.string().trim().min(1, "Escriba el comentario").max(1000),
+    rol: z.enum(["seguridad", "jefe"]).optional().default("seguridad"),
+    actor: z.string().trim().max(150).optional(),
+});
+const planUpdateSchema = z.object({
+    actor: z.string().trim().max(150).optional().default(""),
+    descripcion: z.preprocess((value) => (typeof value === "string" ? value : ""), z.string().trim().min(10, "Describa la actualización").max(2000)),
+});
 const completePlanSchema = z.object({
     actor: z.string().trim().max(150).optional().default(""),
     descripcion: z.preprocess((value) => (typeof value === "string" ? value : ""), z.string().trim().min(10, "Describa el cierre de ejecución").max(2000)),
+    /** Opcional a pedido del cliente: acompaña al cierre, no lo bloquea. */
+    comentario: z.string().trim().max(1000).optional().nullable(),
 });
 const activityUpdateSchema = z.object({
     estado: z.enum(["Pendiente", "En progreso", "Completado"]),
@@ -82,7 +98,8 @@ const respondInfoSchema = z.object({
     respuesta: z.string().trim().max(1000).optional().nullable(),
 });
 const investigationSchema = z.object({
-    hallazgos: z.string().trim().min(5, "Describa los hallazgos"),
+    // La descripción del evento ("hallazgos") se escribe en Evaluación
+    // (casos_sop.descripcion_evento) y se copia acá al guardar la investigación.
     causa_raiz: z.string().trim().min(5, "Describa la causa raíz"),
     conclusiones: z.string().trim().min(5, "Describa las conclusiones"),
     observaciones: z.string().trim().max(1000).optional().nullable(),
@@ -150,6 +167,17 @@ export class CaseService {
         const caso = await getCasoBasico(codigo);
         return CaseRepository.evaluate(caso.id_caso, dto);
     }
+    /**
+     * Corrección del tipo de reporte (Accidente / Incidente / Condición
+     * Insegura) que hace Seguridad Operativa en Recepción, para los casos en
+     * que el reportante lo marcó mal. Solo cambia ese campo, no reabre ni
+     * mueve de etapa el caso.
+     */
+    static async updateTipo(codigo, rawBody, actor) {
+        const dto = updateTipoSchema.parse(rawBody);
+        const caso = await getCasoBasico(codigo);
+        return CaseRepository.updateTipo(caso.id_caso, dto.id_tipo, actor);
+    }
     static async reject(codigo, rawBody) {
         const dto = rejectSchema.parse(rawBody);
         const caso = await getCasoBasico(codigo);
@@ -190,6 +218,11 @@ export class CaseService {
         const caso = await getCasoBasico(codigo);
         return CaseRepository.closeCase(caso.id_caso, dto.nota);
     }
+    /** SO arranca la Ejecución con los planes ya aceptados, sin esperar al resto. */
+    static async startExecution(codigo) {
+        const caso = await getCasoBasico(codigo);
+        return CaseRepository.startExecution(caso.id_caso);
+    }
     static async acceptPlan(codigo, rawBody) {
         const dto = actorSchema.parse(rawBody ?? {});
         const caso = await getCasoBasico(codigo);
@@ -203,7 +236,7 @@ export class CaseService {
     static async completeExecutionByPlan(idPlan, rawBody) {
         const dto = completePlanSchema.parse(rawBody ?? {});
         const id = idPositivo.parse(idPlan);
-        return CaseRepository.completeExecutionByPlan(id, dto.actor || "Jefe de Área", dto.descripcion);
+        return CaseRepository.completeExecutionByPlan(id, dto.actor || "Jefe de Área", dto.descripcion, dto.comentario?.trim() || null);
     }
     static async reviewFinalPlanById(idPlan, rawBody) {
         const dto = planFinalReviewSchema.parse(rawBody ?? {});
@@ -265,13 +298,24 @@ export class CaseService {
         return CaseRepository.addComment(caso.id_caso, dto.texto);
     }
     static async addPlanComment(idPlan, rawBody) {
-        const dto = observationSchema.parse(rawBody);
+        const dto = planCommentSchema.parse(rawBody);
         const id = idPositivo.parse(idPlan);
-        return CaseRepository.addPlanComment(id, dto.texto);
+        return CaseRepository.addPlanComment(id, dto.texto, dto.rol, dto.actor);
+    }
+    /** El jefe quita una evidencia equivocada, antes de enviar el cierre a SO. */
+    static async removePlanEvidence(idPlan, idAnexo, rawBody) {
+        const dto = actorSchema.parse(rawBody ?? {});
+        return CaseRepository.removePlanEvidence(idPositivo.parse(idPlan), idPositivo.parse(idAnexo), dto.actor || "Jefe de Área");
     }
     static async addEvidence(codigo, files) {
         const caso = await getCasoBasico(codigo);
         return CaseRepository.addEvidence(caso.id_caso, files);
+    }
+    /** Actualización adicional del jefe sobre un plan ya cerrado por el área. */
+    static async addPlanUpdate(idPlan, rawBody, files) {
+        const dto = planUpdateSchema.parse(rawBody ?? {});
+        const id = idPositivo.parse(idPlan);
+        return CaseRepository.addPlanUpdate(id, dto.descripcion, files, dto.actor || "Jefe de Área");
     }
     static async addEvidenceByPlan(idPlan, rawBody, files) {
         const dto = actorSchema.parse(rawBody ?? {});

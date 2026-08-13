@@ -14,7 +14,12 @@ export type Stage =
   | "rechazado"
   | "pendiente_info";
 
-export type TipoSOP = "hallazgo" | "incidente" | "reporte_voluntario" | "accidente";
+// Antes había un campo separado (`tipo_sop`) que se fijaba en "Hallazgo" al
+// crear el caso y nunca se volvía a actualizar — todo el sistema terminaba
+// mostrando el mismo tipo sin importar el real. Ahora el tipo de evento sale
+// directo del catálogo "Tipo de Reporte" que elige el reportante (o corrige
+// SO), la misma fuente que ya usa la tarjeta "Evento Operativo".
+export type TipoSOP = "accidente" | "incidente" | "condicion_insegura" | "hallazgo" | "acto_inseguro" | "otro";
 
 export type RiskLevel =
   | "1A" | "1B" | "1C" | "1D" | "1E"
@@ -60,10 +65,12 @@ export const STAGE_ORDER: Stage[] = [
 ];
 
 export const EVENT_LABELS: Record<TipoSOP, string> = {
-  hallazgo: "Hallazgo",
-  incidente: "Incidente",
-  reporte_voluntario: "Reporte Voluntario",
   accidente: "Accidente",
+  incidente: "Incidente",
+  condicion_insegura: "Condición Insegura",
+  hallazgo: "Hallazgo",
+  acto_inseguro: "Acto Inseguro",
+  otro: "Otro",
 };
 
 export const RISK_CATEGORY_LABELS: Record<RiskCategory, string> = {
@@ -147,8 +154,10 @@ export function riskCategory(r: RiskLevel): RiskCategory {
 export const TYPE_TONE: Record<TipoSOP, string> = {
   accidente: "bg-critical-soft text-critical-ink",
   incidente: "bg-warning-soft text-warning-ink",
+  condicion_insegura: "bg-warning-soft text-warning-ink",
   hallazgo: "bg-info-soft text-info-ink",
-  reporte_voluntario: "bg-brand-50 text-brand-800",
+  acto_inseguro: "bg-warning-soft text-warning-ink",
+  otro: "bg-surface-2 text-ink-soft",
 };
 
 // ── Puentes con los catálogos reales de Postgres ────────────────────────
@@ -178,13 +187,17 @@ export function estadoFromStage(stage: Stage): string {
   return STAGE_LABELS[stage];
 }
 
+// Mismos nombres que el catálogo "Tipo de Reporte" (el que elige el
+// reportante, o corrige SO desde Recepción).
 const TIPO_BY_NOMBRE: Record<string, TipoSOP> = {
-  Hallazgo: "hallazgo",
-  Incidente: "incidente",
-  "Reporte Voluntario": "reporte_voluntario",
   Accidente: "accidente",
+  Incidente: "incidente",
+  "Condición Insegura": "condicion_insegura",
+  Hallazgo: "hallazgo",
+  "Acto Inseguro": "acto_inseguro",
+  Otro: "otro",
 };
 
-export function tipoSopFromNombre(nombre?: string | null): TipoSOP {
-  return (nombre && TIPO_BY_NOMBRE[nombre]) || "hallazgo";
+export function tipoEventoFromNombre(nombre?: string | null): TipoSOP {
+  return (nombre && TIPO_BY_NOMBRE[nombre]) || "otro";
 }

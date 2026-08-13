@@ -60,6 +60,15 @@ export class CaseController {
             return handleError(res, error, "Error al registrar la observación");
         }
     }
+    static async updateTipo(req, res) {
+        try {
+            const caso = await CaseService.updateTipo(param(req, "codigo"), req.body, req.body?.actor);
+            return res.json(ApiResponse.success("Tipo de reporte actualizado", caso));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al actualizar el tipo de reporte");
+        }
+    }
     static async evaluate(req, res) {
         try {
             const caso = await CaseService.evaluate(param(req, "codigo"), req.body);
@@ -195,6 +204,15 @@ export class CaseController {
             return handleError(res, error, "Error al completar la ejecución");
         }
     }
+    static async startExecution(req, res) {
+        try {
+            const caso = await CaseService.startExecution(param(req, "codigo"));
+            return res.json(ApiResponse.success("El caso pasó a Ejecución", caso));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al iniciar la ejecución del caso");
+        }
+    }
     static async sendToVerification(req, res) {
         try {
             const caso = await CaseService.sendToVerification(param(req, "codigo"));
@@ -276,6 +294,15 @@ export class CaseController {
             return handleError(res, error, "Error al agregar el comentario");
         }
     }
+    static async removePlanEvidence(req, res) {
+        try {
+            const r = await CaseService.removePlanEvidence(param(req, "idPlan"), param(req, "idAnexo"), req.body);
+            return res.json(ApiResponse.success("Evidencia eliminada", r));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al eliminar la evidencia");
+        }
+    }
     static async addPlanComment(req, res) {
         try {
             const timeline = await CaseService.addPlanComment(param(req, "idPlan"), req.body);
@@ -298,6 +325,21 @@ export class CaseController {
         }
         catch (error) {
             return handleError(res, error, "Error al adjuntar evidencia");
+        }
+    }
+    static async addPlanUpdate(req, res) {
+        try {
+            const files = (req.files ?? []).map((f) => ({
+                originalname: f.originalname,
+                filename: f.filename,
+                mimetype: f.mimetype,
+                size: f.size,
+            }));
+            const resultado = await CaseService.addPlanUpdate(param(req, "idPlan"), req.body, files);
+            return res.status(201).json(ApiResponse.success("Actualización registrada correctamente", resultado));
+        }
+        catch (error) {
+            return handleError(res, error, "Error al registrar la actualización del plan");
         }
     }
     static async addEvidenceByPlan(req, res) {

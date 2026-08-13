@@ -11,6 +11,7 @@ router.get("/:codigo", CaseController.getByCodigo);
 router.post("/:codigo/approve", CaseController.approve);
 router.post("/:codigo/observation", CaseController.addObservation);
 router.post("/:codigo/evaluate", CaseController.evaluate);
+router.patch("/:codigo/tipo", CaseController.updateTipo);
 router.post("/:codigo/reject", CaseController.reject);
 router.post("/:codigo/request-info", CaseController.requestInfo);
 router.post("/:codigo/request-info/:idSolicitud/respond", CaseController.respondInfo);

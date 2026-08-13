@@ -31,7 +31,7 @@ const LIST_INCLUDE = {
             eventos_operativos: {
                 include: {
                     catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: { select: { nombre: true } },
-                    catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: { select: { nombre: true } },
+                    catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: { select: { id_detalle: true, nombre: true } },
                     catalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalle: { select: { nombre: true } },
                 },
             },
@@ -73,7 +73,7 @@ const DETAIL_INCLUDE = {
             eventos_operativos: {
                 include: {
                     catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: { select: { nombre: true } },
-                    catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: { select: { nombre: true } },
+                    catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: { select: { id_detalle: true, nombre: true } },
                     catalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalle: { select: { nombre: true } },
                     catalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalle: { select: { nombre: true } },
                     catalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalle: { select: { nombre: true } },
@@ -117,21 +117,109 @@ export class CaseRepository {
         return prisma.timeline_caso.findMany({ where: { id_caso }, orderBy: { fecha: "desc" } });
     }
     /** Comentario operativo de SO asociado a un plan específico. */
-    static async addPlanComment(id_plan, texto) {
+    /**
+     * Comentario sobre un plan. Lo usan los dos lados: SO desde el expediente y
+     * el Jefe del Área desde su panel, por eso el rol es parámetro y no fijo.
+     *
+     * Cuando lo escribe el jefe también queda en `seguimientos`, que es la tabla
+     * de comentarios de la actividad, además del timeline que ve SO.
+     */
+    static async addPlanComment(id_plan, texto, rol = "seguridad", actor) {
         const plan = await prisma.planes_accion.findUnique({
             where: { id_plan },
-            select: { id_caso: true, codigo_plan: true },
+            select: {
+                id_caso: true,
+                codigo_plan: true,
+                actividades_plan: { select: { id_actividad: true }, orderBy: { id_actividad: "asc" }, take: 1 },
+            },
         });
         if (!plan)
             throw new Error(`El plan ${id_plan} no existe`);
-        await CaseRepository.pushTimeline(prisma, plan.id_caso, {
-            kind: "comentario",
-            actor: ACTOR_SO,
-            actor_rol: "seguridad",
-            titulo: `Comentario SO — ${plan.codigo_plan}`,
-            detalle: texto,
+        const esJefe = rol === "jefe";
+        const quien = actor?.trim() || (esJefe ? "Jefe de Área" : ACTOR_SO);
+        await prisma.$transaction(async (tx) => {
+            await CaseRepository.pushTimeline(tx, plan.id_caso, {
+                kind: "comentario",
+                actor: quien,
+                actor_rol: rol,
+                titulo: esJefe ? `Comentario del área — ${plan.codigo_plan}` : `Comentario SO — ${plan.codigo_plan}`,
+                detalle: texto,
+            });
+            if (esJefe && plan.actividades_plan[0]) {
+                await tx.seguimientos.create({
+                    data: { id_actividad: plan.actividades_plan[0].id_actividad, comentario: texto, porcentaje: null },
+                });
+            }
+            if (esJefe) {
+                await NotificationRepository.emitir(tx, {
+                    para: { rol: "Seguridad Operativa" },
+                    tipo: "ejecucion_completada",
+                    titulo: `Comentario del área en ${plan.codigo_plan}`,
+                    mensaje: `${quien}: ${texto}`,
+                });
+            }
         });
         return prisma.timeline_caso.findMany({ where: { id_caso: plan.id_caso }, orderBy: { fecha: "desc" } });
+    }
+    /**
+     * Quita una evidencia del plan antes de que el cierre se envíe a SO.
+     *
+     * Solo se permite mientras el plan sigue abierto: una vez finalizado, lo
+     * enviado queda bloqueado y no se puede eliminar. Se borra el anexo y se
+     * limpia su referencia del payload del timeline para que no quede apuntando
+     * a un archivo que ya no existe.
+     */
+    static async removePlanEvidence(id_plan, id_anexo, actor) {
+        const plan = await prisma.planes_accion.findUnique({
+            where: { id_plan },
+            select: { id_caso: true, codigo_plan: true, catalogo_detalle: { select: { nombre: true } } },
+        });
+        if (!plan)
+            throw new Error(`El plan ${id_plan} no existe`);
+        const estado = (plan.catalogo_detalle?.nombre ?? "").toLowerCase();
+        if (estado.includes("finaliz") || estado.includes("cerrad")) {
+            throw new Error(`${plan.codigo_plan} ya fue enviado a Seguridad Operativa; sus evidencias no se pueden eliminar`);
+        }
+        const anexo = await prisma.anexos_caso.findUnique({
+            where: { id_anexo },
+            select: { id_anexo: true, id_caso: true, nombre_archivo: true },
+        });
+        if (!anexo || anexo.id_caso !== plan.id_caso) {
+            throw new Error("La evidencia no existe o no pertenece a este plan");
+        }
+        return prisma.$transaction(async (tx) => {
+            // El enlace evidencia↔plan vive en el detalle del timeline; hay que
+            // sacar la referencia de ahí o el archivo seguiría listándose.
+            const eventos = await tx.timeline_caso.findMany({
+                where: { id_caso: plan.id_caso, detalle: { contains: `"id_anexo":${id_anexo}` } },
+                select: { id_evento: true, detalle: true },
+            });
+            for (const evento of eventos) {
+                const [humano, tecnico] = (evento.detalle ?? "").split("__PLAN_EVIDENCE__:");
+                if (!tecnico)
+                    continue;
+                try {
+                    const payload = JSON.parse(tecnico.trim());
+                    payload.anexos = (payload.anexos ?? []).filter((a) => a.id_anexo !== id_anexo);
+                    await tx.timeline_caso.update({
+                        where: { id_evento: evento.id_evento },
+                        data: { detalle: `${humano ?? ""}__PLAN_EVIDENCE__:${JSON.stringify(payload)}` },
+                    });
+                }
+                catch {
+                    // Payload ilegible: se deja como está antes que corromperlo.
+                }
+            }
+            await tx.anexos_caso.delete({ where: { id_anexo } });
+            await CaseRepository.pushTimeline(tx, plan.id_caso, {
+                kind: "seguimiento",
+                actor,
+                actor_rol: "jefe",
+                titulo: `Evidencia eliminada — ${plan.codigo_plan}`,
+                detalle: `Se quitó "${anexo.nombre_archivo ?? "archivo"}" antes del envío a revisión.`,
+            });
+            return { id_anexo };
+        });
     }
     static async findAll(filtros) {
         const where = {};
@@ -188,7 +276,9 @@ export class CaseRepository {
                         fecha_hallazgo: true,
                         catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { select: { nombre: true } },
                         catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: { select: { codigo: true, nombre: true } },
-                        investigacion_caso: { select: { causa_raiz: true, hallazgos: true, conclusiones: true } },
+                        // `observaciones` es opcional en el formulario de SO, pero el jefe
+                        // debe poder leerla: es donde van las recomendaciones.
+                        investigacion_caso: { select: { causa_raiz: true, hallazgos: true, conclusiones: true, observaciones: true } },
                         timeline_caso: {
                             orderBy: { fecha: "desc" },
                             select: {
@@ -299,6 +389,48 @@ export class CaseRepository {
             return actualizado;
         });
     }
+    /**
+     * Corrige el tipo de reporte (Accidente / Incidente / Condición Insegura /
+     * Hallazgo / Acto Inseguro / Otro) que eligió el reportante al crear el
+     * caso. Ese valor vive en `eventos_operativos.tipo_incidente` —no en
+     * `casos_sop.tipo`, que es un campo interno de SO (No Conformidad /
+     * Observación) sin relación con lo que reporta el trabajador—, así que
+     * la corrección se aplica ahí, sobre el evento operativo vinculado al caso.
+     */
+    static async updateTipo(id_caso, id_tipo, actor = ACTOR_SO) {
+        const evento = await prisma.evento_caso.findFirst({
+            where: { id_caso },
+            select: {
+                id_evento: true,
+                eventos_operativos: {
+                    select: { catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: { select: { nombre: true } } },
+                },
+            },
+        });
+        if (!evento)
+            throw new Error("El caso no tiene un evento operativo vinculado");
+        const nuevo = await prisma.catalogo_detalle.findUniqueOrThrow({
+            where: { id_detalle: id_tipo },
+            select: { nombre: true, catalogos: { select: { nombre: true } } },
+        });
+        if (nuevo.catalogos.nombre !== "Tipo de Reporte") {
+            throw new Error(`El valor "${nuevo.nombre}" no pertenece al catálogo "Tipo de Reporte"`);
+        }
+        return prisma.$transaction(async (tx) => {
+            const actualizado = await tx.eventos_operativos.update({
+                where: { id_evento: evento.id_evento },
+                data: { tipo_incidente: id_tipo },
+            });
+            await CaseRepository.pushTimeline(tx, id_caso, {
+                kind: "comentario",
+                actor,
+                actor_rol: "seguridad",
+                titulo: "Tipo de reporte corregido",
+                detalle: `${evento.eventos_operativos.catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle.nombre} -> ${nuevo.nombre}`,
+            });
+            return actualizado;
+        });
+    }
     static async evaluate(id_caso, dto) {
         const destino = dto.requiere_investigacion ? "Investigación" : "Plan de Acción";
         const estado = await CaseRepository.findEstado(destino);
@@ -308,6 +440,7 @@ export class CaseRepository {
                 data: {
                     analisis_riesgo: dto.id_riesgo,
                     clasificacion: dto.clasificacion,
+                    descripcion_evento: dto.descripcion_evento,
                     estado_hallazgo: estado.id_detalle,
                     ...(dto.id_area != null ? { area_responsable: dto.id_area } : {}),
                     ...(dto.id_responsable != null ? { responsable_hallazgo: dto.id_responsable } : {}),
@@ -384,18 +517,22 @@ export class CaseRepository {
     static async saveInvestigation(id_caso, dto) {
         const estado = await CaseRepository.findEstado("Plan de Acción");
         return prisma.$transaction(async (tx) => {
+            // La descripción del evento se escribió en Evaluación; acá solo se
+            // copia como "hallazgos" para no duplicar el campo en el formulario.
+            const caso = await tx.casos_sop.findUniqueOrThrow({ where: { id_caso }, select: { descripcion_evento: true } });
+            const hallazgos = caso.descripcion_evento?.trim() || "Sin descripción registrada en Evaluación.";
             const investigacion = await tx.investigacion_caso.upsert({
                 where: { id_caso },
                 create: {
                     id_caso,
-                    hallazgos: dto.hallazgos,
+                    hallazgos,
                     causa_raiz: dto.causa_raiz,
                     conclusiones: dto.conclusiones,
                     observaciones: dto.observaciones ?? null,
                     investigador: dto.investigador ?? null,
                 },
                 update: {
-                    hallazgos: dto.hallazgos,
+                    hallazgos,
                     causa_raiz: dto.causa_raiz,
                     conclusiones: dto.conclusiones,
                     observaciones: dto.observaciones ?? null,
@@ -635,6 +772,57 @@ export class CaseRepository {
         });
     }
     /** ETAPA 5 — el Jefe del Área acepta un plan específico del reporte. */
+    /**
+     * ETAPA 4 → 5 — SO adelanta el caso a Ejecución sin esperar a que todas las
+     * áreas acepten su plan.
+     *
+     * `acceptPlanById` solo mueve el caso cuando no queda ningún plan por
+     * aceptar, y eso dejaba el expediente en "Plan de Acción" mientras un área
+     * ya estaba ejecutando: el estado del caso no reflejaba la realidad. Esta
+     * transición la dispara SO a mano cuando decide que con lo aceptado alcanza
+     * para arrancar.
+     *
+     * Los planes que siguen sin aceptar NO se tocan: se quedan en "Enviado" y su
+     * jefe los puede aceptar después, ya con el caso en Ejecución.
+     */
+    static async startExecution(id_caso) {
+        const [estadoEjecucion, estadoPlanAceptado, estadoPlanEnEjecucion, estadoPlanFinalizado, estadoPlanCerrado] = await Promise.all([
+            CaseRepository.findEstado("Ejecución"),
+            CaseRepository.findEstadoPlan("Aceptado"),
+            CaseRepository.findEstadoPlan("En Ejecución"),
+            CaseRepository.ensureEstadoPlan("Finalizado"),
+            CaseRepository.findEstadoPlan("Cerrado"),
+        ]);
+        const enMarcha = [
+            estadoPlanAceptado.id_detalle,
+            estadoPlanEnEjecucion.id_detalle,
+            estadoPlanFinalizado.id_detalle,
+            estadoPlanCerrado.id_detalle,
+        ];
+        const [aceptados, pendientes] = await Promise.all([
+            prisma.planes_accion.count({ where: { id_caso, estado: { in: enMarcha } } }),
+            prisma.planes_accion.count({ where: { id_caso, estado: { notIn: enMarcha } } }),
+        ]);
+        if (aceptados === 0) {
+            throw new Error("Ningún área aceptó su plan todavía; no hay ejecución que iniciar");
+        }
+        return prisma.$transaction(async (tx) => {
+            const caso = await tx.casos_sop.update({
+                where: { id_caso },
+                data: { estado_hallazgo: estadoEjecucion.id_detalle },
+            });
+            await CaseRepository.pushTimeline(tx, id_caso, {
+                kind: "seguimiento",
+                actor: ACTOR_SO,
+                actor_rol: "seguridad",
+                titulo: "Ejecución iniciada por Seguridad Operativa",
+                detalle: pendientes > 0
+                    ? `El caso pasa a Ejecución con ${aceptados} plan(es) aceptado(s). Quedan ${pendientes} plan(es) pendientes de aceptación; siguen vigentes y su área los puede aceptar más adelante.`
+                    : `El caso pasa a Ejecución con los ${aceptados} plan(es) aceptados.`,
+            });
+            return caso;
+        });
+    }
     static async acceptPlanById(id_plan, actor) {
         const plan = await prisma.planes_accion.findUnique({
             where: { id_plan },
@@ -690,7 +878,7 @@ export class CaseRepository {
         });
     }
     /** El área termina un plan específico; SO lo revisa después de forma independiente. */
-    static async completeExecutionByPlan(id_plan, actor, descripcionCierre) {
+    static async completeExecutionByPlan(id_plan, actor, descripcionCierre, comentario = null) {
         const plan = await prisma.planes_accion.findUnique({
             where: { id_plan },
             select: {
@@ -698,6 +886,7 @@ export class CaseRepository {
                 id_caso: true,
                 codigo_plan: true,
                 catalogo_detalle: { select: { nombre: true } },
+                actividades_plan: { select: { id_actividad: true }, orderBy: { id_actividad: "asc" }, take: 1 },
             },
         });
         if (!plan)
@@ -706,20 +895,13 @@ export class CaseRepository {
         if (estadoPlan.includes("finaliz") || estadoPlan.includes("cerrad")) {
             throw new Error(`El plan ${plan.codigo_plan} ya fue enviado a revisión`);
         }
-        const [totalActividades, actividadesPendientes] = await Promise.all([
-            prisma.actividades_plan.count({ where: { id_plan } }),
-            prisma.actividades_plan.count({
-                where: {
-                    id_plan,
-                    OR: [{ porcentaje: null }, { porcentaje: { lt: 100 } }],
-                },
-            }),
-        ]);
+        // Ya no se exige que las actividades estén al 100%: el cliente indicó que
+        // un plan puede ejecutarse y finalizarse el mismo día, y el seguimiento
+        // pasó a trabajar solo con los estados del flujo. El único requisito es
+        // que el plan tenga algo que finalizar.
+        const totalActividades = await prisma.actividades_plan.count({ where: { id_plan } });
         if (totalActividades === 0) {
             throw new Error(`El plan ${plan.codigo_plan} no tiene actividades para finalizar`);
-        }
-        if (actividadesPendientes > 0) {
-            throw new Error(`Complete todas las actividades antes de enviar ${plan.codigo_plan} a revisión`);
         }
         const [estadoPlanFinalizado, estadoActCompletado] = await Promise.all([
             CaseRepository.ensureEstadoPlan("Finalizado"),
@@ -739,8 +921,17 @@ export class CaseRepository {
                 actor,
                 actor_rol: "jefe",
                 titulo: `Plan de acción finalizado por el área — ${plan.codigo_plan}`,
-                detalle: `Descripción final: ${descripcionCierre}`,
+                // El comentario es opcional; solo se agrega si el jefe lo escribió.
+                detalle: comentario
+                    ? `Descripción final: ${descripcionCierre}\nComentario: ${comentario}`
+                    : `Descripción final: ${descripcionCierre}`,
             });
+            // Además queda en `seguimientos`, que es la tabla propia de comentarios.
+            if (comentario && plan.actividades_plan[0]) {
+                await tx.seguimientos.create({
+                    data: { id_actividad: plan.actividades_plan[0].id_actividad, comentario, porcentaje: null },
+                });
+            }
             await NotificationRepository.emitir(tx, {
                 para: { rol: "Seguridad Operativa" },
                 tipo: "ejecucion_completada",
@@ -1254,6 +1445,100 @@ export class CaseRepository {
                 });
             }
             return tx.anexos_caso.findMany({ where: { id_caso }, orderBy: { fecha_subida: "desc" } });
+        });
+    }
+    /**
+     * Actualizaciones adicionales de un plan ya finalizado por el área.
+     *
+     * La actualización "original" es la descripción de cierre que el jefe manda
+     * con `completeExecutionByPlan`. Cuando después necesita agregar información
+     * no se edita aquella —queda bloqueada— sino que se apila una nueva, con su
+     * propia descripción y sus propias evidencias, siempre sobre el MISMO plan.
+     *
+     * No hay tabla nueva: el texto va a `seguimientos` (que ya es el registro de
+     * avance por actividad) y las evidencias a `anexos_caso`, enlazadas con el
+     * mismo payload `__PLAN_EVIDENCE__` del timeline que usa `addEvidenceByPlan`,
+     * más el `seguimientoId` para saber a qué actualización pertenece cada una.
+     */
+    static MAX_ACTUALIZACIONES_ADICIONALES = 4;
+    /** Cuenta las actualizaciones adicionales ya registradas para un plan. */
+    static async contarActualizaciones(id_plan, id_caso) {
+        return prisma.timeline_caso.count({
+            where: { id_caso, kind: "actualizacion", detalle: { contains: `"planId":${id_plan}` } },
+        });
+    }
+    static async addPlanUpdate(id_plan, descripcion, archivos, actor) {
+        const plan = await prisma.planes_accion.findUnique({
+            where: { id_plan },
+            select: {
+                id_plan: true,
+                id_caso: true,
+                codigo_plan: true,
+                actividades_plan: { select: { id_actividad: true }, orderBy: { id_actividad: "asc" }, take: 1 },
+            },
+        });
+        if (!plan)
+            throw new Error(`El plan ${id_plan} no existe`);
+        const actividad = plan.actividades_plan[0];
+        if (!actividad)
+            throw new Error(`El plan ${plan.codigo_plan} no tiene actividades donde registrar la actualización`);
+        const yaRegistradas = await CaseRepository.contarActualizaciones(id_plan, plan.id_caso);
+        if (yaRegistradas >= CaseRepository.MAX_ACTUALIZACIONES_ADICIONALES) {
+            throw new Error(`El plan ${plan.codigo_plan} alcanzó el máximo de ${CaseRepository.MAX_ACTUALIZACIONES_ADICIONALES} actualizaciones adicionales. Comuníquese con Seguridad Operativa.`);
+        }
+        const numero = yaRegistradas + 1;
+        return prisma.$transaction(async (tx) => {
+            const seguimiento = await tx.seguimientos.create({
+                data: {
+                    id_actividad: actividad.id_actividad,
+                    comentario: descripcion,
+                    // Sin porcentaje: el cliente pidió trabajar solo con los estados del
+                    // flujo, porque un plan puede ejecutarse y cerrarse el mismo día.
+                    porcentaje: null,
+                },
+            });
+            const anexosCreados = [];
+            for (const f of archivos) {
+                const anexo = await tx.anexos_caso.create({
+                    data: {
+                        id_caso: plan.id_caso,
+                        nombre_archivo: f.originalname,
+                        ruta_archivo: `/uploads/casos/${f.filename}`,
+                        tipo_archivo: f.mimetype,
+                        peso: Math.round((f.size / 1024) * 100) / 100,
+                    },
+                });
+                anexosCreados.push({
+                    id_anexo: anexo.id_anexo,
+                    nombre_archivo: anexo.nombre_archivo,
+                    ruta_archivo: anexo.ruta_archivo,
+                });
+            }
+            const payload = {
+                planId: id_plan,
+                planCode: plan.codigo_plan,
+                seguimientoId: seguimiento.id_seguimiento,
+                anexos: anexosCreados,
+            };
+            await CaseRepository.pushTimeline(tx, plan.id_caso, {
+                kind: "actualizacion",
+                actor,
+                actor_rol: "jefe",
+                titulo: `Actualización ${numero} — ${plan.codigo_plan}`,
+                detalle: `${descripcion}\n__PLAN_EVIDENCE__:${JSON.stringify(payload)}`,
+            });
+            await NotificationRepository.emitir(tx, {
+                para: { rol: "Seguridad Operativa" },
+                tipo: "ejecucion_completada",
+                titulo: `Actualización ${numero} en ${plan.codigo_plan}`,
+                mensaje: `${actor} agregó información al plan: ${descripcion}`,
+            });
+            return {
+                id_seguimiento: seguimiento.id_seguimiento,
+                numero,
+                restantes: CaseRepository.MAX_ACTUALIZACIONES_ADICIONALES - numero,
+                anexos: anexosCreados,
+            };
         });
     }
     static async addEvidenceByPlan(id_plan, archivos, actor) {

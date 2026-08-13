@@ -63,6 +63,7 @@ export type Casos_sopMinAggregateOutputType = {
     subtipo_sop: number | null;
     peligro: string | null;
     consecuencia: string | null;
+    descripcion_evento: string | null;
     clasificacion: string | null;
     analisis_riesgo: number | null;
     acr: string | null;
@@ -96,6 +97,7 @@ export type Casos_sopMaxAggregateOutputType = {
     subtipo_sop: number | null;
     peligro: string | null;
     consecuencia: string | null;
+    descripcion_evento: string | null;
     clasificacion: string | null;
     analisis_riesgo: number | null;
     acr: string | null;
@@ -129,6 +131,7 @@ export type Casos_sopCountAggregateOutputType = {
     subtipo_sop: number;
     peligro: number;
     consecuencia: number;
+    descripcion_evento: number;
     clasificacion: number;
     analisis_riesgo: number;
     acr: number;
@@ -195,6 +198,7 @@ export type Casos_sopMinAggregateInputType = {
     subtipo_sop?: true;
     peligro?: true;
     consecuencia?: true;
+    descripcion_evento?: true;
     clasificacion?: true;
     analisis_riesgo?: true;
     acr?: true;
@@ -228,6 +232,7 @@ export type Casos_sopMaxAggregateInputType = {
     subtipo_sop?: true;
     peligro?: true;
     consecuencia?: true;
+    descripcion_evento?: true;
     clasificacion?: true;
     analisis_riesgo?: true;
     acr?: true;
@@ -261,6 +266,7 @@ export type Casos_sopCountAggregateInputType = {
     subtipo_sop?: true;
     peligro?: true;
     consecuencia?: true;
+    descripcion_evento?: true;
     clasificacion?: true;
     analisis_riesgo?: true;
     acr?: true;
@@ -371,6 +377,7 @@ export type Casos_sopGroupByOutputType = {
     subtipo_sop: number | null;
     peligro: string | null;
     consecuencia: string | null;
+    descripcion_evento: string | null;
     clasificacion: string | null;
     analisis_riesgo: number | null;
     acr: string | null;
@@ -415,6 +422,7 @@ export type casos_sopWhereInput = {
     subtipo_sop?: Prisma.IntNullableFilter<"casos_sop"> | number | null;
     peligro?: Prisma.StringNullableFilter<"casos_sop"> | string | null;
     consecuencia?: Prisma.StringNullableFilter<"casos_sop"> | string | null;
+    descripcion_evento?: Prisma.StringNullableFilter<"casos_sop"> | string | null;
     clasificacion?: Prisma.StringNullableFilter<"casos_sop"> | string | null;
     analisis_riesgo?: Prisma.IntNullableFilter<"casos_sop"> | number | null;
     acr?: Prisma.StringNullableFilter<"casos_sop"> | string | null;
@@ -465,6 +473,7 @@ export type casos_sopOrderByWithRelationInput = {
     subtipo_sop?: Prisma.SortOrderInput | Prisma.SortOrder;
     peligro?: Prisma.SortOrderInput | Prisma.SortOrder;
     consecuencia?: Prisma.SortOrderInput | Prisma.SortOrder;
+    descripcion_evento?: Prisma.SortOrderInput | Prisma.SortOrder;
     clasificacion?: Prisma.SortOrderInput | Prisma.SortOrder;
     analisis_riesgo?: Prisma.SortOrderInput | Prisma.SortOrder;
     acr?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -518,6 +527,7 @@ export type casos_sopWhereUniqueInput = Prisma.AtLeast<{
     subtipo_sop?: Prisma.IntNullableFilter<"casos_sop"> | number | null;
     peligro?: Prisma.StringNullableFilter<"casos_sop"> | string | null;
     consecuencia?: Prisma.StringNullableFilter<"casos_sop"> | string | null;
+    descripcion_evento?: Prisma.StringNullableFilter<"casos_sop"> | string | null;
     clasificacion?: Prisma.StringNullableFilter<"casos_sop"> | string | null;
     analisis_riesgo?: Prisma.IntNullableFilter<"casos_sop"> | number | null;
     acr?: Prisma.StringNullableFilter<"casos_sop"> | string | null;
@@ -568,6 +578,7 @@ export type casos_sopOrderByWithAggregationInput = {
     subtipo_sop?: Prisma.SortOrderInput | Prisma.SortOrder;
     peligro?: Prisma.SortOrderInput | Prisma.SortOrder;
     consecuencia?: Prisma.SortOrderInput | Prisma.SortOrder;
+    descripcion_evento?: Prisma.SortOrderInput | Prisma.SortOrder;
     clasificacion?: Prisma.SortOrderInput | Prisma.SortOrder;
     analisis_riesgo?: Prisma.SortOrderInput | Prisma.SortOrder;
     acr?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -609,6 +620,7 @@ export type casos_sopScalarWhereWithAggregatesInput = {
     subtipo_sop?: Prisma.IntNullableWithAggregatesFilter<"casos_sop"> | number | null;
     peligro?: Prisma.StringNullableWithAggregatesFilter<"casos_sop"> | string | null;
     consecuencia?: Prisma.StringNullableWithAggregatesFilter<"casos_sop"> | string | null;
+    descripcion_evento?: Prisma.StringNullableWithAggregatesFilter<"casos_sop"> | string | null;
     clasificacion?: Prisma.StringNullableWithAggregatesFilter<"casos_sop"> | string | null;
     analisis_riesgo?: Prisma.IntNullableWithAggregatesFilter<"casos_sop"> | number | null;
     acr?: Prisma.StringNullableWithAggregatesFilter<"casos_sop"> | string | null;
@@ -635,6 +647,7 @@ export type casos_sopCreateInput = {
     descripcion: string;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     acr?: string | null;
     fecha_plan?: Date | string | null;
@@ -680,6 +693,7 @@ export type casos_sopUncheckedCreateInput = {
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -712,6 +726,7 @@ export type casos_sopUpdateInput = {
     descripcion?: Prisma.StringFieldUpdateOperationsInput | string;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_plan?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -757,6 +772,7 @@ export type casos_sopUncheckedUpdateInput = {
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -796,6 +812,7 @@ export type casos_sopCreateManyInput = {
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -822,6 +839,7 @@ export type casos_sopUpdateManyMutationInput = {
     descripcion?: Prisma.StringFieldUpdateOperationsInput | string;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_plan?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -850,6 +868,7 @@ export type casos_sopUncheckedUpdateManyInput = {
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -895,6 +914,7 @@ export type casos_sopCountOrderByAggregateInput = {
     subtipo_sop?: Prisma.SortOrder;
     peligro?: Prisma.SortOrder;
     consecuencia?: Prisma.SortOrder;
+    descripcion_evento?: Prisma.SortOrder;
     clasificacion?: Prisma.SortOrder;
     analisis_riesgo?: Prisma.SortOrder;
     acr?: Prisma.SortOrder;
@@ -944,6 +964,7 @@ export type casos_sopMaxOrderByAggregateInput = {
     subtipo_sop?: Prisma.SortOrder;
     peligro?: Prisma.SortOrder;
     consecuencia?: Prisma.SortOrder;
+    descripcion_evento?: Prisma.SortOrder;
     clasificacion?: Prisma.SortOrder;
     analisis_riesgo?: Prisma.SortOrder;
     acr?: Prisma.SortOrder;
@@ -977,6 +998,7 @@ export type casos_sopMinOrderByAggregateInput = {
     subtipo_sop?: Prisma.SortOrder;
     peligro?: Prisma.SortOrder;
     consecuencia?: Prisma.SortOrder;
+    descripcion_evento?: Prisma.SortOrder;
     clasificacion?: Prisma.SortOrder;
     analisis_riesgo?: Prisma.SortOrder;
     acr?: Prisma.SortOrder;
@@ -1512,6 +1534,7 @@ export type casos_sopCreateWithoutAnexos_casoInput = {
     descripcion: string;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     acr?: string | null;
     fecha_plan?: Date | string | null;
@@ -1556,6 +1579,7 @@ export type casos_sopUncheckedCreateWithoutAnexos_casoInput = {
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -1600,6 +1624,7 @@ export type casos_sopUpdateWithoutAnexos_casoInput = {
     descripcion?: Prisma.StringFieldUpdateOperationsInput | string;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_plan?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1644,6 +1669,7 @@ export type casos_sopUncheckedUpdateWithoutAnexos_casoInput = {
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1675,6 +1701,7 @@ export type casos_sopCreateWithoutAreasInput = {
     descripcion: string;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     acr?: string | null;
     fecha_plan?: Date | string | null;
@@ -1719,6 +1746,7 @@ export type casos_sopUncheckedCreateWithoutAreasInput = {
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -1781,6 +1809,7 @@ export type casos_sopScalarWhereInput = {
     subtipo_sop?: Prisma.IntNullableFilter<"casos_sop"> | number | null;
     peligro?: Prisma.StringNullableFilter<"casos_sop"> | string | null;
     consecuencia?: Prisma.StringNullableFilter<"casos_sop"> | string | null;
+    descripcion_evento?: Prisma.StringNullableFilter<"casos_sop"> | string | null;
     clasificacion?: Prisma.StringNullableFilter<"casos_sop"> | string | null;
     analisis_riesgo?: Prisma.IntNullableFilter<"casos_sop"> | number | null;
     acr?: Prisma.StringNullableFilter<"casos_sop"> | string | null;
@@ -1807,6 +1836,7 @@ export type casos_sopCreateWithoutCatalogo_detalle_casos_sop_estado_hallazgoToca
     descripcion: string;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     acr?: string | null;
     fecha_plan?: Date | string | null;
@@ -1850,6 +1880,7 @@ export type casos_sopUncheckedCreateWithoutCatalogo_detalle_casos_sop_estado_hal
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -1890,6 +1921,7 @@ export type casos_sopCreateWithoutCatalogo_detalle_casos_sop_estado_planTocatalo
     descripcion: string;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     acr?: string | null;
     fecha_plan?: Date | string | null;
@@ -1934,6 +1966,7 @@ export type casos_sopUncheckedCreateWithoutCatalogo_detalle_casos_sop_estado_pla
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -1973,6 +2006,7 @@ export type casos_sopCreateWithoutCatalogo_detalle_casos_sop_procedenciaTocatalo
     descripcion: string;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     acr?: string | null;
     fecha_plan?: Date | string | null;
@@ -2016,6 +2050,7 @@ export type casos_sopUncheckedCreateWithoutCatalogo_detalle_casos_sop_procedenci
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -2056,6 +2091,7 @@ export type casos_sopCreateWithoutCatalogo_detalle_casos_sop_analisis_riesgoToca
     descripcion: string;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     acr?: string | null;
     fecha_plan?: Date | string | null;
@@ -2100,6 +2136,7 @@ export type casos_sopUncheckedCreateWithoutCatalogo_detalle_casos_sop_analisis_r
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     acr?: string | null;
     area_responsable?: number | null;
@@ -2139,6 +2176,7 @@ export type casos_sopCreateWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalo
     descripcion: string;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     acr?: string | null;
     fecha_plan?: Date | string | null;
@@ -2182,6 +2220,7 @@ export type casos_sopUncheckedCreateWithoutCatalogo_detalle_casos_sop_subtipo_so
     tipo_sop: number;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -2222,6 +2261,7 @@ export type casos_sopCreateWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_deta
     descripcion: string;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     acr?: string | null;
     fecha_plan?: Date | string | null;
@@ -2265,6 +2305,7 @@ export type casos_sopUncheckedCreateWithoutCatalogo_detalle_casos_sop_tipoTocata
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -2305,6 +2346,7 @@ export type casos_sopCreateWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_
     descripcion: string;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     acr?: string | null;
     fecha_plan?: Date | string | null;
@@ -2348,6 +2390,7 @@ export type casos_sopUncheckedCreateWithoutCatalogo_detalle_casos_sop_tipo_sopTo
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -2479,6 +2522,7 @@ export type casos_sopCreateWithoutEvento_casoInput = {
     descripcion: string;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     acr?: string | null;
     fecha_plan?: Date | string | null;
@@ -2523,6 +2567,7 @@ export type casos_sopUncheckedCreateWithoutEvento_casoInput = {
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -2567,6 +2612,7 @@ export type casos_sopUpdateWithoutEvento_casoInput = {
     descripcion?: Prisma.StringFieldUpdateOperationsInput | string;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_plan?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2611,6 +2657,7 @@ export type casos_sopUncheckedUpdateWithoutEvento_casoInput = {
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2642,6 +2689,7 @@ export type casos_sopCreateWithoutTimeline_casoInput = {
     descripcion: string;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     acr?: string | null;
     fecha_plan?: Date | string | null;
@@ -2686,6 +2734,7 @@ export type casos_sopUncheckedCreateWithoutTimeline_casoInput = {
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -2730,6 +2779,7 @@ export type casos_sopUpdateWithoutTimeline_casoInput = {
     descripcion?: Prisma.StringFieldUpdateOperationsInput | string;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_plan?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2774,6 +2824,7 @@ export type casos_sopUncheckedUpdateWithoutTimeline_casoInput = {
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2805,6 +2856,7 @@ export type casos_sopCreateWithoutInvestigacion_casoInput = {
     descripcion: string;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     acr?: string | null;
     fecha_plan?: Date | string | null;
@@ -2849,6 +2901,7 @@ export type casos_sopUncheckedCreateWithoutInvestigacion_casoInput = {
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -2893,6 +2946,7 @@ export type casos_sopUpdateWithoutInvestigacion_casoInput = {
     descripcion?: Prisma.StringFieldUpdateOperationsInput | string;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_plan?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2937,6 +2991,7 @@ export type casos_sopUncheckedUpdateWithoutInvestigacion_casoInput = {
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2968,6 +3023,7 @@ export type casos_sopCreateWithoutPlanes_accionInput = {
     descripcion: string;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     acr?: string | null;
     fecha_plan?: Date | string | null;
@@ -3012,6 +3068,7 @@ export type casos_sopUncheckedCreateWithoutPlanes_accionInput = {
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -3056,6 +3113,7 @@ export type casos_sopUpdateWithoutPlanes_accionInput = {
     descripcion?: Prisma.StringFieldUpdateOperationsInput | string;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_plan?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -3100,6 +3158,7 @@ export type casos_sopUncheckedUpdateWithoutPlanes_accionInput = {
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -3131,6 +3190,7 @@ export type casos_sopCreateWithoutSolicitudes_informacionInput = {
     descripcion: string;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     acr?: string | null;
     fecha_plan?: Date | string | null;
@@ -3175,6 +3235,7 @@ export type casos_sopUncheckedCreateWithoutSolicitudes_informacionInput = {
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -3219,6 +3280,7 @@ export type casos_sopUpdateWithoutSolicitudes_informacionInput = {
     descripcion?: Prisma.StringFieldUpdateOperationsInput | string;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_plan?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -3263,6 +3325,7 @@ export type casos_sopUncheckedUpdateWithoutSolicitudes_informacionInput = {
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -3294,6 +3357,7 @@ export type casos_sopCreateWithoutUsuarios_casos_sop_created_byTousuariosInput =
     descripcion: string;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     acr?: string | null;
     fecha_plan?: Date | string | null;
@@ -3338,6 +3402,7 @@ export type casos_sopUncheckedCreateWithoutUsuarios_casos_sop_created_byTousuari
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -3377,6 +3442,7 @@ export type casos_sopCreateWithoutUsuarios_casos_sop_responsable_hallazgoTousuar
     descripcion: string;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     acr?: string | null;
     fecha_plan?: Date | string | null;
@@ -3420,6 +3486,7 @@ export type casos_sopUncheckedCreateWithoutUsuarios_casos_sop_responsable_hallaz
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -3460,6 +3527,7 @@ export type casos_sopCreateWithoutUsuarios_casos_sop_responsable_planTousuariosI
     descripcion: string;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     acr?: string | null;
     fecha_plan?: Date | string | null;
@@ -3504,6 +3572,7 @@ export type casos_sopUncheckedCreateWithoutUsuarios_casos_sop_responsable_planTo
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -3589,6 +3658,7 @@ export type casos_sopCreateManyAreasInput = {
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -3614,6 +3684,7 @@ export type casos_sopUpdateWithoutAreasInput = {
     descripcion?: Prisma.StringFieldUpdateOperationsInput | string;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_plan?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -3658,6 +3729,7 @@ export type casos_sopUncheckedUpdateWithoutAreasInput = {
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -3696,6 +3768,7 @@ export type casos_sopUncheckedUpdateManyWithoutAreasInput = {
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -3727,6 +3800,7 @@ export type casos_sopCreateManyCatalogo_detalle_casos_sop_estado_hallazgoTocatal
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -3760,6 +3834,7 @@ export type casos_sopCreateManyCatalogo_detalle_casos_sop_estado_planTocatalogo_
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -3791,6 +3866,7 @@ export type casos_sopCreateManyCatalogo_detalle_casos_sop_procedenciaTocatalogo_
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -3824,6 +3900,7 @@ export type casos_sopCreateManyCatalogo_detalle_casos_sop_analisis_riesgoTocatal
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     acr?: string | null;
     area_responsable?: number | null;
@@ -3855,6 +3932,7 @@ export type casos_sopCreateManyCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_
     tipo_sop: number;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -3887,6 +3965,7 @@ export type casos_sopCreateManyCatalogo_detalle_casos_sop_tipoTocatalogo_detalle
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -3919,6 +3998,7 @@ export type casos_sopCreateManyCatalogo_detalle_casos_sop_tipo_sopTocatalogo_det
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -3945,6 +4025,7 @@ export type casos_sopUpdateWithoutCatalogo_detalle_casos_sop_estado_hallazgoToca
     descripcion?: Prisma.StringFieldUpdateOperationsInput | string;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_plan?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -3988,6 +4069,7 @@ export type casos_sopUncheckedUpdateWithoutCatalogo_detalle_casos_sop_estado_hal
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -4026,6 +4108,7 @@ export type casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -4052,6 +4135,7 @@ export type casos_sopUpdateWithoutCatalogo_detalle_casos_sop_estado_planTocatalo
     descripcion?: Prisma.StringFieldUpdateOperationsInput | string;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_plan?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -4096,6 +4180,7 @@ export type casos_sopUncheckedUpdateWithoutCatalogo_detalle_casos_sop_estado_pla
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -4134,6 +4219,7 @@ export type casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -4159,6 +4245,7 @@ export type casos_sopUpdateWithoutCatalogo_detalle_casos_sop_procedenciaTocatalo
     descripcion?: Prisma.StringFieldUpdateOperationsInput | string;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_plan?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -4202,6 +4289,7 @@ export type casos_sopUncheckedUpdateWithoutCatalogo_detalle_casos_sop_procedenci
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -4240,6 +4328,7 @@ export type casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_proced
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -4266,6 +4355,7 @@ export type casos_sopUpdateWithoutCatalogo_detalle_casos_sop_analisis_riesgoToca
     descripcion?: Prisma.StringFieldUpdateOperationsInput | string;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_plan?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -4310,6 +4400,7 @@ export type casos_sopUncheckedUpdateWithoutCatalogo_detalle_casos_sop_analisis_r
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     area_responsable?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
@@ -4348,6 +4439,7 @@ export type casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analis
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     area_responsable?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
@@ -4373,6 +4465,7 @@ export type casos_sopUpdateWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalo
     descripcion?: Prisma.StringFieldUpdateOperationsInput | string;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_plan?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -4416,6 +4509,7 @@ export type casos_sopUncheckedUpdateWithoutCatalogo_detalle_casos_sop_subtipo_so
     tipo_sop?: Prisma.IntFieldUpdateOperationsInput | number;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -4454,6 +4548,7 @@ export type casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtip
     tipo_sop?: Prisma.IntFieldUpdateOperationsInput | number;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -4480,6 +4575,7 @@ export type casos_sopUpdateWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_deta
     descripcion?: Prisma.StringFieldUpdateOperationsInput | string;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_plan?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -4523,6 +4619,7 @@ export type casos_sopUncheckedUpdateWithoutCatalogo_detalle_casos_sop_tipoTocata
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -4561,6 +4658,7 @@ export type casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTo
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -4587,6 +4685,7 @@ export type casos_sopUpdateWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_
     descripcion?: Prisma.StringFieldUpdateOperationsInput | string;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_plan?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -4630,6 +4729,7 @@ export type casos_sopUncheckedUpdateWithoutCatalogo_detalle_casos_sop_tipo_sopTo
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -4668,6 +4768,7 @@ export type casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_s
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -4701,6 +4802,7 @@ export type casos_sopCreateManyUsuarios_casos_sop_created_byTousuariosInput = {
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -4732,6 +4834,7 @@ export type casos_sopCreateManyUsuarios_casos_sop_responsable_hallazgoTousuarios
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -4765,6 +4868,7 @@ export type casos_sopCreateManyUsuarios_casos_sop_responsable_planTousuariosInpu
     subtipo_sop?: number | null;
     peligro?: string | null;
     consecuencia?: string | null;
+    descripcion_evento?: string | null;
     clasificacion?: string | null;
     analisis_riesgo?: number | null;
     acr?: string | null;
@@ -4790,6 +4894,7 @@ export type casos_sopUpdateWithoutUsuarios_casos_sop_created_byTousuariosInput =
     descripcion?: Prisma.StringFieldUpdateOperationsInput | string;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_plan?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -4834,6 +4939,7 @@ export type casos_sopUncheckedUpdateWithoutUsuarios_casos_sop_created_byTousuari
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -4872,6 +4978,7 @@ export type casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_created_byTous
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -4897,6 +5004,7 @@ export type casos_sopUpdateWithoutUsuarios_casos_sop_responsable_hallazgoTousuar
     descripcion?: Prisma.StringFieldUpdateOperationsInput | string;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_plan?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -4940,6 +5048,7 @@ export type casos_sopUncheckedUpdateWithoutUsuarios_casos_sop_responsable_hallaz
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -4978,6 +5087,7 @@ export type casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_ha
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -5004,6 +5114,7 @@ export type casos_sopUpdateWithoutUsuarios_casos_sop_responsable_planTousuariosI
     descripcion?: Prisma.StringFieldUpdateOperationsInput | string;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_plan?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -5048,6 +5159,7 @@ export type casos_sopUncheckedUpdateWithoutUsuarios_casos_sop_responsable_planTo
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -5086,6 +5198,7 @@ export type casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_pl
     subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -5174,6 +5287,7 @@ export type casos_sopSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
     subtipo_sop?: boolean;
     peligro?: boolean;
     consecuencia?: boolean;
+    descripcion_evento?: boolean;
     clasificacion?: boolean;
     analisis_riesgo?: boolean;
     acr?: boolean;
@@ -5225,6 +5339,7 @@ export type casos_sopSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
     subtipo_sop?: boolean;
     peligro?: boolean;
     consecuencia?: boolean;
+    descripcion_evento?: boolean;
     clasificacion?: boolean;
     analisis_riesgo?: boolean;
     acr?: boolean;
@@ -5269,6 +5384,7 @@ export type casos_sopSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
     subtipo_sop?: boolean;
     peligro?: boolean;
     consecuencia?: boolean;
+    descripcion_evento?: boolean;
     clasificacion?: boolean;
     analisis_riesgo?: boolean;
     acr?: boolean;
@@ -5313,6 +5429,7 @@ export type casos_sopSelectScalar = {
     subtipo_sop?: boolean;
     peligro?: boolean;
     consecuencia?: boolean;
+    descripcion_evento?: boolean;
     clasificacion?: boolean;
     analisis_riesgo?: boolean;
     acr?: boolean;
@@ -5327,7 +5444,7 @@ export type casos_sopSelectScalar = {
     created_at?: boolean;
     updated_at?: boolean;
 };
-export type casos_sopOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id_caso" | "codigo_sop" | "titulo" | "nombre_reportante" | "correo_reportante" | "telefono_reportante" | "fecha_hallazgo" | "fecha_evento" | "estado_hallazgo" | "dias_abierto" | "procedencia" | "tipo" | "descripcion" | "responsable_hallazgo" | "tipo_sop" | "subtipo_sop" | "peligro" | "consecuencia" | "clasificacion" | "analisis_riesgo" | "acr" | "area_responsable" | "responsable_plan" | "estado_plan" | "fecha_plan" | "fecha_reprogramada" | "dias_abierto_plan" | "observaciones" | "created_by" | "created_at" | "updated_at", ExtArgs["result"]["casos_sop"]>;
+export type casos_sopOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id_caso" | "codigo_sop" | "titulo" | "nombre_reportante" | "correo_reportante" | "telefono_reportante" | "fecha_hallazgo" | "fecha_evento" | "estado_hallazgo" | "dias_abierto" | "procedencia" | "tipo" | "descripcion" | "responsable_hallazgo" | "tipo_sop" | "subtipo_sop" | "peligro" | "consecuencia" | "descripcion_evento" | "clasificacion" | "analisis_riesgo" | "acr" | "area_responsable" | "responsable_plan" | "estado_plan" | "fecha_plan" | "fecha_reprogramada" | "dias_abierto_plan" | "observaciones" | "created_by" | "created_at" | "updated_at", ExtArgs["result"]["casos_sop"]>;
 export type casos_sopInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     anexos_caso?: boolean | Prisma.casos_sop$anexos_casoArgs<ExtArgs>;
     areas?: boolean | Prisma.casos_sop$areasArgs<ExtArgs>;
@@ -5414,6 +5531,7 @@ export type $casos_sopPayload<ExtArgs extends runtime.Types.Extensions.InternalA
         subtipo_sop: number | null;
         peligro: string | null;
         consecuencia: string | null;
+        descripcion_evento: string | null;
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
@@ -5816,6 +5934,7 @@ export interface casos_sopFieldRefs {
     readonly subtipo_sop: Prisma.FieldRef<"casos_sop", 'Int'>;
     readonly peligro: Prisma.FieldRef<"casos_sop", 'String'>;
     readonly consecuencia: Prisma.FieldRef<"casos_sop", 'String'>;
+    readonly descripcion_evento: Prisma.FieldRef<"casos_sop", 'String'>;
     readonly clasificacion: Prisma.FieldRef<"casos_sop", 'String'>;
     readonly analisis_riesgo: Prisma.FieldRef<"casos_sop", 'Int'>;
     readonly acr: Prisma.FieldRef<"casos_sop", 'String'>;

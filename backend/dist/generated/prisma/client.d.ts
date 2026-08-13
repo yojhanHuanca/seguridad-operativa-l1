@@ -90,6 +90,15 @@ export type evento_caso = Prisma.evento_casoModel;
  */
 export type eventos_operativos = Prisma.eventos_operativosModel;
 /**
+ * Model eventos_monitoreo
+ * *
+ *  * Registro propio del panel de Monitorista — deliberadamente separado de
+ *  * `eventos_operativos` (la tabla de Seguridad Operativa). Lo que registra
+ *  * Monitoreo no debe reflejarse en SO hasta que el jefe lo valide y lo
+ *  * asigne; esa integración es un paso aparte, todavía sin construir.
+ */
+export type eventos_monitoreo = Prisma.eventos_monitoreoModel;
+/**
  * Model evidencias
  *
  */

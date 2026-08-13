@@ -2,7 +2,7 @@
 // normalizado en Postgres) y la forma plana que consumen los componentes
 // portados del prototipo. Aísla la traducción en un solo lugar: las pantallas
 // portadas no saben nada de Prisma ni de nombres de relaciones.
-import { stageFromEstado, tipoSopFromNombre, type RiskLevel, type Stage, type TipoSOP } from "./domain";
+import { stageFromEstado, tipoEventoFromNombre, type RiskLevel, type Stage, type TipoSOP } from "./domain";
 import { criterioAceptabilidad, slaDueDate } from "./lib/sla";
 import type { CaseListItem, PlanAccion } from "./types";
 
@@ -58,8 +58,11 @@ export function toCaseRow(c: CaseListItem): CaseRow {
   const estadoNombre = c.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre;
   const evento = c.evento_caso[0]?.eventos_operativos;
   const station = evento?.catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle?.nombre ?? "";
-  const tipoSopNombre = c.catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle?.nombre;
-  const type = tipoSopFromNombre(tipoSopNombre);
+  // El tipo real es el que eligió el reportante (o corrigió SO), guardado en
+  // el evento operativo — no `tipo_sop`, que quedaba fijo en "Hallazgo" y
+  // nunca se actualizaba.
+  const tipoNombre = evento?.catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle?.nombre;
+  const type = tipoEventoFromNombre(tipoNombre);
   const riesgo = c.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle;
 
   return {
@@ -67,7 +70,7 @@ export function toCaseRow(c: CaseListItem): CaseRow {
     stage: stageFromEstado(estadoNombre),
     estado: estadoNombre,
     type,
-    title: deriveTitle(c, tipoSopNombre ?? "Caso", station),
+    title: deriveTitle(c, tipoNombre ?? "Caso", station),
     location: evento?.catalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalle?.nombre ?? "",
     reporter: c.nombre_reportante?.trim() || "Reporte Anónimo",
     station,

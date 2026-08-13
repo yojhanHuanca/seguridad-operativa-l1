@@ -194,7 +194,6 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
         {/* Panel izquierdo */}
         <div className="space-y-4 lg:sticky lg:top-24">
           <InfoCard title="Información general">
-            <InfoRow icon={<Flag className="h-3.5 w-3.5" />} label="Tipo de evento" value={caso.catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle?.nombre ?? "—"} />
             <InfoRow icon={<Building2 className="h-3.5 w-3.5" />} label="Área" value={areasCaso} />
             <InfoRow icon={<MapPin className="h-3.5 w-3.5" />} label="Estación" value={evento?.catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle?.nombre ?? "—"} />
             <InfoRow icon={<MapPin className="h-3.5 w-3.5" />} label="Ubicación" value={evento?.catalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalle?.nombre ?? "—"} />
@@ -401,7 +400,7 @@ function PlanActionPrintDocument({ caso }: { caso: CaseDetail }) {
         <h2 className="border-b border-line pb-2 text-[18px] font-bold text-brand-800">Información del expediente</h2>
         <div className="mt-3 grid grid-cols-3 gap-x-10 gap-y-3">
           <PrintField label="Código" value={caso.codigo_sop} />
-          <PrintField label="Tipo de incidencia" value={caso.catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle.nombre} />
+          <PrintField label="Tipo de incidencia" value={evento?.catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle?.nombre ?? "—"} />
           <PrintField label="Estación" value={evento?.catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle?.nombre ?? "—"} />
           <PrintField label="Área encargada" value={uniqueValues(caso.planes_accion.map((plan) => plan.areas.nombre_area))} />
           <PrintField

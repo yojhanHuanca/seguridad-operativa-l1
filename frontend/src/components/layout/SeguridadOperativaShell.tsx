@@ -25,7 +25,6 @@ import {
   Rocket,
   Timer,
   UserCircle2,
-  Users,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -151,7 +150,6 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
 
   const standaloneLinks: NavLink[] = [
     { to: "https://sofia.lineauno.pe/", label: "SOFIA", icon: ExternalLink, external: true, match: () => false },
-    { to: "/seguridad/usuarios", label: "Administración de Usuarios", icon: Users, match: (p) => p === "/seguridad/usuarios" },
     { to: "/seguridad/notificaciones", label: "Notificaciones", icon: Bell, badge: unreadNotifications || undefined, badgeTone: "danger", match: (p) => p === "/seguridad/notificaciones" },
     { to: "/seguridad/perfil", label: "Mi Perfil", icon: UserCircle2, match: (p) => p === "/seguridad/perfil" },
   ];
@@ -164,21 +162,12 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
 
   const renderLink = (link: NavLink, onNavigate?: () => void) => {
     const active = link.match(location.pathname, location.search);
-    const LinkTag = link.external ? "a" : Link;
-    const linkProps = link.external
-      ? { href: link.to, target: "_blank", rel: "noreferrer" }
-      : { to: link.to };
-    return (
-      <LinkTag
-        key={link.to}
-        {...(linkProps as never)}
-        onClick={onNavigate}
-        title={collapsed ? link.label : undefined}
-        className={cn(
-          "group relative flex h-10 items-center gap-2 rounded-xl pl-2 pr-2.5 text-[13px] font-medium transition-colors hover:bg-surface",
-          collapsed && "justify-center px-0"
-        )}
-      >
+    const className = cn(
+      "group relative flex h-10 items-center gap-2 rounded-xl pl-2 pr-2.5 text-[13px] font-medium transition-colors hover:bg-surface",
+      collapsed && "justify-center px-0"
+    );
+    const content = (
+      <>
         {active && (
           <motion.span
             layoutId={PILL_ID}
@@ -215,7 +204,21 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
             {link.badge}
           </span>
         ) : null}
-      </LinkTag>
+      </>
+    );
+
+    if (link.external) {
+      return (
+        <a key={link.to} href={link.to} target="_blank" rel="noreferrer" onClick={onNavigate} title={collapsed ? link.label : undefined} className={className}>
+          {content}
+        </a>
+      );
+    }
+
+    return (
+      <Link key={link.to} to={link.to} onClick={onNavigate} title={collapsed ? link.label : undefined} className={className}>
+        {content}
+      </Link>
     );
   };
 

@@ -1,0 +1,58 @@
+import { z } from "zod";
+export declare const createEventoSchema: z.ZodObject<{
+    anio: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    mes: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    semana: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    dia: z.ZodOptional<z.ZodString>;
+    id_rango_horario: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    descripcion: z.ZodOptional<z.ZodString>;
+    id_ubicacion: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    id_tipo_via: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    id_direccion_via: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    id_lugar_incidente: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    id_modelo_mr: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    id_numero_mr: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    numero_carrera: z.ZodOptional<z.ZodString>;
+    id_personal_involucrado: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    id_tipo_causa: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    id_posible_causa: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    informacion_adicional: z.ZodOptional<z.ZodString>;
+    camara_monitoreada: z.ZodOptional<z.ZodString>;
+    demora: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    fecha: z.ZodString;
+    hora: z.ZodString;
+    id_tipo_incidente: z.ZodCoercedNumber<unknown>;
+}, z.core.$strip>;
+export declare const ESTADOS_EVENTO: readonly ["Registrado", "En investigación", "Cerrado"];
+export declare const updateEventoSchema: z.ZodObject<{
+    anio: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    mes: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    semana: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    dia: z.ZodOptional<z.ZodString>;
+    id_rango_horario: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    descripcion: z.ZodOptional<z.ZodString>;
+    id_ubicacion: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    id_tipo_via: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    id_direccion_via: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    id_lugar_incidente: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    id_modelo_mr: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    id_numero_mr: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    numero_carrera: z.ZodOptional<z.ZodString>;
+    id_personal_involucrado: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    id_tipo_causa: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    id_posible_causa: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    informacion_adicional: z.ZodOptional<z.ZodString>;
+    camara_monitoreada: z.ZodOptional<z.ZodString>;
+    demora: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    fecha: z.ZodOptional<z.ZodString>;
+    hora: z.ZodOptional<z.ZodString>;
+    id_tipo_incidente: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    estado: z.ZodOptional<z.ZodEnum<{
+        Registrado: "Registrado";
+        "En investigaci\u00F3n": "En investigación";
+        Cerrado: "Cerrado";
+    }>>;
+}, z.core.$strip>;
+export type CreateEventoDto = z.infer<typeof createEventoSchema>;
+export type UpdateEventoDto = z.infer<typeof updateEventoSchema>;
+//# sourceMappingURL=evento.types.d.ts.map

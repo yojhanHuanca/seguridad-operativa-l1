@@ -103,7 +103,7 @@ export interface EventoOperativoDetalle {
   fecha: string;
   hora: string | null;
   catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: { nombre: string } | null;
-  catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: { nombre: string } | null;
+  catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: { id_detalle: number; nombre: string } | null;
   catalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalle: { nombre: string } | null;
   catalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalle: { nombre: string } | null;
   catalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalle: { nombre: string } | null;

@@ -3,6 +3,7 @@ export interface EvaluateCaseDto {
     id_area?: number | null | undefined;
     id_responsable?: number | null | undefined;
     clasificacion: string;
+    descripcion_evento: string;
     peligro?: string | null | undefined;
     consecuencia?: string | null | undefined;
     observaciones?: string | null | undefined;
@@ -21,7 +22,6 @@ export interface RespondInfoDto {
     respuesta?: string | null | undefined;
 }
 export interface SaveInvestigationDto {
-    hallazgos: string;
     causa_raiz: string;
     conclusiones: string;
     observaciones?: string | null | undefined;
@@ -55,7 +55,9 @@ export interface UploadedFile {
     size: number;
 }
 /** Tipos de evento de bitácora — mismos `kind` que el timeline del prototipo. */
-export type TimelineKind = "creado" | "info_solicitada" | "info_recibida" | "aprobado" | "rechazado" | "derivado" | "investigacion" | "plan_propuesto" | "plan_aprobado" | "plan_ajustado" | "ejecucion" | "ampliacion" | "seguimiento" | "cierre" | "reapertura" | "retroceso" | "comentario" | "sancion";
+export type TimelineKind = "creado" | "info_solicitada" | "info_recibida" | "aprobado" | "rechazado" | "derivado" | "investigacion" | "plan_propuesto" | "plan_aprobado" | "plan_ajustado" | "ejecucion" | "ampliacion" | "seguimiento"
+/** Actualización adicional que el jefe apila sobre un plan ya cerrado. */
+ | "actualizacion" | "cierre" | "reapertura" | "retroceso" | "comentario" | "sancion";
 export interface TimelineEntry {
     kind: TimelineKind;
     actor: string;

@@ -267,6 +267,7 @@ export declare const ModelName: {
     readonly estaciones: "estaciones";
     readonly evento_caso: "evento_caso";
     readonly eventos_operativos: "eventos_operativos";
+    readonly eventos_monitoreo: "eventos_monitoreo";
     readonly evidencias: "evidencias";
     readonly evidencias_evento: "evidencias_evento";
     readonly historial_indicadores: "historial_indicadores";
@@ -299,7 +300,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         omit: GlobalOmitOptions;
     };
     meta: {
-        modelProps: "actividades_plan" | "anexos_caso" | "areas" | "auditoria" | "bitacora" | "casos_sop" | "catalogo_detalle" | "catalogos" | "configuracion" | "dashboard_indicadores" | "dashboards" | "estaciones" | "evento_caso" | "eventos_operativos" | "evidencias" | "evidencias_evento" | "historial_indicadores" | "incidencias" | "indicadores" | "timeline_caso" | "investigacion_caso" | "investigaciones" | "logs_sistema" | "metas_indicadores" | "notificaciones" | "planes_accion" | "reporte_detalle" | "reporte_estadistico" | "roles" | "seguimientos" | "sesiones" | "solicitudes_informacion" | "solicitudes_prorroga" | "usuarios";
+        modelProps: "actividades_plan" | "anexos_caso" | "areas" | "auditoria" | "bitacora" | "casos_sop" | "catalogo_detalle" | "catalogos" | "configuracion" | "dashboard_indicadores" | "dashboards" | "estaciones" | "evento_caso" | "eventos_operativos" | "eventos_monitoreo" | "evidencias" | "evidencias_evento" | "historial_indicadores" | "incidencias" | "indicadores" | "timeline_caso" | "investigacion_caso" | "investigaciones" | "logs_sistema" | "metas_indicadores" | "notificaciones" | "planes_accion" | "reporte_detalle" | "reporte_estadistico" | "roles" | "seguimientos" | "sesiones" | "solicitudes_informacion" | "solicitudes_prorroga" | "usuarios";
         txIsolationLevel: TransactionIsolationLevel;
     };
     model: {
@@ -1336,6 +1337,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
                 count: {
                     args: Prisma.eventos_operativosCountArgs<ExtArgs>;
                     result: runtime.Types.Utils.Optional<Prisma.Eventos_operativosCountAggregateOutputType> | number;
+                };
+            };
+        };
+        eventos_monitoreo: {
+            payload: Prisma.$eventos_monitoreoPayload<ExtArgs>;
+            fields: Prisma.eventos_monitoreoFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.eventos_monitoreoFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$eventos_monitoreoPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.eventos_monitoreoFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$eventos_monitoreoPayload>;
+                };
+                findFirst: {
+                    args: Prisma.eventos_monitoreoFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$eventos_monitoreoPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.eventos_monitoreoFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$eventos_monitoreoPayload>;
+                };
+                findMany: {
+                    args: Prisma.eventos_monitoreoFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$eventos_monitoreoPayload>[];
+                };
+                create: {
+                    args: Prisma.eventos_monitoreoCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$eventos_monitoreoPayload>;
+                };
+                createMany: {
+                    args: Prisma.eventos_monitoreoCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.eventos_monitoreoCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$eventos_monitoreoPayload>[];
+                };
+                delete: {
+                    args: Prisma.eventos_monitoreoDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$eventos_monitoreoPayload>;
+                };
+                update: {
+                    args: Prisma.eventos_monitoreoUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$eventos_monitoreoPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.eventos_monitoreoDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.eventos_monitoreoUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.eventos_monitoreoUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$eventos_monitoreoPayload>[];
+                };
+                upsert: {
+                    args: Prisma.eventos_monitoreoUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$eventos_monitoreoPayload>;
+                };
+                aggregate: {
+                    args: Prisma.Eventos_monitoreoAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateEventos_monitoreo>;
+                };
+                groupBy: {
+                    args: Prisma.eventos_monitoreoGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Eventos_monitoreoGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.eventos_monitoreoCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Eventos_monitoreoCountAggregateOutputType> | number;
                 };
             };
         };
@@ -2922,6 +2997,7 @@ export declare const Casos_sopScalarFieldEnum: {
     readonly subtipo_sop: "subtipo_sop";
     readonly peligro: "peligro";
     readonly consecuencia: "consecuencia";
+    readonly descripcion_evento: "descripcion_evento";
     readonly clasificacion: "clasificacion";
     readonly analisis_riesgo: "analisis_riesgo";
     readonly acr: "acr";
@@ -3024,6 +3100,37 @@ export declare const Eventos_operativosScalarFieldEnum: {
     readonly updated_at: "updated_at";
 };
 export type Eventos_operativosScalarFieldEnum = (typeof Eventos_operativosScalarFieldEnum)[keyof typeof Eventos_operativosScalarFieldEnum];
+export declare const Eventos_monitoreoScalarFieldEnum: {
+    readonly id_evento: "id_evento";
+    readonly codigo_evento: "codigo_evento";
+    readonly fecha: "fecha";
+    readonly hora: "hora";
+    readonly anio: "anio";
+    readonly mes: "mes";
+    readonly semana: "semana";
+    readonly dia: "dia";
+    readonly rango_horario: "rango_horario";
+    readonly tipo_incidente: "tipo_incidente";
+    readonly descripcion: "descripcion";
+    readonly ubicacion: "ubicacion";
+    readonly tipo_via: "tipo_via";
+    readonly direccion_via: "direccion_via";
+    readonly lugar_incidente: "lugar_incidente";
+    readonly modelo_mr: "modelo_mr";
+    readonly numero_mr: "numero_mr";
+    readonly numero_carrera: "numero_carrera";
+    readonly personal_involucrado: "personal_involucrado";
+    readonly tipo_causa: "tipo_causa";
+    readonly posible_causa: "posible_causa";
+    readonly informacion_adicional: "informacion_adicional";
+    readonly camara_monitoreada: "camara_monitoreada";
+    readonly demora: "demora";
+    readonly estado: "estado";
+    readonly usuario_registra: "usuario_registra";
+    readonly created_at: "created_at";
+    readonly updated_at: "updated_at";
+};
+export type Eventos_monitoreoScalarFieldEnum = (typeof Eventos_monitoreoScalarFieldEnum)[keyof typeof Eventos_monitoreoScalarFieldEnum];
 export declare const EvidenciasScalarFieldEnum: {
     readonly id_evidencia: "id_evidencia";
     readonly id_incidencia: "id_incidencia";
@@ -3436,6 +3543,7 @@ export type GlobalOmitConfig = {
     estaciones?: Prisma.estacionesOmit;
     evento_caso?: Prisma.evento_casoOmit;
     eventos_operativos?: Prisma.eventos_operativosOmit;
+    eventos_monitoreo?: Prisma.eventos_monitoreoOmit;
     evidencias?: Prisma.evidenciasOmit;
     evidencias_evento?: Prisma.evidencias_eventoOmit;
     historial_indicadores?: Prisma.historial_indicadoresOmit;

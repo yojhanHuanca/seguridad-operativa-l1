@@ -10,9 +10,16 @@ export class UserRepository {
                 cargo: true,
                 telefono: true,
                 estado: true,
+                id_area: true,
+                id_rol: true,
                 roles: {
                     select: {
                         nombre_rol: true,
+                    },
+                },
+                areas: {
+                    select: {
+                        nombre_area: true,
                     },
                 },
             },
@@ -59,6 +66,12 @@ export class UserRepository {
             where: {
                 codigo_usuario: codigo,
             },
+        });
+    }
+    static async update(id, data) {
+        return await prisma.usuarios.update({
+            where: { id_usuario: id },
+            data,
         });
     }
 }

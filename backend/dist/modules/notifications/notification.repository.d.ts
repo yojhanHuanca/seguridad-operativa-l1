@@ -63,13 +63,13 @@ export declare class NotificationRepository {
      */
     static emitir(client: NotificationClient, n: NuevaNotificacion): Promise<void>;
     static listarPorUsuario(id_usuario: number, soloNoLeidas?: boolean): Promise<{
+        fecha: Date | null;
         id_notificacion: number;
         usuario: number;
         titulo: string | null;
         mensaje: string | null;
         tipo: string | null;
         leido: boolean | null;
-        fecha: Date | null;
     }[]>;
     static contarNoLeidas(id_usuario: number): Promise<number>;
     /** Marca una notificación como leída, verificando que sea de ese usuario. */

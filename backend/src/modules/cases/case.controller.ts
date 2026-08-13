@@ -64,6 +64,15 @@ export class CaseController {
     }
   }
 
+  static async updateTipo(req: Request, res: Response) {
+    try {
+      const caso = await CaseService.updateTipo(param(req, "codigo"), req.body, req.body?.actor);
+      return res.json(ApiResponse.success("Tipo de reporte actualizado", caso));
+    } catch (error) {
+      return handleError(res, error, "Error al actualizar el tipo de reporte");
+    }
+  }
+
   static async evaluate(req: Request, res: Response) {
     try {
       const caso = await CaseService.evaluate(param(req, "codigo"), req.body);

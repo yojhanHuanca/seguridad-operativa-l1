@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { Check, X, Mail, Send, StickyNote, Inbox, FileSearch } from "lucide-react";
+import { Check, X, Mail, Send, StickyNote, Inbox, FileSearch, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/design-system/primitives/Button";
 import { Modal } from "@/design-system/primitives/Modal";
-import { Field, Textarea } from "@/design-system/primitives/Input";
+import { Field, Select, Textarea } from "@/design-system/primitives/Input";
 import { Pill } from "@/design-system/primitives/Pill";
 import { StageSection, DescriptionBlock } from "@/features/cases/components/CaseParts";
-import { useApproveCase, useRejectCase, useRequestInfo, useAddObservation } from "@/features/cases/hooks/useCaseActions";
+import { useApproveCase, useRejectCase, useRequestInfo, useAddObservation, useUpdateTipo } from "@/features/cases/hooks/useCaseActions";
+import { useCatalogs } from "@/features/reports/hooks/useCatalogs";
 import { apiErrorMessage } from "@/lib/api";
 import { relativeTime } from "@/lib/format";
 import { EvaluationForm } from "./EvaluationForm";
@@ -21,11 +22,27 @@ export function ReceptionStage({ caso, isRecepcion }: { caso: CaseDetail; isRece
   const [question, setQuestion] = useState("");
   const [obsOpen, setObsOpen] = useState(false);
   const [observation, setObservation] = useState("");
+  const [tipoOpen, setTipoOpen] = useState(false);
+  const [idTipo, setIdTipo] = useState<string>("");
 
   const approve = useApproveCase(caso.codigo_sop);
   const reject = useRejectCase(caso.codigo_sop);
   const requestInfo = useRequestInfo(caso.codigo_sop);
   const addObservation = useAddObservation(caso.codigo_sop);
+  const updateTipo = useUpdateTipo(caso.codigo_sop);
+  const catalogs = useCatalogs();
+  const tiposReporte = catalogs.byName.get("Tipo de Reporte")?.catalogo_detalle ?? [];
+
+  // El tipo que elige el reportante (Accidente/Incidente/Condición
+  // Insegura/...) vive en el evento operativo del caso, no en `casos_sop`.
+  const evento = caso.evento_caso[0]?.eventos_operativos;
+  const tipoActual = evento?.catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle;
+
+  const abrirCorregirTipo = () => {
+    if (!tipoActual) return;
+    setIdTipo(String(tipoActual.id_detalle));
+    setTipoOpen(true);
+  };
 
   const pendiente = caso.solicitudes_informacion.find((s) => !s.respondida);
 
@@ -41,7 +58,24 @@ export function ReceptionStage({ caso, isRecepcion }: { caso: CaseDetail; isRece
         icon={isRecepcion ? <Inbox className="h-5 w-5" /> : <FileSearch className="h-5 w-5" />}
         action={<Pill tone="info" dot>{isRecepcion ? "Pendiente de aprobación" : "En evaluación"}</Pill>}
       >
-        {isRecepcion && <DescriptionBlock description={caso.descripcion} />}
+        {isRecepcion && (
+          <>
+            {tipoActual && (
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[12px] text-ink-quiet">Tipo de reporte:</span>
+                <Pill tone="neutral">{tipoActual.nombre}</Pill>
+                <button
+                  type="button"
+                  onClick={abrirCorregirTipo}
+                  className="inline-flex items-center gap-1 text-[11.5px] font-medium text-brand-700 hover:underline"
+                >
+                  <Pencil className="h-3 w-3" /> Corregir
+                </button>
+              </div>
+            )}
+            <DescriptionBlock description={caso.descripcion} />
+          </>
+        )}
 
         {pendiente && (
           <div className="mt-4 rounded-lg bg-warning-soft border border-warning/30 p-4">
@@ -221,6 +255,46 @@ export function ReceptionStage({ caso, isRecepcion }: { caso: CaseDetail; isRece
       >
         <Field label="Observación" required>
           <Textarea value={observation} onChange={(e) => setObservation(e.target.value)} rows={4} placeholder="Anote sus observaciones de la revisión…" />
+        </Field>
+      </Modal>
+
+      <Modal
+        open={tipoOpen}
+        onClose={() => setTipoOpen(false)}
+        title="Corregir tipo de reporte"
+        subtitle={`${caso.codigo_sop} · para cuando el reportante lo marcó mal`}
+        size="sm"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setTipoOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              disabled={!idTipo || updateTipo.isPending}
+              onClick={() =>
+                updateTipo.mutate(
+                  { id_tipo: Number(idTipo) },
+                  {
+                    onSuccess: () => {
+                      toast.success("Tipo de reporte actualizado");
+                      setTipoOpen(false);
+                    },
+                    onError: (e) => toast.error(apiErrorMessage(e, "No se pudo actualizar el tipo de reporte")),
+                  }
+                )
+              }
+            >
+              <Check className="h-4 w-4" /> Guardar
+            </Button>
+          </>
+        }
+      >
+        <Field label="Tipo de reporte" required>
+          <Select value={idTipo} onChange={(e) => setIdTipo(e.target.value)} disabled={catalogs.isLoading}>
+            {tiposReporte.map((t) => (
+              <option key={t.id_detalle} value={t.id_detalle}>{t.nombre}</option>
+            ))}
+          </Select>
         </Field>
       </Modal>
     </div>

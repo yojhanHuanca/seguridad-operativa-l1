@@ -43,7 +43,7 @@ const LIST_INCLUDE = {
       eventos_operativos: {
         include: {
           catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: { select: { nombre: true } },
-          catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: { select: { nombre: true } },
+          catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: { select: { id_detalle: true, nombre: true } },
           catalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalle: { select: { nombre: true } },
         },
       },
@@ -86,7 +86,7 @@ const DETAIL_INCLUDE = {
       eventos_operativos: {
         include: {
           catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: { select: { nombre: true } },
-          catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: { select: { nombre: true } },
+          catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: { select: { id_detalle: true, nombre: true } },
           catalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalle: { select: { nombre: true } },
           catalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalle: { select: { nombre: true } },
           catalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalle: { select: { nombre: true } },
@@ -432,6 +432,50 @@ export class CaseRepository {
         actor_rol: "seguridad",
         titulo: "Observación de revisión registrada",
         detalle: texto,
+      });
+      return actualizado;
+    });
+  }
+
+  /**
+   * Corrige el tipo de reporte (Accidente / Incidente / Condición Insegura /
+   * Hallazgo / Acto Inseguro / Otro) que eligió el reportante al crear el
+   * caso. Ese valor vive en `eventos_operativos.tipo_incidente` —no en
+   * `casos_sop.tipo`, que es un campo interno de SO (No Conformidad /
+   * Observación) sin relación con lo que reporta el trabajador—, así que
+   * la corrección se aplica ahí, sobre el evento operativo vinculado al caso.
+   */
+  static async updateTipo(id_caso: number, id_tipo: number, actor = ACTOR_SO) {
+    const evento = await prisma.evento_caso.findFirst({
+      where: { id_caso },
+      select: {
+        id_evento: true,
+        eventos_operativos: {
+          select: { catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: { select: { nombre: true } } },
+        },
+      },
+    });
+    if (!evento) throw new Error("El caso no tiene un evento operativo vinculado");
+
+    const nuevo = await prisma.catalogo_detalle.findUniqueOrThrow({
+      where: { id_detalle: id_tipo },
+      select: { nombre: true, catalogos: { select: { nombre: true } } },
+    });
+    if (nuevo.catalogos.nombre !== "Tipo de Reporte") {
+      throw new Error(`El valor "${nuevo.nombre}" no pertenece al catálogo "Tipo de Reporte"`);
+    }
+
+    return prisma.$transaction(async (tx) => {
+      const actualizado = await tx.eventos_operativos.update({
+        where: { id_evento: evento.id_evento },
+        data: { tipo_incidente: id_tipo },
+      });
+      await CaseRepository.pushTimeline(tx, id_caso, {
+        kind: "comentario",
+        actor,
+        actor_rol: "seguridad",
+        titulo: "Tipo de reporte corregido",
+        detalle: `${evento.eventos_operativos.catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle.nombre} -> ${nuevo.nombre}`,
       });
       return actualizado;
     });

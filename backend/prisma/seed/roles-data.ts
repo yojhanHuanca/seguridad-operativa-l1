@@ -9,4 +9,8 @@
 // también.
 // CONFIRMADO con el cliente: mantener esta propuesta como catálogo inicial
 // de roles (no viene del CSV, pero se aprobó como punto de partida).
-export const ROLES: string[] = ["Admin", "Seguridad Operativa", "Jefe de Área", "Reportante"];
+//
+// "Monitorista" se agregó después: es el perfil que registra/importa
+// eventos operativos (desde Excel/CSV/URL) antes de que lleguen a Seguridad
+// Operativa.
+export const ROLES: string[] = ["Admin", "Seguridad Operativa", "Jefe de Área", "Monitorista", "Reportante"];

@@ -24,6 +24,10 @@ const observationSchema = z.object({
   texto: z.string().trim().min(3, "Escriba la observación"),
 });
 
+const updateTipoSchema = z.object({
+  id_tipo: idPositivo,
+});
+
 const notaSchema = z.object({
   nota: z.string().trim().max(1000).optional().nullable(),
 });
@@ -196,6 +200,18 @@ export class CaseService {
     const dto = evaluateSchema.parse(rawBody);
     const caso = await getCasoBasico(codigo);
     return CaseRepository.evaluate(caso.id_caso, dto);
+  }
+
+  /**
+   * Corrección del tipo de reporte (Accidente / Incidente / Condición
+   * Insegura) que hace Seguridad Operativa en Recepción, para los casos en
+   * que el reportante lo marcó mal. Solo cambia ese campo, no reabre ni
+   * mueve de etapa el caso.
+   */
+  static async updateTipo(codigo: string, rawBody: unknown, actor?: string) {
+    const dto = updateTipoSchema.parse(rawBody);
+    const caso = await getCasoBasico(codigo);
+    return CaseRepository.updateTipo(caso.id_caso, dto.id_tipo, actor);
   }
 
   static async reject(codigo: string, rawBody: unknown) {

@@ -17,8 +17,6 @@ export declare class ReportRepository {
                 descripcion: string | null;
                 created_at: Date | null;
                 fecha: Date;
-                updated_at: Date | null;
-                codigo_evento: string | null;
                 hora: Date | null;
                 anio: number | null;
                 mes: number | null;
@@ -29,6 +27,7 @@ export declare class ReportRepository {
                 camara_monitoreada: string | null;
                 demora: import("@prisma/client/runtime/library").Decimal | null;
                 id_evento: number;
+                codigo_evento: string | null;
                 rango_horario: number | null;
                 tipo_incidente: number;
                 ubicacion: number | null;
@@ -41,12 +40,13 @@ export declare class ReportRepository {
                 tipo_causa: number | null;
                 posible_causa: number | null;
                 usuario_registra: number | null;
+                updated_at: Date | null;
             };
         } & {
             id: number;
+            id_evento: number;
             usuario: number | null;
             id_caso: number;
-            id_evento: number;
             fecha_conversion: Date | null;
         })[];
         areas: {
@@ -73,6 +73,7 @@ export declare class ReportRepository {
     } & {
         descripcion: string;
         created_at: Date | null;
+        updated_at: Date | null;
         titulo: string | null;
         tipo: number;
         id_caso: number;
@@ -90,6 +91,7 @@ export declare class ReportRepository {
         subtipo_sop: number | null;
         peligro: string | null;
         consecuencia: string | null;
+        descripcion_evento: string | null;
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
@@ -101,7 +103,6 @@ export declare class ReportRepository {
         dias_abierto_plan: number | null;
         observaciones: string | null;
         created_by: number | null;
-        updated_at: Date | null;
     })[]>;
     static findByCodigo(codigo_sop: string): Promise<({
         anexos_caso: {
@@ -120,8 +121,6 @@ export declare class ReportRepository {
                 descripcion: string | null;
                 created_at: Date | null;
                 fecha: Date;
-                updated_at: Date | null;
-                codigo_evento: string | null;
                 hora: Date | null;
                 anio: number | null;
                 mes: number | null;
@@ -132,6 +131,7 @@ export declare class ReportRepository {
                 camara_monitoreada: string | null;
                 demora: import("@prisma/client/runtime/library").Decimal | null;
                 id_evento: number;
+                codigo_evento: string | null;
                 rango_horario: number | null;
                 tipo_incidente: number;
                 ubicacion: number | null;
@@ -144,12 +144,13 @@ export declare class ReportRepository {
                 tipo_causa: number | null;
                 posible_causa: number | null;
                 usuario_registra: number | null;
+                updated_at: Date | null;
             };
         } & {
             id: number;
+            id_evento: number;
             usuario: number | null;
             id_caso: number;
-            id_evento: number;
             fecha_conversion: Date | null;
         })[];
         areas: {
@@ -176,6 +177,7 @@ export declare class ReportRepository {
     } & {
         descripcion: string;
         created_at: Date | null;
+        updated_at: Date | null;
         titulo: string | null;
         tipo: number;
         id_caso: number;
@@ -193,6 +195,7 @@ export declare class ReportRepository {
         subtipo_sop: number | null;
         peligro: string | null;
         consecuencia: string | null;
+        descripcion_evento: string | null;
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
@@ -204,7 +207,6 @@ export declare class ReportRepository {
         dias_abierto_plan: number | null;
         observaciones: string | null;
         created_by: number | null;
-        updated_at: Date | null;
     }) | null>;
     static findCatalogoDetalle(catalogoNombre: string, valorNombre: string): Promise<{
         nombre: string;
@@ -236,6 +238,7 @@ export declare class ReportRepository {
         caso: {
             descripcion: string;
             created_at: Date | null;
+            updated_at: Date | null;
             titulo: string | null;
             tipo: number;
             id_caso: number;
@@ -253,6 +256,7 @@ export declare class ReportRepository {
             subtipo_sop: number | null;
             peligro: string | null;
             consecuencia: string | null;
+            descripcion_evento: string | null;
             clasificacion: string | null;
             analisis_riesgo: number | null;
             acr: string | null;
@@ -264,15 +268,12 @@ export declare class ReportRepository {
             dias_abierto_plan: number | null;
             observaciones: string | null;
             created_by: number | null;
-            updated_at: Date | null;
         };
         evento: {
             estado: number | null;
             descripcion: string | null;
             created_at: Date | null;
             fecha: Date;
-            updated_at: Date | null;
-            codigo_evento: string | null;
             hora: Date | null;
             anio: number | null;
             mes: number | null;
@@ -283,6 +284,7 @@ export declare class ReportRepository {
             camara_monitoreada: string | null;
             demora: import("@prisma/client/runtime/library").Decimal | null;
             id_evento: number;
+            codigo_evento: string | null;
             rango_horario: number | null;
             tipo_incidente: number;
             ubicacion: number | null;
@@ -295,6 +297,7 @@ export declare class ReportRepository {
             tipo_causa: number | null;
             posible_causa: number | null;
             usuario_registra: number | null;
+            updated_at: Date | null;
         };
     }>;
 }

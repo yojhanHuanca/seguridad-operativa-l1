@@ -77,19 +77,19 @@ model bitacora {
 }
 
 model casos_sop {
-  id_caso                                                      Int               @id @default(autoincrement())
-  codigo_sop                                                   String            @unique @db.VarChar(30)
-  titulo                                                       String?           @db.VarChar(200)
+  id_caso                                                      Int                       @id @default(autoincrement())
+  codigo_sop                                                   String                    @unique @db.VarChar(30)
+  titulo                                                       String?                   @db.VarChar(200)
   // Datos del "Reporte Identificado" (paso 5 del wizard) — quedan null si el
   // reportante elige "Reporte Anónimo". nombre_reportante es el único
   // requerido cuando se identifica; correo y teléfono son opcionales.
-  nombre_reportante                                            String?           @db.VarChar(150)
-  correo_reportante                                            String?           @db.VarChar(150)
-  telefono_reportante                                          String?           @db.VarChar(20)
-  fecha_hallazgo                                               DateTime          @db.Date
-  fecha_evento                                                 DateTime?         @db.Timestamp(6)
+  nombre_reportante                                            String?                   @db.VarChar(150)
+  correo_reportante                                            String?                   @db.VarChar(150)
+  telefono_reportante                                          String?                   @db.VarChar(20)
+  fecha_hallazgo                                               DateTime                  @db.Date
+  fecha_evento                                                 DateTime?                 @db.Timestamp(6)
   estado_hallazgo                                              Int
-  dias_abierto                                                 Int?              @default(0)
+  dias_abierto                                                 Int?                      @default(0)
   procedencia                                                  Int
   tipo                                                         Int
   descripcion                                                  String
@@ -106,31 +106,31 @@ model casos_sop {
   // Clasificación libre que asigna Seguridad Operativa en la etapa de
   // Evaluación (ej. "Hallazgo · Caída", "No conformidad"). Es más granular
   // que `tipo`, que solo distingue No Conformidad / Observación.
-  clasificacion                                                String?           @db.VarChar(200)
+  clasificacion                                                String?                   @db.VarChar(200)
   analisis_riesgo                                              Int?
-  acr                                                          String?           @db.VarChar(50)
+  acr                                                          String?                   @db.VarChar(50)
   area_responsable                                             Int?
   responsable_plan                                             Int?
   estado_plan                                                  Int?
-  fecha_plan                                                   DateTime?         @db.Date
-  fecha_reprogramada                                           DateTime?         @db.Date
-  dias_abierto_plan                                            Int?              @default(0)
+  fecha_plan                                                   DateTime?                 @db.Date
+  fecha_reprogramada                                           DateTime?                 @db.Date
+  dias_abierto_plan                                            Int?                      @default(0)
   observaciones                                                String?
   created_by                                                   Int?
-  created_at                                                   DateTime?         @default(now()) @db.Timestamp(6)
-  updated_at                                                   DateTime?         @default(now()) @db.Timestamp(6)
+  created_at                                                   DateTime?                 @default(now()) @db.Timestamp(6)
+  updated_at                                                   DateTime?                 @default(now()) @db.Timestamp(6)
   anexos_caso                                                  anexos_caso[]
-  areas                                                        areas?            @relation(fields: [area_responsable], references: [id_area], onDelete: NoAction, onUpdate: NoAction, map: "fk_area")
-  usuarios_casos_sop_created_byTousuarios                      usuarios?         @relation("casos_sop_created_byTousuarios", fields: [created_by], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_created_by")
-  catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle catalogo_detalle  @relation("casos_sop_estado_hallazgoTocatalogo_detalle", fields: [estado_hallazgo], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_estado_hallazgo")
-  catalogo_detalle_casos_sop_estado_planTocatalogo_detalle     catalogo_detalle? @relation("casos_sop_estado_planTocatalogo_detalle", fields: [estado_plan], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_estado_plan")
-  catalogo_detalle_casos_sop_procedenciaTocatalogo_detalle     catalogo_detalle  @relation("casos_sop_procedenciaTocatalogo_detalle", fields: [procedencia], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_procedencia")
-  usuarios_casos_sop_responsable_hallazgoTousuarios            usuarios?         @relation("casos_sop_responsable_hallazgoTousuarios", fields: [responsable_hallazgo], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_responsable_hallazgo")
-  usuarios_casos_sop_responsable_planTousuarios                usuarios?         @relation("casos_sop_responsable_planTousuarios", fields: [responsable_plan], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_responsable_plan")
-  catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle catalogo_detalle? @relation("casos_sop_analisis_riesgoTocatalogo_detalle", fields: [analisis_riesgo], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_riesgo")
-  catalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalle     catalogo_detalle? @relation("casos_sop_subtipo_sopTocatalogo_detalle", fields: [subtipo_sop], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_subtipo")
-  catalogo_detalle_casos_sop_tipoTocatalogo_detalle            catalogo_detalle  @relation("casos_sop_tipoTocatalogo_detalle", fields: [tipo], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_tipo")
-  catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle        catalogo_detalle  @relation("casos_sop_tipo_sopTocatalogo_detalle", fields: [tipo_sop], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_tipo_sop")
+  areas                                                        areas?                    @relation(fields: [area_responsable], references: [id_area], onDelete: NoAction, onUpdate: NoAction, map: "fk_area")
+  usuarios_casos_sop_created_byTousuarios                      usuarios?                 @relation("casos_sop_created_byTousuarios", fields: [created_by], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_created_by")
+  catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle catalogo_detalle          @relation("casos_sop_estado_hallazgoTocatalogo_detalle", fields: [estado_hallazgo], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_estado_hallazgo")
+  catalogo_detalle_casos_sop_estado_planTocatalogo_detalle     catalogo_detalle?         @relation("casos_sop_estado_planTocatalogo_detalle", fields: [estado_plan], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_estado_plan")
+  catalogo_detalle_casos_sop_procedenciaTocatalogo_detalle     catalogo_detalle          @relation("casos_sop_procedenciaTocatalogo_detalle", fields: [procedencia], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_procedencia")
+  usuarios_casos_sop_responsable_hallazgoTousuarios            usuarios?                 @relation("casos_sop_responsable_hallazgoTousuarios", fields: [responsable_hallazgo], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_responsable_hallazgo")
+  usuarios_casos_sop_responsable_planTousuarios                usuarios?                 @relation("casos_sop_responsable_planTousuarios", fields: [responsable_plan], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_responsable_plan")
+  catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle catalogo_detalle?         @relation("casos_sop_analisis_riesgoTocatalogo_detalle", fields: [analisis_riesgo], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_riesgo")
+  catalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalle     catalogo_detalle?         @relation("casos_sop_subtipo_sopTocatalogo_detalle", fields: [subtipo_sop], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_subtipo")
+  catalogo_detalle_casos_sop_tipoTocatalogo_detalle            catalogo_detalle          @relation("casos_sop_tipoTocatalogo_detalle", fields: [tipo], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_tipo")
+  catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle        catalogo_detalle          @relation("casos_sop_tipo_sopTocatalogo_detalle", fields: [tipo_sop], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_tipo_sop")
   evento_caso                                                  evento_caso[]
   planes_accion                                                planes_accion[]
   investigacion_caso                                           investigacion_caso?
@@ -177,6 +177,17 @@ model catalogo_detalle {
   eventos_operativos_eventos_operativos_tipo_causaTocatalogo_detalle           eventos_operativos[] @relation("eventos_operativos_tipo_causaTocatalogo_detalle")
   eventos_operativos_eventos_operativos_tipo_viaTocatalogo_detalle             eventos_operativos[] @relation("eventos_operativos_tipo_viaTocatalogo_detalle")
   eventos_operativos_eventos_operativos_ubicacionTocatalogo_detalle            eventos_operativos[] @relation("eventos_operativos_ubicacionTocatalogo_detalle")
+  eventos_monitoreo_eventos_monitoreo_direccion_viaTocatalogo_detalle          eventos_monitoreo[]  @relation("eventos_monitoreo_direccion_viaTocatalogo_detalle")
+  eventos_monitoreo_eventos_monitoreo_lugar_incidenteTocatalogo_detalle        eventos_monitoreo[]  @relation("eventos_monitoreo_lugar_incidenteTocatalogo_detalle")
+  eventos_monitoreo_eventos_monitoreo_modelo_mrTocatalogo_detalle              eventos_monitoreo[]  @relation("eventos_monitoreo_modelo_mrTocatalogo_detalle")
+  eventos_monitoreo_eventos_monitoreo_numero_mrTocatalogo_detalle              eventos_monitoreo[]  @relation("eventos_monitoreo_numero_mrTocatalogo_detalle")
+  eventos_monitoreo_eventos_monitoreo_personal_involucradoTocatalogo_detalle   eventos_monitoreo[]  @relation("eventos_monitoreo_personal_involucradoTocatalogo_detalle")
+  eventos_monitoreo_eventos_monitoreo_posible_causaTocatalogo_detalle          eventos_monitoreo[]  @relation("eventos_monitoreo_posible_causaTocatalogo_detalle")
+  eventos_monitoreo_eventos_monitoreo_rango_horarioTocatalogo_detalle          eventos_monitoreo[]  @relation("eventos_monitoreo_rango_horarioTocatalogo_detalle")
+  eventos_monitoreo_eventos_monitoreo_tipo_incidenteTocatalogo_detalle         eventos_monitoreo[]  @relation("eventos_monitoreo_tipo_incidenteTocatalogo_detalle")
+  eventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalle             eventos_monitoreo[]  @relation("eventos_monitoreo_tipo_causaTocatalogo_detalle")
+  eventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalle               eventos_monitoreo[]  @relation("eventos_monitoreo_tipo_viaTocatalogo_detalle")
+  eventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalle              eventos_monitoreo[]  @relation("eventos_monitoreo_ubicacionTocatalogo_detalle")
   planes_accion                                                                planes_accion[]
 
   @@index([id_catalogo], map: "idx_catalogo_detalle_catalogo")
@@ -288,6 +299,64 @@ model eventos_operativos {
   @@index([usuario_registra], map: "idx_evento_usuario")
 }
 
+/**
+ * Registro propio del panel de Monitorista — deliberadamente separado de
+ * `eventos_operativos` (la tabla de Seguridad Operativa). Lo que registra
+ * Monitoreo no debe reflejarse en SO hasta que el jefe lo valide y lo
+ * asigne; esa integración es un paso aparte, todavía sin construir.
+ */
+model eventos_monitoreo {
+  id_evento             Int       @id @default(autoincrement())
+  codigo_evento         String?   @unique @db.VarChar(30)
+  fecha                 DateTime  @db.Date
+  hora                  DateTime? @db.Time(6)
+  anio                  Int?      @db.SmallInt
+  mes                   Int?      @db.SmallInt
+  semana                Int?      @db.SmallInt
+  dia                   String?   @db.VarChar(20)
+  rango_horario         Int?
+  tipo_incidente        Int
+  descripcion           String?
+  ubicacion             Int?
+  tipo_via              Int?
+  direccion_via         Int?
+  lugar_incidente       Int?
+  modelo_mr             Int?
+  numero_mr             Int?
+  numero_carrera        String?   @db.VarChar(30)
+  personal_involucrado  Int?
+  tipo_causa            Int?
+  posible_causa         Int?
+  informacion_adicional String?
+  camara_monitoreada    String?   @db.VarChar(50)
+  demora                Decimal?  @db.Decimal(10, 2)
+  /**
+   * Solo 3 valores: "Registrado" (inicial), "En investigación" (asignado), "Cerrado" (planes de acción cerrados).
+   */
+  estado                String    @default("Registrado") @db.VarChar(20)
+  usuario_registra      Int?
+  created_at            DateTime? @default(now()) @db.Timestamp(6)
+  updated_at            DateTime? @default(now()) @db.Timestamp(6)
+
+  catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle        catalogo_detalle? @relation("eventos_monitoreo_direccion_viaTocatalogo_detalle", fields: [direccion_via], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_monitoreo_direccion")
+  catalogo_detalle_eventos_monitoreo_lugar_incidenteTocatalogo_detalle      catalogo_detalle? @relation("eventos_monitoreo_lugar_incidenteTocatalogo_detalle", fields: [lugar_incidente], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_monitoreo_lugar")
+  catalogo_detalle_eventos_monitoreo_modelo_mrTocatalogo_detalle            catalogo_detalle? @relation("eventos_monitoreo_modelo_mrTocatalogo_detalle", fields: [modelo_mr], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_monitoreo_modelo")
+  catalogo_detalle_eventos_monitoreo_numero_mrTocatalogo_detalle            catalogo_detalle? @relation("eventos_monitoreo_numero_mrTocatalogo_detalle", fields: [numero_mr], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_monitoreo_numero")
+  catalogo_detalle_eventos_monitoreo_personal_involucradoTocatalogo_detalle catalogo_detalle? @relation("eventos_monitoreo_personal_involucradoTocatalogo_detalle", fields: [personal_involucrado], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_monitoreo_personal")
+  catalogo_detalle_eventos_monitoreo_posible_causaTocatalogo_detalle        catalogo_detalle? @relation("eventos_monitoreo_posible_causaTocatalogo_detalle", fields: [posible_causa], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_monitoreo_posible")
+  catalogo_detalle_eventos_monitoreo_rango_horarioTocatalogo_detalle        catalogo_detalle? @relation("eventos_monitoreo_rango_horarioTocatalogo_detalle", fields: [rango_horario], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_monitoreo_rango")
+  catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle       catalogo_detalle  @relation("eventos_monitoreo_tipo_incidenteTocatalogo_detalle", fields: [tipo_incidente], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_monitoreo_tipo")
+  catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle           catalogo_detalle? @relation("eventos_monitoreo_tipo_causaTocatalogo_detalle", fields: [tipo_causa], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_monitoreo_tipo_causa")
+  catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle             catalogo_detalle? @relation("eventos_monitoreo_tipo_viaTocatalogo_detalle", fields: [tipo_via], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_monitoreo_tipo_via")
+  catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle            catalogo_detalle? @relation("eventos_monitoreo_ubicacionTocatalogo_detalle", fields: [ubicacion], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_monitoreo_ubicacion")
+  usuarios                                                                  usuarios?         @relation(fields: [usuario_registra], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_monitoreo_usuario")
+
+  @@index([estado], map: "idx_monitoreo_estado")
+  @@index([fecha], map: "idx_monitoreo_fecha")
+  @@index([tipo_incidente], map: "idx_monitoreo_tipo")
+  @@index([usuario_registra], map: "idx_monitoreo_usuario")
+}
+
 model evidencias {
   id_evidencia  Int          @id @default(autoincrement())
   id_incidencia Int?
@@ -357,15 +426,15 @@ model indicadores {
 /// Es distinta de `bitacora`, que es auditoría técnica del sistema y exige
 /// usuario — aquí el actor puede ser un rol sin login todavía.
 model timeline_caso {
-  id_evento  Int       @id @default(autoincrement())
-  id_caso    Int
-  kind       String    @db.VarChar(40)
-  actor      String    @db.VarChar(150)
-  actor_rol  String    @db.VarChar(30)
-  titulo     String    @db.VarChar(250)
-  detalle    String?
-  fecha      DateTime? @default(now()) @db.Timestamp(6)
-  casos_sop  casos_sop @relation(fields: [id_caso], references: [id_caso], onDelete: Cascade, onUpdate: NoAction, map: "fk_timeline_caso")
+  id_evento Int       @id @default(autoincrement())
+  id_caso   Int
+  kind      String    @db.VarChar(40)
+  actor     String    @db.VarChar(150)
+  actor_rol String    @db.VarChar(30)
+  titulo    String    @db.VarChar(250)
+  detalle   String?
+  fecha     DateTime? @default(now()) @db.Timestamp(6)
+  casos_sop casos_sop @relation(fields: [id_caso], references: [id_caso], onDelete: Cascade, onUpdate: NoAction, map: "fk_timeline_caso")
 
   @@index([id_caso], map: "idx_timeline_caso")
 }
@@ -555,6 +624,7 @@ model usuarios {
   casos_sop_casos_sop_responsable_planTousuarios     casos_sop[]           @relation("casos_sop_responsable_planTousuarios")
   evento_caso                                        evento_caso[]
   eventos_operativos                                 eventos_operativos[]
+  eventos_monitoreo                                  eventos_monitoreo[]
   evidencias_evento                                  evidencias_evento[]
   incidencias                                        incidencias[]
   investigacion_caso                                 investigacion_caso[]

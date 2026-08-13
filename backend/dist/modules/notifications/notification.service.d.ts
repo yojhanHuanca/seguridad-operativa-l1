@@ -16,13 +16,13 @@ export declare class NotificationService {
         id_usuario: number;
         no_leidas: number;
         items: {
+            fecha: Date | null;
             id_notificacion: number;
             usuario: number;
             titulo: string | null;
             mensaje: string | null;
             tipo: string | null;
             leido: boolean | null;
-            fecha: Date | null;
         }[];
     }>;
     static markRead(idNotificacion: string, query: {

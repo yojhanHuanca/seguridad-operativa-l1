@@ -266,6 +266,17 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
         omit: OmitOpts;
     }>;
     /**
+     * `prisma.eventos_monitoreo`: Exposes CRUD operations for the **eventos_monitoreo** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more Eventos_monitoreos
+      * const eventos_monitoreos = await prisma.eventos_monitoreo.findMany()
+      * ```
+      */
+    get eventos_monitoreo(): Prisma.eventos_monitoreoDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    /**
      * `prisma.evidencias`: Exposes CRUD operations for the **evidencias** model.
       * Example usage:
       * ```ts

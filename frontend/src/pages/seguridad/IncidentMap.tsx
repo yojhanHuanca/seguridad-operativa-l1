@@ -71,10 +71,12 @@ const RISK_CONFIG: Record<VisualRisk, { color: string; label: string; bg: string
 const VISUAL_RISK_ORDER: Record<VisualRisk, number> = { bajo: 0, medio: 1, alto: 2, critico: 3 };
 
 const EVENT_LABELS_ES: Record<CaseRow["type"], string> = {
-  hallazgo: "Hallazgo",
-  incidente: "Incidente",
-  reporte_voluntario: "Reporte Voluntario",
   accidente: "Accidente",
+  incidente: "Incidente",
+  condicion_insegura: "Condición Insegura",
+  hallazgo: "Hallazgo",
+  acto_inseguro: "Acto Inseguro",
+  otro: "Otro",
 };
 
 export function IncidentMap() {

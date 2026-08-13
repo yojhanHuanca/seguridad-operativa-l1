@@ -86,6 +86,14 @@ export function useAddObservation(codigo: string) {
   });
 }
 
+/** SO corrige el tipo de reporte (Accidente / Incidente / Condición Insegura) en Recepción. */
+export function useUpdateTipo(codigo: string) {
+  return useCaseMutation<{ id_tipo: number }>(codigo, async (input) => {
+    const { data } = await api.patch(`/cases/${encodeURIComponent(codigo)}/tipo`, input);
+    return data;
+  });
+}
+
 export function useEvaluateCase(codigo: string) {
   return useCaseMutation<EvaluateInput>(codigo, async (input) => {
     const { data } = await api.post(`/cases/${encodeURIComponent(codigo)}/evaluate`, input);

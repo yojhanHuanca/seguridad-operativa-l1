@@ -55,6 +55,7 @@ export declare const ModelName: {
     readonly estaciones: "estaciones";
     readonly evento_caso: "evento_caso";
     readonly eventos_operativos: "eventos_operativos";
+    readonly eventos_monitoreo: "eventos_monitoreo";
     readonly evidencias: "evidencias";
     readonly evidencias_evento: "evidencias_evento";
     readonly historial_indicadores: "historial_indicadores";
@@ -153,6 +154,7 @@ export declare const Casos_sopScalarFieldEnum: {
     readonly subtipo_sop: "subtipo_sop";
     readonly peligro: "peligro";
     readonly consecuencia: "consecuencia";
+    readonly descripcion_evento: "descripcion_evento";
     readonly clasificacion: "clasificacion";
     readonly analisis_riesgo: "analisis_riesgo";
     readonly acr: "acr";
@@ -255,6 +257,37 @@ export declare const Eventos_operativosScalarFieldEnum: {
     readonly updated_at: "updated_at";
 };
 export type Eventos_operativosScalarFieldEnum = (typeof Eventos_operativosScalarFieldEnum)[keyof typeof Eventos_operativosScalarFieldEnum];
+export declare const Eventos_monitoreoScalarFieldEnum: {
+    readonly id_evento: "id_evento";
+    readonly codigo_evento: "codigo_evento";
+    readonly fecha: "fecha";
+    readonly hora: "hora";
+    readonly anio: "anio";
+    readonly mes: "mes";
+    readonly semana: "semana";
+    readonly dia: "dia";
+    readonly rango_horario: "rango_horario";
+    readonly tipo_incidente: "tipo_incidente";
+    readonly descripcion: "descripcion";
+    readonly ubicacion: "ubicacion";
+    readonly tipo_via: "tipo_via";
+    readonly direccion_via: "direccion_via";
+    readonly lugar_incidente: "lugar_incidente";
+    readonly modelo_mr: "modelo_mr";
+    readonly numero_mr: "numero_mr";
+    readonly numero_carrera: "numero_carrera";
+    readonly personal_involucrado: "personal_involucrado";
+    readonly tipo_causa: "tipo_causa";
+    readonly posible_causa: "posible_causa";
+    readonly informacion_adicional: "informacion_adicional";
+    readonly camara_monitoreada: "camara_monitoreada";
+    readonly demora: "demora";
+    readonly estado: "estado";
+    readonly usuario_registra: "usuario_registra";
+    readonly created_at: "created_at";
+    readonly updated_at: "updated_at";
+};
+export type Eventos_monitoreoScalarFieldEnum = (typeof Eventos_monitoreoScalarFieldEnum)[keyof typeof Eventos_monitoreoScalarFieldEnum];
 export declare const EvidenciasScalarFieldEnum: {
     readonly id_evidencia: "id_evidencia";
     readonly id_incidencia: "id_incidencia";

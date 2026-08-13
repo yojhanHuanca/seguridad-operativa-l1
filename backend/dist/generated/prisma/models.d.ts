@@ -12,6 +12,7 @@ export type * from './models/dashboards.js';
 export type * from './models/estaciones.js';
 export type * from './models/evento_caso.js';
 export type * from './models/eventos_operativos.js';
+export type * from './models/eventos_monitoreo.js';
 export type * from './models/evidencias.js';
 export type * from './models/evidencias_evento.js';
 export type * from './models/historial_indicadores.js';

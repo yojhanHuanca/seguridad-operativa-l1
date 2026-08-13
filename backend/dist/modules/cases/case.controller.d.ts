@@ -5,6 +5,7 @@ export declare class CaseController {
     static getByCodigo(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static approve(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static addObservation(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
+    static updateTipo(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static evaluate(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static reject(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static requestInfo(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
@@ -20,6 +21,7 @@ export declare class CaseController {
     static requestExtensionByPlan(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static reviewExtensionByPlan(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static completeExecution(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
+    static startExecution(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static sendToVerification(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static keepPending(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static reopen(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
@@ -29,8 +31,10 @@ export declare class CaseController {
     static requestExtension(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static reviewExtension(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static addComment(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
+    static removePlanEvidence(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static addPlanComment(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static addEvidence(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
+    static addPlanUpdate(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static addEvidenceByPlan(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
 }
 //# sourceMappingURL=case.controller.d.ts.map

@@ -80,8 +80,9 @@ export class ReportRepository {
                     // El wizard no pide Área, Tipo SOP ni Tipo (No Conformidad/
                     // Observación) — Seguridad Operativa los define al derivar el
                     // caso, en la etapa de Evaluación.
-                    const [estadoRecepcion, procedencia, tipoSopDefault, tipoDefault, tipoReporte, lugar, lugarEspecifico] = await Promise.all([
+                    const [estadoRecepcion, estadoEvaluacion, procedencia, tipoSopDefault, tipoDefault, tipoReporte, lugar, lugarEspecifico] = await Promise.all([
                         tx.catalogo_detalle.findFirst({ where: { nombre: "Recepción", catalogos: { nombre: "Estado Hallazgo" } } }),
+                        tx.catalogo_detalle.findFirst({ where: { nombre: "Evaluación", catalogos: { nombre: "Estado Hallazgo" } } }),
                         tx.catalogo_detalle.findFirst({ where: { nombre: "Incidencias", catalogos: { nombre: "Procedencia" } } }),
                         tx.catalogo_detalle.findFirst({ where: { nombre: "Hallazgo", catalogos: { nombre: "Tipo SOP" } } }),
                         tx.catalogo_detalle.findFirst({ where: { nombre: "Observación", catalogos: { nombre: "Tipo" } } }),
@@ -93,6 +94,8 @@ export class ReportRepository {
                     ]);
                     if (!estadoRecepcion)
                         throw new Error("Falta el estado 'Recepción' en el catálogo 'Estado Hallazgo'");
+                    if (!estadoEvaluacion)
+                        throw new Error("Falta el estado 'Evaluación' en el catálogo 'Estado Hallazgo'");
                     if (!procedencia)
                         throw new Error("Falta el valor 'Incidencias' en el catálogo 'Procedencia'");
                     if (!tipoSopDefault)
@@ -112,6 +115,13 @@ export class ReportRepository {
                     });
                     const codigo_sop = `SOP ${String(totalAnio + 1).padStart(2, "0")}-${year}`;
                     const esIdentificado = dto.modalidad === "identificado";
+                    // Registrado por el analista desde el panel de SO: el caso nace con
+                    // su firma en la bitácora en vez de la del reportante de campo, y
+                    // se salta Recepción (esa etapa es para filtrar reportes que llegan
+                    // de afuera; un caso que ya crea SO no necesita ese filtro).
+                    const esRegistroSO = dto.origen === "seguridad_operativa";
+                    const estadoInicial = esRegistroSO ? estadoEvaluacion : estadoRecepcion;
+                    const nombreReportante = dto.nombre_reportante?.trim() || null;
                     const ubicacionTitulo = [lugar.nombre, lugarEspecifico?.nombre].filter(Boolean).join(" · ");
                     const titulo = `${tipoReporte.nombre} en ${ubicacionTitulo}`;
                     const caso = await tx.casos_sop.create({
@@ -120,12 +130,12 @@ export class ReportRepository {
                             titulo,
                             fecha_hallazgo: ahora,
                             fecha_evento: ahora,
-                            estado_hallazgo: estadoRecepcion.id_detalle,
+                            estado_hallazgo: estadoInicial.id_detalle,
                             procedencia: procedencia.id_detalle,
                             tipo: tipoDefault.id_detalle,
                             descripcion: dto.descripcion,
                             tipo_sop: tipoSopDefault.id_detalle,
-                            nombre_reportante: esIdentificado ? dto.nombre_reportante?.trim() || null : null,
+                            nombre_reportante: esIdentificado ? nombreReportante : null,
                             correo_reportante: esIdentificado ? dto.correo_reportante?.trim().toLowerCase() || null : null,
                             telefono_reportante: esIdentificado ? dto.telefono_reportante?.trim() || null : null,
                             // responsable_hallazgo / created_by: TODO(auth) — asignar req.user?.id_usuario cuando exista login real.
@@ -135,21 +145,28 @@ export class ReportRepository {
                     await tx.evento_caso.create({
                         data: { id_evento: evento.id_evento, id_caso: caso.id_caso },
                     });
+                    const actorReportante = esIdentificado ? nombreReportante || "Reportante Identificado" : "Reporte Anónimo";
                     await tx.timeline_caso.create({
                         data: {
                             id_caso: caso.id_caso,
                             kind: "creado",
-                            actor: esIdentificado ? dto.nombre_reportante?.trim() || "Reportante Identificado" : "Reporte Anónimo",
-                            actor_rol: "reportante",
-                            titulo: "Reporte registrado por trabajador",
-                            detalle: `${codigo_sop} creado. Enviado a la bandeja de Seguridad Operativa.`,
+                            actor: esRegistroSO ? nombreReportante || "Seguridad Operativa" : actorReportante,
+                            actor_rol: esRegistroSO ? "seguridad" : "reportante",
+                            titulo: esRegistroSO ? "Reporte registrado por Seguridad Operativa" : "Reporte registrado por trabajador",
+                            detalle: esRegistroSO
+                                ? `${codigo_sop} creado desde el panel de Seguridad Operativa. Pasa directo a Evaluación.`
+                                : `${codigo_sop} creado. Enviado a la bandeja de Seguridad Operativa.`,
                         },
                     });
                     await NotificationRepository.emitir(tx, {
                         para: { rol: "Seguridad Operativa" },
                         tipo: "reporte_nuevo",
                         titulo: `Nuevo reporte ${codigo_sop}`,
-                        mensaje: `${titulo}. Registrado por ${esIdentificado ? dto.nombre_reportante?.trim() || "un reportante identificado" : "un reportante anónimo"}. Pendiente de recepción.`,
+                        mensaje: `${titulo}. Registrado por ${esRegistroSO
+                            ? `${nombreReportante || "Seguridad Operativa"} (Seguridad Operativa)`
+                            : esIdentificado
+                                ? nombreReportante || "un reportante identificado"
+                                : "un reportante anónimo"}. ${esRegistroSO ? "Pendiente de evaluación." : "Pendiente de recepción."}`,
                     });
                     if (archivos.length > 0) {
                         await tx.anexos_caso.createMany({
