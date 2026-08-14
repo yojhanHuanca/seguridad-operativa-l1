@@ -5,20 +5,21 @@
 // Fuente única: antes esta tabla estaba duplicada en tres archivos (adapter.ts,
 // CaseDetailPage.tsx y este módulo, que no se usaba), con riesgo de que se
 // desincronizaran.
-import { RISK_CATEGORY_LABELS, STAGE_STATUS, isRiskLevel, riskCategory, type RiskCategory, type Stage } from "../domain";
+import {
+  RISK_CATEGORY_LABELS,
+  RISK_CATEGORY_SHORT_LABELS,
+  STAGE_STATUS,
+  isRiskLevel,
+  riskCategory,
+  type RiskCategory,
+  type Stage,
+} from "../domain";
 
 const RISK_SLA_DAYS = {
   inaceptable: 3,
   no_deseable: 7,
   aceptable_revision: 14,
   aceptable_sin_revision: 21,
-};
-
-const RISK_GRAVEDAD = {
-  inaceptable: "Alto",
-  no_deseable: "Grave",
-  aceptable_revision: "Medio",
-  aceptable_sin_revision: "Bajo",
 };
 
 function categoriaDesdeRiesgo(riesgoNombre?: string | null, riesgoCodigo?: string | null): RiskCategory | null {
@@ -35,7 +36,7 @@ function categoriaDesdeRiesgo(riesgoNombre?: string | null, riesgoCodigo?: strin
 
 export function gravedadDerivada(riesgoNombre?: string | null, riesgoCodigo?: string | null): string | null {
   const categoria = categoriaDesdeRiesgo(riesgoNombre, riesgoCodigo);
-  return categoria ? RISK_GRAVEDAD[categoria] : null;
+  return categoria ? RISK_CATEGORY_SHORT_LABELS[categoria] : null;
 }
 
 export function criterioAceptabilidad(riesgoNombre?: string | null, riesgoCodigo?: string | null): string | null {

@@ -24,7 +24,7 @@ import {
   useSendToVerification,
 } from "@/features/cases/hooks/useCaseActions";
 import { parseActivityDescription } from "@/features/cases/lib/activityMeta";
-import { compactPlanCodes, numeroDePlan, shortPlanCode } from "@/features/cases/lib/planLabels";
+import { compactPlanCodes, shortPlanCode } from "@/features/cases/lib/planLabels";
 import { evidenciasDelEvento, humanEvidenceDetail, planEvidenceFiles, timelineBelongsToPlan } from "@/features/cases/lib/planEvidence";
 import { progresoPorHitos } from "@/features/cases/lib/planProgress";
 import { ACTOR_ROL_LABEL } from "@/features/cases/lib/workflow";
@@ -64,6 +64,18 @@ function avancePlanEnCaso(caso: CaseDetail, plan: PlanAccion): number {
     comentarios: eventos.filter((e) => e.kind === "comentario").length,
     evidencias: evidenciasDelPlan(caso, plan).length,
   });
+}
+
+/**
+ * "Rol · Nombre" de quien hizo una acción en la bitácora. Sin login real,
+ * las acciones de Seguridad Operativa se firman con el nombre genérico
+ * "Seguridad Operativa" — igual que la etiqueta de su rol —, así que
+ * mostrar ambos por separado salía repetido ("Seguridad Operativa ·
+ * Seguridad Operativa"). Si coinciden, se muestra una sola vez.
+ */
+function actorLine(actorRol: string, actor: string): string {
+  const rolLabel = ACTOR_ROL_LABEL[actorRol] ?? actorRol;
+  return actor && actor !== rolLabel ? `${rolLabel} · ${actor}` : rolLabel;
 }
 
 function normalize(value?: string | null): string {
@@ -369,7 +381,7 @@ function PlanExecutionBoard({
       </div>
 
       <div className="mt-5 space-y-4">
-        {caso.planes_accion.map((plan, index) => {
+        {caso.planes_accion.map((plan) => {
           const avance = avancePlanEnCaso(caso, plan);
           const actualizacionesDelPlan = timelineDelPlan(caso, plan).filter((e) => e.kind === "actualizacion").length;
           const requiereRevision = planRevisablePorSo(plan);
@@ -411,10 +423,6 @@ function PlanExecutionBoard({
               >
                 <span className="flex min-w-0 items-center gap-2">
                   <span className="font-mono text-[14px] font-bold text-brand-700">{shortPlanCode(plan.codigo_plan)}</span>
-                  {/* El número sale del código del plan, no de la posición en
-                      la lista: si algún plan falta, la posición y el código
-                      dejan de coincidir y la fila diría "Plan 2 · PLA-03". */}
-                  <span className="text-[11px] text-ink-faint">Plan {numeroDePlan(plan.codigo_plan) ?? index + 1}</span>
                   <Pill tone={estadoPlan.tone} dot>{estadoPlan.label}</Pill>
                   {pendienteProrroga && <Pill tone="warning" dot>Prórroga pendiente</Pill>}
                   {/* Avisa que el área agregó información después del cierre,
@@ -585,7 +593,7 @@ function PlanExecutionBoard({
                               </p>
                             )}
                             <p className="mt-1 text-[10.5px] text-ink-quiet">
-                              {ACTOR_ROL_LABEL[evento.actor_rol] ?? evento.actor_rol} · {evento.actor}
+                              {actorLine(evento.actor_rol, evento.actor)}
                             </p>
                           </div>
                         ),
@@ -1530,7 +1538,7 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
               <div className="min-w-0 pb-3">
                 <p className="text-[12.5px] font-medium text-ink leading-snug break-words">{compactPlanCodes(t.titulo)}</p>
                 <p className="text-[10.5px] text-ink-quiet mt-0.5">
-                  {ACTOR_ROL_LABEL[t.actor_rol] ?? t.actor_rol} · {t.actor}
+                  {actorLine(t.actor_rol, t.actor)}
                   {t.fecha ? ` · ${formatDateTime(t.fecha)}` : ""}
                 </p>
                 {t.detalle && (

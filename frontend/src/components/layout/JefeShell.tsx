@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
-import { Activity, Bell, Building2, Calendar, CheckCircle2, ChevronRight, Clock, ExternalLink, FolderKanban, Plus, Timer, Train, TrendingUp } from "lucide-react";
+import { Activity, Bell, Building2, Calendar, CheckCircle2, ChevronRight, Clock, FolderKanban, Plus, Timer, Train } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { Card } from "@/design-system/primitives/Card";
 import { usePlans } from "@/features/plans/hooks/usePlans";
 import { isClosed, isRejected, planStatusCounts } from "@/features/plans/lib/planStatus";
 import { cn } from "@/lib/utils";
+import { SessionExitButton } from "@/features/auth/SessionExitButton";
 import type { PlanItem } from "@/features/plans/types";
 
 function AreaLabel({ plans }: { plans: PlanItem[] }) {
@@ -100,37 +101,6 @@ function JefeSidebar() {
             })}
           </div>
         </Card>
-
-        <a
-          href="https://sofia.lineauno.pe/"
-          target="_blank"
-          rel="noreferrer"
-          className="flex h-11 items-center gap-3 rounded-lg border border-line-soft bg-white px-4 text-[14px] font-medium text-ink-soft shadow-sm transition-colors hover:bg-surface hover:text-ink"
-        >
-          <ExternalLink className="h-4 w-4" />
-          <span className="flex-1">SOFIA</span>
-        </a>
-
-        <Card className="p-5">
-          <div className="mb-4 flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-brand-700" />
-            <h3 className="text-[14px] font-semibold text-ink">Resumen del Área</h3>
-          </div>
-          <div className="space-y-2.5 text-[12.5px]">
-            <div className="flex justify-between gap-3">
-              <span className="text-ink-soft">Total planes</span>
-              <span className="font-medium text-ink">{counts.todos}</span>
-            </div>
-            <div className="flex justify-between gap-3">
-              <span className="text-ink-soft">En ejecución</span>
-              <span className="font-medium text-ink">{counts.ejecucion}</span>
-            </div>
-            <div className="flex justify-between gap-3">
-              <span className="text-ink-soft">En verificación</span>
-              <span className="font-medium text-ink">{counts.verificacion}</span>
-            </div>
-          </div>
-        </Card>
       </div>
     </aside>
   );
@@ -183,6 +153,7 @@ export function JefeShell({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="flex items-center gap-2">
+            <SessionExitButton />
             <Link
               to="/jefe"
               className="relative grid h-10 w-10 place-items-center rounded-lg text-ink-soft transition-colors hover:bg-surface hover:text-ink"

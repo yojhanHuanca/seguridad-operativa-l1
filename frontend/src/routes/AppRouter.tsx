@@ -1,4 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { Landing } from "@/pages/Landing";
+import { LoginPage } from "@/pages/Login";
+import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
 import { ReportanteHomePage } from "@/pages/reports/ReportanteHomePage";
 import { NewReportPage } from "@/pages/reports/NewReportPage";
 import { MyReportsPage } from "@/pages/reports/MyReportsPage";
@@ -9,8 +12,8 @@ import { CaseDetailPage } from "@/pages/seguridad/CaseDetailPage";
 import { JefeHome } from "@/pages/jefe/JefeHome";
 import { PlanDetail } from "@/pages/jefe/PlanDetail";
 import { ReportExportPage } from "@/pages/seguridad/ReportExportPage";
-import { SoDecisionesPage } from "@/pages/seguridad/DecisionesPage";
 import { SoNotificacionesPage } from "@/pages/seguridad/NotificacionesPage";
+import { EventosAsignadosPage } from "@/pages/seguridad/EventosAsignadosPage";
 import {
   SoAlertasPage,
   SoEventosPage,
@@ -31,46 +34,50 @@ export function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Sin login todavía — se redirige directo al portal del trabajador */}
-        <Route path="/" element={<Navigate to="/reportes" replace />} />
-        <Route path="/reportes" element={<ReportanteHomePage />} />
-        <Route path="/reportes/nuevo" element={<NewReportPage />} />
-        <Route path="/reportes/mis-reportes" element={<MyReportsPage />} />
-        <Route path="/reportes/notificaciones" element={<NotificationsPage />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/inicio" element={<Navigate to="/" replace />} />
+        <Route path="/reportes" element={<ProtectedRoute roles={["Reportante"]}><ReportanteHomePage /></ProtectedRoute>} />
+        <Route path="/reportes/nuevo" element={<ProtectedRoute roles={["Reportante"]}><NewReportPage /></ProtectedRoute>} />
+        <Route path="/reportes/mis-reportes" element={<ProtectedRoute roles={["Reportante"]}><MyReportsPage /></ProtectedRoute>} />
+        <Route path="/reportes/notificaciones" element={<ProtectedRoute roles={["Reportante"]}><NotificationsPage /></ProtectedRoute>} />
 
         {/* Portal de Seguridad Operativa (Analista SO) — sin login todavía */}
-        <Route path="/seguridad" element={<SoDashboardPage />} />
-        <Route path="/seguridad/casos" element={<SoCasosPage />} />
-        <Route path="/seguridad/casos/:codigo" element={<CaseDetailPage />} />
-        <Route path="/seguridad/decisiones" element={<SoDecisionesPage />} />
-        <Route path="/seguridad/alertas" element={<SoAlertasPage />} />
-        <Route path="/seguridad/planes-accion" element={<SoPlanesAccionPage />} />
-        <Route path="/seguridad/eventos" element={<SoEventosPage />} />
-        <Route path="/seguridad/reportes" element={<SoReportesPage />} />
-        <Route path="/seguridad/reportes/kpis" element={<SoReportesPage />} />
-        <Route path="/seguridad/reportes/estadisticas" element={<SoReportesPage />} />
-        <Route path="/seguridad/reportes/exportar" element={<ReportExportPage />} />
-        <Route path="/seguridad/notificaciones" element={<SoNotificacionesPage />} />
-        <Route path="/seguridad/perfil" element={<SoPerfilPage />} />
+        <Route path="/seguridad" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoDashboardPage /></ProtectedRoute>} />
+        <Route path="/seguridad/casos" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoCasosPage /></ProtectedRoute>} />
+        <Route path="/seguridad/casos/:codigo" element={<ProtectedRoute roles={["Seguridad Operativa"]}><CaseDetailPage /></ProtectedRoute>} />
+        <Route path="/seguridad/alertas" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoAlertasPage /></ProtectedRoute>} />
+        <Route path="/seguridad/planes-accion" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoPlanesAccionPage /></ProtectedRoute>} />
+        <Route path="/seguridad/eventos" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoEventosPage /></ProtectedRoute>} />
+        <Route path="/seguridad/reportes" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoReportesPage /></ProtectedRoute>} />
+        <Route path="/seguridad/reportes/kpis" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoReportesPage /></ProtectedRoute>} />
+        <Route path="/seguridad/reportes/estadisticas" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoReportesPage /></ProtectedRoute>} />
+        <Route path="/seguridad/reportes/exportar" element={<ProtectedRoute roles={["Seguridad Operativa"]}><ReportExportPage /></ProtectedRoute>} />
+        <Route path="/seguridad/notificaciones" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoNotificacionesPage /></ProtectedRoute>} />
+        <Route path="/seguridad/eventos-asignados" element={<ProtectedRoute roles={["Seguridad Operativa"]}><EventosAsignadosPage /></ProtectedRoute>} />
+        <Route path="/seguridad/perfil" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoPerfilPage /></ProtectedRoute>} />
 
         {/* Portal Jefe de Área — sin login todavía; el área se elige a mano */}
-        <Route path="/jefe" element={<JefeHome />} />
-        <Route path="/jefe/planes/:codigo" element={<PlanDetail />} />
+        <Route path="/jefe" element={<ProtectedRoute roles={["Jefe de Área"]}><JefeHome /></ProtectedRoute>} />
+        <Route path="/jefe/planes/:codigo" element={<ProtectedRoute roles={["Jefe de Área"]}><PlanDetail /></ProtectedRoute>} />
 
         {/* Panel de Monitoreo — en construcción, portado desde el prototipo */}
-        <Route path="/monitoreo" element={<MonitoreoDashboardPage />} />
-        <Route path="/monitoreo/nuevo" element={<MonitoreoRegistroPage />} />
-        <Route path="/monitoreo/historial" element={<MonitoreoHistorialPage />} />
-        <Route path="/monitoreo/evento/:id" element={<MonitoreoDetallePage />} />
-        <Route path="/monitoreo/editar/:id" element={<MonitoreoEditarPage />} />
-        <Route path="/monitoreo/reportes" element={<MonitoreoReportesPage />} />
+        <Route path="/monitoreo" element={<ProtectedRoute roles={["Monitorista"]}><MonitoreoDashboardPage /></ProtectedRoute>} />
+        <Route path="/monitoreo/nuevo" element={<ProtectedRoute roles={["Monitorista"]}><MonitoreoRegistroPage /></ProtectedRoute>} />
+        <Route path="/monitoreo/historial" element={<ProtectedRoute roles={["Monitorista"]}><MonitoreoHistorialPage /></ProtectedRoute>} />
+        <Route path="/monitoreo/evento/:id" element={<ProtectedRoute roles={["Monitorista"]}><MonitoreoDetallePage /></ProtectedRoute>} />
+        <Route path="/monitoreo/editar/:id" element={<ProtectedRoute roles={["Monitorista"]}><MonitoreoEditarPage /></ProtectedRoute>} />
+        <Route path="/monitoreo/reportes" element={<ProtectedRoute roles={["Monitorista"]}><MonitoreoReportesPage /></ProtectedRoute>} />
 
         {/* Panel de Administrador — sin login todavía */}
-        <Route path="/admin" element={<AdminUsuariosPage />} />
-        <Route path="/admin/usuarios" element={<AdminUsuariosPage />} />
-        <Route path="/admin/catalogos" element={<AdminCatalogosPage />} />
-        <Route path="/admin/auditoria" element={<AdminAuditoriaPage />} />
-        <Route path="/admin/configuracion" element={<AdminConfiguracionPage />} />
+        <Route path="/admin" element={<ProtectedRoute roles={["Admin"]}><AdminUsuariosPage /></ProtectedRoute>} />
+        <Route path="/admin/usuarios" element={<ProtectedRoute roles={["Admin"]}><AdminUsuariosPage /></ProtectedRoute>} />
+        <Route path="/admin/roles" element={<ProtectedRoute roles={["Admin"]}><AdminUsuariosPage /></ProtectedRoute>} />
+        <Route path="/admin/catalogos" element={<ProtectedRoute roles={["Admin"]}><AdminCatalogosPage /></ProtectedRoute>} />
+        <Route path="/admin/estaciones" element={<ProtectedRoute roles={["Admin"]}><AdminCatalogosPage /></ProtectedRoute>} />
+        <Route path="/admin/material-rodante" element={<ProtectedRoute roles={["Admin"]}><AdminCatalogosPage /></ProtectedRoute>} />
+        <Route path="/admin/auditoria" element={<ProtectedRoute roles={["Admin"]}><AdminAuditoriaPage /></ProtectedRoute>} />
+        <Route path="/admin/configuracion" element={<ProtectedRoute roles={["Admin"]}><AdminConfiguracionPage /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,21 +1,21 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Download, Eye, FileText, Pencil, Search, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCcw, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { MonitoristaShell } from "@/components/layout/MonitoristaShell";
 import { Card } from "@/design-system/primitives/Card";
 import { Button } from "@/design-system/primitives/Button";
-import { Field, Input, Select } from "@/design-system/primitives/Input";
-import { Pill } from "@/design-system/primitives/Pill";
+import { Field, Input } from "@/design-system/primitives/Input";
 import { Modal } from "@/design-system/primitives/Modal";
+import { EventosTable } from "@/features/eventos/components/EventosTable";
+import { AsignarEventoModal } from "@/features/eventos/components/AsignarEventoModal";
 import { useEventos } from "@/features/eventos/hooks/useEventos";
 import { useDeleteEvento } from "@/features/eventos/hooks/useEventoActions";
-import { ESTADOS_EVENTO } from "@/features/eventos/types";
-import { ESTADO_TONE } from "@/features/eventos/lib/estado";
+import { type EstadoEvento } from "@/features/eventos/types";
+import { contarEventosPorEstado } from "@/features/eventos/lib/estado";
 import { COLUMNAS_EVENTO, coincideBusqueda } from "@/features/eventos/lib/tabla";
-import { exportarEventosExcel } from "@/features/eventos/lib/exportExcel";
-import { sufijoFecha } from "@/lib/download";
 import { apiErrorMessage } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import type { EventoListItem } from "@/features/eventos/types";
 
 const POR_PAGINA = 20;
@@ -27,13 +27,15 @@ export function Historial() {
   const [query, setQuery] = useState("");
   const [desde, setDesde] = useState("");
   const [hasta, setHasta] = useState("");
-  const [estado, setEstado] = useState("");
+  const [estado, setEstado] = useState<EstadoEvento | "">("");
   const [pagina, setPagina] = useState(1);
-  const [exportando, setExportando] = useState(false);
   const [borrando, setBorrando] = useState<EventoListItem | null>(null);
+  const [asignando, setAsignando] = useState<EventoListItem | null>(null);
+  const lista = eventos ?? [];
+  const conteo = contarEventosPorEstado(lista);
 
   const filtrados = useMemo(() => {
-    return (eventos ?? []).filter((e) => {
+    return lista.filter((e) => {
       if (!coincideBusqueda(e, query)) return false;
       if (estado && e.estado !== estado) return false;
       const fecha = e.fecha.slice(0, 10);
@@ -41,22 +43,18 @@ export function Historial() {
       if (hasta && fecha > hasta) return false;
       return true;
     });
-  }, [eventos, query, desde, hasta, estado]);
+  }, [lista, query, desde, hasta, estado]);
 
   const totalPaginas = Math.max(1, Math.ceil(filtrados.length / POR_PAGINA));
   const paginaActual = Math.min(pagina, totalPaginas);
   const visibles = filtrados.slice((paginaActual - 1) * POR_PAGINA, paginaActual * POR_PAGINA);
-
-  const exportar = async () => {
-    setExportando(true);
-    try {
-      await exportarEventosExcel(filtrados, `lista_eventos_${sufijoFecha()}.xlsx`);
-    } catch {
-      toast.error("No se pudo generar el Excel");
-    } finally {
-      setExportando(false);
-    }
-  };
+  const hayFiltros = Boolean(query || desde || hasta || estado);
+  const estadoOpciones: { id: EstadoEvento | ""; label: string; count: number }[] = [
+    { id: "", label: "Todos", count: lista.length },
+    { id: "Registrado", label: "Registrados", count: conteo.registrados },
+    { id: "En investigación", label: "En investigación", count: conteo.enInvestigacion },
+    { id: "Cerrado", label: "Cerrados", count: conteo.cerrados },
+  ];
 
   const confirmarBorrado = () => {
     if (!borrando) return;
@@ -69,22 +67,31 @@ export function Historial() {
     });
   };
 
+  const limpiarFiltros = () => {
+    setQuery("");
+    setDesde("");
+    setHasta("");
+    setEstado("");
+    setPagina(1);
+  };
+
   return (
     <MonitoristaShell>
       <div className="space-y-4">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="text-[20px] font-bold tracking-tight text-ink">Historial</h1>
-            <p className="mt-0.5 text-[12.5px] text-ink-quiet">Todos los eventos registrados por Monitoreo.</p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-[13px] text-ink-quiet">{filtrados.length} de {lista.length} registros visibles</p>
+          <div className="flex items-center gap-2">
+            {hayFiltros && (
+              <Button variant="ghost" size="sm" onClick={limpiarFiltros}>
+                <RotateCcw className="h-4 w-4" /> Limpiar
+              </Button>
+            )}
           </div>
-          <Button variant="outline" size="sm" onClick={exportar} disabled={filtrados.length === 0 || exportando}>
-            <Download className="h-4 w-4" /> {exportando ? "Generando…" : "Exportar Excel"}
-          </Button>
         </div>
 
-        <Card>
-          <div className="grid gap-4 sm:grid-cols-4">
-            <Field label="Buscar">
+        <Card className="p-3">
+          <div className="grid gap-3 lg:grid-cols-[1.4fr_0.7fr_0.7fr]">
+            <Field label="Buscar evento">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
                 <Input
@@ -93,7 +100,7 @@ export function Historial() {
                     setQuery(e.target.value);
                     setPagina(1);
                   }}
-                  placeholder="Descripción, tipo o código…"
+                  placeholder="Descripción, tipo o lugar..."
                   className="pl-9"
                 />
               </div>
@@ -118,82 +125,39 @@ export function Historial() {
                 }}
               />
             </Field>
-            <Field label="Estado">
-              <Select
-                value={estado}
-                onChange={(e) => {
-                  setEstado(e.target.value);
+          </div>
+          <div className="mt-3 flex min-w-0 flex-wrap gap-1 rounded-xl border border-line bg-white p-1">
+            {estadoOpciones.map((option) => (
+              <button
+                key={option.label}
+                type="button"
+                onClick={() => {
+                  setEstado(option.id);
                   setPagina(1);
                 }}
+                className={cn(
+                  "flex h-8 items-center gap-2 rounded-lg px-2.5 text-[12px] font-medium transition-colors",
+                  estado === option.id ? "bg-brand-700 text-white shadow-sm" : "text-ink-soft hover:bg-surface"
+                )}
               >
-                <option value="">Todos los estados</option>
-                {ESTADOS_EVENTO.map((e) => (
-                  <option key={e} value={e}>{e}</option>
-                ))}
-              </Select>
-            </Field>
+                <span>{option.label}</span>
+                <span className={cn("rounded-full px-1.5 py-0.5 text-[10.5px]", estado === option.id ? "bg-white/20 text-white" : "bg-surface-2 text-ink-quiet")}>{option.count}</span>
+              </button>
+            ))}
           </div>
         </Card>
 
-        <Card padded={false} className="overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-[12.5px]">
-              <thead>
-                <tr className="border-b border-line bg-surface text-[10.5px] uppercase tracking-wide text-ink-quiet">
-                  {COLUMNAS_EVENTO.map((col) => (
-                    <th key={col.header} className="whitespace-nowrap px-3 py-2.5 font-semibold">{col.header}</th>
-                  ))}
-                  <th className="whitespace-nowrap px-3 py-2.5 font-semibold">Estado</th>
-                  <th className="whitespace-nowrap px-3 py-2.5 font-semibold text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={COLUMNAS_EVENTO.length + 2} className="px-3.5 py-8 text-center text-ink-quiet">Cargando eventos…</td>
-                  </tr>
-                ) : visibles.length === 0 ? (
-                  <tr>
-                    <td colSpan={COLUMNAS_EVENTO.length + 2} className="px-3.5 py-10 text-center text-ink-quiet">
-                      <FileText className="mx-auto mb-2 h-7 w-7 text-ink-faint" />
-                      No se encontraron eventos con estos filtros.
-                    </td>
-                  </tr>
-                ) : (
-                  visibles.map((e) => (
-                    <tr key={e.id_evento} className="border-b border-line-soft last:border-0 hover:bg-surface">
-                      {COLUMNAS_EVENTO.map((col) => (
-                        <td
-                          key={col.header}
-                          className={col.nowrap ? "whitespace-nowrap px-3 py-2.5 text-ink-soft" : "max-w-[220px] truncate px-3 py-2.5 text-ink-soft"}
-                          title={col.nowrap ? undefined : String(col.render(e) ?? "")}
-                        >
-                          {col.render(e)}
-                        </td>
-                      ))}
-                      <td className="whitespace-nowrap px-3 py-2.5">
-                        <Pill tone={ESTADO_TONE[e.estado]} dot>{e.estado}</Pill>
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-2.5">
-                        <div className="flex items-center justify-end gap-1">
-                          <button type="button" onClick={() => navigate(`/monitoreo/evento/${e.id_evento}`)} className="grid h-7 w-7 place-items-center rounded-lg text-ink-quiet transition-colors hover:bg-surface-2 hover:text-ink" aria-label="Ver">
-                            <Eye className="h-3.5 w-3.5" />
-                          </button>
-                          <button type="button" onClick={() => navigate(`/monitoreo/editar/${e.id_evento}`)} className="grid h-7 w-7 place-items-center rounded-lg text-ink-quiet transition-colors hover:bg-surface-2 hover:text-ink" aria-label="Editar">
-                            <Pencil className="h-3.5 w-3.5" />
-                          </button>
-                          <button type="button" onClick={() => setBorrando(e)} className="grid h-7 w-7 place-items-center rounded-lg text-critical-ink transition-colors hover:bg-critical-soft" aria-label="Eliminar">
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+        <EventosTable
+          eventos={visibles}
+          columns={COLUMNAS_EVENTO}
+          isLoading={isLoading}
+          emptyTitle="No se encontraron eventos"
+          emptyDescription={hayFiltros ? "Ajusta los filtros para ampliar la búsqueda." : "Aún no hay registros de monitoreo."}
+          onView={(e) => navigate(`/monitoreo/evento/${e.id_evento}`)}
+          onEdit={(e) => navigate(`/monitoreo/editar/${e.id_evento}`)}
+          onDelete={setBorrando}
+          onAsignar={setAsignando}
+        />
 
         {filtrados.length > 0 && (
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -217,19 +181,21 @@ export function Historial() {
         open={!!borrando}
         onClose={() => setBorrando(null)}
         title="Eliminar evento"
-        subtitle={borrando ? `${borrando.codigo_evento ?? "Este evento"} se eliminará permanentemente.` : undefined}
+        subtitle={borrando ? "Este evento se eliminará permanentemente." : undefined}
         size="sm"
         footer={
           <>
             <Button variant="ghost" onClick={() => setBorrando(null)}>Cancelar</Button>
             <Button variant="danger" onClick={confirmarBorrado} disabled={deleteEvento.isPending}>
-              <Trash2 className="h-4 w-4" /> {deleteEvento.isPending ? "Eliminando…" : "Eliminar"}
+              <Trash2 className="h-4 w-4" /> {deleteEvento.isPending ? "Eliminando..." : "Eliminar"}
             </Button>
           </>
         }
       >
         <p className="text-[13px] text-ink-soft">Esta acción no se puede deshacer.</p>
       </Modal>
+
+      <AsignarEventoModal evento={asignando} onClose={() => setAsignando(null)} />
     </MonitoristaShell>
   );
 }

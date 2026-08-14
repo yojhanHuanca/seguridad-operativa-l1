@@ -16,25 +16,27 @@ import {
   ExternalLink,
   FilePlus2,
   Folder,
-  Gavel,
   Gauge,
   Home,
   LayoutDashboard,
   Menu,
   PieChart,
   Rocket,
+  ShieldAlert,
   Timer,
   UserCircle2,
   X,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SessionExitButton } from "@/features/auth/SessionExitButton";
 import { Logo } from "@/components/brand/Logo";
 import { useCases } from "@/features/cases/hooks/useCases";
 import { toCaseRow } from "@/features/cases/adapter";
 import { CASE_FILTERS, countByFilter, filterHref, type CaseFilterId } from "@/features/cases/lib/filters";
 import { useCurrentSoUser } from "@/features/users/hooks/useCurrentSoUser";
 import { useNotifications } from "@/features/notifications/hooks/useNotifications";
+import { useEventosAsignados } from "@/features/eventos/hooks/useEventos";
 
 interface NavLink {
   to: string;
@@ -102,7 +104,10 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
   // número y hacían pensar que las dos secciones tenían el mismo contenido.
   const pendingDecisions = counts.nuevos + counts.pendientes + counts.prorrogas + counts.verificacion;
   const unreadNotifications = notifications?.no_leidas ?? 0;
-  const { nombre: userName, cargo: userRole, iniciales: userInitials } = useCurrentSoUser();
+  const currentSoUser = useCurrentSoUser();
+  const { nombre: userName, cargo: userRole, iniciales: userInitials, user: soUser } = currentSoUser;
+  const { data: eventosAsignados } = useEventosAsignados(soUser?.id_usuario);
+  const eventosAsignadosPendientes = (eventosAsignados ?? []).filter((e) => !e.id_caso_creado).length;
 
   const groups: NavGroup[] = [
     {
@@ -112,7 +117,14 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
       defaultOpen: true,
       links: [
         { to: "/seguridad", label: "Dashboard Ejecutivo", icon: LayoutDashboard, match: (p) => p === "/seguridad" },
-        { to: "/seguridad/decisiones", label: "Centro de Decisiones", icon: Gavel, match: (p) => p === "/seguridad/decisiones" },
+        {
+          to: "/seguridad/eventos-asignados",
+          label: "Eventos asignados",
+          icon: ShieldAlert,
+          badge: eventosAsignadosPendientes || undefined,
+          badgeTone: "danger",
+          match: (p) => p === "/seguridad/eventos-asignados",
+        },
         { to: "/seguridad/alertas", label: "Alertas", icon: AlertTriangle, badge: pendingDecisions || undefined, badgeTone: "neutral", match: (p) => p === "/seguridad/alertas" },
       ],
     },
@@ -137,7 +149,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
     },
     {
       id: "reportes",
-      label: "Reportes",
+      label: "Indicadores",
       icon: BarChart3,
       defaultOpen: true,
       links: [
@@ -373,6 +385,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
             </div>
 
             <div className="ml-auto flex items-center gap-2.5">
+              <SessionExitButton />
               <Link
                 to="/seguridad/notificaciones"
                 className="grid h-8 w-8 place-items-center rounded-lg text-ink-soft transition-colors hover:bg-surface hover:text-ink"
@@ -399,7 +412,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
 function getPageTitle(pathname: string) {
   if (pathname === "/seguridad") return "Dashboard Ejecutivo";
   if (pathname.startsWith("/seguridad/casos")) return "Gestión de Casos";
-  if (pathname === "/seguridad/decisiones") return "Centro de Decisiones";
+  if (pathname === "/seguridad/eventos-asignados") return "Eventos asignados";
   if (pathname === "/seguridad/alertas") return "Alertas";
   if (pathname === "/seguridad/reportes" || pathname === "/seguridad/reportes/kpis") return "KPIs";
   if (pathname === "/seguridad/reportes/estadisticas") return "Estadísticas";
@@ -413,7 +426,7 @@ function getPageTitle(pathname: string) {
 function getBreadcrumb(pathname: string) {
   if (pathname === "/seguridad") return "Inicio";
   if (pathname.startsWith("/seguridad/casos")) return "Inicio / Casos";
-  if (pathname === "/seguridad/decisiones") return "Inicio / Decisiones";
+  if (pathname === "/seguridad/eventos-asignados") return "Inicio / Eventos asignados";
   if (pathname === "/seguridad/alertas") return "Inicio / Alertas";
   if (pathname === "/seguridad/reportes" || pathname === "/seguridad/reportes/kpis") return "Inicio / Reportes / KPIs";
   if (pathname === "/seguridad/reportes/estadisticas") return "Inicio / Reportes / Estadísticas";

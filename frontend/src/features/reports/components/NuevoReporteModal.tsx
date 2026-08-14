@@ -60,7 +60,16 @@ const STEP_LABELS: Record<SoReportStep, string> = {
  * backend genera el código SOP y la misma ventana pasa a mostrar el reporte ya
  * creado con sus campos.
  */
-export function NuevoReporteModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function NuevoReporteModal({
+  open,
+  onClose,
+  idEventoMonitoreo,
+}: {
+  open: boolean;
+  onClose: () => void;
+  /** Si viene de "Eventos asignados" de Monitoreo: el evento que dio origen a este hallazgo. */
+  idEventoMonitoreo?: number;
+}) {
   const [stepIndex, setStepIndex] = useState(0);
   const [files, setFiles] = useState<File[]>([]);
   const [codigoCreado, setCodigoCreado] = useState<string | null>(null);
@@ -127,6 +136,7 @@ export function NuevoReporteModal({ open, onClose }: { open: boolean; onClose: (
           correo_reportante: analista.correo || undefined,
           telefono_reportante: analista.user?.telefono ?? undefined,
           origen: "seguridad_operativa",
+          id_evento_monitoreo: idEventoMonitoreo,
         },
         files,
       },
@@ -385,21 +395,7 @@ export function NuevoReporteModal({ open, onClose }: { open: boolean; onClose: (
 
           {step === "revision" && (
             <>
-              <div className="flex items-center gap-3 rounded-xl border border-line bg-surface/60 p-3.5">
-                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-700 text-[12px] font-bold text-white">
-                  {analista.iniciales}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-faint">Registrado por</p>
-                  <p className="mt-0.5 truncate text-[13px] font-semibold text-ink">{analista.nombre}</p>
-                  <p className="truncate text-[11.5px] text-ink-quiet">{analista.cargo}</p>
-                </div>
-              </div>
-              <p className="mt-2 text-[11.5px] leading-snug text-ink-quiet">
-                Su nombre queda registrado en el reporte y en la bitácora del caso.
-              </p>
-
-              <div className="mt-3 space-y-3 rounded-xl border border-line-soft p-3.5">
+              <div className="space-y-3 rounded-xl border border-line-soft p-3.5">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
                   Resumen del reporte
                 </p>

@@ -14,7 +14,8 @@ export type TipoNotificacion =
   | "ejecucion_completada"
   | "plan_revisado"
   | "caso_devuelto"
-  | "info_respondida";
+  | "info_respondida"
+  | "evento_asignado";
 
 /** Rol destinatario, o un usuario concreto cuando la notificación es personal. */
 export type Destinatario = { rol: string } | { id_usuario: number };

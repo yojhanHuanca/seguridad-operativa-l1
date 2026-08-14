@@ -12,6 +12,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SessionExitButton } from "@/features/auth/SessionExitButton";
 import { Logo } from "@/components/brand/Logo";
 
 interface NavItem {
@@ -54,7 +55,16 @@ const TITLES: Record<string, { title: string; crumb: string }> = {
 };
 
 function isActive(pathname: string, to: string) {
+  if (to === "/monitoreo/historial") {
+    return pathname.startsWith(to) || pathname.startsWith("/monitoreo/evento/") || pathname.startsWith("/monitoreo/editar/");
+  }
   return to === "/monitoreo" ? pathname === to : pathname.startsWith(to);
+}
+
+function metaFor(pathname: string) {
+  if (pathname.startsWith("/monitoreo/evento/")) return { title: "Detalle de evento", crumb: "Inicio / Historial / Detalle" };
+  if (pathname.startsWith("/monitoreo/editar/")) return { title: "Editar evento", crumb: "Inicio / Historial / Editar" };
+  return TITLES[pathname] ?? TITLES["/monitoreo"];
 }
 
 function NavLink({ item, collapsed, active, onNavigate }: { item: NavItem; collapsed: boolean; active: boolean; onNavigate?: () => void }) {
@@ -128,6 +138,7 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
 
       {!collapsed && (
         <div className="shrink-0 border-t border-line-soft p-3">
+          <SessionExitButton withLabel className="mb-2 w-full justify-start" />
           <div className="flex items-center gap-3 rounded-2xl bg-surface px-3 py-3">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-700 text-[13px] font-bold text-white">M</div>
             <div className="min-w-0 leading-tight">
@@ -144,16 +155,13 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
 export function MonitoristaShell({ children }: { children: ReactNode }) {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSE_KEY) === "1");
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const meta = TITLES[location.pathname] ?? TITLES["/monitoreo"];
+  const [mobileOpenPath, setMobileOpenPath] = useState<string | null>(null);
+  const mobileOpen = mobileOpenPath === location.pathname;
+  const meta = metaFor(location.pathname);
 
   useEffect(() => {
     localStorage.setItem(COLLAPSE_KEY, collapsed ? "1" : "0");
   }, [collapsed]);
-
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-surface md:flex">
@@ -178,19 +186,19 @@ export function MonitoristaShell({ children }: { children: ReactNode }) {
       {/* Mobile drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
-          <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileOpen(false)} aria-hidden />
+          <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileOpenPath(null)} aria-hidden />
           <aside className="absolute left-0 top-0 flex h-full w-[264px] flex-col bg-white shadow-xl">
-            <SidebarContent collapsed={false} onNavigate={() => setMobileOpen(false)} />
+            <SidebarContent collapsed={false} onNavigate={() => setMobileOpenPath(null)} />
           </aside>
         </div>
       )}
 
       <div className="min-w-0 flex-1">
         <header className="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur-xl">
-          <div className="flex min-h-[78px] items-center gap-3 px-4 py-3 sm:px-6">
+          <div className="flex min-h-[64px] items-center gap-3 px-4 py-2.5 sm:px-6">
             <button
               type="button"
-              onClick={() => setMobileOpen(true)}
+              onClick={() => setMobileOpenPath(location.pathname)}
               className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-ink-soft hover:bg-surface hover:text-ink md:hidden"
               aria-label="Abrir menú"
             >
@@ -206,7 +214,7 @@ export function MonitoristaShell({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main className="w-full max-w-none px-4 py-5 sm:px-6 sm:py-6 lg:px-8">{children}</main>
+        <main className="w-full max-w-none px-4 py-4 sm:px-6 lg:px-8">{children}</main>
       </div>
     </div>
   );

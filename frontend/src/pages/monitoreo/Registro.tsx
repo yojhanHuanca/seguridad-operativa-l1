@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, Save, X } from "lucide-react";
+import { Check, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { MonitoristaShell } from "@/components/layout/MonitoristaShell";
 import { Card } from "@/design-system/primitives/Card";
@@ -21,9 +21,9 @@ export function Registro() {
     if (!validate()) return;
 
     createEvento.mutate(toInput(), {
-      onSuccess: (evento) => {
+      onSuccess: () => {
         toast.success("Evento registrado");
-        setSuccess(evento?.codigo_evento ?? "Evento registrado");
+        setSuccess("ok");
       },
       onError: (err) => toast.error(apiErrorMessage(err, "No se pudo registrar el evento")),
     });
@@ -38,9 +38,6 @@ export function Registro() {
               <Check className="h-7 w-7" />
             </div>
             <h2 className="text-[19px] font-bold text-ink">Evento registrado correctamente</h2>
-            <p className="text-[13px] text-ink-quiet">
-              Código <span className="font-mono font-semibold text-ink">{success}</span>
-            </p>
             <div className="mt-3 flex items-center gap-2.5">
               <Button
                 variant="outline"
@@ -64,24 +61,15 @@ export function Registro() {
 
   return (
     <MonitoristaShell>
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <p className="text-[12.5px] text-ink-quiet">
-          Complete la información del evento operativo. Los campos con * son obligatorios.
-        </p>
-        <Button variant="ghost" size="sm" onClick={() => navigate("/monitoreo")}>
-          <ArrowLeft className="h-4 w-4" /> Volver
-        </Button>
-      </div>
-
       <form onSubmit={onSubmit}>
         <EventoFormFields form={form} set={set} errors={errors} rangoLabel={rangoLabel} />
 
-        <div className="mt-3 flex items-center justify-end gap-2.5">
+        <div className="mt-4 flex items-center justify-end gap-2.5 rounded-lg border border-line bg-white p-3 shadow-[var(--shadow-card)]">
           <Button variant="outline" type="button" onClick={() => navigate("/monitoreo")}>
             <X className="h-4 w-4" /> Cancelar
           </Button>
           <Button type="submit" disabled={createEvento.isPending}>
-            <Save className="h-4 w-4" /> {createEvento.isPending ? "Guardando…" : "Registrar evento"}
+            <Save className="h-4 w-4" /> {createEvento.isPending ? "Guardando..." : "Registrar evento"}
           </Button>
         </div>
       </form>

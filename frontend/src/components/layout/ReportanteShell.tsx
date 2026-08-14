@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Bell, Menu, Plus } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { SessionExitButton } from "@/features/auth/SessionExitButton";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { useReports } from "@/features/reports/hooks/useReports";
@@ -57,6 +58,7 @@ export function ReportanteShell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="flex items-center gap-2">
+            <SessionExitButton />
             <Link to="/reportes/nuevo" className="hidden sm:block">
               <Button size="sm">
                 <Plus className="h-4 w-4" /> Registrar reporte

@@ -15,14 +15,6 @@ export class UsersService {
   }
 
     static async createUser(data: CreateUserDto) {
-
-        // Verificar codigo de usuario único
-        const codeExists = await UserRepository.findByCodigo(data.codigo_usuario);
-
-        if (codeExists) {
-            throw new Error("El codigo de usario ya existe ");
-        }
-
         // Verificar correo electrónico
         const emailExists  = await UserRepository.findByEmail(data.correo);
 
@@ -35,7 +27,7 @@ export class UsersService {
 
 
         // Crear el ususario
-        return await UserRepository.create ({
+        return await UserRepository.createWithGeneratedCode({
             ...data,
             password_hash,
         });

@@ -136,6 +136,8 @@ model casos_sop {
   investigacion_caso                                           investigacion_caso?
   solicitudes_informacion                                      solicitudes_informacion[]
   timeline_caso                                                timeline_caso[]
+  /** Evento de Monitoreo del que nació este caso, cuando se creó desde "Eventos asignados". */
+  eventos_monitoreo                                            eventos_monitoreo?
 
   @@index([area_responsable], map: "idx_caso_area")
   @@index([codigo_sop], map: "idx_caso_codigo")
@@ -335,6 +337,10 @@ model eventos_monitoreo {
    */
   estado                String    @default("Registrado") @db.VarChar(20)
   usuario_registra      Int?
+  /** Persona de Seguridad Operativa a la que se le asignó el evento (ver EventoService.asignarEvento). */
+  asignado_a            Int?
+  /** Caso SOP que se creó a partir de este evento (si ya se hizo el hallazgo). Único: un evento da como mucho un caso. */
+  id_caso_creado         Int?      @unique
   created_at            DateTime? @default(now()) @db.Timestamp(6)
   updated_at            DateTime? @default(now()) @db.Timestamp(6)
 
@@ -349,9 +355,12 @@ model eventos_monitoreo {
   catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle           catalogo_detalle? @relation("eventos_monitoreo_tipo_causaTocatalogo_detalle", fields: [tipo_causa], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_monitoreo_tipo_causa")
   catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle             catalogo_detalle? @relation("eventos_monitoreo_tipo_viaTocatalogo_detalle", fields: [tipo_via], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_monitoreo_tipo_via")
   catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle            catalogo_detalle? @relation("eventos_monitoreo_ubicacionTocatalogo_detalle", fields: [ubicacion], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_monitoreo_ubicacion")
-  usuarios                                                                  usuarios?         @relation(fields: [usuario_registra], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_monitoreo_usuario")
+  usuarios_eventos_monitoreo_usuario_registraTousuarios                     usuarios?         @relation("eventos_monitoreo_usuario_registraTousuarios", fields: [usuario_registra], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_monitoreo_usuario")
+  usuarios_eventos_monitoreo_asignado_aTousuarios                           usuarios?         @relation("eventos_monitoreo_asignado_aTousuarios", fields: [asignado_a], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_monitoreo_asignado")
+  casos_sop                                                                 casos_sop?        @relation(fields: [id_caso_creado], references: [id_caso], onDelete: NoAction, onUpdate: NoAction, map: "fk_monitoreo_caso_creado")
 
   @@index([estado], map: "idx_monitoreo_estado")
+  @@index([asignado_a], map: "idx_monitoreo_asignado")
   @@index([fecha], map: "idx_monitoreo_fecha")
   @@index([tipo_incidente], map: "idx_monitoreo_tipo")
   @@index([usuario_registra], map: "idx_monitoreo_usuario")
@@ -624,7 +633,8 @@ model usuarios {
   casos_sop_casos_sop_responsable_planTousuarios     casos_sop[]           @relation("casos_sop_responsable_planTousuarios")
   evento_caso                                        evento_caso[]
   eventos_operativos                                 eventos_operativos[]
-  eventos_monitoreo                                  eventos_monitoreo[]
+  eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios eventos_monitoreo[] @relation("eventos_monitoreo_usuario_registraTousuarios")
+  eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios       eventos_monitoreo[] @relation("eventos_monitoreo_asignado_aTousuarios")
   evidencias_evento                                  evidencias_evento[]
   incidencias                                        incidencias[]
   investigacion_caso                                 investigacion_caso[]

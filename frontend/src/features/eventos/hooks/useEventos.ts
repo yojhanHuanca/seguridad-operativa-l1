@@ -24,3 +24,17 @@ export function useEvento(id: number | undefined) {
     enabled: id != null,
   });
 }
+
+async function fetchEventosAsignados(id_usuario: number): Promise<EventoListItem[]> {
+  const { data } = await api.get<ApiEnvelope<EventoListItem[]>>(`/eventos/asignados/${id_usuario}`);
+  return data.data ?? [];
+}
+
+/** Bandeja de eventos de Monitoreo asignados a una persona de Seguridad Operativa. */
+export function useEventosAsignados(id_usuario: number | undefined) {
+  return useQuery({
+    queryKey: ["eventos", "asignados", id_usuario],
+    queryFn: () => fetchEventosAsignados(id_usuario as number),
+    enabled: id_usuario != null,
+  });
+}

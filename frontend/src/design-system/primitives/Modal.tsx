@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +20,8 @@ const SIZES = {
 };
 
 export function Modal({ open, onClose, title, subtitle, footer, children, size = "md" }: ModalProps) {
+  const bodyRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -31,6 +33,15 @@ export function Modal({ open, onClose, title, subtitle, footer, children, size =
     };
   }, [open, onClose]);
 
+  // El modal no se desmonta al cambiar de un registro a otro sin cerrarse
+  // entre medio (ej. "Ver detalle" de dos eventos distintos), así que el
+  // scroll del cuerpo se quedaba donde estaba y el contenido nuevo arrancaba
+  // a medio camino. Se resetea cada vez que abre o que cambia el título, y se
+  // hace en layout (antes de pintar) para que nunca se alcance a ver el salto.
+  useLayoutEffect(() => {
+    if (open && bodyRef.current) bodyRef.current.scrollTop = 0;
+  }, [open, title]);
+
   if (!open) return null;
 
   return (
@@ -41,12 +52,12 @@ export function Modal({ open, onClose, title, subtitle, footer, children, size =
       />
       <div
         className={cn(
-          "relative w-full rounded-2xl bg-white border border-line shadow-[var(--shadow-pop)] animate-[riseUp_0.25s_ease-out]",
+          "relative flex max-h-[calc(100vh-6rem)] w-full flex-col rounded-2xl bg-white border border-line shadow-[var(--shadow-pop)] animate-[riseUp_0.25s_ease-out]",
           SIZES[size]
         )}
       >
         {(title || subtitle) && (
-          <div className="flex items-start justify-between gap-4 p-5 border-b border-line-soft">
+          <div className="flex shrink-0 items-start justify-between gap-4 p-5 border-b border-line-soft">
             <div className="min-w-0">
               {title && <h2 className="text-[16px] font-semibold text-ink leading-tight">{title}</h2>}
               {subtitle && <p className="text-[13px] text-ink-quiet mt-1">{subtitle}</p>}
@@ -60,9 +71,9 @@ export function Modal({ open, onClose, title, subtitle, footer, children, size =
             </button>
           </div>
         )}
-        <div className="p-5 max-h-[70vh] overflow-y-auto">{children}</div>
+        <div ref={bodyRef} className="min-h-0 flex-1 overflow-y-auto p-5">{children}</div>
         {footer && (
-          <div className="flex items-center justify-end gap-2 p-4 border-t border-line-soft bg-surface/50 rounded-b-2xl">
+          <div className="flex shrink-0 items-center justify-end gap-2 p-4 border-t border-line-soft bg-surface/50 rounded-b-2xl">
             {footer}
           </div>
         )}

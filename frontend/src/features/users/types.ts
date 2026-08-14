@@ -18,7 +18,6 @@ export interface Role {
 }
 
 export interface CreateUserInput {
-  codigo_usuario: string;
   nombre: string;
   correo: string;
   password: string;

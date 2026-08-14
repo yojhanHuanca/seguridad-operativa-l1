@@ -5,11 +5,12 @@ import { Toaster } from "sonner";
 import { queryClient } from "@/lib/queryClient";
 import "./styles/globals.css";
 import App from "./App";
+import { AuthProvider } from "@/features/auth/AuthContext";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <App />
+      <AuthProvider><App /></AuthProvider>
       <Toaster richColors position="top-right" />
     </QueryClientProvider>
   </StrictMode>,

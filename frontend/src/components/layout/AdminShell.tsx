@@ -1,18 +1,22 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
+  Building2,
+  ChevronDown,
   ChevronsLeft,
   ChevronsRight,
   Cog,
   History,
-  ListTree,
+  MapPin,
   Menu,
   ShieldCheck,
+  TrainFront,
   Users,
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { cn } from "@/lib/utils";
+import { SessionExitButton } from "@/features/auth/SessionExitButton";
 
 interface NavItem {
   to: string;
@@ -23,15 +27,19 @@ interface NavItem {
 const COLLAPSE_KEY = "sigma-admin-sidebar-collapsed";
 
 const ITEMS: NavItem[] = [
-  { to: "/admin/usuarios", label: "Usuarios y roles", icon: Users },
-  { to: "/admin/catalogos", label: "Catálogos", icon: ListTree },
-  { to: "/admin/auditoria", label: "Auditoría", icon: History },
-  { to: "/admin/configuracion", label: "Configuración", icon: Cog },
+  { to: "/admin/usuarios", label: "Gestión de Usuarios", icon: Users },
+  { to: "/admin/roles", label: "Roles y Permisos", icon: ShieldCheck },
+  { to: "/admin/catalogos", label: "Gestión de Áreas", icon: Building2 },
+  { to: "/admin/estaciones", label: "Gestión de Estaciones", icon: MapPin },
+  { to: "/admin/material-rodante", label: "Material Rodante", icon: TrainFront },
 ];
 
 const TITLES: Record<string, string> = {
-  "/admin/usuarios": "Usuarios y roles",
-  "/admin/catalogos": "Catálogos",
+  "/admin/usuarios": "Gestión de usuarios",
+  "/admin/roles": "Roles y accesos",
+  "/admin/catalogos": "Gestión de áreas",
+  "/admin/estaciones": "Gestión de estaciones",
+  "/admin/material-rodante": "Material rodante",
   "/admin/auditoria": "Auditoría",
   "/admin/configuracion": "Configuración",
 };
@@ -58,7 +66,13 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
       </Link>
 
       <nav className="scrollbar-none flex-1 overflow-y-auto px-3 py-4">
-        <div className="space-y-1">
+        {!collapsed && <p className="mb-3 px-2 text-[10px] font-semibold uppercase text-ink-faint">Gestión de usuarios</p>}
+        <div className="rounded-lg bg-surface px-2 py-2">
+          <div className={cn("mb-1 flex h-8 items-center gap-3 px-1 text-[13px] font-semibold text-ink", collapsed && "justify-center")}>
+            <Cog className="h-4.5 w-4.5 text-brand-700" />
+            {!collapsed && <><span className="flex-1">Gestión</span><ChevronDown className="h-3.5 w-3.5 text-ink-faint" /></>}
+          </div>
+          <div className={cn("space-y-0.5", !collapsed && "ml-3 border-l border-line pl-2")}>
           {ITEMS.map((item) => {
             const active = location.pathname === item.to;
             return (
@@ -68,9 +82,9 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
                 onClick={onNavigate}
                 title={collapsed ? item.label : undefined}
                 className={cn(
-                  "flex h-10 items-center gap-3 rounded-xl px-2.5 text-[13px] font-medium transition-colors",
+                  "flex min-h-10 items-center gap-3 rounded-lg px-2.5 text-[12.5px] font-medium transition-colors",
                   collapsed && "justify-center px-0",
-                  active ? "bg-brand-50 font-semibold text-brand-800" : "text-ink-soft hover:bg-surface hover:text-ink"
+                  active ? "bg-brand-50 font-semibold text-brand-800 ring-1 ring-inset ring-brand-600" : "text-ink-soft hover:bg-white hover:text-ink"
                 )}
               >
                 <item.icon className={cn("h-4 w-4 shrink-0", active ? "text-brand-700" : "text-ink-faint")} />
@@ -78,16 +92,26 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
               </Link>
             );
           })}
+          </div>
         </div>
+
+        <Link to="/admin/configuracion" onClick={onNavigate} className="mt-3 flex h-10 items-center gap-3 rounded-lg px-2.5 text-[12.5px] font-medium text-ink-soft hover:bg-surface hover:text-ink">
+          <Cog className="h-4 w-4 text-ink-faint" />{!collapsed && <><span className="flex-1">Configuración</span><ChevronDown className="h-3.5 w-3.5" /></>}
+        </Link>
+        <div className="my-3 border-t border-line-soft" />
+        <Link to="/admin/auditoria" onClick={onNavigate} className="flex h-10 items-center gap-3 rounded-lg px-2.5 text-[12.5px] font-medium text-ink-soft hover:bg-surface hover:text-ink">
+          <History className="h-4 w-4 text-ink-faint" />{!collapsed && <span>Auditoría</span>}
+        </Link>
       </nav>
 
       {!collapsed && (
         <div className="shrink-0 border-t border-line-soft p-3">
+          <SessionExitButton withLabel className="mb-3 w-full justify-start" />
           <div className="flex items-center gap-3 rounded-2xl bg-surface px-3 py-3">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-700 text-[13px] font-bold text-white">A</div>
             <div className="min-w-0 leading-tight">
               <p className="truncate text-[13px] font-semibold text-ink">Administrador</p>
-              <p className="mt-0.5 truncate text-[11.5px] text-ink-quiet">Línea 1 · Metro de Lima</p>
+              <p className="mt-0.5 truncate text-[11.5px] text-ink-quiet">Acceso Total</p>
             </div>
           </div>
         </div>
@@ -105,10 +129,6 @@ export function AdminShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     localStorage.setItem(COLLAPSE_KEY, collapsed ? "1" : "0");
   }, [collapsed]);
-
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-surface md:flex">

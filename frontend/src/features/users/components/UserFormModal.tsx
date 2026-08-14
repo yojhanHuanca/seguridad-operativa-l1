@@ -16,8 +16,8 @@ type Step = (typeof STEPS)[number];
 const STEP_LABELS: Record<Step, string> = { datos: "Datos personales", acceso: "Acceso y rol" };
 
 interface FormState {
-  codigo_usuario: string;
-  nombre: string;
+  nombres: string;
+  apellidos: string;
   correo: string;
   cargo: string;
   telefono: string;
@@ -28,8 +28,8 @@ interface FormState {
 }
 
 const EMPTY_FORM: FormState = {
-  codigo_usuario: "",
-  nombre: "",
+  nombres: "",
+  apellidos: "",
   correo: "",
   cargo: "",
   telefono: "",
@@ -40,9 +40,11 @@ const EMPTY_FORM: FormState = {
 };
 
 function fromUser(user: UserListItem): FormState {
+  const partes = user.nombre.trim().split(/\s+/);
+  const corte = Math.max(1, partes.length - 2);
   return {
-    codigo_usuario: user.codigo_usuario,
-    nombre: user.nombre,
+    nombres: partes.slice(0, corte).join(" "),
+    apellidos: partes.slice(corte).join(" "),
     correo: user.correo,
     cargo: user.cargo ?? "",
     telefono: user.telefono ?? "",
@@ -82,12 +84,12 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => setForm((f) => ({ ...f, [key]: value }));
 
-  const datosValidos = form.codigo_usuario.trim() && form.nombre.trim() && form.correo.trim();
+  const datosValidos = form.nombres.trim() && form.apellidos.trim() && form.correo.trim();
   const accesoValido = form.id_area && form.id_rol && (isEdit || form.password.trim().length >= 6);
 
   const goNext = () => {
     if (!datosValidos) {
-      setError("Completa código, nombre y correo antes de continuar.");
+      setError("Completa nombres, apellidos y correo antes de continuar.");
       return;
     }
     setError(null);
@@ -104,7 +106,7 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
     setError(null);
 
     const base = {
-      nombre: form.nombre.trim(),
+      nombre: `${form.nombres.trim()} ${form.apellidos.trim()}`,
       correo: form.correo.trim(),
       cargo: form.cargo.trim() || undefined,
       telefono: form.telefono.trim() || undefined,
@@ -127,7 +129,7 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
     }
 
     createUser.mutate(
-      { codigo_usuario: form.codigo_usuario.trim(), password: form.password.trim(), ...base },
+      { password: form.password.trim(), ...base },
       {
         onSuccess: () => {
           toast.success("Usuario creado");
@@ -197,12 +199,17 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
       <div className="mt-5 space-y-4">
         {step === "datos" ? (
           <>
+            {!isEdit && (
+              <div className="rounded-lg border border-brand-100 bg-brand-50 px-3 py-2.5 text-[11.5px] text-brand-800">
+                El código de empleado se asignará automáticamente al crear la cuenta.
+              </div>
+            )}
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Código de usuario" required>
-                <Input value={form.codigo_usuario} onChange={(e) => set("codigo_usuario", e.target.value)} disabled={isEdit} placeholder="USR-001" />
+              <Field label="Nombres" required>
+                <Input value={form.nombres} onChange={(e) => set("nombres", e.target.value)} autoComplete="given-name" placeholder="Ej. María Elena" />
               </Field>
-              <Field label="Nombre completo" required>
-                <Input value={form.nombre} onChange={(e) => set("nombre", e.target.value)} placeholder="Nombre y apellido" />
+              <Field label="Apellidos" required>
+                <Input value={form.apellidos} onChange={(e) => set("apellidos", e.target.value)} autoComplete="family-name" placeholder="Ej. Pérez Ramírez" />
               </Field>
             </div>
             <Field label="Correo electrónico" required>

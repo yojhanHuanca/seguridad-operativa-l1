@@ -27,7 +27,6 @@ export type RiskLevel =
   | "3A" | "3B" | "3C" | "3D" | "3E"
   | "4A" | "4B" | "4C" | "4D" | "4E";
 
-export type RiskBand = "muy_alto" | "alto" | "medio" | "bajo" | "muy_bajo";
 export type RiskCategory = "inaceptable" | "no_deseable" | "aceptable_revision" | "aceptable_sin_revision";
 
 export const STAGE_LABELS: Record<Stage, string> = {
@@ -87,67 +86,65 @@ export const RISK_CATEGORY_TONE: Record<RiskCategory, "critical" | "warning" | "
   aceptable_sin_revision: "success",
 };
 
-export const RISK_BAND_LABELS: Record<RiskBand, string> = {
-  muy_alto: "Riesgo Muy Alto",
-  alto: "Riesgo Alto",
-  medio: "Riesgo Medio",
-  bajo: "Riesgo Bajo",
-  muy_bajo: "Riesgo Muy Bajo",
+// Nombre corto de cada categoría — los 4 únicos niveles que reconoce el
+// cliente ("Leyenda de Criterios de Aceptabilidad" de su documento de
+// gestión): Alto, Grave, Medio, Bajo. No hay un quinto nivel intermedio; antes
+// el código separaba "muy alto"/"alto" y "bajo"/"muy bajo" como si fueran 5,
+// lo que no existe en la matriz real del cliente.
+export const RISK_CATEGORY_SHORT_LABELS: Record<RiskCategory, string> = {
+  inaceptable: "Alto",
+  no_deseable: "Grave",
+  aceptable_revision: "Medio",
+  aceptable_sin_revision: "Bajo",
 };
 
-export const RISK_BAND_STYLES: Record<RiskBand, string> = {
-  muy_alto: "bg-red-600 text-white border-red-700",
-  alto: "bg-yellow-400 text-yellow-950 border-yellow-500",
-  medio: "bg-white text-gray-900 border-gray-300",
-  bajo: "bg-sky-100 text-sky-900 border-sky-300",
-  muy_bajo: "bg-green-200 text-green-950 border-green-300",
+export const RISK_CATEGORY_STYLES: Record<RiskCategory, string> = {
+  inaceptable: "bg-red-600 text-white border-red-700",
+  no_deseable: "bg-yellow-500 text-white border-yellow-600",
+  aceptable_revision: "bg-white text-gray-800 border-gray-300",
+  aceptable_sin_revision: "bg-green-200 text-green-900 border-green-300",
 };
 
-export const RISK_BAND_DOT_STYLES: Record<RiskBand, string> = {
-  muy_alto: "bg-red-900",
-  alto: "bg-yellow-700",
-  medio: "bg-gray-400",
-  bajo: "bg-sky-500",
-  muy_bajo: "bg-green-700",
+export const RISK_CATEGORY_DOT_STYLES: Record<RiskCategory, string> = {
+  inaceptable: "bg-red-800",
+  no_deseable: "bg-yellow-700",
+  aceptable_revision: "bg-gray-400",
+  aceptable_sin_revision: "bg-green-600",
 };
 
-const RISK_CODE_BAND: Record<RiskLevel, RiskBand> = {
-  "1A": "muy_alto",
-  "1B": "muy_alto",
-  "1C": "muy_alto",
-  "2A": "muy_alto",
-  "2B": "muy_alto",
-  "1D": "alto",
-  "2C": "alto",
-  "3A": "alto",
-  "3B": "alto",
-  "2D": "medio",
-  "3C": "medio",
-  "4A": "medio",
-  "4B": "bajo",
-  "4C": "bajo",
-  "4D": "bajo",
-  "4E": "bajo",
-  "1E": "muy_bajo",
-  "2E": "muy_bajo",
-  "3D": "muy_bajo",
-  "3E": "muy_bajo",
+// Las 20 celdas de la matriz (severidad 1-4 × probabilidad A-E), mapeadas
+// directo a una de las 4 categorías reales — mismos valores, celda por
+// celda, que el catálogo "Análisis de riesgo" sembrado en el backend desde
+// la matriz del cliente (ver backend/prisma/seed/catalogos-data.ts).
+const RISK_CODE_CATEGORY: Record<RiskLevel, RiskCategory> = {
+  "1A": "inaceptable",
+  "2A": "inaceptable",
+  "3A": "no_deseable",
+  "4A": "aceptable_revision",
+  "1B": "inaceptable",
+  "2B": "inaceptable",
+  "3B": "no_deseable",
+  "4B": "aceptable_sin_revision",
+  "1C": "inaceptable",
+  "2C": "no_deseable",
+  "3C": "aceptable_revision",
+  "4C": "aceptable_sin_revision",
+  "1D": "no_deseable",
+  "2D": "aceptable_revision",
+  "3D": "aceptable_sin_revision",
+  "4D": "aceptable_sin_revision",
+  "1E": "aceptable_sin_revision",
+  "2E": "aceptable_sin_revision",
+  "3E": "aceptable_sin_revision",
+  "4E": "aceptable_sin_revision",
 };
 
 export function isRiskLevel(r?: string | null): r is RiskLevel {
-  return !!r && r in RISK_CODE_BAND;
-}
-
-export function riskBand(r: RiskLevel): RiskBand {
-  return RISK_CODE_BAND[r];
+  return !!r && r in RISK_CODE_CATEGORY;
 }
 
 export function riskCategory(r: RiskLevel): RiskCategory {
-  const band = riskBand(r);
-  if (band === "muy_alto") return "inaceptable";
-  if (band === "alto") return "no_deseable";
-  if (band === "medio") return "aceptable_revision";
-  return "aceptable_sin_revision";
+  return RISK_CODE_CATEGORY[r];
 }
 
 // Tono de fondo por tipo de evento, tal como lo define CaseList del prototipo.

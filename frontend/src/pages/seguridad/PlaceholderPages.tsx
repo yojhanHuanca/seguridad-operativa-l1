@@ -2,8 +2,6 @@ import { Activity, AlertTriangle, BarChart3, ListChecks, UserCircle2 } from "luc
 import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
 import { ComingSoon } from "@/components/layout/ComingSoon";
 
-// El Centro de Decisiones ya está implementado en ./DecisionesPage.
-
 export function SoAlertasPage() {
   return (
     <SeguridadOperativaShell>

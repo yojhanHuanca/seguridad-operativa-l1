@@ -5,10 +5,9 @@ import {
   STAGE_STATUS,
   RISK_CATEGORY_TONE,
   RISK_CATEGORY_LABELS,
-  RISK_BAND_DOT_STYLES,
-  RISK_BAND_STYLES,
+  RISK_CATEGORY_DOT_STYLES,
+  RISK_CATEGORY_STYLES,
   riskCategory,
-  riskBand,
   type Stage,
   type RiskLevel,
 } from "@/features/cases/domain";
@@ -56,15 +55,14 @@ export function Pill({ className, tone = "neutral", dot, children, ...props }: P
 
 export function RiskPill({ risk, showCategory = false, className }: { risk: RiskLevel; showCategory?: boolean; className?: string }) {
   const cat = riskCategory(risk);
-  const band = riskBand(risk);
   const tone = RISK_CATEGORY_TONE[cat];
   const label = showCategory ? `${risk} · ${RISK_CATEGORY_LABELS[cat]}` : risk;
   return (
     <Pill
       tone={tone}
-      className={cn(RISK_BAND_STYLES[band], className)}
+      className={cn(RISK_CATEGORY_STYLES[cat], className)}
     >
-      <span className={cn("-ml-0.5 h-1.5 w-1.5 rounded-full", RISK_BAND_DOT_STYLES[band])} />
+      <span className={cn("-ml-0.5 h-1.5 w-1.5 rounded-full", RISK_CATEGORY_DOT_STYLES[cat])} />
       {label}
     </Pill>
   );

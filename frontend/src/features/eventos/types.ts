@@ -76,5 +76,8 @@ export interface EventoListItem {
   catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle: { nombre: string } | null;
   catalogo_detalle_eventos_monitoreo_posible_causaTocatalogo_detalle: { nombre: string } | null;
   catalogo_detalle_eventos_monitoreo_rango_horarioTocatalogo_detalle: { nombre: string } | null;
-  usuarios: { nombre: string } | null;
+  usuarios_eventos_monitoreo_usuario_registraTousuarios: { nombre: string } | null;
+  usuarios_eventos_monitoreo_asignado_aTousuarios: { id_usuario: number; nombre: string; cargo: string | null } | null;
+  id_caso_creado: number | null;
+  casos_sop: { codigo_sop: string } | null;
 }

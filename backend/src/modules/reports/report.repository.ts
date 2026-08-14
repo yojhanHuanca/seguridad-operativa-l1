@@ -157,6 +157,16 @@ export class ReportRepository {
             data: { id_evento: evento.id_evento, id_caso: caso.id_caso },
           });
 
+          // Si el hallazgo se creó desde "Eventos asignados" de Monitoreo,
+          // deja registrado a qué caso dio origen ese evento — así esa
+          // tarjeta pasa de "Crear hallazgo" a "Ver hallazgo" y no se repite.
+          if (dto.id_evento_monitoreo != null) {
+            await tx.eventos_monitoreo.update({
+              where: { id_evento: dto.id_evento_monitoreo },
+              data: { id_caso_creado: caso.id_caso },
+            });
+          }
+
           const actorReportante = esIdentificado ? nombreReportante || "Reportante Identificado" : "Reporte Anónimo";
 
           await tx.timeline_caso.create({

@@ -1,11 +1,15 @@
-import { useEffect, useState } from "react";
-import { Calendar, Clock, Lock, Unlock } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
+import { Calendar, ClipboardList, Clock, Lock, MapPin, Train, Unlock, Wrench, type LucideIcon } from "lucide-react";
 import { Card } from "@/design-system/primitives/Card";
 import { Field, Input, Select, Textarea } from "@/design-system/primitives/Input";
 import { useCatalogs } from "@/features/reports/hooks/useCatalogs";
 import type { CatalogItem } from "@/features/reports/types";
 import type { EventoFormState } from "../hooks/useEventoFormState";
 import { fechaAIso } from "../hooks/useEventoFormState";
+
+const CONTROL_CLASS = "h-9 px-2.5 text-[13px]";
+const SELECT_CLASS = "h-9 px-2.5 pr-8 text-[13px]";
+const TEXTAREA_CLASS = "min-h-[68px] px-2.5 py-2 text-[13px] leading-snug";
 
 /** "AAAA-MM-DD" (lo que da el selector nativo) → "DD/MM/AAAA" (lo que usa el formulario). */
 function isoAFecha(iso: string) {
@@ -36,8 +40,8 @@ function PickerField({
 }) {
   return (
     <div className="relative">
-      <Input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="pr-9" />
-      <label className="absolute right-1 top-1/2 grid h-8 w-8 -translate-y-1/2 cursor-pointer place-items-center rounded-md text-ink-faint transition-colors hover:bg-surface hover:text-ink">
+      <Input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className={`${CONTROL_CLASS} pr-8`} />
+      <label className="absolute right-1 top-1/2 grid h-7 w-7 -translate-y-1/2 cursor-pointer place-items-center rounded-md text-ink-faint transition-colors hover:bg-surface hover:text-ink">
         <Icon className="h-4 w-4" />
         <input
           type={pickerType}
@@ -55,7 +59,7 @@ function CatalogSelect({
   value,
   onChange,
   disabled,
-  placeholder = "Seleccione…",
+  placeholder = "Seleccione...",
 }: {
   items: CatalogItem[];
   value: string;
@@ -64,7 +68,7 @@ function CatalogSelect({
   placeholder?: string;
 }) {
   return (
-    <Select value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled}>
+    <Select value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled} className={SELECT_CLASS}>
       <option value="">{placeholder}</option>
       {items.map((item) => (
         <option key={item.id_detalle} value={item.id_detalle}>
@@ -72,6 +76,20 @@ function CatalogSelect({
         </option>
       ))}
     </Select>
+  );
+}
+
+function FormSection({ icon: Icon, title, children }: { icon: LucideIcon; title: string; children: ReactNode }) {
+  return (
+    <section className="border-t border-line-soft pt-3 first:border-t-0 first:pt-0">
+      <div className="mb-2 flex items-center gap-2">
+        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700">
+          <Icon className="h-3.5 w-3.5" />
+        </span>
+        <h2 className="text-[13px] font-semibold text-ink">{title}</h2>
+      </div>
+      {children}
+    </section>
   );
 }
 
@@ -127,119 +145,135 @@ export function EventoFormFields({
   }, [rangoLabel, rangosHorario.length]);
 
   return (
-    <Card className="p-4">
-      <div className="grid grid-cols-2 gap-x-3 gap-y-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-        <Field label="Fecha" required error={errors.fecha} hint={!errors.fecha ? "Pegar del Excel o elegir" : undefined}>
-          <PickerField
-            value={form.fecha}
-            onChange={(v) => set("fecha", v)}
-            placeholder="DD/MM/AAAA"
-            icon={Calendar}
-            pickerType="date"
-            pickerValue={fechaAIso(form.fecha) ?? ""}
-            onPickerChange={(v) => set("fecha", isoAFecha(v))}
-          />
-        </Field>
-        <Field label="Hora" required error={errors.hora} hint={!errors.hora ? "Pegar del Excel o elegir" : undefined}>
-          <PickerField
-            value={form.hora}
-            onChange={(v) => set("hora", v)}
-            placeholder="HH:MM"
-            icon={Clock}
-            pickerType="time"
-            pickerValue={form.hora}
-            onPickerChange={(v) => set("hora", v)}
-          />
-        </Field>
-        <Field label="Año" hint="Automático">
-          <Input value={form.anio} onChange={(e) => set("anio", e.target.value)} placeholder="—" disabled={!desbloqueado} />
-        </Field>
-        <Field label="Mes" hint="Automático (1-12)">
-          <Input value={form.mes} onChange={(e) => set("mes", e.target.value)} placeholder="—" disabled={!desbloqueado} />
-        </Field>
-        <Field label="Sem" hint="Automático">
-          <Input value={form.semana} onChange={(e) => set("semana", e.target.value)} placeholder="—" disabled={!desbloqueado} />
-        </Field>
-        <Field label="Día" hint="Automático">
-          <Input value={form.dia} onChange={(e) => set("dia", e.target.value)} placeholder="—" disabled={!desbloqueado} />
-        </Field>
-
-        <div className="col-span-2">
-          <Field label="Rango horario" hint="Automático">
-            <div className="flex items-center gap-2">
-              <CatalogSelect items={rangosHorario} value={form.idRangoHorario} onChange={(v) => set("idRangoHorario", v)} disabled={catalogs.isLoading || !desbloqueado} />
-              <button
-                type="button"
-                onClick={() => setDesbloqueado((d) => !d)}
-                title={desbloqueado ? "Bloquear campos automáticos" : "Desbloquear para corregir a mano"}
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-line-strong text-ink-soft transition-colors hover:bg-surface"
-              >
-                {desbloqueado ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
-              </button>
-            </div>
+    <Card className="space-y-3 p-3">
+      <FormSection icon={Clock} title="Momento del evento">
+        <div className="grid grid-cols-2 gap-x-2.5 gap-y-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+          <Field label="Fecha" required error={errors.fecha}>
+            <PickerField
+              value={form.fecha}
+              onChange={(v) => set("fecha", v)}
+              placeholder="DD/MM/AAAA"
+              icon={Calendar}
+              pickerType="date"
+              pickerValue={fechaAIso(form.fecha) ?? ""}
+              onPickerChange={(v) => set("fecha", isoAFecha(v))}
+            />
           </Field>
+          <Field label="Hora" required error={errors.hora}>
+            <PickerField
+              value={form.hora}
+              onChange={(v) => set("hora", v)}
+              placeholder="HH:MM"
+              icon={Clock}
+              pickerType="time"
+              pickerValue={form.hora}
+              onPickerChange={(v) => set("hora", v)}
+            />
+          </Field>
+          <Field label="Año">
+            <Input value={form.anio} onChange={(e) => set("anio", e.target.value)} placeholder="-" disabled={!desbloqueado} className={CONTROL_CLASS} />
+          </Field>
+          <Field label="Mes">
+            <Input value={form.mes} onChange={(e) => set("mes", e.target.value)} placeholder="-" disabled={!desbloqueado} className={CONTROL_CLASS} />
+          </Field>
+          <Field label="Sem">
+            <Input value={form.semana} onChange={(e) => set("semana", e.target.value)} placeholder="-" disabled={!desbloqueado} className={CONTROL_CLASS} />
+          </Field>
+          <Field label="Día">
+            <Input value={form.dia} onChange={(e) => set("dia", e.target.value)} placeholder="-" disabled={!desbloqueado} className={CONTROL_CLASS} />
+          </Field>
+          <div className="col-span-2 md:col-span-3">
+            <Field label="Rango horario">
+              <div className="flex items-center gap-2">
+                <CatalogSelect items={rangosHorario} value={form.idRangoHorario} onChange={(v) => set("idRangoHorario", v)} disabled={catalogs.isLoading || !desbloqueado} />
+                <button
+                  type="button"
+                  onClick={() => setDesbloqueado((d) => !d)}
+                  title={desbloqueado ? "Bloquear campos automáticos" : "Desbloquear campos automáticos"}
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-line-strong text-ink-soft transition-colors hover:bg-surface"
+                >
+                  {desbloqueado ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                </button>
+              </div>
+            </Field>
+          </div>
         </div>
-        <div className="col-span-2">
+      </FormSection>
+
+      <FormSection icon={ClipboardList} title="Clasificación">
+        <div className="grid gap-x-2.5 gap-y-2 md:grid-cols-3">
           <Field label="Tipo de incidente" required error={errors.idTipoIncidente}>
             <CatalogSelect items={tiposIncidente} value={form.idTipoIncidente} onChange={(v) => set("idTipoIncidente", v)} disabled={catalogs.isLoading} />
           </Field>
+          <div className="md:col-span-2">
+            <Field label="Descripción del evento" required error={errors.descripcion}>
+              <Textarea value={form.descripcion} onChange={(e) => set("descripcion", e.target.value)} rows={2} placeholder="Describa el evento..." className={TEXTAREA_CLASS} />
+            </Field>
+          </div>
+          <div className="md:col-span-3">
+            <Field label="Personal o falla involucrado" required error={errors.idPersonalInvolucrado}>
+              <CatalogSelect items={personalInvolucrado} value={form.idPersonalInvolucrado} onChange={(v) => set("idPersonalInvolucrado", v)} disabled={catalogs.isLoading} />
+            </Field>
+          </div>
         </div>
+      </FormSection>
 
-        <div className="col-span-2 sm:col-span-3 md:col-span-4 lg:col-span-6">
-          <Field label="Descripción del evento" required error={errors.descripcion}>
-            <Textarea value={form.descripcion} onChange={(e) => set("descripcion", e.target.value)} rows={1} placeholder="Describa el evento…" />
+      <FormSection icon={MapPin} title="Ubicación">
+        <div className="grid grid-cols-2 gap-x-2.5 gap-y-2 md:grid-cols-3 lg:grid-cols-6">
+          <Field label="Ubicación" required error={errors.idUbicacion}>
+            <CatalogSelect items={ubicaciones} value={form.idUbicacion} onChange={(v) => set("idUbicacion", v)} disabled={catalogs.isLoading} />
+          </Field>
+          <Field label="Tipo de vía" required error={errors.idTipoVia}>
+            <CatalogSelect items={tiposVia} value={form.idTipoVia} onChange={(v) => set("idTipoVia", v)} disabled={catalogs.isLoading} />
+          </Field>
+          <Field label="Dirección de vía" required error={errors.idDireccionVia}>
+            <CatalogSelect items={direccionesVia} value={form.idDireccionVia} onChange={(v) => set("idDireccionVia", v)} disabled={catalogs.isLoading} />
+          </Field>
+          <div className="col-span-2 md:col-span-3">
+            <Field label="Lugar del incidente" required error={errors.idLugarIncidente}>
+              <CatalogSelect items={lugares} value={form.idLugarIncidente} onChange={(v) => set("idLugarIncidente", v)} disabled={catalogs.isLoading} placeholder="Seleccione..." />
+            </Field>
+          </div>
+        </div>
+      </FormSection>
+
+      <FormSection icon={Train} title="Operación ferroviaria">
+        <div className="grid grid-cols-2 gap-x-2.5 gap-y-2 md:grid-cols-3 lg:grid-cols-6">
+          <Field label="Modelo MR" required error={errors.idModeloMr}>
+            <CatalogSelect items={modelosMr} value={form.idModeloMr} onChange={(v) => set("idModeloMr", v)} disabled={catalogs.isLoading} />
+          </Field>
+          <Field label="N.° MR" required error={errors.idNumeroMr}>
+            <CatalogSelect items={numerosMr} value={form.idNumeroMr} onChange={(v) => set("idNumeroMr", v)} disabled={catalogs.isLoading} />
+          </Field>
+          <Field label="N.° de carrera" error={errors.numeroCarrera}>
+            <Input value={form.numeroCarrera} onChange={(e) => set("numeroCarrera", e.target.value)} placeholder="Ej. 1234" className={CONTROL_CLASS} />
           </Field>
         </div>
+      </FormSection>
 
-        <Field label="Ubicación" required error={errors.idUbicacion}>
-          <CatalogSelect items={ubicaciones} value={form.idUbicacion} onChange={(v) => set("idUbicacion", v)} disabled={catalogs.isLoading} />
-        </Field>
-        <Field label="Tipo de vía" required error={errors.idTipoVia}>
-          <CatalogSelect items={tiposVia} value={form.idTipoVia} onChange={(v) => set("idTipoVia", v)} disabled={catalogs.isLoading} />
-        </Field>
-        <Field label="Dirección de vía" required error={errors.idDireccionVia}>
-          <CatalogSelect items={direccionesVia} value={form.idDireccionVia} onChange={(v) => set("idDireccionVia", v)} disabled={catalogs.isLoading} />
-        </Field>
-        <Field label="Lugar del incidente" required error={errors.idLugarIncidente} hint={!errors.idLugarIncidente ? "Estación o patio" : undefined}>
-          <CatalogSelect items={lugares} value={form.idLugarIncidente} onChange={(v) => set("idLugarIncidente", v)} disabled={catalogs.isLoading} placeholder="Seleccione…" />
-        </Field>
-        <Field label="Modelo MR" required error={errors.idModeloMr}>
-          <CatalogSelect items={modelosMr} value={form.idModeloMr} onChange={(v) => set("idModeloMr", v)} disabled={catalogs.isLoading} />
-        </Field>
-        <Field label="N.° MR" required error={errors.idNumeroMr}>
-          <CatalogSelect items={numerosMr} value={form.idNumeroMr} onChange={(v) => set("idNumeroMr", v)} disabled={catalogs.isLoading} />
-        </Field>
-
-        <Field label="N.° de carrera" required error={errors.numeroCarrera}>
-          <Input value={form.numeroCarrera} onChange={(e) => set("numeroCarrera", e.target.value)} placeholder="Ej. 1234" />
-        </Field>
-        <div className="col-span-2">
-          <Field label="Personal o falla involucrado" required error={errors.idPersonalInvolucrado}>
-            <CatalogSelect items={personalInvolucrado} value={form.idPersonalInvolucrado} onChange={(v) => set("idPersonalInvolucrado", v)} disabled={catalogs.isLoading} />
+      <FormSection icon={Wrench} title="Causa y cierre del registro">
+        <div className="grid grid-cols-2 gap-x-2.5 gap-y-2 md:grid-cols-3 lg:grid-cols-6">
+          <Field label="Tipo de causa" required error={errors.idTipoCausa}>
+            <CatalogSelect items={tiposCausa} value={form.idTipoCausa} onChange={(v) => set("idTipoCausa", v)} disabled={catalogs.isLoading} />
           </Field>
-        </div>
-        <Field label="Tipo de causa" required error={errors.idTipoCausa}>
-          <CatalogSelect items={tiposCausa} value={form.idTipoCausa} onChange={(v) => set("idTipoCausa", v)} disabled={catalogs.isLoading} />
-        </Field>
-        <div className="col-span-2">
-          <Field label="Posible causa" required error={errors.idPosibleCausa}>
-            <CatalogSelect items={posiblesCausas} value={form.idPosibleCausa} onChange={(v) => set("idPosibleCausa", v)} disabled={catalogs.isLoading} />
+          <div className="col-span-2">
+            <Field label="Posible causa" required error={errors.idPosibleCausa}>
+              <CatalogSelect items={posiblesCausas} value={form.idPosibleCausa} onChange={(v) => set("idPosibleCausa", v)} disabled={catalogs.isLoading} />
+            </Field>
+          </div>
+          <Field label="Cámara">
+            <Input value={form.camaraMonitoreada} onChange={(e) => set("camaraMonitoreada", e.target.value)} placeholder="Ej. CAM-024" className={CONTROL_CLASS} />
           </Field>
-        </div>
-
-        <div className="col-span-2 sm:col-span-3 md:col-span-4 lg:col-span-6">
-          <Field label="Información adicional" required error={errors.informacionAdicional}>
-            <Textarea value={form.informacionAdicional} onChange={(e) => set("informacionAdicional", e.target.value)} rows={1} placeholder="Detalles adicionales…" />
+          <Field label="Demora (min)">
+            <Input type="number" min="0" step="0.1" value={form.demora} onChange={(e) => set("demora", e.target.value)} placeholder="0" className={CONTROL_CLASS} />
           </Field>
+          <div className="col-span-2 md:col-span-3 lg:col-span-6">
+            <Field label="Información adicional" error={errors.informacionAdicional}>
+              <Textarea value={form.informacionAdicional} onChange={(e) => set("informacionAdicional", e.target.value)} rows={2} placeholder="Detalles adicionales..." className={TEXTAREA_CLASS} />
+            </Field>
+          </div>
         </div>
-
-        <Field label="Cámara" hint="Ej. CAM-024">
-          <Input value={form.camaraMonitoreada} onChange={(e) => set("camaraMonitoreada", e.target.value)} placeholder="—" />
-        </Field>
-        <Field label="Demora (min)">
-          <Input type="number" min="0" step="0.1" value={form.demora} onChange={(e) => set("demora", e.target.value)} placeholder="0" />
-        </Field>
-      </div>
+      </FormSection>
     </Card>
   );
 }

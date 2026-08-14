@@ -1,27 +1,44 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Pencil } from "lucide-react";
+import { ArrowLeft, ClipboardList, Pencil } from "lucide-react";
 import { MonitoristaShell } from "@/components/layout/MonitoristaShell";
-import { Card } from "@/design-system/primitives/Card";
+import { Card, CardHeader } from "@/design-system/primitives/Card";
 import { Button } from "@/design-system/primitives/Button";
 import { Pill } from "@/design-system/primitives/Pill";
-import { formatDate, formatTime } from "@/lib/format";
 import { useEvento } from "@/features/eventos/hooks/useEventos";
 import { ESTADO_TONE } from "@/features/eventos/lib/estado";
+import { CSV_HEADERS, filaCsv, nombreTipo, nombreUbicacion } from "@/features/eventos/lib/tabla";
+import { cn } from "@/lib/utils";
+import type { EventoListItem } from "@/features/eventos/types";
 
-function Dato({ label, value }: { label: string; value: string | number | null | undefined }) {
+const CAMPOS_AMPLIOS = new Set([
+  "Tipo de incidente operativo",
+  "Descripción del evento",
+  "Personal o falla Involucrado",
+  "Información adicional",
+]);
+
+function valorDetalle(value: unknown) {
+  if (value === 0) return "0";
+  if (value == null || value === "") return "—";
+  return String(value);
+}
+
+function datosEnOrdenExcel(evento: EventoListItem) {
+  const fila = filaCsv(evento);
+  return CSV_HEADERS.map((label, index) => ({ label, value: fila[index] }));
+}
+
+function Dato({ label, value }: { label: string; value: unknown }) {
+  const amplio = CAMPOS_AMPLIOS.has(label);
+
   return (
-    <div>
+    <div className={cn("min-w-0 rounded-lg border border-line-soft bg-surface/45 px-3 py-2.5", amplio && "md:col-span-2 xl:col-span-3")}>
       <p className="text-[10.5px] font-semibold uppercase tracking-wide text-ink-faint">{label}</p>
-      <p className="mt-0.5 text-[13px] text-ink">{value || value === 0 ? value : "—"}</p>
+      <p className="mt-0.5 break-words text-[13px] font-medium text-ink">{valorDetalle(value)}</p>
     </div>
   );
 }
 
-/**
- * Vista previa del evento como página completa (no modal): grilla compacta,
- * en el mismo orden del Excel, con espacio suficiente para leer cada dato
- * (a diferencia del modal anterior, que quedaba muy apretado).
- */
 export function Detalle() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -31,7 +48,7 @@ export function Detalle() {
   return (
     <MonitoristaShell>
       {isLoading ? (
-        <Card className="p-10 text-center text-[13px] text-ink-quiet">Cargando evento…</Card>
+        <Card className="p-10 text-center text-[13px] text-ink-quiet">Cargando evento...</Card>
       ) : !evento ? (
         <Card className="p-10 text-center">
           <p className="text-[14px] font-semibold text-ink">Evento no encontrado</p>
@@ -42,14 +59,9 @@ export function Detalle() {
       ) : (
         <>
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-[19px] font-bold tracking-tight text-ink">{evento.codigo_evento ?? "Evento"}</h1>
-                <Pill tone={ESTADO_TONE[evento.estado] ?? "neutral"} dot>{evento.estado}</Pill>
-              </div>
-              <p className="mt-0.5 text-[12.5px] text-ink-quiet">
-                {evento.catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle?.nombre ?? "Sin tipo de incidente"}
-              </p>
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <Pill tone={ESTADO_TONE[evento.estado] ?? "neutral"} dot>{evento.estado}</Pill>
+              <p className="truncate text-[13px] text-ink-quiet">{nombreUbicacion(evento)} · {nombreTipo(evento)}</p>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={() => navigate(`/monitoreo/editar/${evento.id_evento}`)}>
@@ -62,46 +74,11 @@ export function Detalle() {
           </div>
 
           <Card className="p-4">
-            <div className="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-              <Dato label="Fecha" value={formatDate(evento.fecha)} />
-              <Dato label="Hora" value={evento.hora ? formatTime(evento.hora) : null} />
-              <Dato label="Año" value={evento.anio} />
-              <Dato label="Mes" value={evento.mes} />
-              <Dato label="Sem" value={evento.semana} />
-              <Dato label="Día" value={evento.dia} />
-
-              <Dato label="Rango horario" value={evento.catalogo_detalle_eventos_monitoreo_rango_horarioTocatalogo_detalle?.nombre} />
-              <div className="col-span-2">
-                <Dato label="Tipo de incidente" value={evento.catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle?.nombre} />
-              </div>
-
-              <div className="col-span-2 sm:col-span-3 md:col-span-4 lg:col-span-6">
-                <Dato label="Descripción del evento" value={evento.descripcion} />
-              </div>
-
-              <Dato label="Ubicación" value={evento.catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?.nombre} />
-              <Dato label="Tipo de vía" value={evento.catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?.nombre} />
-              <Dato label="Dirección de vía" value={evento.catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle?.nombre} />
-              <Dato label="Lugar del incidente" value={evento.catalogo_detalle_eventos_monitoreo_lugar_incidenteTocatalogo_detalle?.nombre} />
-              <Dato label="Modelo MR" value={evento.catalogo_detalle_eventos_monitoreo_modelo_mrTocatalogo_detalle?.nombre} />
-              <Dato label="N.° MR" value={evento.catalogo_detalle_eventos_monitoreo_numero_mrTocatalogo_detalle?.nombre} />
-
-              <Dato label="N.° de carrera" value={evento.numero_carrera} />
-              <div className="col-span-2">
-                <Dato label="Personal o falla involucrado" value={evento.catalogo_detalle_eventos_monitoreo_personal_involucradoTocatalogo_detalle?.nombre} />
-              </div>
-              <Dato label="Tipo de causa" value={evento.catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?.nombre} />
-              <div className="col-span-2">
-                <Dato label="Posible causa" value={evento.catalogo_detalle_eventos_monitoreo_posible_causaTocatalogo_detalle?.nombre} />
-              </div>
-
-              <div className="col-span-2 sm:col-span-3 md:col-span-4 lg:col-span-6">
-                <Dato label="Información adicional" value={evento.informacion_adicional} />
-              </div>
-
-              <Dato label="Cámara" value={evento.camara_monitoreada} />
-              <Dato label="Demora (min)" value={evento.demora} />
-              <Dato label="Registrado por" value={evento.usuarios?.nombre} />
+            <CardHeader icon={<ClipboardList className="h-4.5 w-4.5" />} title="LISTA DE EVENTOS" className="mb-3" />
+            <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4 xl:grid-cols-6">
+              {datosEnOrdenExcel(evento).map((item) => (
+                <Dato key={item.label} label={item.label} value={item.value} />
+              ))}
             </div>
           </Card>
         </>

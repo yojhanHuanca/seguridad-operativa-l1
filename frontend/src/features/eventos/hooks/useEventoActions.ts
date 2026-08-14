@@ -32,3 +32,21 @@ export function useDeleteEvento() {
     return data;
   });
 }
+
+export function useAsignarEvento() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id_evento, id_usuario }: { id_evento: number; id_usuario: number }) => {
+      const { data } = await api.patch<ApiEnvelope<{ id_usuario: number; nombre: string }>>(
+        `/eventos/${id_evento}/asignar`,
+        { id_usuario }
+      );
+      if (!data.data) throw new Error(data.message);
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["eventos"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+  });
+}

@@ -19,6 +19,12 @@ const LIST_INCLUDE = {
   catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: { select: { id_detalle: true, codigo: true, nombre: true, orden: true } },
   areas: { select: { id_area: true, nombre_area: true } },
   anexos_caso: { select: { id_anexo: true } },
+  // Sin `seguimientos`: en la lista solo hace falta el avance (que sale de
+  // `porcentaje`/`catalogo_detalle` de cada actividad), no su historial de
+  // comentarios completo. Ese detalle profundo sigue viniendo completo en
+  // DETAIL_INCLUDE (findByCodigo, un caso a la vez) — acá, multiplicado por
+  // cada caso de la lista, es lo que hace pesada la consulta cuando hay
+  // miles de casos con años de seguimientos acumulados.
   planes_accion: {
     orderBy: { created_at: "asc" as const },
     include: {
@@ -30,10 +36,6 @@ const LIST_INCLUDE = {
         include: {
           usuarios: { select: { id_usuario: true, nombre: true, cargo: true } },
           catalogo_detalle: { select: { nombre: true } },
-          seguimientos: {
-            orderBy: { fecha: "desc" as const },
-            include: { usuarios: { select: { id_usuario: true, nombre: true, cargo: true } } },
-          },
         },
       },
     },

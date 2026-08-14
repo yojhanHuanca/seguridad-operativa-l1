@@ -36,7 +36,9 @@ const LIST_INCLUDE = {
   catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle: { select: { nombre: true } },
   catalogo_detalle_eventos_monitoreo_posible_causaTocatalogo_detalle: { select: { nombre: true } },
   catalogo_detalle_eventos_monitoreo_rango_horarioTocatalogo_detalle: { select: { nombre: true } },
-  usuarios: { select: { nombre: true } },
+  usuarios_eventos_monitoreo_usuario_registraTousuarios: { select: { nombre: true } },
+  usuarios_eventos_monitoreo_asignado_aTousuarios: { select: { id_usuario: true, nombre: true, cargo: true } },
+  casos_sop: { select: { codigo_sop: true } },
 } as const;
 
 function datosDesdeDto(dto: CreateEventoDto | UpdateEventoDto) {
@@ -66,12 +68,6 @@ export class EventoRepository {
     });
   }
 
-  /** Cuenta los eventos ya registrados este año, para el correlativo del código. */
-  static async contarDelAnio(year: number) {
-    const inicio = new Date(Date.UTC(year, 0, 1));
-    const fin = new Date(Date.UTC(year + 1, 0, 1));
-    return prisma.eventos_monitoreo.count({ where: { fecha: { gte: inicio, lt: fin } } });
-  }
 
   static async findAll() {
     return prisma.eventos_monitoreo.findMany({
@@ -82,6 +78,19 @@ export class EventoRepository {
 
   static async findById(id_evento: number) {
     return prisma.eventos_monitoreo.findUnique({ where: { id_evento }, include: LIST_INCLUDE });
+  }
+
+  /** Eventos que le asignaron a esta persona de Seguridad Operativa, para su bandeja. */
+  static async findByAsignado(id_usuario: number) {
+    return prisma.eventos_monitoreo.findMany({
+      where: { asignado_a: id_usuario },
+      include: LIST_INCLUDE,
+      orderBy: [{ fecha: "desc" }, { id_evento: "desc" }],
+    });
+  }
+
+  static async asignar(id_evento: number, id_usuario: number) {
+    return prisma.eventos_monitoreo.update({ where: { id_evento }, data: { asignado_a: id_usuario } });
   }
 
   static async create(dto: CreateEventoDto, actor?: number) {
@@ -106,12 +115,8 @@ export class EventoRepository {
       rango_horario = rango?.id_detalle ?? null;
     }
 
-    const totalAnio = await EventoRepository.contarDelAnio(year);
-    const codigo_evento = `EVT ${String(totalAnio + 1).padStart(2, "0")}-${year}`;
-
     return prisma.eventos_monitoreo.create({
       data: {
-        codigo_evento,
         fecha,
         hora,
         anio: dto.anio ?? year,

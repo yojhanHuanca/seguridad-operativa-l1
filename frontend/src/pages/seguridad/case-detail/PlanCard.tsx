@@ -458,8 +458,6 @@ function PlanForm({
     (plan && String(plan.areas.id_area) === idArea ? plan.areas.nombre_area : "—");
   const nombreUsuario = (id?: number | null) =>
     (usuarios ?? []).find((u) => u.id_usuario === id)?.nombre ?? "Sin asignar";
-  const cargoUsuario = (id?: number | null) =>
-    (usuarios ?? []).find((u) => u.id_usuario === id)?.cargo ?? null;
 
   const planPayload = (a: PlanFormActivityInput) => ({
     descripcion: `${a.tipo_accion}: ${a.descripcion.trim()}`,
@@ -656,7 +654,7 @@ function PlanForm({
                   </div>
                   <p className="mt-2 text-[12.5px] text-ink leading-snug">{a.descripcion.trim()}</p>
                   <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11.5px] text-ink-quiet">
-                    <span>Responsable: {nombreUsuario(a.responsable)}{cargoUsuario(a.responsable) ? ` · ${cargoUsuario(a.responsable)}` : ""}</span>
+                    <span>Responsable: {nombreUsuario(a.responsable)}</span>
                     <span>Área: {nombreArea(a.id_area)}</span>
                     <span>Inicio: {a.fecha_inicio ? formatDate(a.fecha_inicio) : "—"}</span>
                     <span>Fin: {a.fecha_fin ? formatDate(a.fecha_fin) : "—"}</span>

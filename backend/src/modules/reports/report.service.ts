@@ -19,6 +19,8 @@ export const createReportSchema = z
     correo_reportante: z.string().trim().email("Ingrese un correo válido").max(150).optional().nullable().or(z.literal("")),
     telefono_reportante: z.string().trim().max(20).optional().nullable(),
     origen: z.enum(["reportante", "seguridad_operativa"]).default("reportante"),
+    /** Si el hallazgo se creó desde "Eventos asignados" de Monitoreo, el evento que le dio origen. */
+    id_evento_monitoreo: idPositivo.optional(),
   })
   .refine((data) => data.modalidad !== "identificado" || !!data.nombre_reportante?.trim(), {
     message: "El nombre completo es obligatorio para un reporte identificado",

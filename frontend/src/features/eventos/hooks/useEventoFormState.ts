@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { CreateEventoInput, EventoListItem } from "../types";
 
 export interface EventoFormState {
@@ -152,28 +152,33 @@ function estadoDesdeEvento(evento: EventoListItem): EventoFormState {
   };
 }
 
+function completarDerivados(form: EventoFormState): EventoFormState {
+  const derivados = calcularDerivados(form.fecha, form.hora);
+  if (!derivados) return form;
+  return {
+    ...form,
+    anio: derivados.anio,
+    mes: derivados.mes,
+    semana: derivados.semana,
+    dia: derivados.dia,
+  };
+}
+
 export function useEventoFormState(eventoInicial?: EventoListItem) {
-  const [form, setForm] = useState<EventoFormState>(() => (eventoInicial ? estadoDesdeEvento(eventoInicial) : estadoVacio()));
+  const [form, setForm] = useState<EventoFormState>(() => completarDerivados(eventoInicial ? estadoDesdeEvento(eventoInicial) : estadoVacio()));
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [rangoLabel, setRangoLabel] = useState<string | null>(null);
 
-  const set = <K extends keyof EventoFormState>(key: K, value: EventoFormState[K]) => setForm((f) => ({ ...f, [key]: value }));
-
-  // Auto-completa año/mes/semana/día cada vez que fecha u hora cambian y son
-  // válidas — quedan como campos editables normales después, así que el
-  // usuario puede corregirlos sin que se le trabe el campo.
-  useEffect(() => {
-    const derivados = calcularDerivados(form.fecha, form.hora);
-    setRangoLabel(derivados?.rangoLabel ?? null);
-    if (!derivados) return;
-    setForm((f) => ({ ...f, anio: derivados.anio, mes: derivados.mes, semana: derivados.semana, dia: derivados.dia }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.fecha, form.hora]);
+  const set = <K extends keyof EventoFormState>(key: K, value: EventoFormState[K]) =>
+    setForm((f) => {
+      const siguiente = { ...f, [key]: value };
+      return key === "fecha" || key === "hora" ? completarDerivados(siguiente) : siguiente;
+    });
 
   const derivados = useMemo(() => calcularDerivados(form.fecha, form.hora), [form.fecha, form.hora]);
+  const rangoLabel = derivados?.rangoLabel ?? null;
 
   const reset = () => {
-    setForm(eventoInicial ? estadoDesdeEvento(eventoInicial) : estadoVacio());
+    setForm(completarDerivados(eventoInicial ? estadoDesdeEvento(eventoInicial) : estadoVacio()));
     setErrors({});
   };
 
@@ -189,11 +194,9 @@ export function useEventoFormState(eventoInicial?: EventoListItem) {
     if (!form.idLugarIncidente) nuevosErrores.idLugarIncidente = "Obligatorio";
     if (!form.idModeloMr) nuevosErrores.idModeloMr = "Obligatorio";
     if (!form.idNumeroMr) nuevosErrores.idNumeroMr = "Obligatorio";
-    if (!form.numeroCarrera.trim()) nuevosErrores.numeroCarrera = "Obligatorio";
     if (!form.idPersonalInvolucrado) nuevosErrores.idPersonalInvolucrado = "Obligatorio";
     if (!form.idTipoCausa) nuevosErrores.idTipoCausa = "Obligatorio";
     if (!form.idPosibleCausa) nuevosErrores.idPosibleCausa = "Obligatorio";
-    if (!form.informacionAdicional.trim()) nuevosErrores.informacionAdicional = "Obligatorio";
     setErrors(nuevosErrores);
     return Object.keys(nuevosErrores).length === 0;
   };

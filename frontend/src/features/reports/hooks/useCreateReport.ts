@@ -9,7 +9,7 @@ interface CreateReportInput {
    * caso en la bitácora: el trabajador desde el wizard, o el analista desde el
    * panel de Seguridad Operativa. Si se omite, el backend asume "reportante".
    */
-  values: ReportFormValues & { origen?: ReportOrigin };
+  values: ReportFormValues & { origen?: ReportOrigin; id_evento_monitoreo?: number };
   files: File[];
 }
 
@@ -41,6 +41,9 @@ export function useCreateReport() {
       // contadores del menú hasta recargar.
       queryClient.invalidateQueries({ queryKey: ["cases"] });
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      // Si el hallazgo vino de "Eventos asignados", esa tarjeta pasa a
+      // mostrar "Ver hallazgo" apenas se crea el caso.
+      queryClient.invalidateQueries({ queryKey: ["eventos"] });
     },
   });
 }

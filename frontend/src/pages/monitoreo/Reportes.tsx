@@ -1,15 +1,12 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import {
-  AlertTriangle,
-  Building2,
-  Calendar,
   CheckCircle2,
-  Clock,
   Download,
   Filter,
   FileSpreadsheet,
   FileText,
   MapPin,
+  RotateCcw,
   TrendingUp,
   Users,
   type LucideIcon,
@@ -23,98 +20,93 @@ import { useEventos } from "@/features/eventos/hooks/useEventos";
 import { useCatalogs } from "@/features/reports/hooks/useCatalogs";
 import { ESTADOS_EVENTO } from "@/features/eventos/types";
 import { contarEventosPorEstado } from "@/features/eventos/lib/estado";
-import { exportarEventosExcel } from "@/features/eventos/lib/exportExcel";
+import { exportarEventosExcel, exportarResumenExcel, type ResumenExcelRow } from "@/features/eventos/lib/exportExcel";
 import { sufijoFecha } from "@/lib/download";
 import type { EventoListItem } from "@/features/eventos/types";
 
-const nombreUbicacion = (e: EventoListItem) => e.catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?.nombre ?? "";
-const nombreTipoIncidente = (e: EventoListItem) => e.catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle?.nombre ?? "";
-const nombreRegistrador = (e: EventoListItem) => e.usuarios?.nombre ?? "";
+const nombreUbicacion = (e: EventoListItem) => e.catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?.nombre ?? "Sin ubicación";
+const nombreTipoIncidente = (e: EventoListItem) => e.catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle?.nombre ?? "Sin tipo";
+const nombreRegistrador = (e: EventoListItem) => e.usuarios_eventos_monitoreo_usuario_registraTousuarios?.nombre ?? "Sin registrador";
 
-function ordenarPor(eventos: EventoListItem[], clave: (e: EventoListItem) => string) {
-  return [...eventos].sort((a, b) => clave(a).localeCompare(clave(b), "es"));
+function resumenPor(eventos: EventoListItem[], clave: (e: EventoListItem) => string): ResumenExcelRow[] {
+  const total = eventos.length;
+  const conteo = new Map<string, number>();
+
+  for (const evento of eventos) {
+    const etiqueta = clave(evento).trim() || "Sin dato";
+    conteo.set(etiqueta, (conteo.get(etiqueta) ?? 0) + 1);
+  }
+
+  return [...conteo.entries()]
+    .map(([etiqueta, cantidad]) => ({
+      etiqueta,
+      cantidad,
+      porcentaje: total > 0 ? cantidad / total : 0,
+    }))
+    .sort((a, b) => b.cantidad - a.cantidad || a.etiqueta.localeCompare(b.etiqueta, "es"));
 }
 
-interface ReportePredefinido {
+interface ReporteBase {
   id: string;
   icon: LucideIcon;
   tone: string;
   titulo: string;
   descripcion: string;
   archivo: string;
-  construir: (eventos: EventoListItem[]) => EventoListItem[];
 }
+
+interface ReporteResumen extends ReporteBase {
+  tipo: "resumen";
+  etiquetaHeader: string;
+  construir: (eventos: EventoListItem[]) => ResumenExcelRow[];
+}
+
+type ReportePredefinido = ReporteResumen;
 
 const REPORTES_PREDEFINIDOS: ReportePredefinido[] = [
   {
-    id: "mensual",
-    icon: Calendar,
-    tone: "bg-info-soft text-info-ink",
-    titulo: "Reporte mensual",
-    descripcion: "Eventos registrados en el mes en curso.",
-    archivo: "reporte_mensual",
-    construir: (eventos) => {
-      const hoy = new Date();
-      return eventos.filter((e) => {
-        const d = new Date(e.fecha);
-        return d.getUTCMonth() === hoy.getUTCMonth() && d.getUTCFullYear() === hoy.getUTCFullYear();
-      });
-    },
-  },
-  {
     id: "ubicacion",
+    tipo: "resumen",
     icon: MapPin,
     tone: "bg-green-100 text-green-800",
     titulo: "Reporte por ubicación",
-    descripcion: "Todos los eventos, agrupados por estación o patio.",
+    descripcion: "Resumen de cantidad y porcentaje por estación o patio.",
     archivo: "reporte_por_ubicacion",
-    construir: (eventos) => ordenarPor(eventos, nombreUbicacion),
+    etiquetaHeader: "Ubicación",
+    construir: (eventos) => resumenPor(eventos, nombreUbicacion),
   },
   {
     id: "tendencias",
+    tipo: "resumen",
     icon: TrendingUp,
     tone: "bg-purple-100 text-purple-800",
     titulo: "Reporte de tendencias",
-    descripcion: "Eventos agrupados por tipo de incidente, para detectar patrones.",
+    descripcion: "Resumen de cantidad y porcentaje por tipo de incidente.",
     archivo: "reporte_tendencias",
-    construir: (eventos) => ordenarPor(eventos, nombreTipoIncidente),
-  },
-  {
-    id: "criticos",
-    icon: AlertTriangle,
-    tone: "bg-warning-soft text-warning-ink",
-    titulo: "Incidentes críticos",
-    descripcion: "Eventos que aún no se cierran: Registrado o En investigación.",
-    archivo: "reporte_incidentes_criticos",
-    construir: (eventos) => eventos.filter((e) => e.estado !== "Cerrado"),
+    etiquetaHeader: "Tipo de incidente",
+    construir: (eventos) => resumenPor(eventos, nombreTipoIncidente),
   },
   {
     id: "registradores",
+    tipo: "resumen",
     icon: Users,
     tone: "bg-critical-soft text-critical-ink",
     titulo: "Reporte por registrador",
-    descripcion: "Todos los eventos, agrupados por quién los registró.",
+    descripcion: "Resumen de cantidad y porcentaje por usuario registrador.",
     archivo: "reporte_por_registrador",
-    construir: (eventos) => ordenarPor(eventos, nombreRegistrador),
-  },
-  {
-    id: "consolidado",
-    icon: Building2,
-    tone: "bg-brand-50 text-brand-700",
-    titulo: "Reporte consolidado",
-    descripcion: "Todos los eventos registrados, sin filtrar.",
-    archivo: "reporte_consolidado",
-    construir: (eventos) => eventos,
+    etiquetaHeader: "Registrador",
+    construir: (eventos) => resumenPor(eventos, nombreRegistrador),
   },
 ];
 
-function StatCard({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: number; tone: string }) {
+function StatCard({ icon, label, value, tone, detail }: { icon: ReactNode; label: string; value: number; tone: string; detail?: string }) {
   return (
-    <Card className="flex items-center gap-3.5">
+    <Card className="flex min-h-[92px] items-center gap-3.5">
       <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${tone}`}>{icon}</div>
       <div className="min-w-0">
         <p className="text-[10.5px] font-semibold uppercase tracking-wide text-ink-faint">{label}</p>
         <p className="text-[20px] font-bold text-ink">{value}</p>
+        {detail && <p className="mt-0.5 truncate text-[11.5px] text-ink-quiet">{detail}</p>}
       </div>
     </Card>
   );
@@ -132,6 +124,7 @@ export function Reportes() {
   const lista = eventos ?? [];
   const conteo = contarEventosPorEstado(lista);
   const tiposIncidente = catalogs.byName.get("Tipo de incidente operativo")?.catalogo_detalle ?? [];
+  const hayFiltros = Boolean(desde || hasta || tipoFiltro || estadoFiltro);
 
   const filtradosPersonalizado = useMemo(() => {
     return lista.filter((e) => {
@@ -144,7 +137,7 @@ export function Reportes() {
     });
   }, [lista, estadoFiltro, tipoFiltro, desde, hasta]);
 
-  const exportar = async (id: string, eventosAExportar: EventoListItem[], archivo: string) => {
+  const exportarEventos = async (id: string, eventosAExportar: EventoListItem[], archivo: string) => {
     if (eventosAExportar.length === 0) {
       toast.error("No hay eventos que coincidan con este reporte");
       return;
@@ -159,19 +152,44 @@ export function Reportes() {
     }
   };
 
+  const exportarResumen = async (id: string, rows: ResumenExcelRow[], archivo: string, etiquetaHeader: string) => {
+    if (rows.length === 0) {
+      toast.error("No hay eventos que coincidan con este reporte");
+      return;
+    }
+    setGenerando(id);
+    try {
+      await exportarResumenExcel(rows, `${archivo}_${sufijoFecha()}.xlsx`, etiquetaHeader);
+    } catch {
+      toast.error("No se pudo generar el reporte");
+    } finally {
+      setGenerando(null);
+    }
+  };
+
+  const limpiarFiltros = () => {
+    setDesde("");
+    setHasta("");
+    setTipoFiltro("");
+    setEstadoFiltro("");
+  };
+
   return (
     <MonitoristaShell>
-      <div className="space-y-5">
-        <div>
-          <h1 className="text-[20px] font-bold tracking-tight text-ink">Reportes</h1>
-          <p className="mt-0.5 text-[12.5px] text-ink-quiet">Genere reportes en Excel a partir de los eventos registrados por Monitoreo.</p>
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-[13px] text-ink-quiet">{lista.length} eventos disponibles · {filtradosPersonalizado.length} en el reporte personalizado</p>
+          {hayFiltros && (
+            <Button variant="ghost" size="sm" onClick={limpiarFiltros}>
+              <RotateCcw className="h-4 w-4" /> Limpiar filtros
+            </Button>
+          )}
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard icon={<FileText className="h-5 w-5" />} label="Total de eventos" value={conteo.total} tone="bg-brand-50 text-brand-700" />
-          <StatCard icon={<Clock className="h-5 w-5" />} label="Registrados" value={conteo.registrados} tone="bg-info-soft text-info-ink" />
-          <StatCard icon={<TrendingUp className="h-5 w-5" />} label="En investigación" value={conteo.enInvestigacion} tone="bg-warning-soft text-warning-ink" />
-          <StatCard icon={<CheckCircle2 className="h-5 w-5" />} label="Cerrados" value={conteo.cerrados} tone="bg-green-100 text-green-800" />
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <StatCard icon={<FileText className="h-5 w-5" />} label="Total de eventos" value={conteo.total} detail="Base completa" tone="bg-brand-50 text-brand-700" />
+          <StatCard icon={<TrendingUp className="h-5 w-5" />} label="En investigación" value={conteo.enInvestigacion} detail="En curso" tone="bg-warning-soft text-warning-ink" />
+          <StatCard icon={<CheckCircle2 className="h-5 w-5" />} label="Cerrados" value={conteo.cerrados} detail="Finalizados" tone="bg-green-100 text-green-800" />
         </div>
 
         <Card>
@@ -206,10 +224,10 @@ export function Reportes() {
             </Field>
           </div>
 
-          <div className="mt-4 flex items-center justify-between gap-3">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line-soft pt-4">
             <p className="text-[12px] text-ink-quiet">{filtradosPersonalizado.length} eventos coinciden con estos filtros.</p>
-            <Button onClick={() => exportar("personalizado", filtradosPersonalizado, "reporte_personalizado")} disabled={generando === "personalizado"}>
-              <Download className="h-4 w-4" /> {generando === "personalizado" ? "Generando…" : "Generar reporte Excel"}
+            <Button onClick={() => exportarEventos("personalizado", filtradosPersonalizado, "reporte_personalizado")} disabled={generando === "personalizado"}>
+              <Download className="h-4 w-4" /> {generando === "personalizado" ? "Generando..." : "Generar reporte Excel"}
             </Button>
           </div>
         </Card>
@@ -220,31 +238,41 @@ export function Reportes() {
           </h2>
 
           {isLoading ? (
-            <Card className="p-8 text-center text-[13px] text-ink-quiet">Cargando eventos…</Card>
+            <Card className="p-8 text-center text-[13px] text-ink-quiet">Cargando eventos...</Card>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {REPORTES_PREDEFINIDOS.map((reporte) => (
-                <Card key={reporte.id} hover className="p-5">
-                  <div className="flex items-start gap-3.5">
-                    <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${reporte.tone}`}>
-                      <reporte.icon className="h-5 w-5" />
+              {REPORTES_PREDEFINIDOS.map((reporte) => {
+                const rows = reporte.construir(lista);
+                const total = rows.reduce((sum, row) => sum + row.cantidad, 0);
+                const meta = {
+                  total,
+                  totalLabel: `${rows.length} grupos · ${total} eventos`,
+                  onDownload: () => exportarResumen(reporte.id, rows, reporte.archivo, reporte.etiquetaHeader),
+                };
+                return (
+                  <Card key={reporte.id} hover className="p-5">
+                    <div className="flex items-start gap-3.5">
+                      <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${reporte.tone}`}>
+                        <reporte.icon className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-[13.5px] font-semibold text-ink">{reporte.titulo}</h3>
+                        <p className="mt-0.5 text-[12px] leading-relaxed text-ink-quiet">{reporte.descripcion}</p>
+                        <p className="mt-2 font-mono text-[12px] font-semibold text-brand-700">{meta.totalLabel}</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="mt-3 w-full"
+                          disabled={generando === reporte.id || meta.total === 0}
+                          onClick={meta.onDownload}
+                        >
+                          <Download className="h-4 w-4" /> {generando === reporte.id ? "Generando..." : "Descargar"}
+                        </Button>
+                      </div>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="text-[13.5px] font-semibold text-ink">{reporte.titulo}</h3>
-                      <p className="mt-0.5 text-[12px] leading-relaxed text-ink-quiet">{reporte.descripcion}</p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="mt-3 w-full"
-                        disabled={generando === reporte.id}
-                        onClick={() => exportar(reporte.id, reporte.construir(lista), reporte.archivo)}
-                      >
-                        <Download className="h-4 w-4" /> {generando === reporte.id ? "Generando…" : "Descargar"}
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
             </div>
           )}
         </div>
@@ -254,8 +282,8 @@ export function Reportes() {
             <FileSpreadsheet className="h-5 w-5 shrink-0 text-ink-quiet" />
             <p className="text-[12px] leading-relaxed text-ink-quiet">
               <span className="font-medium text-ink">Nota:</span> todos los reportes se generan en formato Excel (.xlsx), con el
-              mismo orden de columnas que la hoja "LISTA DE EVENTOS" del cliente. Los datos se toman directamente del sistema
-              de monitoreo, en tiempo real.
+              generador personalizado en formato listado y los reportes predefinidos como hojas resumen. Los datos se toman
+              directamente del sistema de monitoreo, en tiempo real.
             </p>
           </div>
         </Card>

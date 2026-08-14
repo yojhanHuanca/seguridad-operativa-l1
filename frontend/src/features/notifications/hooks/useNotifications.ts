@@ -11,7 +11,8 @@ export type TipoNotificacion =
   | "ejecucion_completada"
   | "plan_revisado"
   | "caso_devuelto"
-  | "info_respondida";
+  | "info_respondida"
+  | "evento_asignado";
 
 export interface Notificacion {
   id_notificacion: number;

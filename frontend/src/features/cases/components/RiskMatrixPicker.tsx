@@ -1,14 +1,16 @@
 import { cn } from "@/lib/utils";
 import {
-  RISK_BAND_LABELS,
-  RISK_BAND_STYLES,
   RISK_CATEGORY_LABELS,
+  RISK_CATEGORY_SHORT_LABELS,
+  RISK_CATEGORY_STYLES,
   isRiskLevel,
-  riskBand,
   riskCategory,
+  type RiskCategory,
   type RiskLevel,
 } from "@/features/cases/domain";
 import type { CatalogItem } from "@/features/reports/types";
+
+const CRITERIOS: RiskCategory[] = ["inaceptable", "no_deseable", "aceptable_revision", "aceptable_sin_revision"];
 
 const SEVERIDADES = [
   { codigo: "1", label: "Catastrófico" },
@@ -27,13 +29,12 @@ const PROBABILIDADES = [
 
 function riskMeta(codigo: string) {
   if (!isRiskLevel(codigo)) return null;
-  const band = riskBand(codigo);
   const category = riskCategory(codigo);
   return {
-    band,
-    bandLabel: RISK_BAND_LABELS[band],
+    category,
+    shortLabel: RISK_CATEGORY_SHORT_LABELS[category],
     criterio: RISK_CATEGORY_LABELS[category],
-    className: RISK_BAND_STYLES[band],
+    className: RISK_CATEGORY_STYLES[category],
   };
 }
 
@@ -85,7 +86,7 @@ export function RiskMatrixPicker({
                       type="button"
                       disabled={!item}
                       onClick={() => item && onChange(item.id_detalle)}
-                      title={meta ? `${codigo} · ${meta.bandLabel} · ${meta.criterio}` : codigo}
+                      title={meta ? `${codigo} · ${meta.shortLabel} · ${meta.criterio}` : codigo}
                       className={cn(
                         "grid h-12 w-full place-items-center rounded-lg border text-[13px] font-bold transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30",
                         meta?.className ?? "bg-secondary text-ink-soft border-line",
@@ -103,18 +104,22 @@ export function RiskMatrixPicker({
       </div>
 
       <div className="flex flex-wrap gap-2 text-[11px]">
-        {(["muy_alto", "alto", "medio", "bajo", "muy_bajo"] as const).map((band) => (
-          <span key={band} className={cn("rounded-full border px-2.5 py-1 font-medium", RISK_BAND_STYLES[band])}>
-            {RISK_BAND_LABELS[band]}
+        {CRITERIOS.map((cat) => (
+          <span key={cat} className={cn("rounded-full border px-2.5 py-1 font-medium", RISK_CATEGORY_STYLES[cat])}>
+            {RISK_CATEGORY_SHORT_LABELS[cat]}
           </span>
         ))}
       </div>
 
+      {/* Leyenda de Criterios de Aceptabilidad del cliente: son 4 niveles
+          únicamente (Alto/Grave/Medio/Bajo), no 5 — se generan desde la misma
+          fuente que colorea la matriz para que nunca queden desincronizados. */}
       <div className="grid gap-2 rounded-lg border border-line bg-surface/50 p-3 text-[11.5px] text-ink-soft sm:grid-cols-2">
-        <p><span className="font-semibold text-ink">Alto:</span> Inaceptable</p>
-        <p><span className="font-semibold text-ink">Grave:</span> No Deseable</p>
-        <p><span className="font-semibold text-ink">Medio:</span> Aceptable con revisión</p>
-        <p><span className="font-semibold text-ink">Bajo:</span> Aceptable sin revisión</p>
+        {CRITERIOS.map((cat) => (
+          <p key={cat}>
+            <span className="font-semibold text-ink">{RISK_CATEGORY_SHORT_LABELS[cat]}:</span> {RISK_CATEGORY_LABELS[cat]}
+          </p>
+        ))}
       </div>
 
       {selected && (
@@ -122,7 +127,7 @@ export function RiskMatrixPicker({
           Seleccionado:{" "}
           <span className="font-semibold text-ink">
             {selected.codigo}
-            {selectedMeta ? ` — ${selectedMeta.bandLabel} · ${selectedMeta.criterio}` : ` — ${selected.nombre}`}
+            {selectedMeta ? ` — ${selectedMeta.shortLabel} · ${selectedMeta.criterio}` : ` — ${selected.nombre}`}
           </span>
         </p>
       )}

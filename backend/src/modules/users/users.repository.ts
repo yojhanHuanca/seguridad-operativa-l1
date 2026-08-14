@@ -1,4 +1,5 @@
 import prisma from "../../lib/prisma.js";
+import { randomUUID } from "node:crypto";
 
 export class UserRepository {
      static async findAll() {
@@ -45,8 +46,7 @@ export class UserRepository {
         });
      }
 
-    static async create(data: {
-      codigo_usuario: string;
+    static async createWithGeneratedCode(data: {
       nombre: string;
       correo: string;
       password_hash: string;
@@ -55,18 +55,25 @@ export class UserRepository {
       id_area: number;
       id_rol: number;
     }) {
-      return await prisma.usuarios.create({
-        data: {
-          codigo_usuario: data.codigo_usuario,
-          nombre: data.nombre,
-          correo: data.correo,
-          password_hash: data.password_hash,
-          cargo: data.cargo ?? null,
-          telefono: data.telefono ?? null,
-          id_area: data.id_area,
-          id_rol: data.id_rol,
-          estado: "Activo",
-        },
+      return prisma.$transaction(async (tx) => {
+        const created = await tx.usuarios.create({
+          data: {
+            codigo_usuario: `TMP-${randomUUID().replaceAll("-", "").slice(0, 12)}`,
+            nombre: data.nombre,
+            correo: data.correo,
+            password_hash: data.password_hash,
+            cargo: data.cargo ?? null,
+            telefono: data.telefono ?? null,
+            id_area: data.id_area,
+            id_rol: data.id_rol,
+            estado: "Activo",
+          },
+        });
+
+        return tx.usuarios.update({
+          where: { id_usuario: created.id_usuario },
+          data: { codigo_usuario: `EMP-${String(created.id_usuario).padStart(4, "0")}` },
+        });
       });
     }
 
@@ -77,14 +84,6 @@ export class UserRepository {
             },
         });
 
-    }
-
-    static async findByCodigo(codigo: string) {
-        return await prisma.usuarios.findUnique({
-            where: {
-                codigo_usuario: codigo,
-            },
-        });
     }
 
     static async update(id: number, data: {

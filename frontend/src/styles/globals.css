@@ -306,7 +306,8 @@ body {
    `data-print="hide"` todo lo que es navegación o acción, y el expediente
    queda como documento: cabecera, stepper, panel lateral y etapa activa. */
 [data-plan-export],
-[data-report-export] {
+[data-report-export],
+[data-expediente-export] {
   display: none;
 }
 
@@ -344,6 +345,16 @@ body {
     line-height: 1.35;
   }
 
+  [data-expediente-export-root="active"] [data-print-plan-screen] {
+    display: none !important;
+  }
+
+  [data-expediente-export-root="active"] [data-expediente-export] {
+    display: block !important;
+    font-size: 10.5px;
+    line-height: 1.35;
+  }
+
   /* Un botón es siempre una acción, nunca contenido: no va al PDF. Lo que
      sí es contenido (pills de estado, filas de datos) no usa <button>. */
   main button {
@@ -366,9 +377,11 @@ body {
     padding: 0 !important;
   }
 
-  /* Evita cortar una tarjeta o una fila de tabla entre dos páginas. */
-  section,
-  article,
+  /* Evita cortar una fila de tabla a la mitad entre dos páginas. Ojo: esto NO
+     incluye `section` — una sección completa (ej. "Línea de tiempo") suele
+     ser más alta que una hoja, así que forzarla a no partirse hacía que
+     saltara entera a la página siguiente y la primera hoja quedara casi en
+     blanco, solo con el título. Una sección sí se puede partir; una fila, no. */
   tr,
   [data-print="block"] {
     break-inside: avoid;

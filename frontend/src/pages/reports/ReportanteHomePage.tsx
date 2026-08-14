@@ -18,6 +18,10 @@ function timeAgo(iso: string): string {
   return `hace ${Math.round(hr / 24)} d`;
 }
 
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("es-PE", { day: "2-digit", month: "short" });
+}
+
 export function ReportanteHomePage() {
   const { data: reports, isLoading } = useReports();
 
@@ -46,11 +50,16 @@ export function ReportanteHomePage() {
         }
       />
 
-      <div className="mt-6 grid gap-5 lg:grid-cols-3">
-        <Card className="relative overflow-hidden border-0 bg-brand-gradient p-6 text-white lg:col-span-1">
+      <div className="mt-6 grid gap-5 lg:grid-cols-[0.95fr_2fr]">
+        <Card className="relative overflow-hidden border-0 bg-brand-gradient p-5 text-white sm:p-6">
+          <div className="absolute right-5 top-5 grid h-10 w-10 place-items-center rounded-xl bg-white/12 text-white/85">
+            <Plus className="h-5 w-5" />
+          </div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70">Acción rápida</p>
-          <h3 className="mt-2 text-[20px] font-bold leading-tight">¿Detectó una situación de riesgo?</h3>
-          <p className="mt-2 text-[13px] text-white/80">Registre un nuevo reporte en minutos con el asistente guiado.</p>
+          <h3 className="mt-2 max-w-[260px] text-[20px] font-bold leading-tight">¿Detectó una situación de riesgo?</h3>
+          <p className="mt-2 max-w-[310px] text-[13px] leading-relaxed text-white/80">
+            Registre un nuevo reporte en minutos con el asistente guiado.
+          </p>
           <Link to="/reportes/nuevo" className="mt-5 inline-block">
             <span className="inline-flex h-10 items-center gap-2 rounded-lg bg-white px-4 text-[13px] font-semibold text-brand-800 transition-colors hover:bg-white/90">
               <Plus className="h-4 w-4" /> Registrar reporte
@@ -60,7 +69,7 @@ export function ReportanteHomePage() {
 
         <div className="grid grid-cols-2 gap-4 lg:col-span-2">
           {stats.map((s) => (
-            <Card key={s.label} className="flex items-center gap-4 p-5">
+            <Card key={s.label} className="flex-row items-center gap-4 p-4 sm:p-5">
               <div
                 className={cn(
                   "grid h-11 w-11 shrink-0 place-items-center rounded-xl",
@@ -74,7 +83,7 @@ export function ReportanteHomePage() {
               </div>
               <div className="min-w-0">
                 <p className="text-[26px] font-bold leading-none tabular-nums text-ink">{isLoading ? "…" : s.value}</p>
-                <p className="mt-1 text-[12px] text-ink-quiet">{s.label}</p>
+                <p className="mt-1 text-[12px] leading-tight text-ink-quiet">{s.label}</p>
               </div>
             </Card>
           ))}
@@ -104,7 +113,12 @@ export function ReportanteHomePage() {
 
       <div className="mt-7 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 className="text-[18px] font-bold tracking-tight text-ink">Reportes recientes</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-[18px] font-bold tracking-tight text-ink">Reportes recientes</h2>
+            <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-ink-soft">
+              Últimos {Math.min(total, 5)}
+            </span>
+          </div>
           <p className="mt-0.5 text-[12.5px] text-ink-quiet">Estado actual de los últimos casos registrados</p>
         </div>
         <Link to="/reportes/mis-reportes">
@@ -133,30 +147,49 @@ export function ReportanteHomePage() {
             const evento = r.evento_caso[0]?.eventos_operativos;
             const estacion = evento?.catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle?.nombre;
             const tipo = evento?.catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle?.nombre;
+            const solicitudPendiente = r.solicitudes_informacion?.some((s) => !s.respondida);
             return (
-              <Card key={r.id_caso} hover className="flex items-center gap-4 p-4">
-                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700">
-                  <FileText className="h-5 w-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-[12px] font-semibold text-brand-700">{r.codigo_sop}</span>
-                    {tipo && (
-                      <>
-                        <span className="text-[12px] text-ink-faint">·</span>
-                        <span className="text-[12px] text-ink-soft">{tipo}</span>
-                      </>
-                    )}
+              <Link
+                key={r.id_caso}
+                to={`/reportes/mis-reportes?codigo=${encodeURIComponent(r.codigo_sop)}`}
+                className="block"
+                aria-label={`Ver reporte ${r.codigo_sop}`}
+              >
+                <Card hover className="flex-row items-start gap-4 p-4 transition-colors hover:bg-white sm:items-center sm:p-5">
+                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
+                    <FileText className="h-5 w-5" />
                   </div>
-                  <p className="mt-0.5 truncate text-[13.5px] font-semibold text-ink">{r.titulo || r.descripcion}</p>
-                  {estacion && (
-                    <p className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-ink-quiet">
-                      <MapPin className="h-3 w-3" /> {estacion} · {timeAgo(r.created_at)}
-                    </p>
-                  )}
-                </div>
-                <EstadoPill estado={r.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre} />
-              </Card>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono text-[12px] font-semibold text-brand-700">{r.codigo_sop}</span>
+                      <span className="text-[12px] text-ink-faint">·</span>
+                      <span className="text-[12px] text-ink-quiet">{formatDate(r.created_at)}</span>
+                      {tipo && (
+                        <>
+                          <span className="text-[12px] text-ink-faint">·</span>
+                          <span className="text-[12px] text-ink-soft">{tipo}</span>
+                        </>
+                      )}
+                    </div>
+                    <p className="mt-1 line-clamp-2 text-[14.5px] font-semibold leading-snug text-ink">{r.titulo || r.descripcion}</p>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-ink-quiet">
+                      {estacion && (
+                        <span className="inline-flex items-center gap-1.5">
+                          <MapPin className="h-3 w-3" /> {estacion}
+                        </span>
+                      )}
+                      <span>{timeAgo(r.created_at)}</span>
+                      {solicitudPendiente && <span className="font-medium text-warning-ink">Información solicitada</span>}
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 flex-col items-end gap-2">
+                    <EstadoPill estado={r.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre} />
+                    <span className="hidden items-center gap-1 text-[12px] font-medium text-brand-700 sm:inline-flex">
+                      Ver detalle <ArrowRight className="h-3.5 w-3.5" />
+                    </span>
+                  </div>
+                </Card>
+              </Link>
             );
           })}
         </div>

@@ -10,22 +10,25 @@ export class AuthService {
         // Buscar usuarios 
         const user = await AuthRepository.findByEmail(correo);
         if (!user) {
-            throw new Error("Usuario no encontrado");
+            throw new Error("Correo o contraseña incorrectos");
         }
 
-        // Verificar estado del usuario
-        if (user.estado !== "activo"){
-            throw new Error("Usuario inactivo");
+        if (!user.password_hash) {
+            throw new Error("Correo o contraseña incorrectos");
         }
 
         //Comparar comtraseña 
         const isPasswordValid = await BcryptHelper.compare(
             password,
-            user.password_hash!
+            user.password_hash
         );
 
         if (!isPasswordValid) {
             throw new Error("Correo o contraseña incorrectos");
+        }
+
+        if ((user.estado ?? "").toLowerCase() !== "activo"){
+            throw new Error("La cuenta se encuentra inactiva. Contacta al administrador.");
         }
 
         if (user.id_rol == null) {
@@ -38,6 +41,7 @@ export class AuthService {
             id_usuario: user.id_usuario,
             correo: user.correo,
             rol: user.id_rol,
+            rol_nombre: user.roles!.nombre_rol,
         });
 
         return {

@@ -44,6 +44,26 @@ export class EventoController {
     }
   }
 
+  static async getAsignados(req: Request, res: Response) {
+    try {
+      const eventos = await EventoService.getAsignados(Number(req.params.id_usuario));
+      return res.json(ApiResponse.success("Eventos asignados obtenidos correctamente", eventos));
+    } catch (error) {
+      return res.status(500).json(ApiResponse.error("Error al obtener los eventos asignados", error));
+    }
+  }
+
+  static async asignar(req: Request, res: Response) {
+    try {
+      const resultado = await EventoService.asignarEvento(Number(req.params.id), req.body);
+      return res.json(ApiResponse.success(`Evento asignado a ${resultado.nombre}`, resultado));
+    } catch (error) {
+      return res.status(400).json(
+        ApiResponse.error(error instanceof Error ? error.message : "Error al asignar el evento", error)
+      );
+    }
+  }
+
   static async remove(req: Request, res: Response) {
     try {
       await EventoService.deleteEvento(Number(req.params.id));

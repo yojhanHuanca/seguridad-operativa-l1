@@ -1,10 +1,10 @@
 // Bandeja de notificaciones de Seguridad Operativa.
 //
-// A diferencia del Centro de Decisiones, aquí NO va lo que hay que decidir:
-// va lo que ya pasó. Son eventos puntuales disparados por otras personas
-// (el jefe aceptó un plan, pidió una prórroga, terminó la ejecución) que se
-// marcan como leídos y se archivan. Lo accionable vive en /seguridad/decisiones
-// y se deriva del estado del caso, no de eventos.
+// Acá va lo que ya pasó, no lo que hay que decidir: son eventos puntuales
+// disparados por otras personas (el jefe aceptó un plan, pidió una prórroga,
+// terminó la ejecución, se te asignó un evento de Monitoreo) que se marcan
+// como leídos y se archivan. Lo accionable de cada caso se resuelve desde su
+// propio expediente (/seguridad/casos/:codigo).
 import { motion } from "framer-motion";
 import {
   Bell,
@@ -16,6 +16,7 @@ import {
   Inbox,
   MessageSquareWarning,
   Rocket,
+  ShieldAlert,
   Timer,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -46,6 +47,7 @@ const ESTILO_POR_TIPO: Record<string, { icono: typeof Bell; tone: "brand" | "war
   plan_revisado: { icono: CheckCheck, tone: "brand" },
   caso_devuelto: { icono: CornerUpLeft, tone: "warning" },
   info_respondida: { icono: MessageSquareWarning, tone: "info" },
+  evento_asignado: { icono: ShieldAlert, tone: "brand" },
 };
 
 const POR_DEFECTO = { icono: FileText, tone: "neutral" as const };

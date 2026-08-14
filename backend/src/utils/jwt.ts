@@ -5,6 +5,7 @@ interface JwtPayload {
     id_usuario: number;
     correo: string;
     rol: number | null;
+    rol_nombre: string;
 }
 
 export class JwtHelper {

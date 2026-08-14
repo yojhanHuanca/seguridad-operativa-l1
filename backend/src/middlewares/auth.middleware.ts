@@ -3,8 +3,15 @@ import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
 
 
+interface AuthTokenPayload {
+    id_usuario: number;
+    correo: string;
+    rol: number | null;
+    rol_nombre: string;
+}
+
 export interface AuthenticatedRequest extends Request {
-    user?: any;
+    user?: AuthTokenPayload;
 }
 
 export const verifyToken =  (
@@ -28,7 +35,7 @@ export const verifyToken =  (
             env.JWT_SECRET
         );
 
-    req.user = decoded;
+    req.user = decoded as AuthTokenPayload;
 
     next();
 
@@ -39,4 +46,15 @@ export const verifyToken =  (
 
         });
     }
+};
+
+export const requireRoles = (...roles: string[]) => (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction,
+) => {
+    if (!req.user?.rol_nombre || !roles.some((role) => role.toLowerCase() === req.user!.rol_nombre.toLowerCase())) {
+        return res.status(403).json({ success: false, message: "No tienes permisos para realizar esta acción" });
+    }
+    next();
 };

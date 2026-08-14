@@ -43,5 +43,10 @@ export const updateEventoSchema = z.object({
   ...camposEvento,
 });
 
+export const asignarEventoSchema = z.object({
+  id_usuario: z.coerce.number().int().positive(),
+});
+
 export type CreateEventoDto = z.infer<typeof createEventoSchema>;
 export type UpdateEventoDto = z.infer<typeof updateEventoSchema>;
+export type AsignarEventoDto = z.infer<typeof asignarEventoSchema>;

@@ -26,8 +26,10 @@ import { Pill, StagePill } from "@/design-system/primitives/Pill";
 import { WorkflowStepper, InfoRow, InfoCard } from "@/features/cases/components/CaseParts";
 import { useCase } from "@/features/cases/hooks/useCase";
 import { stageFromEstado } from "@/features/cases/domain";
-import { panelForEstado, puede, siguientePaso } from "@/features/cases/lib/workflow";
+import { panelForEstado, puede, siguientePaso, ACTOR_ROL_LABEL } from "@/features/cases/lib/workflow";
 import { criterioAceptabilidad, fechaEvaluacion, slaDueDate, slaEstado, diasRestantes } from "@/features/cases/lib/sla";
+import { humanEvidenceDetail } from "@/features/cases/lib/planEvidence";
+import { compactPlanCodes } from "@/features/cases/lib/planLabels";
 import { formatDate, formatDateTime, formatTime } from "@/lib/format";
 import { useCurrentSoUser } from "@/features/users/hooks/useCurrentSoUser";
 import { ReceptionStage } from "./case-detail/ReceptionStage";
@@ -81,6 +83,7 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
   const [showEvidence, setShowEvidence] = useState(false);
   const [showTimeline, setShowTimeline] = useState(false);
   const [exportPlanActive, setExportPlanActive] = useState(false);
+  const [exportFullActive, setExportFullActive] = useState(false);
 
   const estado = caso.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre;
   const stage = stageFromEstado(estado);
@@ -124,15 +127,28 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
     return () => window.removeEventListener("afterprint", cleanup);
   }, [exportPlanActive]);
 
+  useEffect(() => {
+    if (!exportFullActive) return;
+    const cleanup = () => setExportFullActive(false);
+    window.addEventListener("afterprint", cleanup, { once: true });
+    return () => window.removeEventListener("afterprint", cleanup);
+  }, [exportFullActive]);
+
   const exportarPlanAccion = () => {
     setExportPlanActive(true);
     window.setTimeout(() => window.print(), 0);
   };
 
+  const exportarExpedienteCompleto = () => {
+    setExportFullActive(true);
+    window.setTimeout(() => window.print(), 0);
+  };
+
   return (
     <SeguridadOperativaShell>
-      <div data-plan-export-root={exportPlanActive ? "active" : "idle"}>
+      <div data-plan-export-root={exportPlanActive ? "active" : "idle"} data-expediente-export-root={exportFullActive ? "active" : "idle"}>
       {puedeExportarPlan && exportPlanActive && <PlanActionPrintDocument caso={caso} />}
+      {exportFullActive && <ExpedienteCompletoPrintDocument caso={caso} />}
       <div data-print-plan-screen>
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -172,6 +188,9 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
               <Download className="h-4 w-4" /> Exportar Plan de Acción
             </Button>
           )}
+          <Button variant="outline" size="sm" onClick={exportarExpedienteCompleto}>
+            <Download className="h-4 w-4" /> Exportar Expediente Completo
+          </Button>
           <Link to="/seguridad/casos">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4" /> Casos
@@ -344,16 +363,8 @@ type PlanExportRow = {
   estado: string;
 };
 
-function PlanActionPrintDocument({ caso }: { caso: CaseDetail }) {
-  const evento = caso.evento_caso[0]?.eventos_operativos;
-  const riesgo = caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle;
-  const fechaLimite = latestPlanLimit(caso);
-  const { nombre: usuarioSoNombre } = useCurrentSoUser();
-  const elaboradoPor =
-    caso.usuarios_casos_sop_responsable_planTousuarios?.nombre ??
-    caso.usuarios_casos_sop_responsable_hallazgoTousuarios?.nombre ??
-    usuarioSoNombre;
-  const rows: PlanExportRow[] = caso.planes_accion.flatMap((plan): PlanExportRow[] => {
+function buildPlanRows(caso: CaseDetail): PlanExportRow[] {
+  return caso.planes_accion.flatMap((plan): PlanExportRow[] => {
     if (plan.actividades_plan.length === 0) {
       return [{
         plan,
@@ -383,6 +394,18 @@ function PlanActionPrintDocument({ caso }: { caso: CaseDetail }) {
       };
     });
   });
+}
+
+function PlanActionPrintDocument({ caso }: { caso: CaseDetail }) {
+  const evento = caso.evento_caso[0]?.eventos_operativos;
+  const riesgo = caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle;
+  const fechaLimite = latestPlanLimit(caso);
+  const { nombre: usuarioSoNombre } = useCurrentSoUser();
+  const elaboradoPor =
+    caso.usuarios_casos_sop_responsable_planTousuarios?.nombre ??
+    caso.usuarios_casos_sop_responsable_hallazgoTousuarios?.nombre ??
+    usuarioSoNombre;
+  const rows = buildPlanRows(caso);
 
   return (
     <section data-plan-export className="mx-auto max-w-none bg-white px-2 py-1 text-ink">
@@ -398,7 +421,7 @@ function PlanActionPrintDocument({ caso }: { caso: CaseDetail }) {
 
       <section className="mt-7">
         <h2 className="border-b border-line pb-2 text-[18px] font-bold text-brand-800">Información del expediente</h2>
-        <div className="mt-3 grid grid-cols-3 gap-x-10 gap-y-3">
+        <div className="mt-5 grid grid-cols-3 gap-x-10 gap-y-5">
           <PrintField label="Código" value={caso.codigo_sop} />
           <PrintField label="Tipo de incidencia" value={evento?.catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle?.nombre ?? "—"} />
           <PrintField label="Estación" value={evento?.catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle?.nombre ?? "—"} />
@@ -462,19 +485,157 @@ function PlanActionPrintDocument({ caso }: { caso: CaseDetail }) {
   );
 }
 
+/**
+ * Expediente completo: a diferencia de "Exportar Plan de Acción" (que solo
+ * lleva las actividades), este documento agrega la bitácora entera del caso
+ * — todo lo que se hizo desde que se creó — más los mismos planes de acción.
+ * Es un botón aparte, no un reemplazo del anterior.
+ */
+function ExpedienteCompletoPrintDocument({ caso }: { caso: CaseDetail }) {
+  const evento = caso.evento_caso[0]?.eventos_operativos;
+  const riesgo = caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle;
+  const estado = caso.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre;
+  const rows = buildPlanRows(caso);
+  // Orden cronológico (más antiguo primero): en un documento formal se lee
+  // como una historia, al revés de la lista en pantalla que muestra lo
+  // último arriba.
+  const timeline = [...caso.timeline_caso].sort((a, b) => +new Date(a.fecha ?? 0) - +new Date(b.fecha ?? 0));
+
+  return (
+    <section data-expediente-export className="mx-auto max-w-none bg-white px-2 py-1 text-ink">
+      <header className="flex items-center gap-4">
+        <Logo size={48} withWordmark={false} />
+        <div>
+          <h1 className="text-[28px] font-bold leading-tight text-ink">Expediente Completo — SIGMA L1</h1>
+          <p className="text-[14px] text-ink-quiet">Línea 1 del Metro de Lima · Seguridad Operativa</p>
+        </div>
+      </header>
+
+      <div className="mt-6 h-[3px] w-full bg-brand-700" />
+
+      <section className="mt-7">
+        <h2 className="border-b border-line pb-2 text-[18px] font-bold text-brand-800">Información del expediente</h2>
+        <div className="mt-5 grid grid-cols-3 gap-x-10 gap-y-5">
+          <PrintField label="Código" value={caso.codigo_sop} />
+          <PrintField label="Estado actual" value={estado} />
+          <PrintField label="Tipo de incidencia" value={evento?.catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle?.nombre ?? "—"} />
+          <PrintField label="Estación" value={evento?.catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle?.nombre ?? "—"} />
+          <PrintField label="Área encargada" value={uniqueValues(caso.planes_accion.map((plan) => plan.areas.nombre_area))} />
+          <PrintField
+            label="Análisis de riesgo"
+            value={riesgo ? `${riesgo.codigo ?? "—"} — ${criterioAceptabilidad(riesgo.nombre, riesgo.codigo) ?? riesgo.nombre}` : "Sin evaluar"}
+          />
+          <PrintField label="Reportante" value={caso.nombre_reportante?.trim() || "Reporte Anónimo"} />
+          <PrintField label="Fecha de creación" value={formatDateTime(caso.created_at)} />
+        </div>
+        <div className="mt-3">
+          <PrintField label="Descripción" value={caso.descripcion} />
+        </div>
+      </section>
+
+      <section className="mt-6">
+        <h2 className="border-b border-line pb-2 text-[18px] font-bold text-brand-800">
+          Línea de tiempo completa ({timeline.length} eventos)
+        </h2>
+        {timeline.length === 0 ? (
+          <p className="mt-3 text-[12px] text-ink-quiet">Sin eventos registrados en la bitácora.</p>
+        ) : (
+          <table className="mt-3 w-full table-fixed border-collapse text-left text-[11.5px]">
+            <colgroup>
+              <col className="w-[17%]" />
+              <col className="w-[16%]" />
+              <col className="w-[19%]" />
+              <col className="w-[48%]" />
+            </colgroup>
+            <thead>
+              <tr className="bg-surface">
+                <PrintTh>Fecha</PrintTh>
+                <PrintTh>Quién</PrintTh>
+                <PrintTh>Acción</PrintTh>
+                <PrintTh>Detalle</PrintTh>
+              </tr>
+            </thead>
+            <tbody>
+              {timeline.map((t) => (
+                <tr key={t.id_evento}>
+                  <PrintTd className="break-words">{t.fecha ? formatDateTime(t.fecha) : "—"}</PrintTd>
+                  <PrintTd className="break-words">
+                    {ACTOR_ROL_LABEL[t.actor_rol] ?? t.actor_rol}
+                    {t.actor && t.actor !== (ACTOR_ROL_LABEL[t.actor_rol] ?? t.actor_rol) ? ` · ${t.actor}` : ""}
+                  </PrintTd>
+                  <PrintTd className="break-words font-semibold">{compactPlanCodes(t.titulo)}</PrintTd>
+                  <PrintTd className="break-words">{t.detalle ? compactPlanCodes(humanEvidenceDetail(t.detalle)) : "—"}</PrintTd>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
+
+      {rows.length > 0 && (
+        <section className="mt-6">
+          <h2 className="border-b border-line pb-2 text-[18px] font-bold text-brand-800">Planes de acción aplicados</h2>
+          <table className="mt-3 w-full table-fixed border-collapse text-left text-[12px]">
+            <colgroup>
+              <col className="w-[8%]" />
+              <col className="w-[21%]" />
+              <col className="w-[13%]" />
+              <col className="w-[10%]" />
+              <col className="w-[13%]" />
+              <col className="w-[12%]" />
+              <col className="w-[12%]" />
+              <col className="w-[11%]" />
+            </colgroup>
+            <thead>
+              <tr className="bg-surface">
+                <PrintTh>Código</PrintTh>
+                <PrintTh>Actividad</PrintTh>
+                <PrintTh>Responsable</PrintTh>
+                <PrintTh>Tipo de acción</PrintTh>
+                <PrintTh>Área responsable</PrintTh>
+                <PrintTh>Inicio</PrintTh>
+                <PrintTh>Límite</PrintTh>
+                <PrintTh>Estado</PrintTh>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, index) => (
+                <tr key={`${row.plan.id_plan}-${row.actividad?.id_actividad ?? index}`}>
+                  <PrintTd className="whitespace-nowrap font-mono">{shortPlanCode(row.plan.codigo_plan)}</PrintTd>
+                  <PrintTd className="break-words font-semibold">{row.descripcion}</PrintTd>
+                  <PrintTd className="break-words">{row.responsable}</PrintTd>
+                  <PrintTd className="break-words">{row.tipo}</PrintTd>
+                  <PrintTd className="break-words">{row.area}</PrintTd>
+                  <PrintTd className="whitespace-nowrap">{row.inicio ? formatDateCompact(row.inicio) : "—"}</PrintTd>
+                  <PrintTd className="whitespace-nowrap">{row.limite ? formatDateCompact(row.limite) : "—"}</PrintTd>
+                  <PrintTd className="whitespace-nowrap">{row.estado}</PrintTd>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
+
+      <footer className="mt-8 border-t border-line pt-4 text-[12px] text-ink-quiet">
+        Documento generado por SIGMA L1 · {formatDateTime(new Date())}
+      </footer>
+    </section>
+  );
+}
+
 function PrintField({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border-l-2 border-brand-700 pl-2">
-      <p className="text-[12px] font-semibold uppercase tracking-wide text-ink-quiet">{label}</p>
-      <p className="text-[14px] leading-tight text-ink">{value}</p>
+    <div>
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-quiet">{label}</p>
+      <p className="mt-1 text-[14px] leading-relaxed text-ink">{value}</p>
     </div>
   );
 }
 
 function PrintTh({ children }: { children: ReactNode }) {
-  return <th className="border border-line px-1.5 py-2 text-[11px] font-bold text-ink">{children}</th>;
+  return <th className="border-b-2 border-ink px-2 py-2.5 text-[11px] font-bold uppercase tracking-wide text-ink">{children}</th>;
 }
 
 function PrintTd({ children, className }: { children: ReactNode; className?: string }) {
-  return <td className={`border border-line px-1.5 py-2 align-top text-ink ${className ?? ""}`}>{children}</td>;
+  return <td className={`border-b border-line px-2 py-2.5 align-top text-ink ${className ?? ""}`}>{children}</td>;
 }
