@@ -1,0 +1,97 @@
+import type { HTMLAttributes, ReactNode } from "react";
+import { cn } from "@/lib/utils";
+import {
+  STAGE_LABELS,
+  STAGE_STATUS,
+  RISK_CATEGORY_TONE,
+  RISK_CATEGORY_LABELS,
+  RISK_CATEGORY_DOT_STYLES,
+  RISK_CATEGORY_STYLES,
+  riskCategory,
+  type Stage,
+  type RiskLevel,
+} from "@/features/cases/domain";
+
+// Portado tal cual del prototipo SIGMA L1 (design-system/primitives/Pill.tsx).
+interface PillProps extends HTMLAttributes<HTMLSpanElement> {
+  tone?: "neutral" | "brand" | "critical" | "warning" | "info" | "success";
+  dot?: boolean;
+  children: ReactNode;
+}
+
+const TONES: Record<NonNullable<PillProps["tone"]>, string> = {
+  neutral: "bg-surface-2 text-ink-soft border-line",
+  brand: "bg-green-200 text-green-900 border-green-300",
+  critical: "bg-red-600 text-white border-red-700",
+  warning: "bg-yellow-500 text-white border-yellow-600",
+  info: "bg-white text-gray-800 border-gray-300",
+  success: "bg-green-200 text-green-900 border-green-300",
+};
+
+const DOT_COLOR: Record<NonNullable<PillProps["tone"]>, string> = {
+  neutral: "bg-ink-faint",
+  brand: "bg-green-600",
+  critical: "bg-red-800",
+  warning: "bg-yellow-600",
+  info: "bg-gray-400",
+  success: "bg-green-600",
+};
+
+export function Pill({ className, tone = "neutral", dot, children, ...props }: PillProps) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11.5px] font-medium leading-none whitespace-nowrap",
+        TONES[tone],
+        className
+      )}
+      {...props}
+    >
+      {dot && <span className={cn("h-1.5 w-1.5 rounded-full", DOT_COLOR[tone])} />}
+      {children}
+    </span>
+  );
+}
+
+export function RiskPill({ risk, showCategory = false, className }: { risk: RiskLevel; showCategory?: boolean; className?: string }) {
+  const cat = riskCategory(risk);
+  const tone = RISK_CATEGORY_TONE[cat];
+  const label = showCategory ? `${risk} · ${RISK_CATEGORY_LABELS[cat]}` : risk;
+  return (
+    <Pill
+      tone={tone}
+      className={cn(RISK_CATEGORY_STYLES[cat], className)}
+    >
+      <span className={cn("-ml-0.5 h-1.5 w-1.5 rounded-full", RISK_CATEGORY_DOT_STYLES[cat])} />
+      {label}
+    </Pill>
+  );
+}
+
+const STAGE_TONE: Record<Stage, PillProps["tone"]> = {
+  recepcion: "info",
+  evaluacion: "info",
+  pendiente_info: "warning",
+  investigacion: "brand",
+  plan_accion: "brand",
+  ejecucion: "brand",
+  verificacion: "warning",
+  cierre: "neutral",
+  rechazado: "critical",
+};
+
+export function StagePill({ stage, className }: { stage: Stage; className?: string }) {
+  const status = STAGE_STATUS[stage];
+  if (status === "cerrado") {
+    return (
+      <Pill tone="neutral" dot className={className}>
+        {STAGE_LABELS[stage]}
+      </Pill>
+    );
+  }
+  return (
+    <Pill tone={STAGE_TONE[stage]} dot className={className}>
+      {STAGE_LABELS[stage]}
+    </Pill>
+  );
+}

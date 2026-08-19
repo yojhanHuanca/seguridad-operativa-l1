@@ -1,0 +1,22 @@
+.agents/
+.claude/
+.windsurf/
+skills-lock.json
+backend/node_modules/
+frontend/node_modules/
+.env
+*.env
+backend/.env
+frontend/.env
+
+# Código compilado: se genera con `npm run build`, no se versiona.
+backend/dist/
+frontend/dist/
+
+# Evidencias subidas por los usuarios: van en el volumen del servidor.
+backend/uploads/
+
+# Artefactos de herramientas de desarrollo / logs locales
+.codex-*
+*.log
+docs/
