@@ -589,7 +589,7 @@ function ReportExportPrintDocument({
         <PrintMetric label="Filas" value={rows.length} />
       </section>
 
-      <section className="mt-5 grid grid-cols-[1fr_1.3fr] gap-4">
+      <section className="mt-5 grid grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] gap-4">
         <div className="rounded-lg border border-line p-3">
           <h2 className="text-[13px] font-bold text-brand-800">Alcance del documento</h2>
           <div className="mt-3 grid gap-2">

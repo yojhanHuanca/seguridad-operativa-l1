@@ -38,3 +38,90 @@ export const TALLERES: { name: string; x: number; y: number; km: number; tipo: s
 
 export const MAP_W = 1240;
 export const MAP_H = 510;
+
+/** No son estaciones de la línea, aunque vivan en el mismo catálogo "Lugar de Incidente". */
+export function esTaller(nombre: string) {
+  return nombre.trim().toLowerCase().startsWith("taller");
+}
+
+const NO_ES_ESTACION = new Set(["exteriores"]);
+
+/**
+ * El catálogo "Lugar de Incidente" (que administra el Admin) es la fuente de
+ * verdad de qué estaciones existen — pero no tiene coordenadas para dibujar
+ * el mapa. Esta función junta ambas cosas: si la estación ya tiene una
+ * posición conocida (las 26 actuales), la usa tal cual; si es nueva, la
+ * agrega al final del trazado extrapolando la dirección de las últimas dos
+ * estaciones conocidas, para que el mapa "sienta" el alta sin que nadie
+ * tenga que dibujar coordenadas a mano.
+ */
+/** Solo los nombres (sin coordenadas) — para widgets que no dibujan el mapa, como el conteo por estación del dashboard. */
+export function stationNamesFromCatalog(catalogItems: { nombre: string }[]): string[] {
+  return catalogItems.map((i) => i.nombre.trim()).filter((n) => n && !esTaller(n) && !NO_ES_ESTACION.has(n.toLowerCase()));
+}
+
+export function resolveStationCoords(catalogItems: { nombre: string }[]): { name: string; x: number; y: number; km: number }[] {
+  const nombresCatalogo = catalogItems.map((i) => i.nombre.trim()).filter((n) => n && !esTaller(n) && !NO_ES_ESTACION.has(n.toLowerCase()));
+
+  const conocidas = new Map(STATION_COORDS.map((s) => [s.name.toLowerCase(), s]));
+  const resultado: { name: string; x: number; y: number; km: number }[] = [];
+
+  for (const nombre of nombresCatalogo) {
+    const known = conocidas.get(nombre.toLowerCase());
+    if (known) {
+      resultado.push(known);
+      continue;
+    }
+
+    const ultimo = resultado[resultado.length - 1] ?? STATION_COORDS[STATION_COORDS.length - 1];
+    const penultimo = resultado[resultado.length - 2] ?? STATION_COORDS[STATION_COORDS.length - 2] ?? ultimo;
+    const dx = ultimo.x - penultimo.x || 50;
+    const dy = ultimo.y - penultimo.y || 30;
+    const dkm = ultimo.km - penultimo.km || 2;
+
+    resultado.push({ name: nombre, x: ultimo.x + dx, y: ultimo.y + dy, km: Math.round((ultimo.km + dkm) * 10) / 10 });
+  }
+
+  return resultado;
+}
+
+/**
+ * Mismo criterio que resolveStationCoords, pero para los talleres — con una
+ * diferencia importante: un taller nuevo NO se agrega "siguiendo la línea"
+ * como una estación más, porque no lo es. Se ubica pegado a la última
+ * estación real del trazado (como ya hace "Taller Bayóvar" con Bayovar), con
+ * un pequeño desplazamiento hacia abajo para que se lea como lo que es: un
+ * taller al costado de la vía, no una parada más.
+ */
+export function resolveTalleresCoords(
+  catalogItems: { nombre: string }[],
+  stationCoords: { x: number; y: number; km: number }[]
+): { name: string; x: number; y: number; km: number; tipo: string; capacidad: string }[] {
+  const nombresTalleres = catalogItems.map((i) => i.nombre.trim()).filter(esTaller);
+
+  const conocidos = new Map(TALLERES.map((t) => [t.name.toLowerCase(), t]));
+  const resultado: { name: string; x: number; y: number; km: number; tipo: string; capacidad: string }[] = [];
+  const ultimaEstacion = stationCoords[stationCoords.length - 1];
+  let nuevosSinUbicacion = 0;
+
+  for (const nombre of nombresTalleres) {
+    const known = conocidos.get(nombre.toLowerCase());
+    if (known) {
+      resultado.push(known);
+      continue;
+    }
+
+    nuevosSinUbicacion += 1;
+    const base = ultimaEstacion ?? TALLERES[TALLERES.length - 1];
+    resultado.push({
+      name: nombre,
+      x: base.x + 36,
+      y: base.y + 25 * nuevosSinUbicacion,
+      km: base.km,
+      tipo: "Sin clasificar",
+      capacidad: "—",
+    });
+  }
+
+  return resultado;
+}

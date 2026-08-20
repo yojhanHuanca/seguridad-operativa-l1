@@ -25,6 +25,7 @@ interface FormState {
   id_area: string;
   id_rol: string;
   estado: string;
+  es_responsable: boolean;
 }
 
 const EMPTY_FORM: FormState = {
@@ -37,6 +38,7 @@ const EMPTY_FORM: FormState = {
   id_area: "",
   id_rol: "",
   estado: "Activo",
+  es_responsable: false,
 };
 
 function fromUser(user: UserListItem): FormState {
@@ -52,6 +54,7 @@ function fromUser(user: UserListItem): FormState {
     id_area: user.id_area ? String(user.id_area) : "",
     id_rol: user.id_rol ? String(user.id_rol) : "",
     estado: user.estado ?? "Activo",
+    es_responsable: user.es_responsable ?? false,
   };
 }
 
@@ -84,6 +87,7 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => setForm((f) => ({ ...f, [key]: value }));
 
+  const rolSeleccionado = roles.data?.find((r) => String(r.id_rol) === form.id_rol);
   const datosValidos = form.nombres.trim() && form.apellidos.trim() && form.correo.trim();
   const accesoValido = form.id_area && form.id_rol && (isEdit || form.password.trim().length >= 6);
 
@@ -112,6 +116,7 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
       telefono: form.telefono.trim() || undefined,
       id_area: Number(form.id_area),
       id_rol: Number(form.id_rol),
+      es_responsable: form.es_responsable,
     };
 
     if (isEdit) {
@@ -251,6 +256,22 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
                   <option value="Inactivo">Inactivo</option>
                 </Select>
               </Field>
+            )}
+            {rolSeleccionado?.nombre_rol === "Seguridad Operativa" && (
+              <label className="flex items-start gap-2.5 rounded-lg border border-line bg-surface/50 px-3 py-2.5">
+                <input
+                  type="checkbox"
+                  checked={form.es_responsable}
+                  onChange={(e) => set("es_responsable", e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-brand-700"
+                />
+                <span>
+                  <span className="block text-[13px] font-medium text-ink">Es responsable (RSO)</span>
+                  <span className="block text-[11.5px] text-ink-quiet">
+                    Puede derivar eventos de Monitoreo a su equipo y entrar a ese panel para hacerlo.
+                  </span>
+                </span>
+              </label>
             )}
             <Field
               label={isEdit ? "Restablecer contraseña" : "Contraseña"}

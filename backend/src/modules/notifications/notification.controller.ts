@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { ZodError } from "zod";
 import { NotificationService } from "./notification.service.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
+import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
 
 /** Misma convención que case.controller: valida el parámetro de ruta. */
 function param(req: Request, name: string): string {
@@ -10,12 +11,6 @@ function param(req: Request, name: string): string {
     throw new Error(`Parámetro de ruta inválido: ${name}`);
   }
   return value;
-}
-
-/** El `usuario` de query es opcional y el proyecto usa exactOptionalPropertyTypes. */
-function usuarioDeQuery(req: Request): { usuario?: string } {
-  const q = req.query.usuario;
-  return typeof q === "string" && q.trim() !== "" ? { usuario: q } : {};
 }
 
 function fallo(res: Response, error: unknown, mensaje: string) {
@@ -28,10 +23,10 @@ function fallo(res: Response, error: unknown, mensaje: string) {
 export class NotificationController {
   static async list(req: Request, res: Response) {
     try {
-      const data = await NotificationService.list({
-        ...usuarioDeQuery(req),
-        ...(req.query.soloNoLeidas === "true" ? { soloNoLeidas: "true" } : {}),
-      });
+      const data = await NotificationService.list(
+        req.query.soloNoLeidas === "true" ? { soloNoLeidas: "true" } : {},
+        (req as AuthenticatedRequest).user
+      );
       return res.json(ApiResponse.success("Notificaciones obtenidas correctamente", data));
     } catch (error) {
       return fallo(res, error, "No se pudieron obtener las notificaciones");
@@ -40,7 +35,7 @@ export class NotificationController {
 
   static async markRead(req: Request, res: Response) {
     try {
-      await NotificationService.markRead(param(req, "id"), usuarioDeQuery(req));
+      await NotificationService.markRead(param(req, "id"), (req as AuthenticatedRequest).user);
       return res.json(ApiResponse.success("Notificación marcada como leída"));
     } catch (error) {
       return fallo(res, error, "No se pudo marcar la notificación");
@@ -49,7 +44,7 @@ export class NotificationController {
 
   static async markAllRead(req: Request, res: Response) {
     try {
-      const r = await NotificationService.markAllRead(usuarioDeQuery(req));
+      const r = await NotificationService.markAllRead((req as AuthenticatedRequest).user);
       return res.json(ApiResponse.success("Notificaciones marcadas como leídas", { actualizadas: r.count }));
     } catch (error) {
       return fallo(res, error, "No se pudieron marcar las notificaciones");

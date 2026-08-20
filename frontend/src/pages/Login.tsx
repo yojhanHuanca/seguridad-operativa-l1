@@ -31,14 +31,12 @@ export function LoginPage() {
   };
 
   return (
-    <main className="grid min-h-[100svh] bg-[#071d12] lg:grid-cols-[minmax(0,1.35fr)_minmax(420px,0.65fr)]">
+    <main className="grid min-h-[100svh] bg-[#0c0c0c] lg:grid-cols-[minmax(0,1.35fr)_minmax(420px,0.65fr)]">
       <section className="relative hidden min-h-[100svh] overflow-hidden lg:block">
         <img src="/login-metro-lima.png" alt="Tren metropolitano circulando por un viaducto urbano de Lima" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,39,21,0.88)_0%,rgba(5,39,21,0.46)_55%,rgba(5,39,21,0.12)_100%)]" />
-        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-[linear-gradient(0deg,rgba(4,23,13,0.88),transparent)]" />
         <div className="relative flex h-full min-h-[100svh] max-w-[760px] flex-col justify-between p-10 xl:p-14">
-          <Logo size={54} withWordmark={false} tone="light" />
-          <div className="pb-5 text-white">
+          <Logo size={84} withWordmark={false} tone="light" className="[filter:drop-shadow(0_2px_10px_rgba(0,0,0,0.55))]" />
+          <div className="pb-5 text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.75),0_1px_3px_rgba(0,0,0,0.6)]">
             <div className="mb-5 inline-flex items-center gap-2 border-l-2 border-brand-400 pl-3 text-[11px] font-semibold uppercase text-white/75">
               Plataforma interna autorizada
             </div>

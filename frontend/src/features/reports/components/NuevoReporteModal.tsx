@@ -35,6 +35,7 @@ import {
 import { useCatalogs } from "@/features/reports/hooks/useCatalogs";
 import { useCreateReport } from "@/features/reports/hooks/useCreateReport";
 import { useCurrentSoUser } from "@/features/users/hooks/useCurrentSoUser";
+import { useMyProfile } from "@/features/profile/hooks/useProfile";
 import { useCase } from "@/features/cases/hooks/useCase";
 import { stageFromEstado } from "@/features/cases/domain";
 import { formatDate, formatTime } from "@/lib/format";
@@ -77,6 +78,8 @@ export function NuevoReporteModal({
   const catalogs = useCatalogs();
   const createReport = useCreateReport();
   const analista = useCurrentSoUser();
+  // El teléfono con el que se firma el reporte es el del propio analista.
+  const { data: miPerfil } = useMyProfile();
   const step = SO_REPORT_STEPS[stepIndex];
 
   const form = useForm<SoReportFormValues>({
@@ -134,7 +137,7 @@ export function NuevoReporteModal({
           modalidad: "identificado",
           nombre_reportante: analista.nombre,
           correo_reportante: analista.correo || undefined,
-          telefono_reportante: analista.user?.telefono ?? undefined,
+          telefono_reportante: miPerfil?.telefono ?? undefined,
           origen: "seguridad_operativa",
           id_evento_monitoreo: idEventoMonitoreo,
         },

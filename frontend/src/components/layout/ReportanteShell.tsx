@@ -4,6 +4,8 @@ import { Bell, Menu, Plus } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { SessionExitButton } from "@/features/auth/SessionExitButton";
+import { AdminPanelSwitcher } from "@/features/auth/AdminPanelSwitcher";
+import { AdminViewingBanner } from "@/features/auth/AdminViewingBanner";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { useReports } from "@/features/reports/hooks/useReports";
@@ -27,7 +29,9 @@ export function ReportanteShell({ children }: { children: ReactNode }) {
   const isActive = (to: string) => (to === "/reportes" ? location.pathname === "/reportes" : location.pathname.startsWith(to));
 
   return (
-    <div className="min-h-screen bg-surface">
+    <>
+      <AdminViewingBanner roleLabel="Reportante" />
+      <div className="min-h-screen bg-surface">
       <header className="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur-xl">
         {/* Alto = logo (66) + aire. `size` en Logo es el alto real de la imagen,
             así que la barra ya no reserva espacio muerto. */}
@@ -58,6 +62,7 @@ export function ReportanteShell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="flex items-center gap-2">
+            <AdminPanelSwitcher />
             <SessionExitButton />
             <Link to="/reportes/nuevo" className="hidden sm:block">
               <Button size="sm">
@@ -75,6 +80,14 @@ export function ReportanteShell({ children }: { children: ReactNode }) {
                   {solicitudesPendientes}
                 </span>
               )}
+            </Link>
+            <Link
+              to="/reportes/perfil"
+              className="grid h-9 w-9 place-items-center rounded-full bg-brand-100 text-[11px] font-bold text-brand-800 transition-colors hover:bg-brand-200"
+              aria-label="Mi perfil"
+              title="Mi perfil"
+            >
+              RE
             </Link>
             <button
               type="button"
@@ -123,6 +136,7 @@ export function ReportanteShell({ children }: { children: ReactNode }) {
           <p>Sistema de Gestión de Seguridad Operativa — Línea 1 del Metro de Lima</p>
         </div>
       </footer>
-    </div>
+      </div>
+    </>
   );
 }

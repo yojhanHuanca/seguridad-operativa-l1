@@ -31,7 +31,7 @@ import { ACTOR_ROL_LABEL } from "@/features/cases/lib/workflow";
 import { apiErrorMessage } from "@/lib/api";
 import { formatDate, formatDateTime, relativeTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { API_ORIGIN } from "./EvidencePanel";
+import { abrirArchivoProtegido, useArchivoProtegido } from "@/lib/archivos";
 import type { ActividadPlan, AnexoCaso, CaseDetail, PlanAccion, TimelineEvento } from "@/features/cases/types";
 
 // Portado de pages/seguridad/CaseFile.tsx → ExecutionStage / VerificationStage
@@ -218,7 +218,7 @@ function IconoArchivo({ tipo }: { tipo: string | null }) {
  */
 function MiniaturaArchivo({ anexo }: { anexo: AnexoCaso | null }) {
   const [falloCarga, setFalloCarga] = useState(false);
-  const url = anexo?.ruta_archivo ? `${API_ORIGIN}${anexo.ruta_archivo}` : "";
+  const url = useArchivoProtegido(anexo?.ruta_archivo);
   const tipo = anexo?.tipo_archivo ?? "";
   const puedePrevisualizar = !!url && !falloCarga;
 
@@ -282,14 +282,13 @@ function FilaAnexoPlan({ nombre, anexo, etiqueta }: { nombre: string; anexo: Ane
   }
 
   return (
-    <a
-      href={`${API_ORIGIN}${anexo.ruta_archivo}`}
-      target="_blank"
-      rel="noreferrer"
-      className="flex items-center gap-2.5 rounded-lg bg-surface/70 p-2.5 hover:bg-surface-2 transition-colors"
+    <button
+      type="button"
+      onClick={() => abrirArchivoProtegido(anexo.ruta_archivo!)}
+      className="flex w-full items-center gap-2.5 rounded-lg bg-surface/70 p-2.5 text-left hover:bg-surface-2 transition-colors"
     >
       {contenido}
-    </a>
+    </button>
   );
 }
 
@@ -931,7 +930,7 @@ function ExecutionVerificationGate({
       icon={<Activity className="h-5 w-5" />}
       action={<Pill tone={puedePasar ? "brand" : "warning"} dot>{puedePasar ? "Listo" : "Pendiente"}</Pill>}
     >
-      <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <div className="grid gap-2 sm:grid-cols-3">
           <div className="rounded-lg border border-line-soft bg-surface/50 p-3">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Planes listos</p>

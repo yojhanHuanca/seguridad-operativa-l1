@@ -7,6 +7,7 @@ import { RiskPill } from "@/design-system/primitives/Pill";
 import { RiskMatrixPicker } from "@/features/cases/components/RiskMatrixPicker";
 import { useCatalogs } from "@/features/reports/hooks/useCatalogs";
 import { useEvaluateCase } from "@/features/cases/hooks/useCaseActions";
+import { useCurrentSoUser } from "@/features/users/hooks/useCurrentSoUser";
 import { gravedadDerivada, diasSlaPorRiesgo } from "@/features/cases/lib/sla";
 import type { RiskLevel } from "@/features/cases/domain";
 import { apiErrorMessage } from "@/lib/api";
@@ -17,6 +18,7 @@ import type { CaseDetail } from "@/features/cases/types";
 export function EvaluationForm({ caso }: { caso: CaseDetail }) {
   const catalogs = useCatalogs();
   const evaluate = useEvaluateCase(caso.codigo_sop);
+  const analista = useCurrentSoUser();
 
   const riesgoItems = catalogs.byName.get("Análisis de riesgo")?.catalogo_detalle ?? [];
   const subtipos = catalogs.byName.get("Subtipo SOP")?.catalogo_detalle ?? [];
@@ -208,6 +210,7 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
                 consecuencia: consecuencia.trim() || null,
                 observaciones: requiresInvestigation ? null : motivoOmision,
                 requiere_investigacion: requiresInvestigation,
+                id_responsable: analista.user?.id_usuario ?? null,
               },
               {
                 onSuccess: () =>

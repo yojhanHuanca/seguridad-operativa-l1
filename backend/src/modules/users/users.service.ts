@@ -1,8 +1,6 @@
 import { UserRepository } from "./users.repository.js";
 import { BcryptHelper } from "../../utils/bcrypt.js";
 import { createUserSchema, idParamSchema, updateUserSchema } from "./users.schema.js";
-import { AuditoriaService } from "../auditoria/auditoria.service.js";
-import type { Actor } from "../../utils/actor.js";
 
 /**
  * Zod deja `key?: T | undefined` en el tipo inferido para todo campo
@@ -40,13 +38,21 @@ export class UsersService {
        return UserRepository.counts();
      }
 
+     /**
+      * Directorio reducido para los selectores de responsable. Lo puede pedir
+      * cualquier rol autenticado, por eso no incluye correo ni teléfono.
+      */
+     static async getBasicUsers() {
+       return UserRepository.findAllBasic();
+     }
+
   static async getUserById(rawId: unknown) {
     const id = idParamSchema.parse(rawId);
     const user = await UserRepository.findById(id);
     return user;
   }
 
-    static async createUser(rawBody: unknown, actor?: Actor, ip?: string | null) {
+    static async createUser(rawBody: unknown) {
         const data = createUserSchema.parse(rawBody);
 
         // Verificar correo electrónico
@@ -61,26 +67,16 @@ export class UsersService {
 
 
         // Crear el ususario
-        const creado = await UserRepository.createWithGeneratedCode(sinIndefinidos({
+        return await UserRepository.createWithGeneratedCode(sinIndefinidos({
             ...data,
             password_hash,
         }));
 
-        if (actor) {
-            await AuditoriaService.registrar({
-                tabla: "usuarios",
-                id_registro: creado.id_usuario,
-                accion: "crear",
-                descripcion: `Creó al usuario ${creado.nombre} (${creado.correo})`,
-                usuario: actor.id_usuario,
-                ip,
-            });
-        }
 
-        return creado;
+
     }
 
-    static async updateUser(rawId: unknown, rawBody: unknown, actor?: Actor, ip?: string | null) {
+    static async updateUser(rawId: unknown, rawBody: unknown) {
         const id = idParamSchema.parse(rawId);
         const data = updateUserSchema.parse(rawBody);
 
@@ -98,32 +94,12 @@ export class UsersService {
         }
 
         // Cadena vacía = "no cambiar contraseña", igual que si no viniera el campo.
-        // `es_responsable` no se persiste aquí: la tabla `usuarios` de esta rama
-        // no tiene esa columna (la funcionalidad de "responsable" no llegó a
-        // develop todavía), así que se descarta en vez de reenviarla a Prisma.
-        const { password, es_responsable, ...rest } = data;
+        const { password, ...rest } = data;
         const password_hash = password ? await BcryptHelper.hash(password) : undefined;
 
-        const actualizado = await UserRepository.update(id, sinIndefinidos({
+        return await UserRepository.update(id, sinIndefinidos({
             ...rest,
             ...(password_hash ? { password_hash } : {}),
         }));
-
-        if (actor) {
-            const campos = Object.keys(rest);
-            const descripcion = password
-                ? `Editó a ${usuario.nombre} (incluye cambio de contraseña)`
-                : `Editó a ${usuario.nombre}${campos.length ? `: ${campos.join(", ")}` : ""}`;
-            await AuditoriaService.registrar({
-                tabla: "usuarios",
-                id_registro: id,
-                accion: "editar",
-                descripcion,
-                usuario: actor.id_usuario,
-                ip,
-            });
-        }
-
-        return actualizado;
     }
 }

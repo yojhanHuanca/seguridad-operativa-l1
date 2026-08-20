@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { CheckCircle2, ClipboardList, FileText, ShieldAlert } from "lucide-react";
+import { CheckCircle2, ClipboardList, Eye, ShieldAlert } from "lucide-react";
 import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
 import { Card, CardHeader } from "@/design-system/primitives/Card";
 import { Button } from "@/design-system/primitives/Button";
@@ -46,14 +46,14 @@ export function EventosAsignadosPage() {
 
   return (
     <SeguridadOperativaShell>
-      <div className="mb-4">
+      <div className="mb-3">
         <p className="text-[13px] text-ink-quiet">
           Eventos de Monitoreo que le asignaron a {user?.nombre ?? "usted"}. Revise el detalle y registre el hallazgo
           correspondiente.
         </p>
       </div>
 
-      <div className="mb-4 flex items-center gap-1 rounded-xl border border-line bg-white p-1 w-fit">
+      <div className="mb-3 flex items-center gap-1 rounded-xl border border-line bg-white p-1 w-fit">
         <button
           type="button"
           onClick={() => setPestana("pendientes")}
@@ -97,33 +97,40 @@ export function EventosAsignadosPage() {
           />
         </Card>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
           {visibles.map((evento) => (
-            <Card key={evento.id_evento} className="flex flex-col p-4">
+            <Card key={evento.id_evento} className="flex flex-col p-3.5">
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <Pill tone={ESTADO_TONE[evento.estado] ?? "neutral"} dot>{evento.estado}</Pill>
                 </div>
-                <p className="mt-1.5 truncate text-[13.5px] font-semibold text-ink">
+                <p className="mt-1 truncate text-[13.5px] font-semibold text-ink">
                   {nombreTipo(evento)} · {nombreLugar(evento)}
                 </p>
-                <p className="mt-1 line-clamp-2 text-[12.5px] text-ink-quiet">{evento.descripcion || "Sin descripción."}</p>
-                <p className="mt-1 text-[11.5px] text-ink-faint">{formatDate(evento.fecha)}</p>
+                <p className="mt-0.5 line-clamp-2 text-[12.5px] text-ink-quiet">{evento.descripcion || "Sin descripción."}</p>
+                <p className="mt-0.5 text-[11.5px] text-ink-faint">{formatDate(evento.fecha)}</p>
               </div>
-              <div className="mt-3 flex flex-col gap-2 border-t border-line-soft pt-3">
+              <div className="mt-2.5 flex items-center gap-1.5 border-t border-line-soft pt-2.5">
                 {evento.casos_sop ? (
-                  <Link to={`/seguridad/casos/${encodeURIComponent(evento.casos_sop.codigo_sop)}`}>
+                  <Link to={`/seguridad/casos/${encodeURIComponent(evento.casos_sop.codigo_sop)}`} className="min-w-0 flex-1">
                     <Button size="sm" className="w-full">
-                      <CheckCircle2 className="h-4 w-4" /> Ver hallazgo · {evento.casos_sop.codigo_sop}
+                      <CheckCircle2 className="h-4 w-4" /> <span className="truncate">Ver hallazgo · {evento.casos_sop.codigo_sop}</span>
                     </Button>
                   </Link>
                 ) : (
-                  <Button size="sm" className="w-full" onClick={() => setCreandoPara(evento)}>
+                  <Button size="sm" className="flex-1" onClick={() => setCreandoPara(evento)}>
                     <ClipboardList className="h-4 w-4" /> Crear hallazgo
                   </Button>
                 )}
-                <Button variant="outline" size="sm" className="w-full" onClick={() => setViendo(evento)}>
-                  <FileText className="h-4 w-4" /> Ver detalle
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 px-2.5"
+                  onClick={() => setViendo(evento)}
+                  aria-label="Ver detalle"
+                  title="Ver detalle"
+                >
+                  <Eye className="h-4 w-4" />
                 </Button>
               </div>
             </Card>

@@ -10,9 +10,9 @@ import { apiErrorMessage } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { AnexoCaso, CaseDetail, TimelineEvento } from "@/features/cases/types";
+import { abrirArchivoProtegido } from "@/lib/archivos";
 
 // Origen del backend para resolver las rutas `/uploads/...` que devuelve la API.
-export const API_ORIGIN = (import.meta.env.VITE_API_URL ?? "http://localhost:3000/api").replace(/\/api\/?$/, "");
 
 // Mismos límites que valida el backend (middlewares/upload.middleware.ts):
 // rechazar aquí evita un viaje al servidor para un archivo que va a fallar.
@@ -160,11 +160,10 @@ function buildEvidenceGroups(caso: CaseDetail): EvidenceGroup[] {
 
 function FilaAnexo({ anexo }: { anexo: AnexoCaso }) {
   return (
-    <a
-      href={`${API_ORIGIN}${anexo.ruta_archivo}`}
-      target="_blank"
-      rel="noreferrer"
-      className="flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-surface transition-colors group cursor-pointer"
+    <button
+      type="button"
+      onClick={() => anexo.ruta_archivo && abrirArchivoProtegido(anexo.ruta_archivo)}
+      className="flex w-full items-center gap-2.5 p-2.5 rounded-lg text-left hover:bg-surface transition-colors group cursor-pointer"
     >
       <div className="h-8 w-8 rounded-lg bg-surface-2 text-ink-soft grid place-items-center shrink-0">
         <IconoArchivo tipo={anexo.tipo_archivo} />
@@ -178,7 +177,7 @@ function FilaAnexo({ anexo }: { anexo: AnexoCaso }) {
         </p>
       </div>
       <Download className="h-3.5 w-3.5 text-ink-faint opacity-0 group-hover:opacity-100 transition-opacity" />
-    </a>
+    </button>
   );
 }
 

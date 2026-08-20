@@ -25,7 +25,8 @@ import { IncidentMap } from "@/pages/seguridad/IncidentMap";
 import { useCases } from "@/features/cases/hooks/useCases";
 import { toCaseRow } from "@/features/cases/adapter";
 import { STAGE_STATUS, EVENT_LABELS, riskCategory } from "@/features/cases/domain";
-import { STATIONS } from "@/lib/stations";
+import { stationNamesFromCatalog } from "@/lib/stations";
+import { useCatalogs } from "@/features/reports/hooks/useCatalogs";
 import { cn } from "@/lib/utils";
 import { relativeTime } from "@/lib/format";
 import { slaEstado } from "@/features/cases/lib/sla";
@@ -33,6 +34,11 @@ import { slaEstado } from "@/features/cases/lib/sla";
 export function SoDashboardPage() {
   const { data: rawCases, isLoading } = useCases();
   const cases = useMemo(() => (rawCases ?? []).map(toCaseRow), [rawCases]);
+  const { byName: catalogsByName } = useCatalogs();
+  const STATIONS = useMemo(
+    () => stationNamesFromCatalog(catalogsByName.get("Lugar de Incidente")?.catalogo_detalle ?? []),
+    [catalogsByName]
+  );
 
   const stats = useMemo(() => {
     const open = cases.filter((c) => STAGE_STATUS[c.stage] === "abierto");
@@ -103,7 +109,7 @@ export function SoDashboardPage() {
       }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 12);
-  }, [cases]);
+  }, [cases, STATIONS]);
 
   const recent = useMemo(() => [...cases].sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt)).slice(0, 7), [cases]);
 

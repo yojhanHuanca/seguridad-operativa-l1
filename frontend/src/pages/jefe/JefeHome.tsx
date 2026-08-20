@@ -5,6 +5,7 @@ import { JefeShell } from "@/components/layout/JefeShell";
 import { Card } from "@/design-system/primitives/Card";
 import { Pill } from "@/design-system/primitives/Pill";
 import { usePlans } from "@/features/plans/hooks/usePlans";
+import { useJefeAreaFilter } from "@/features/plans/hooks/useJefeAreaFilter";
 import {
   hasPendingExtension,
   isClosed,
@@ -125,7 +126,8 @@ export function JefeHome() {
   const [params] = useSearchParams();
   const filter = (params.get("estado") || "todos") as StatusFilter;
   const safeFilter: StatusFilter = FILTERS.some((f) => f.id === filter) ? filter : "todos";
-  const { data: planes, isLoading } = usePlans();
+  const areaFiltro = useJefeAreaFilter();
+  const { data: planes, isLoading } = usePlans(areaFiltro);
 
   const rows = useMemo(() => groupByCase(planes ?? []), [planes]);
   const filteredRows = useMemo(() => {
@@ -152,21 +154,6 @@ export function JefeHome() {
               <p className="mt-1 text-[14px] text-ink-soft">Planes asignados por Seguridad Operativa</p>
             </div>
             <span className="text-[13px] text-ink-quiet">{countLabel(filteredRows.length, "caso", "casos")}</span>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {FILTERS.map((f) => (
-              <Link
-                key={f.id}
-                to={f.href}
-                className={cn(
-                  "rounded-lg px-3.5 py-2 text-[14px] font-medium transition-all",
-                  safeFilter === f.id ? "bg-brand-700 text-white shadow-sm" : "bg-surface-2 text-ink-soft hover:bg-surface-3 hover:text-ink"
-                )}
-              >
-                {f.label}
-              </Link>
-            ))}
           </div>
 
           <Card padded={false} className="overflow-hidden border-line-soft shadow-sm">

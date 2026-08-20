@@ -18,20 +18,28 @@ import { SoEstadisticasPage } from "@/pages/seguridad/reportes/EstadisticasPage"
 import { SoNotificacionesPage } from "@/pages/seguridad/NotificacionesPage";
 import { EventosAsignadosPage } from "@/pages/seguridad/EventosAsignadosPage";
 import { SoAlertasPage } from "@/pages/seguridad/AlertasPage";
+import { SoAuditoriaPage } from "@/pages/seguridad/AuditoriaPage";
 import {
   SoEventosPage,
-  SoPerfilPage,
   SoPlanesAccionPage,
 } from "@/pages/seguridad/PlaceholderPages";
+import { SoPerfilPage } from "@/pages/seguridad/PerfilPage";
+import { JefePerfilPage } from "@/pages/jefe/PerfilPage";
 import { Dashboard as MonitoreoDashboardPage } from "@/pages/monitoreo/Dashboard";
 import { Registro as MonitoreoRegistroPage } from "@/pages/monitoreo/Registro";
 import { Historial as MonitoreoHistorialPage } from "@/pages/monitoreo/Historial";
 import { Reportes as MonitoreoReportesPage } from "@/pages/monitoreo/Reportes";
 import { Detalle as MonitoreoDetallePage } from "@/pages/monitoreo/Detalle";
 import { Editar as MonitoreoEditarPage } from "@/pages/monitoreo/Editar";
+import { Perfil as MonitoreoPerfilPage } from "@/pages/monitoreo/Perfil";
 import { AdminUsuariosPage } from "@/pages/admin/UsuariosPage";
-import { AdminCatalogosPage, AdminConfiguracionPage } from "@/pages/admin/PlaceholderPages";
+import { AdminAreasPage } from "@/pages/admin/AreasPage";
+import { AdminEstacionesPage } from "@/pages/admin/EstacionesPage";
+import { AdminMaterialRodantePage } from "@/pages/admin/MaterialRodantePage";
+import { AdminConfiguracionPage } from "@/pages/admin/PlaceholderPages";
 import { AdminAuditoriaPage } from "@/pages/admin/AuditoriaPage";
+import { AdminPerfilPage } from "@/pages/admin/PerfilPage";
+import { ReportantePerfilPage } from "@/pages/reports/PerfilPage";
 import { NotFoundPage } from "@/pages/NotFound";
 
 export function AppRouter() {
@@ -45,12 +53,14 @@ export function AppRouter() {
         <Route path="/reportes/nuevo" element={<ProtectedRoute roles={["Reportante"]}><NewReportPage /></ProtectedRoute>} />
         <Route path="/reportes/mis-reportes" element={<ProtectedRoute roles={["Reportante"]}><MyReportsPage /></ProtectedRoute>} />
         <Route path="/reportes/notificaciones" element={<ProtectedRoute roles={["Reportante"]}><NotificationsPage /></ProtectedRoute>} />
+        <Route path="/reportes/perfil" element={<ProtectedRoute roles={["Reportante"]}><ReportantePerfilPage /></ProtectedRoute>} />
 
         {/* Portal de Seguridad Operativa (Analista SO) — sin login todavía */}
         <Route path="/seguridad" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoDashboardPage /></ProtectedRoute>} />
         <Route path="/seguridad/casos" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoCasosPage /></ProtectedRoute>} />
         <Route path="/seguridad/casos/:codigo" element={<ProtectedRoute roles={["Seguridad Operativa"]}><CaseDetailPage /></ProtectedRoute>} />
         <Route path="/seguridad/alertas" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoAlertasPage /></ProtectedRoute>} />
+        <Route path="/seguridad/auditoria" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoAuditoriaPage /></ProtectedRoute>} />
         <Route path="/seguridad/planes-accion" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoPlanesAccionPage /></ProtectedRoute>} />
         <Route path="/seguridad/eventos" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoEventosPage /></ProtectedRoute>} />
         <Route path="/seguridad/reportes" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoKpisPage /></ProtectedRoute>} />
@@ -65,24 +75,27 @@ export function AppRouter() {
         <Route path="/jefe" element={<ProtectedRoute roles={["Jefe de Área"]}><JefeHome /></ProtectedRoute>} />
         <Route path="/jefe/planes/:codigo" element={<ProtectedRoute roles={["Jefe de Área"]}><PlanDetail /></ProtectedRoute>} />
         <Route path="/jefe/indicadores" element={<ProtectedRoute roles={["Jefe de Área"]}><JefeIndicadoresPage /></ProtectedRoute>} />
+        <Route path="/jefe/perfil" element={<ProtectedRoute roles={["Jefe de Área"]}><JefePerfilPage /></ProtectedRoute>} />
 
         {/* Panel de Monitoreo — en construcción, portado desde el prototipo */}
-        <Route path="/monitoreo" element={<ProtectedRoute roles={["Monitorista"]}><MonitoreoDashboardPage /></ProtectedRoute>} />
-        <Route path="/monitoreo/nuevo" element={<ProtectedRoute roles={["Monitorista"]}><MonitoreoRegistroPage /></ProtectedRoute>} />
-        <Route path="/monitoreo/historial" element={<ProtectedRoute roles={["Monitorista"]}><MonitoreoHistorialPage /></ProtectedRoute>} />
-        <Route path="/monitoreo/evento/:id" element={<ProtectedRoute roles={["Monitorista"]}><MonitoreoDetallePage /></ProtectedRoute>} />
-        <Route path="/monitoreo/editar/:id" element={<ProtectedRoute roles={["Monitorista"]}><MonitoreoEditarPage /></ProtectedRoute>} />
-        <Route path="/monitoreo/reportes" element={<ProtectedRoute roles={["Monitorista"]}><MonitoreoReportesPage /></ProtectedRoute>} />
+        <Route path="/monitoreo" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoDashboardPage /></ProtectedRoute>} />
+        <Route path="/monitoreo/nuevo" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoRegistroPage /></ProtectedRoute>} />
+        <Route path="/monitoreo/historial" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoHistorialPage /></ProtectedRoute>} />
+        <Route path="/monitoreo/evento/:id" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoDetallePage /></ProtectedRoute>} />
+        <Route path="/monitoreo/editar/:id" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoEditarPage /></ProtectedRoute>} />
+        <Route path="/monitoreo/reportes" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoReportesPage /></ProtectedRoute>} />
+        <Route path="/monitoreo/perfil" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoPerfilPage /></ProtectedRoute>} />
 
         {/* Panel de Administrador — sin login todavía */}
         <Route path="/admin" element={<ProtectedRoute roles={["Admin"]}><AdminUsuariosPage /></ProtectedRoute>} />
         <Route path="/admin/usuarios" element={<ProtectedRoute roles={["Admin"]}><AdminUsuariosPage /></ProtectedRoute>} />
         <Route path="/admin/roles" element={<ProtectedRoute roles={["Admin"]}><AdminUsuariosPage /></ProtectedRoute>} />
-        <Route path="/admin/catalogos" element={<ProtectedRoute roles={["Admin"]}><AdminCatalogosPage /></ProtectedRoute>} />
-        <Route path="/admin/estaciones" element={<ProtectedRoute roles={["Admin"]}><AdminCatalogosPage /></ProtectedRoute>} />
-        <Route path="/admin/material-rodante" element={<ProtectedRoute roles={["Admin"]}><AdminCatalogosPage /></ProtectedRoute>} />
+        <Route path="/admin/catalogos" element={<ProtectedRoute roles={["Admin"]}><AdminAreasPage /></ProtectedRoute>} />
+        <Route path="/admin/estaciones" element={<ProtectedRoute roles={["Admin"]}><AdminEstacionesPage /></ProtectedRoute>} />
+        <Route path="/admin/material-rodante" element={<ProtectedRoute roles={["Admin"]}><AdminMaterialRodantePage /></ProtectedRoute>} />
         <Route path="/admin/auditoria" element={<ProtectedRoute roles={["Admin"]}><AdminAuditoriaPage /></ProtectedRoute>} />
         <Route path="/admin/configuracion" element={<ProtectedRoute roles={["Admin"]}><AdminConfiguracionPage /></ProtectedRoute>} />
+        <Route path="/admin/perfil" element={<ProtectedRoute roles={["Admin"]}><AdminPerfilPage /></ProtectedRoute>} />
 
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

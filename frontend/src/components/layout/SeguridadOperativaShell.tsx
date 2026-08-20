@@ -17,10 +17,12 @@ import {
   FilePlus2,
   Folder,
   Gauge,
+  History,
   Home,
   LayoutDashboard,
   Menu,
   PieChart,
+  Radar,
   Rocket,
   ShieldAlert,
   Timer,
@@ -30,6 +32,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SessionExitButton } from "@/features/auth/SessionExitButton";
+import { AdminPanelSwitcher } from "@/features/auth/AdminPanelSwitcher";
+import { AdminViewingBanner } from "@/features/auth/AdminViewingBanner";
+import { useAuth } from "@/features/auth/auth";
 import { Logo } from "@/components/brand/Logo";
 import { useCases } from "@/features/cases/hooks/useCases";
 import { toCaseRow } from "@/features/cases/adapter";
@@ -76,6 +81,7 @@ const FILTER_NAV: Record<CaseFilterId, { icon: LucideIcon; badge: boolean }> = {
 
 export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
   const location = useLocation();
+  const { user } = useAuth();
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSE_KEY) === "1");
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: rawCases } = useCases({});
@@ -126,6 +132,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
           match: (p) => p === "/seguridad/eventos-asignados",
         },
         { to: "/seguridad/alertas", label: "Alertas", icon: AlertTriangle, badge: pendingDecisions || undefined, badgeTone: "neutral", match: (p) => p === "/seguridad/alertas" },
+        { to: "/seguridad/auditoria", label: "Auditoría", icon: History, match: (p) => p === "/seguridad/auditoria" },
       ],
     },
     {
@@ -255,16 +262,18 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
             </div>
           )}
         </Link>
-        {onNavigate && (
-          <button
-            type="button"
-            onClick={onNavigate}
-            className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-ink-soft hover:bg-surface hover:text-ink md:hidden"
-            aria-label="Cerrar menú"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
+        <div className="flex shrink-0 items-center gap-1">
+          {onNavigate && (
+            <button
+              type="button"
+              onClick={onNavigate}
+              className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-ink-soft hover:bg-surface hover:text-ink md:hidden"
+              aria-label="Cerrar menú"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       <nav className="scrollbar-none flex-1 overflow-y-auto overscroll-contain px-3 py-4">
@@ -334,7 +343,9 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className="min-h-screen bg-surface md:flex">
+    <>
+      <AdminViewingBanner roleLabel="Seguridad Operativa" />
+      <div className="min-h-screen bg-surface md:flex">
       {/* Desktop sidebar */}
       <aside
         data-print="hide"
@@ -385,6 +396,17 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
             </div>
 
             <div className="ml-auto flex items-center gap-2.5">
+              {user?.es_responsable && (
+                <Link
+                  to="/monitoreo"
+                  className="grid h-8 w-8 place-items-center rounded-lg text-ink-soft transition-colors hover:bg-surface hover:text-ink"
+                  aria-label="Ir a Monitoreo"
+                  title="Ir a Monitoreo"
+                >
+                  <Radar className="h-4 w-4" />
+                </Link>
+              )}
+              <AdminPanelSwitcher />
               <SessionExitButton />
               <Link
                 to="/seguridad/notificaciones"
@@ -405,7 +427,8 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
 
         <main className="w-full max-w-none px-4 py-5 sm:px-6 sm:py-6 lg:px-8">{children}</main>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
@@ -414,6 +437,7 @@ function getPageTitle(pathname: string) {
   if (pathname.startsWith("/seguridad/casos")) return "Gestión de Casos";
   if (pathname === "/seguridad/eventos-asignados") return "Eventos asignados";
   if (pathname === "/seguridad/alertas") return "Alertas";
+  if (pathname === "/seguridad/auditoria") return "Auditoría";
   if (pathname === "/seguridad/reportes" || pathname === "/seguridad/reportes/kpis") return "KPIs";
   if (pathname === "/seguridad/reportes/estadisticas") return "Estadísticas";
   if (pathname === "/seguridad/reportes/exportar") return "Exportar Reportes";
@@ -428,6 +452,7 @@ function getBreadcrumb(pathname: string) {
   if (pathname.startsWith("/seguridad/casos")) return "Inicio / Casos";
   if (pathname === "/seguridad/eventos-asignados") return "Inicio / Eventos asignados";
   if (pathname === "/seguridad/alertas") return "Inicio / Alertas";
+  if (pathname === "/seguridad/auditoria") return "Inicio / Auditoría";
   if (pathname === "/seguridad/reportes" || pathname === "/seguridad/reportes/kpis") return "Inicio / Reportes / KPIs";
   if (pathname === "/seguridad/reportes/estadisticas") return "Inicio / Reportes / Estadísticas";
   if (pathname === "/seguridad/reportes/exportar") return "Inicio / Reportes / Exportar";

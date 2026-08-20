@@ -17,6 +17,7 @@ import {
 import { Logo } from "@/components/brand/Logo";
 import { cn } from "@/lib/utils";
 import { SessionExitButton } from "@/features/auth/SessionExitButton";
+import { AdminPanelSwitcher } from "@/features/auth/AdminPanelSwitcher";
 
 interface NavItem {
   to: string;
@@ -49,26 +50,26 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
 
   return (
     <>
-      <Link
-        to="/admin/usuarios"
-        onClick={onNavigate}
+      <div
         className={cn(
-          "flex shrink-0 items-center gap-3 border-b border-line-soft px-4",
+          "flex shrink-0 items-center gap-2 border-b border-line-soft px-4",
           collapsed ? "h-16 justify-center px-2" : "h-[112px]"
         )}
       >
-        <Logo size={collapsed ? 32 : 66} withWordmark={false} />
-        {!collapsed && (
-          <div className="min-w-0 leading-tight">
-            <p className="font-display text-[17px] font-bold tracking-tight text-ink">
-              SIGMA<span className="text-brand-600"> L1</span>
-            </p>
-            <p className="mt-0.5 max-w-[130px] text-[11.5px] font-medium leading-[1.2] text-ink-quiet">
-              Administración · Metro de Lima
-            </p>
-          </div>
-        )}
-      </Link>
+        <Link to="/admin/usuarios" onClick={onNavigate} className="flex min-w-0 flex-1 items-center gap-3">
+          <Logo size={collapsed ? 32 : 66} withWordmark={false} />
+          {!collapsed && (
+            <div className="min-w-0 leading-tight">
+              <p className="font-display text-[17px] font-bold tracking-tight text-ink">
+                SIGMA<span className="text-brand-600"> L1</span>
+              </p>
+              <p className="mt-0.5 max-w-[130px] text-[11.5px] font-medium leading-[1.2] text-ink-quiet">
+                Administración · Metro de Lima
+              </p>
+            </div>
+          )}
+        </Link>
+      </div>
 
       <nav className="scrollbar-none flex-1 overflow-y-auto px-3 py-4">
         {!collapsed && <p className="mb-3 px-2 text-[10px] font-semibold uppercase text-ink-faint">Gestión de usuarios</p>}
@@ -112,13 +113,13 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
       {!collapsed && (
         <div className="shrink-0 border-t border-line-soft p-3">
           <SessionExitButton withLabel className="mb-3 w-full justify-start" />
-          <div className="flex items-center gap-3 rounded-2xl bg-surface px-3 py-3">
+          <Link to="/admin/perfil" onClick={onNavigate} className="flex items-center gap-3 rounded-2xl bg-surface px-3 py-3 transition-colors hover:bg-surface-2">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-700 text-[13px] font-bold text-white">A</div>
             <div className="min-w-0 leading-tight">
               <p className="truncate text-[13px] font-semibold text-ink">Administrador</p>
               <p className="mt-0.5 truncate text-[11.5px] text-ink-quiet">Acceso Total</p>
             </div>
-          </div>
+          </Link>
         </div>
       )}
     </>
@@ -181,6 +182,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 SIGMA L1 <span className="px-1.5 text-ink-faint">›</span> Administrador
               </p>
               <p className="mt-0.5 truncate font-display text-[19px] font-bold tracking-tight text-ink">{title}</p>
+            </div>
+            <div className="ml-auto">
+              <AdminPanelSwitcher />
             </div>
           </div>
         </header>

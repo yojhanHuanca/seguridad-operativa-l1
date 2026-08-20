@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, ChevronLeft, ChevronRight, KeyRound, Pencil, Search, ShieldCheck, UserCog, UserPlus, Users, UserX } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, Pencil, Search, ShieldCheck, UserCog, UserPlus, Users } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { AdminShell } from "@/components/layout/AdminShell";
 import { Button } from "@/design-system/primitives/Button";
@@ -91,12 +91,9 @@ export function AdminUsuariosPage() {
   return (
     <AdminShell>
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-[20px] font-bold text-ink">{rolesView ? "Roles y accesos" : "Gestión de usuarios"}</h1>
-          <p className="mt-1 text-[12.5px] text-ink-quiet">
-            {rolesView ? "Consulta los perfiles disponibles y las cuentas asignadas a cada uno." : `${counts?.total ?? 0} usuarios registrados · ${counts?.activos ?? 0} activos`}
-          </p>
-        </div>
+        <p className="text-[12.5px] text-ink-quiet">
+          {rolesView ? "Consulta los perfiles disponibles y las cuentas asignadas a cada uno." : `${counts?.total ?? 0} usuarios registrados · ${counts?.activos ?? 0} activos`}
+        </p>
         {!rolesView && (
           <Button size="sm" onClick={abrirCrear}>
             <UserPlus className="h-4 w-4" /> Nuevo usuario
@@ -174,7 +171,7 @@ export function AdminUsuariosPage() {
                     <thead><tr className="border-b border-line bg-surface text-[11px] text-ink-quiet"><th className="px-4 py-3 font-semibold">Código</th><th className="px-4 py-3 font-semibold">Nombre</th><th className="px-4 py-3 font-semibold">Teléfono</th><th className="px-4 py-3 font-semibold">Área</th><th className="px-4 py-3 font-semibold">Cargo</th><th className="px-4 py-3 font-semibold">Rol</th><th className="px-4 py-3 font-semibold">Estado</th><th className="px-4 py-3 text-right font-semibold">Acciones</th></tr></thead>
                     <tbody>{filteredUsers.map((user) => {
                       const initials = user.nombre.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase();
-                      return <tr key={user.id_usuario} className="border-b border-line-soft last:border-0 hover:bg-surface"><td className="px-4 py-3 font-mono text-[10.5px] text-ink-soft">{user.codigo_usuario}</td><td className="px-4 py-3"><div className="flex items-center gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-100 text-[10.5px] font-semibold text-brand-800">{initials}</span><div><p className="font-medium text-ink">{user.nombre}</p><p className="mt-0.5 text-[10.5px] text-ink-faint">{user.correo}</p></div></div></td><td className="px-4 py-3 text-ink-soft">{user.telefono || "—"}</td><td className="px-4 py-3 text-ink-soft">{user.areas?.nombre_area ?? "—"}</td><td className="px-4 py-3 text-ink-soft">{user.cargo || "—"}</td><td className="px-4 py-3"><span className={cn("inline-flex rounded-md px-2 py-1 text-[10.5px] font-medium", user.roles?.nombre_rol?.toLowerCase().includes("admin") ? "bg-red-50 text-red-700" : "bg-brand-50 text-brand-800")}>{user.roles?.nombre_rol ?? "Sin asignar"}</span></td><td className="px-4 py-3"><span className={cn("inline-flex items-center rounded-md px-2 py-1 text-[10.5px] font-medium", estadoActivo(user.estado) ? "bg-brand-50 text-brand-800" : "bg-surface-2 text-ink-quiet")}>{user.estado ?? "Activo"}</span></td><td className="px-4 py-3"><div className="flex justify-end gap-1"><button type="button" onClick={() => abrirEditar(user)} className="grid h-8 w-8 place-items-center rounded-lg text-ink-quiet hover:bg-surface-2 hover:text-brand-700" aria-label={`Editar ${user.nombre}`} title="Editar usuario"><Pencil className="h-3.5 w-3.5" /></button><button type="button" onClick={() => abrirEditar(user)} className="grid h-8 w-8 place-items-center rounded-lg text-ink-quiet hover:bg-surface-2 hover:text-brand-700" aria-label={`Gestionar acceso de ${user.nombre}`} title="Gestionar acceso"><KeyRound className="h-3.5 w-3.5" /></button><button type="button" onClick={() => abrirEditar(user)} className="grid h-8 w-8 place-items-center rounded-lg text-red-500 hover:bg-red-50 hover:text-red-700" aria-label={`Cambiar estado de ${user.nombre}`} title="Cambiar estado"><UserX className="h-3.5 w-3.5" /></button></div></td></tr>;
+                      return <tr key={user.id_usuario} className="border-b border-line-soft last:border-0 hover:bg-surface"><td className="px-4 py-3 font-mono text-[10.5px] text-ink-soft">{user.codigo_usuario}</td><td className="px-4 py-3"><div className="flex items-center gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-100 text-[10.5px] font-semibold text-brand-800">{initials}</span><div><p className="font-medium text-ink">{user.nombre}</p><p className="mt-0.5 text-[10.5px] text-ink-faint">{user.correo}</p></div></div></td><td className="px-4 py-3 text-ink-soft">{user.telefono || "—"}</td><td className="px-4 py-3 text-ink-soft">{user.areas?.nombre_area ?? "—"}</td><td className="px-4 py-3 text-ink-soft">{user.cargo || "—"}</td><td className="px-4 py-3"><span className={cn("inline-flex rounded-md px-2 py-1 text-[10.5px] font-medium", user.roles?.nombre_rol?.toLowerCase().includes("admin") ? "bg-red-50 text-red-700" : "bg-brand-50 text-brand-800")}>{user.roles?.nombre_rol ?? "Sin asignar"}</span></td><td className="px-4 py-3"><span className={cn("inline-flex items-center rounded-md px-2 py-1 text-[10.5px] font-medium", estadoActivo(user.estado) ? "bg-brand-50 text-brand-800" : "bg-surface-2 text-ink-quiet")}>{user.estado ?? "Activo"}</span></td><td className="px-4 py-3"><div className="flex justify-end gap-1"><button type="button" onClick={() => abrirEditar(user)} className="grid h-8 w-8 place-items-center rounded-lg text-ink-quiet hover:bg-surface-2 hover:text-brand-700" aria-label={`Editar ${user.nombre}`} title="Editar usuario"><Pencil className="h-3.5 w-3.5" /></button></div></td></tr>;
                     })}</tbody>
                   </table>
                 </div>

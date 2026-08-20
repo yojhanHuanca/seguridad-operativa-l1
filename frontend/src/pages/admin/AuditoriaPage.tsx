@@ -5,7 +5,7 @@ import { Button } from "@/design-system/primitives/Button";
 import { Input, Select } from "@/design-system/primitives/Input";
 import { Card } from "@/components/ui/card";
 import { useAuditoria, useAuditoriaTablas } from "@/features/auditoria/hooks/useAuditoria";
-import { useUsers } from "@/features/users/hooks/useUsers";
+import { useUsersBasicos } from "@/features/users/hooks/useUsersBasicos";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { AccionAuditoria } from "@/features/auditoria/types";
@@ -36,11 +36,8 @@ const ACCION_TONE: Record<AccionAuditoria, string> = {
   login_fallido: "bg-orange-50 text-orange-700",
 };
 
-export function AdminAuditoriaPage() {
-  // Página propia de Admin: ya está permitido pedir el padrón completo acá,
-  // solo se usa el nombre para llenar el filtro.
-  const { data: usuariosPage } = useUsers({ page: 1, limit: 1000 });
-  const usuarios = usuariosPage?.items ?? [];
+export function AuditoriaPanelContent() {
+  const { data: usuarios = [] } = useUsersBasicos();
   const { data: tablas = [] } = useAuditoriaTablas();
 
   const [usuarioFiltro, setUsuarioFiltro] = useState("todos");
@@ -64,7 +61,7 @@ export function AdminAuditoriaPage() {
   const paginaActual = Math.min(pagina, totalPaginas);
 
   return (
-    <AdminShell>
+    <>
       <div>
         <h1 className="font-display text-[20px] font-bold text-ink">Auditoría</h1>
         <p className="mt-1 text-[12.5px] text-ink-quiet">{total} acciones registradas</p>
@@ -184,6 +181,14 @@ export function AdminAuditoriaPage() {
           </div>
         </>
       )}
+    </>
+  );
+}
+
+export function AdminAuditoriaPage() {
+  return (
+    <AdminShell>
+      <AuditoriaPanelContent />
     </AdminShell>
   );
 }

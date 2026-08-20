@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SessionExitButton } from "@/features/auth/SessionExitButton";
+import { AdminPanelSwitcher } from "@/features/auth/AdminPanelSwitcher";
+import { AdminViewingBanner } from "@/features/auth/AdminViewingBanner";
 import { Logo } from "@/components/brand/Logo";
 
 interface NavItem {
@@ -101,19 +103,17 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
 
   return (
     <>
-      <Link
-        to="/monitoreo"
-        onClick={onNavigate}
-        className={cn("flex shrink-0 items-center gap-3 border-b border-line-soft px-4", collapsed ? "h-16 justify-center px-2" : "h-[112px]")}
-      >
-        <Logo size={collapsed ? 32 : 66} withWordmark={false} />
-        {!collapsed && (
-          <div className="min-w-0 leading-tight">
-            <p className="truncate text-[13.5px] font-bold text-ink">Monitoreo</p>
-            <p className="truncate text-[10.5px] text-ink-quiet">Incidentes Operativos</p>
-          </div>
-        )}
-      </Link>
+      <div className={cn("flex shrink-0 items-center gap-2 border-b border-line-soft px-4", collapsed ? "h-16 justify-center px-2" : "h-[112px]")}>
+        <Link to="/monitoreo" onClick={onNavigate} className="flex min-w-0 flex-1 items-center gap-3">
+          <Logo size={collapsed ? 32 : 66} withWordmark={false} />
+          {!collapsed && (
+            <div className="min-w-0 leading-tight">
+              <p className="truncate text-[13.5px] font-bold text-ink">Monitoreo</p>
+              <p className="truncate text-[10.5px] text-ink-quiet">Incidentes Operativos</p>
+            </div>
+          )}
+        </Link>
+      </div>
 
       <nav className="scrollbar-none flex-1 overflow-y-auto px-3 py-4">
         {SECTIONS.map((section) => (
@@ -139,13 +139,13 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
       {!collapsed && (
         <div className="shrink-0 border-t border-line-soft p-3">
           <SessionExitButton withLabel className="mb-2 w-full justify-start" />
-          <div className="flex items-center gap-3 rounded-2xl bg-surface px-3 py-3">
+          <Link to="/monitoreo/perfil" onClick={onNavigate} className="flex items-center gap-3 rounded-2xl bg-surface px-3 py-3 transition-colors hover:bg-surface-2">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-700 text-[13px] font-bold text-white">M</div>
             <div className="min-w-0 leading-tight">
               <p className="truncate text-[13px] font-semibold text-ink">Monitorista</p>
               <p className="mt-0.5 truncate text-[11.5px] text-ink-quiet">Línea 1 · Metro de Lima</p>
             </div>
-          </div>
+          </Link>
         </div>
       )}
     </>
@@ -164,7 +164,9 @@ export function MonitoristaShell({ children }: { children: ReactNode }) {
   }, [collapsed]);
 
   return (
-    <div className="min-h-screen bg-surface md:flex">
+    <>
+      <AdminViewingBanner roleLabel="Monitorista" />
+      <div className="min-h-screen bg-surface md:flex">
       {/* Desktop sidebar */}
       <aside
         className={cn(
@@ -211,11 +213,15 @@ export function MonitoristaShell({ children }: { children: ReactNode }) {
               </p>
               <p className="mt-0.5 truncate font-display text-[19px] font-bold tracking-tight text-ink">{meta.title}</p>
             </div>
+            <div className="ml-auto">
+              <AdminPanelSwitcher />
+            </div>
           </div>
         </header>
 
         <main className="w-full max-w-none px-4 py-4 sm:px-6 lg:px-8">{children}</main>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

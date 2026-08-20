@@ -28,7 +28,8 @@ import { Pill, RiskPill, StagePill } from "@/design-system/primitives/Pill";
 import { useCases } from "@/features/cases/hooks/useCases";
 import { toCaseRow, type CaseRow } from "@/features/cases/adapter";
 import { riskCategory, type RiskLevel as DomainRiskLevel } from "@/features/cases/domain";
-import { STATION_COORDS, TALLERES, MAP_W, MAP_H } from "@/lib/stations";
+import { MAP_W, MAP_H, resolveStationCoords, resolveTalleresCoords } from "@/lib/stations";
+import { useCatalogs } from "@/features/reports/hooks/useCatalogs";
 import { IsometricLineMap } from "./IsometricLineMap";
 import { cn } from "@/lib/utils";
 import { formatDateTime, relativeTime } from "@/lib/format";
@@ -88,7 +89,12 @@ export function IncidentMap() {
 
   const selected = selectedStation || selectedTaller;
 
-  const stations = useMemo(() => STATION_COORDS.map((coord) => buildStationData(coord, cases)), [cases]);
+  const { byName: catalogsByName } = useCatalogs();
+  const lugares = catalogsByName.get("Lugar de Incidente")?.catalogo_detalle ?? [];
+  const stationCoords = useMemo(() => resolveStationCoords(lugares), [lugares]);
+  const talleres = useMemo(() => resolveTalleresCoords(lugares, stationCoords), [lugares, stationCoords]);
+
+  const stations = useMemo(() => stationCoords.map((coord) => buildStationData(coord, cases)), [stationCoords, cases]);
 
   const highlightedStation = useMemo(() => {
     return (
@@ -112,7 +118,7 @@ export function IncidentMap() {
   }, [stations]);
 
   const linePath = useMemo(() => {
-    const pts = STATION_COORDS;
+    const pts = stationCoords;
     if (pts.length < 2) return "";
     let d = `M ${pts[0].x} ${pts[0].y}`;
     for (let i = 1; i < pts.length; i++) {
@@ -126,7 +132,7 @@ export function IncidentMap() {
       d += ` C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${curr.x} ${curr.y}`;
     }
     return d;
-  }, []);
+  }, [stationCoords]);
 
   const kpis = useMemo(() => {
     const activas = stations.filter((station) => station.abiertos > 0).length;
@@ -164,7 +170,7 @@ export function IncidentMap() {
                 {/* Derivado del catálogo de estaciones: si la lista cambia, el
                     subtítulo la sigue en vez de quedarse en una cifra fija. */}
                 <p className="text-[12px] text-ink-quiet mt-0.5">
-                  Vista isométrica · {STATION_COORDS.length} estaciones · {TALLERES.length} talleres · altura = casos abiertos
+                  Vista isométrica · {stationCoords.length} estaciones · {talleres.length} talleres · altura = casos abiertos
                 </p>
               </div>
             </div>
@@ -180,7 +186,7 @@ export function IncidentMap() {
           <div className="relative bg-gradient-to-br from-[#e8f0eb] via-[#e4ece7] to-[#dbe8e0]">
             <IsometricLineMap
               stations={stations}
-              talleres={TALLERES}
+              talleres={talleres}
               linePath={linePath}
               mapW={MAP_W}
               mapH={MAP_H}

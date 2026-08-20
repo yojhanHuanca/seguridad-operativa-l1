@@ -7,7 +7,7 @@ import { Pill, RiskPill } from "@/design-system/primitives/Pill";
 import { Field, Input, Select, Textarea } from "@/design-system/primitives/Input";
 import { StageSection } from "@/features/cases/components/CaseParts";
 import { useAreas } from "@/features/reports/hooks/useAreas";
-import { useUsers } from "@/features/users/hooks/useUsers";
+import { useUsersBasicos } from "@/features/users/hooks/useUsersBasicos";
 import { useCreatePlans, useStartExecution, useUpdatePlan, type PlanActivityInput } from "@/features/cases/hooks/useCaseActions";
 import { encodeActivityDescription, parseActivityDescription } from "@/features/cases/lib/activityMeta";
 import { shortPlanCode } from "@/features/cases/lib/planLabels";
@@ -17,7 +17,7 @@ import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { StageRollbackButton } from "./StageRollbackButton";
 import type { CaseDetail } from "@/features/cases/types";
-import type { UserListItem } from "@/features/users/types";
+import type { UserBasic } from "@/features/users/types";
 import type { RiskLevel } from "@/features/cases/domain";
 
 // Portado de pages/seguridad/CaseFile.tsx → PlanStage / PlanForm / PlanDisplay.
@@ -57,7 +57,7 @@ function ResponsableSearch({
   onChange,
 }: {
   value?: number | null;
-  users: UserListItem[];
+  users: UserBasic[];
   onChange: (id: number | null) => void;
 }) {
   const [query, setQuery] = useState("");
@@ -89,6 +89,7 @@ function ResponsableSearch({
               <p className="truncate text-[13px] font-semibold text-brand-900">{selected.nombre}</p>
               <p className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-brand-800/80">
                 <BriefcaseBusiness className="h-3.5 w-3.5" /> {selected.cargo || "Cargo no registrado"}
+                {selected.areas?.nombre_area && <> · {selected.areas.nombre_area}</>}
               </p>
             </div>
           </div>
@@ -283,7 +284,7 @@ function PlanDisplay({ caso, onEdit }: { caso: CaseDetail; onEdit: (idPlan: numb
   return (
     <div className="space-y-4">
       {caso.planes_accion.map((plan) => (
-        <div key={plan.id_plan}>
+        <div key={plan.id_plan} className="min-w-0">
           <div className="flex items-center justify-end -mb-1">
             {/* Modificar reemplaza las actividades del plan. Una vez que el
                 área lo aceptó ya hay avance registrado sobre esas actividades,
@@ -328,52 +329,55 @@ function PlanDisplay({ caso, onEdit }: { caso: CaseDetail; onEdit: (idPlan: numb
           </div>
 
           {plan.descripcion && (
-            <p className="mt-3 text-[13px] text-ink-soft leading-relaxed break-words">{plan.descripcion}</p>
+            <p className="mt-3 min-w-0 text-[13px] text-ink-soft leading-relaxed break-words">{plan.descripcion}</p>
           )}
 
-          <div className="pt-3 mt-3 border-t border-line-soft">
-            <p className="text-[11px] font-semibold tracking-wide uppercase text-ink-faint mb-2.5">Actividades del plan</p>
-            <div className="space-y-2">
-              {plan.actividades_plan.map((it) => {
-                const parsed = parseActivityDescription(it.descripcion);
-                return (
-                  <div key={it.id_actividad} className="rounded-lg bg-surface border border-line p-3 text-sm">
-                    <div className="flex items-center justify-end mb-2">
-                      <Pill tone={it.catalogo_detalle?.nombre === "Completado" ? "brand" : "neutral"} dot>
-                        {it.catalogo_detalle?.nombre ?? "Pendiente"}
-                      </Pill>
+          {/* Con una sola actividad, sus datos son los mismos que ya se ven arriba
+              (mismo responsable, área y fecha) — repetirlos en una tarjeta aparte
+              no suma nada. Solo vale la pena mostrar esta sección cuando el plan
+              se dividió en más de una actividad. */}
+          {plan.actividades_plan.length > 1 && (
+            <div className="pt-3 mt-3 border-t border-line-soft">
+              <p className="text-[11px] font-semibold tracking-wide uppercase text-ink-faint mb-2.5">Actividades del plan</p>
+              <div className="space-y-2">
+                {plan.actividades_plan.map((it) => {
+                  const parsed = parseActivityDescription(it.descripcion);
+                  return (
+                    <div key={it.id_actividad} className="min-w-0 rounded-lg bg-surface border border-line p-3 text-sm">
+                      <div className="flex items-center justify-end mb-2">
+                        <Pill tone={it.catalogo_detalle?.nombre === "Completado" ? "brand" : "neutral"} dot>
+                          {it.catalogo_detalle?.nombre ?? "Pendiente"}
+                        </Pill>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <span className="text-ink-quiet">Responsable:</span> {it.usuarios?.nombre ?? "—"}
+                          {it.usuarios?.cargo && <span className="text-ink-faint"> · {it.usuarios.cargo}</span>}
+                        </div>
+                        <div>
+                          <span className="text-ink-quiet">Tipo de acción:</span> {parsed.meta.tipoAccion ?? "—"}
+                        </div>
+                        <div>
+                          <span className="text-ink-quiet">Área responsable:</span> {parsed.meta.areaNombre ?? plan.areas.nombre_area}
+                        </div>
+                        <div>
+                          <span className="text-ink-quiet">Inicio:</span> {it.fecha_inicio ? formatDate(it.fecha_inicio) : "—"}
+                        </div>
+                        <div>
+                          <span className="text-ink-quiet">Fin:</span> {it.fecha_fin ? formatDate(it.fecha_fin) : "—"}
+                        </div>
+                      </div>
+                      {parsed.descripcion && (
+                        <div className="mt-2 min-w-0 text-xs break-words">
+                          <span className="text-ink-quiet">Descripción:</span> {parsed.descripcion}
+                        </div>
+                      )}
                     </div>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div>
-                        <span className="text-ink-quiet">Responsable:</span> {it.usuarios?.nombre ?? "—"}
-                        {it.usuarios?.cargo && <span className="text-ink-faint"> · {it.usuarios.cargo}</span>}
-                      </div>
-                      <div>
-                        <span className="text-ink-quiet">Tipo de acción:</span> {parsed.meta.tipoAccion ?? "—"}
-                      </div>
-                      <div>
-                        <span className="text-ink-quiet">Área responsable:</span> {parsed.meta.areaNombre ?? plan.areas.nombre_area}
-                      </div>
-                      <div>
-                        <span className="text-ink-quiet">Inicio:</span> {it.fecha_inicio ? formatDate(it.fecha_inicio) : "—"}
-                      </div>
-                      <div>
-                        <span className="text-ink-quiet">Fin:</span> {it.fecha_fin ? formatDate(it.fecha_fin) : "—"}
-                      </div>
-                    </div>
-                    {parsed.descripcion && (
-                      <div className="mt-2 text-xs break-words">
-                        <span className="text-ink-quiet">Descripción:</span> {parsed.descripcion}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-              {plan.actividades_plan.length === 0 && (
-                <p className="text-[12.5px] text-ink-quiet">Sin actividades registradas.</p>
-              )}
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       ))}
     </div>
@@ -393,8 +397,10 @@ function PlanForm({
   onCancel?: () => void;
 }) {
   const { data: areas } = useAreas();
-  const { data: usuariosPage } = useUsers({ page: 1, limit: 1000 });
-  const usuarios = usuariosPage?.items;
+  const { data: usuarios } = useUsersBasicos();
+  const jefesDeArea = (usuarios ?? []).filter(
+    (usuario) => usuario.roles?.nombre_rol === "Jefe de Área" && usuario.estado?.toLowerCase() === "activo"
+  );
   const createPlans = useCreatePlans(caso.codigo_sop);
   const updatePlan = useUpdatePlan(caso.codigo_sop);
   const esEdicion = !!plan;
@@ -458,7 +464,7 @@ function PlanForm({
     (areas ?? []).find((a) => String(a.id_area) === idArea)?.nombre_area ??
     (plan && String(plan.areas.id_area) === idArea ? plan.areas.nombre_area : "—");
   const nombreUsuario = (id?: number | null) =>
-    (usuarios ?? []).find((u) => u.id_usuario === id)?.nombre ?? "Sin asignar";
+    jefesDeArea.find((u) => u.id_usuario === id)?.nombre ?? "Sin asignar";
 
   const planPayload = (a: PlanFormActivityInput) => ({
     descripcion: `${a.tipo_accion}: ${a.descripcion.trim()}`,
@@ -536,9 +542,15 @@ function PlanForm({
               <div className="space-y-4">
                 <Field label="Responsable" required>
                   <ResponsableSearch
-                    users={usuarios ?? []}
+                    users={jefesDeArea}
                     value={act.responsable}
-                    onChange={(responsable) => updateActividad(i, { responsable })}
+                    onChange={(responsable) => {
+                      const jefe = jefesDeArea.find((u) => u.id_usuario === responsable);
+                      updateActividad(i, {
+                        responsable,
+                        ...(jefe?.id_area ? { id_area: String(jefe.id_area) } : {}),
+                      });
+                    }}
                   />
                 </Field>
 
@@ -646,14 +658,14 @@ function PlanForm({
             </p>
             <div className="space-y-2">
               {actividadesValidas.map((a, i) => (
-                <div key={i} className="rounded-lg border border-line p-3">
+                <div key={i} className="min-w-0 rounded-lg border border-line p-3">
                   <div className="flex items-start justify-between gap-3">
                     <span className="font-mono text-[11.5px] font-semibold text-brand-700 shrink-0">
                       {codigoPlanPrevisto(i)}
                     </span>
                     <Pill tone="brand" dot>{a.tipo_accion}</Pill>
                   </div>
-                  <p className="mt-2 text-[12.5px] text-ink leading-snug">{a.descripcion.trim()}</p>
+                  <p className="mt-2 min-w-0 text-[12.5px] text-ink leading-snug break-words">{a.descripcion.trim()}</p>
                   <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11.5px] text-ink-quiet">
                     <span>Responsable: {nombreUsuario(a.responsable)}</span>
                     <span>Área: {nombreArea(a.id_area)}</span>

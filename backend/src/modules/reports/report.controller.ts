@@ -24,7 +24,7 @@ export class ReportController {
       if (typeof codigo !== "string" || codigo.trim() === "") {
         throw new Error("Código de reporte inválido");
       }
-      const caso = await ReportService.getByCodigo(codigo);
+      const caso = await ReportService.getByCodigo(codigo, (req as AuthenticatedRequest).user);
       return res.json(ApiResponse.success("Reporte obtenido correctamente", caso));
     } catch (error) {
       return res
@@ -42,10 +42,6 @@ export class ReportController {
         size: f.size,
       }));
 
-      // Reportantes anónimos no traen sesión en el wizard público; si viene
-      // un usuario autenticado (SO registrando directo, o un trabajador
-      // logueado), se usa para firmar el reporte — ver anonimato real más
-      // abajo, en ReportRepository.createFullReport.
       const id_usuario_creador = (req as AuthenticatedRequest).user?.id_usuario;
       const result = await ReportService.createReport(req.body, files, id_usuario_creador);
 

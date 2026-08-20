@@ -1,14 +1,7 @@
 import { z } from "zod";
 import { ReportRepository } from "./report.repository.js";
 import type { UploadedFile } from "./report.types.js";
-import type { AuthTokenPayload } from "../../middlewares/auth.middleware.js";
-
-type Actor = AuthTokenPayload;
-
-/** Solo el rol "Reportante" ve nada más que lo suyo; ver comentario en listReports. */
-function esReportante(actor?: Actor) {
-  return (actor?.rol_nombre ?? "").trim().toLowerCase() === "reportante";
-}
+import { esReportante, type Actor } from "../../utils/actor.js";
 
 const idPositivo = z.coerce.number().int().positive();
 
@@ -93,9 +86,13 @@ export class ReportService {
     });
   }
 
-  static async getByCodigo(codigo_sop: string) {
+  static async getByCodigo(codigo_sop: string, actor?: Actor) {
     const caso = await ReportRepository.findByCodigo(codigo_sop);
     if (!caso) throw new Error(`El caso ${codigo_sop} no existe`);
+    // Mismo criterio que el listado: un reportante no puede abrir el caso de otro.
+    if (esReportante(actor) && caso.created_by !== actor!.id_usuario) {
+      throw new Error(`El caso ${codigo_sop} no existe`);
+    }
     return caso;
   }
 }

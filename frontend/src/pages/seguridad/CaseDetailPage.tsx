@@ -209,7 +209,7 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
       {ayuda && <p className="mt-2 text-[11.5px] text-ink-quiet">{ayuda}</p>}
 
       {/* Dos columnas */}
-      <div className="mt-5 grid lg:grid-cols-[280px_1fr] gap-5 items-start">
+      <div className="mt-5 grid lg:grid-cols-[280px_minmax(0,1fr)] gap-5 items-start">
         {/* Panel izquierdo */}
         <div className="space-y-4 lg:sticky lg:top-24">
           <InfoCard title="Información general">

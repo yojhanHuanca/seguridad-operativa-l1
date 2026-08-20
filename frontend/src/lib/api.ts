@@ -4,6 +4,9 @@ export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:3000/api",
 });
 
+/** Origen del backend (sin /api) para resolver rutas /uploads/... que devuelve la API. */
+export const API_ORIGIN = (import.meta.env.VITE_API_URL ?? "http://localhost:3000/api").replace(/\/api\/?$/, "");
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("sigma_auth_token");
   if (token) config.headers.Authorization = `Bearer ${token}`;

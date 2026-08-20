@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Modal } from "@/design-system/primitives/Modal";
 import { Button } from "@/design-system/primitives/Button";
 import { Field, Select } from "@/design-system/primitives/Input";
-import { useUsers } from "@/features/users/hooks/useUsers";
+import { useUsersBasicos } from "@/features/users/hooks/useUsersBasicos";
 import { useAsignarEvento } from "../hooks/useEventoActions";
 import { nombreLugar, nombreTipo } from "../lib/tabla";
 import { apiErrorMessage } from "@/lib/api";
@@ -17,10 +17,10 @@ import type { EventoListItem } from "../types";
  */
 export function AsignarEventoModal({ evento, onClose }: { evento: EventoListItem | null; onClose: () => void }) {
   const [idUsuario, setIdUsuario] = useState("");
-  const { data: usuarios } = useUsers({ page: 1, limit: 1000 });
+  const { data: usuarios } = useUsersBasicos();
   const asignar = useAsignarEvento();
 
-  const responsables = (usuarios?.items ?? []).filter((u) => u.roles?.nombre_rol === "Seguridad Operativa");
+  const responsables = (usuarios ?? []).filter((u) => u.roles?.nombre_rol === "Seguridad Operativa");
 
   const cerrar = () => {
     setIdUsuario("");

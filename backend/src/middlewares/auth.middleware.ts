@@ -9,10 +9,11 @@ export interface AuthTokenPayload {
     correo: string;
     rol: number | null;
     rol_nombre: string;
-    /** Puede faltar en tokens viejos — ver nombreDelActor(). */
-    nombre?: string;
+    es_responsable?: boolean;
     /** Puede faltar en tokens emitidos antes de este campo — ver areaDelActor(). */
     id_area?: number | null;
+    /** Puede faltar en tokens viejos — ver nombreDelActor(). */
+    nombre?: string;
     /** Puede faltar en tokens emitidos antes de este campo — en ese caso no
      * hay sesión que comprobar, y el token sigue siendo válido igual que antes. */
     id_sesion?: number;
@@ -80,4 +81,25 @@ export const requireRoles = (...roles: string[]) => (
         return res.status(403).json({ success: false, message: "No tienes permisos para realizar esta acción" });
     }
     next();
+};
+
+/**
+ * Deja pasar a los roles listados en `roles` sin condición, o a los listados
+ * en `responsableRoles` solo si además tienen el flag `es_responsable` (ej.
+ * el RSO de Seguridad Operativa "visitando" el panel de Monitoreo). Admin
+ * siempre pasa.
+ */
+export const requireRolesOrResponsable = (roles: string[], responsableRoles: string[]) => (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction,
+) => {
+    const rolNombre = req.user?.rol_nombre?.toLowerCase();
+    if (!rolNombre) {
+        return res.status(403).json({ success: false, message: "No tienes permisos para realizar esta acción" });
+    }
+    if (rolNombre === "admin") return next();
+    if (roles.some((role) => role.toLowerCase() === rolNombre)) return next();
+    if (req.user?.es_responsable && responsableRoles.some((role) => role.toLowerCase() === rolNombre)) return next();
+    return res.status(403).json({ success: false, message: "No tienes permisos para realizar esta acción" });
 };

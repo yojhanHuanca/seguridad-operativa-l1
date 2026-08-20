@@ -1,6 +1,18 @@
-import { Activity, ListChecks, UserCircle2 } from "lucide-react";
+import { Activity, AlertTriangle, ListChecks } from "lucide-react";
 import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
 import { ComingSoon } from "@/components/layout/ComingSoon";
+
+export function SoAlertasPage() {
+  return (
+    <SeguridadOperativaShell>
+      <ComingSoon
+        icon={AlertTriangle}
+        title="Alertas"
+        description="Avisos de casos críticos, plazos por vencer e incumplimientos de SLA."
+      />
+    </SeguridadOperativaShell>
+  );
+}
 
 export function SoPlanesAccionPage() {
   return (
@@ -32,11 +44,4 @@ export function SoEventosPage() {
 }
 
 // Notificaciones ya está implementada en ./NotificacionesPage.
-
-export function SoPerfilPage() {
-  return (
-    <SeguridadOperativaShell>
-      <ComingSoon icon={UserCircle2} title="Mi Perfil" description="Datos de la cuenta y preferencias de la sesión." />
-    </SeguridadOperativaShell>
-  );
-}
+// Mi Perfil ya está implementada en ./PerfilPage.

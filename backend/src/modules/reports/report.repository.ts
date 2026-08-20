@@ -45,7 +45,11 @@ export class ReportRepository {
    * "Mis reportes" del trabajador: solo los casos que él mismo registró.
    *
    * `page`/`limit` son opcionales y deben venir juntos — sin ellos se
-   * comporta exactamente igual que antes (trae todo).
+   * comporta exactamente igual que antes (trae todo). Eso es a propósito:
+   * `ReportanteShell` (badge), `ReportanteHomePage` (resumen) y
+   * `NotificationsPage` (solicitudes de información completas) siguen
+   * llamando esto sin paginar porque necesitan el listado entero para sus
+   * propios cálculos — solo `MyReportsPage` manda `page`/`limit`.
    */
   static async findAllByCreator(
     id_usuario: number,
@@ -74,7 +78,7 @@ export class ReportRepository {
 
     if (!opts?.page || !opts?.limit) {
       const data = await prisma.casos_sop.findMany({ where, orderBy, include: LIST_INCLUDE });
-      return { data, total: undefined as number | undefined };
+      return { data, total: undefined };
     }
 
     const [data, total] = await Promise.all([
@@ -195,6 +199,8 @@ export class ReportRepository {
               telefono_reportante: esIdentificado ? dto.telefono_reportante?.trim() || null : null,
               // Anonimato real: si eligió modalidad anónima, no se guarda
               // quién lo reportó — ni oculto en pantalla, ausente de la base.
+              // Antes se guardaba igual (verificado en BD, caso 48), así que
+              // "anónimo" era anónimo solo en la interfaz.
               created_by: esIdentificado ? id_usuario_creador ?? null : null,
               // Si lo registra SO directamente, esa persona ya es quien investiga.
               // Si viene de un Reportante, queda sin responsable hasta que SO lo evalúe.

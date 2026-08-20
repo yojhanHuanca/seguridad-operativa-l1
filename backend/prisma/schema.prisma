@@ -622,6 +622,12 @@ model usuarios {
   telefono                                           String?               @db.VarChar(20)
   estado                                             String?               @default("Activo") @db.VarChar(20)
   fecha_ingreso                                      DateTime?             @db.Date
+  foto_url                                           String?               @db.VarChar(255)
+  ultimo_acceso                                      DateTime?             @db.Timestamp(6)
+  // Permiso extra dentro de su propio rol (ej. el RSO dentro de Seguridad
+  // Operativa puede derivar eventos a su equipo; un analista normal no).
+  // Genérico a propósito para reusarlo en casos similares que vayan saliendo.
+  es_responsable                                     Boolean               @default(false)
   id_area                                            Int?
   id_rol                                             Int?
   actividades_plan                                   actividades_plan[]

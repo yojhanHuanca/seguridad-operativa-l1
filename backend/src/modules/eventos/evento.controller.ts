@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { EventoService } from "./evento.service.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
+import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
 
 export class EventoController {
   static async getAll(req: Request, res: Response) {
@@ -33,10 +34,9 @@ export class EventoController {
     }
   }
 
-  static async create(req: Request, res: Response) {
+  static async create(req: AuthenticatedRequest, res: Response) {
     try {
-      // TODO(auth): tomar el actor de la sesión cuando exista login real.
-      const evento = await EventoService.createEvento(req.body);
+      const evento = await EventoService.createEvento(req.body, req.user?.id_usuario);
       return res.status(201).json(ApiResponse.success("Evento registrado correctamente", evento));
     } catch (error) {
       return res.status(400).json(
@@ -58,7 +58,10 @@ export class EventoController {
 
   static async getAsignados(req: Request, res: Response) {
     try {
-      const eventos = await EventoService.getAsignados(Number(req.params.id_usuario));
+      const eventos = await EventoService.getAsignados(
+        Number(req.params.id_usuario),
+        (req as AuthenticatedRequest).user
+      );
       return res.json(ApiResponse.success("Eventos asignados obtenidos correctamente", eventos));
     } catch (error) {
       return res.status(500).json(ApiResponse.error("Error al obtener los eventos asignados", error));

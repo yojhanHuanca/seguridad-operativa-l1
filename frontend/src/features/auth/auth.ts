@@ -8,6 +8,9 @@ export interface AuthUser {
   estado: string | null;
   rol: string;
   area: string | null;
+  id_area: number | null;
+  ultimo_acceso: string | null;
+  es_responsable: boolean;
 }
 
 export interface AuthValue {
