@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import jwt, { type SignOptions } from "jsonwebtoken";
 import { env } from "../config/env.js";
 
 interface JwtPayload {
@@ -6,12 +6,15 @@ interface JwtPayload {
     correo: string;
     rol: number | null;
     rol_nombre: string;
+    /** Fila en `sesiones` que representa este login — permite invalidar el
+     * token de inmediato al cerrar sesión, ver `verifyToken`. */
+    id_sesion?: number;
 }
 
 export class JwtHelper {
   static generateToken(payload: JwtPayload) {
     return jwt.sign(payload, env.JWT_SECRET, {
-      expiresIn: "8h",
+      expiresIn: (env.JWT_EXPIRES_IN ?? "8h") as NonNullable<SignOptions["expiresIn"]>,
     });
   }
 

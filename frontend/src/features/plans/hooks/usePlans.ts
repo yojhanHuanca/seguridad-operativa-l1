@@ -11,6 +11,24 @@ export function usePlans(area?: number) {
   return useQuery({ queryKey: ["planes", area ?? null], queryFn: () => fetchPlans(area) });
 }
 
+/**
+ * Planes de un caso puntual — antes `PlanDetail.tsx` pedía TODOS los planes
+ * del área y los filtraba en el navegador buscando el código del caso, un
+ * rodeo que además traía de más. Esta pide solo lo que hace falta.
+ */
+async function fetchPlansByCase(codigo: string): Promise<PlanItem[]> {
+  const { data } = await api.get<ApiEnvelope<PlanItem[]>>("/cases/planes", { params: { codigo } });
+  return data.data ?? [];
+}
+
+export function usePlansByCase(codigo: string) {
+  return useQuery({
+    queryKey: ["planes-caso", codigo],
+    queryFn: () => fetchPlansByCase(codigo),
+    enabled: !!codigo,
+  });
+}
+
 /** Invalida planes + casos, porque toda acción del Jefe mueve la etapa del caso. */
 function usePlanMutation<TInput>(fn: (input: TInput) => Promise<unknown>) {
   const queryClient = useQueryClient();
