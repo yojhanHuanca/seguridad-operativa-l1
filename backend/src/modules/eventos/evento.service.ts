@@ -1,6 +1,6 @@
 import prisma from "../../lib/prisma.js";
 import { EventoRepository } from "./evento.repository.js";
-import { asignarEventoSchema, createEventoSchema, updateEventoSchema } from "./evento.types.js";
+import { ESTADOS_EVENTO, asignarEventoSchema, createEventoSchema, updateEventoSchema } from "./evento.types.js";
 import { UserRepository } from "../users/users.repository.js";
 import { NotificationRepository } from "../notifications/notification.repository.js";
 
@@ -32,8 +32,32 @@ async function validarCatalogos(dto: Record<string, unknown>) {
 }
 
 export class EventoService {
-  static async getAllEventos() {
-    return EventoRepository.findAll();
+  static async getAllEventos(query?: {
+    estado?: string;
+    search?: string;
+    desde?: string;
+    hasta?: string;
+    page?: string;
+    limit?: string;
+  }) {
+    const estado = ESTADOS_EVENTO.includes(query?.estado as (typeof ESTADOS_EVENTO)[number])
+      ? (query!.estado as (typeof ESTADOS_EVENTO)[number])
+      : undefined;
+    const page = Number(query?.page);
+    const limit = Number(query?.limit);
+    const paginar = Number.isInteger(page) && page > 0 && Number.isInteger(limit) && limit > 0;
+
+    return EventoRepository.findAll({
+      ...(estado ? { estado } : {}),
+      ...(query?.search ? { search: query.search } : {}),
+      ...(query?.desde ? { desde: query.desde } : {}),
+      ...(query?.hasta ? { hasta: query.hasta } : {}),
+      ...(paginar ? { page, limit } : {}),
+    });
+  }
+
+  static async counts() {
+    return EventoRepository.counts();
   }
 
   static async getEventoById(id: number) {

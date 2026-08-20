@@ -12,7 +12,7 @@ const incidenciaSchema = z.object({
     .string()
     .trim()
     .min(10, "Describe con al menos 10 caracteres")
-    .max(300, "Máximo 300 caracteres"),
+    .max(500, "Máximo 500 caracteres"),
 });
 
 // Mismos campos que el wizard ya desplegado (sigma-l1-metromet.vercel.app).

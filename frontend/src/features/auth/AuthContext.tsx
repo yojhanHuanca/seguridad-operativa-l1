@@ -32,7 +32,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(response.data.data.usuario);
       return response.data.data.usuario;
     },
-    logout: () => {
+    logout: async () => {
+      // Avisa al servidor para invalidar la sesión (cierra la fila en
+      // `sesiones`); si la llamada falla (sin red, token ya vencido) se
+      // limpia igual el lado del cliente, para no dejar a nadie atrapado sin
+      // poder salir.
+      try {
+        await api.post("/auth/logout");
+      } catch {
+        // intencional: logout local sigue aunque esto falle
+      }
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
       setToken(null);

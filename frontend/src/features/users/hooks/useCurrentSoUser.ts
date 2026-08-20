@@ -20,7 +20,8 @@ export interface CurrentSoUser {
  * mostrarán y firmarán con el mismo usuario.
  */
 export function useCurrentSoUser(): CurrentSoUser {
-  const { data: users, isLoading } = useUsers();
+  const { data: page, isLoading } = useUsers({ page: 1, limit: 1000 });
+  const users = page?.items;
 
   const user =
     users?.find((u) => u.roles?.nombre_rol === "Seguridad Operativa") ??

@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import { AuthService } from "./auth.service.js";
+import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
 
 
 export class AuthController {
@@ -17,7 +18,7 @@ export class AuthController {
             );
         }
 
-        const result = await AuthService.login(correo, password);
+        const result = await AuthService.login(correo, password, req.ip, req.headers["user-agent"]);
 
         return res.status(200).json(
             ApiResponse.success(
@@ -38,6 +39,15 @@ export class AuthController {
          );
       }
 
+  }
+
+  static async logout(req: Request, res: Response) {
+    try {
+      await AuthService.logout((req as AuthenticatedRequest).user?.id_sesion);
+      return res.status(200).json(ApiResponse.success("Sesión cerrada correctamente"));
+    } catch (error) {
+      return res.status(500).json(ApiResponse.error("No se pudo cerrar la sesión", error));
+    }
   }
 
   static async home(_req: Request, res: Response) {

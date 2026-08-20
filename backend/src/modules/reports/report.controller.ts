@@ -2,12 +2,17 @@ import type { Request, Response } from "express";
 import { ZodError } from "zod";
 import { ReportService } from "./report.service.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
+import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
 
 export class ReportController {
-  static async getAll(_req: Request, res: Response) {
+  static async getAll(req: Request, res: Response) {
     try {
-      const reportes = await ReportService.listReports();
-      return res.json(ApiResponse.success("Reportes obtenidos correctamente", reportes));
+      const { data, total } = await ReportService.listReports(
+        (req as AuthenticatedRequest).user,
+        req.query as Record<string, string>
+      );
+      const body = ApiResponse.success("Reportes obtenidos correctamente", data);
+      return res.json(total !== undefined ? { ...body, meta: { total } } : body);
     } catch (error) {
       return res.status(500).json(ApiResponse.error("Error al obtener los reportes", error));
     }
@@ -37,7 +42,12 @@ export class ReportController {
         size: f.size,
       }));
 
-      const result = await ReportService.createReport(req.body, files);
+      // Reportantes anónimos no traen sesión en el wizard público; si viene
+      // un usuario autenticado (SO registrando directo, o un trabajador
+      // logueado), se usa para firmar el reporte — ver anonimato real más
+      // abajo, en ReportRepository.createFullReport.
+      const id_usuario_creador = (req as AuthenticatedRequest).user?.id_usuario;
+      const result = await ReportService.createReport(req.body, files, id_usuario_creador);
 
       return res.status(201).json(
         ApiResponse.success("Reporte registrado correctamente", {

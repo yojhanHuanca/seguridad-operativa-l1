@@ -1,6 +1,14 @@
 import { z } from "zod";
 import { ReportRepository } from "./report.repository.js";
 import type { UploadedFile } from "./report.types.js";
+import type { AuthTokenPayload } from "../../middlewares/auth.middleware.js";
+
+type Actor = AuthTokenPayload;
+
+/** Solo el rol "Reportante" ve nada más que lo suyo; ver comentario en listReports. */
+function esReportante(actor?: Actor) {
+  return (actor?.rol_nombre ?? "").trim().toLowerCase() === "reportante";
+}
 
 const idPositivo = z.coerce.number().int().positive();
 
@@ -13,7 +21,7 @@ export const createReportSchema = z
       .string()
       .trim()
       .min(10, "La descripción debe tener al menos 10 caracteres")
-      .max(300, "La descripción no puede superar los 300 caracteres"),
+      .max(500, "La descripción no puede superar los 500 caracteres"),
     modalidad: z.enum(["anonimo", "identificado"]),
     nombre_reportante: z.string().trim().max(150).optional().nullable(),
     correo_reportante: z.string().trim().email("Ingrese un correo válido").max(150).optional().nullable().or(z.literal("")),
@@ -40,7 +48,7 @@ async function assertCatalogo(id_detalle: number, catalogoEsperado: string) {
 }
 
 export class ReportService {
-  static async createReport(rawBody: unknown, files: UploadedFile[]) {
+  static async createReport(rawBody: unknown, files: UploadedFile[], id_usuario_creador?: number) {
     const dto = createReportSchema.parse(rawBody);
 
     await assertCatalogo(dto.id_tipo, "Tipo de Reporte");
@@ -52,12 +60,37 @@ export class ReportService {
         ...dto,
         correo_reportante: dto.correo_reportante || null,
       },
-      files
+      files,
+      id_usuario_creador
     );
   }
 
-  static async listReports() {
-    return ReportRepository.findAll();
+  /**
+   * El Reportante solo ve lo que él registró; Seguridad Operativa, Jefe de
+   * Área y Admin ven todos los casos porque los tienen que gestionar.
+   */
+  static async listReports(
+    actor?: Actor,
+    query?: { filter?: string; search?: string; page?: string; limit?: string }
+  ) {
+    if (!esReportante(actor)) {
+      const data = await ReportRepository.findAll();
+      return { data, total: undefined as number | undefined };
+    }
+
+    const filter =
+      query?.filter === "activos" || query?.filter === "pendientes_info" || query?.filter === "cerrados"
+        ? query.filter
+        : undefined;
+    const page = Number(query?.page);
+    const limit = Number(query?.limit);
+    const paginar = Number.isInteger(page) && page > 0 && Number.isInteger(limit) && limit > 0;
+
+    return ReportRepository.findAllByCreator(actor!.id_usuario, {
+      ...(filter ? { filter } : {}),
+      ...(query?.search ? { search: query.search } : {}),
+      ...(paginar ? { page, limit } : {}),
+    });
   }
 
   static async getByCodigo(codigo_sop: string) {

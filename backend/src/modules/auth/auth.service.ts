@@ -4,10 +4,10 @@ import { JwtHelper } from "../../utils/jwt.js";
 
 
 export class AuthService {
-    static async login(correo: string, password: string) {
+    static async login(correo: string, password: string, direccion_ip?: string, navegador?: string) {
 
 
-        // Buscar usuarios 
+        // Buscar usuarios
         const user = await AuthRepository.findByEmail(correo);
         if (!user) {
             throw new Error("Correo o contraseña incorrectos");
@@ -17,7 +17,7 @@ export class AuthService {
             throw new Error("Correo o contraseña incorrectos");
         }
 
-        //Comparar comtraseña 
+        //Comparar comtraseña
         const isPasswordValid = await BcryptHelper.compare(
             password,
             user.password_hash
@@ -35,18 +35,25 @@ export class AuthService {
             throw new Error("El usuario no tiene rol asignado");
         }
 
-        // Generar token JWT 
+        // Una fila en `sesiones` por login: es lo que permite invalidar el
+        // token al cerrar sesión (ver `verifyToken` y `AuthService.logout`).
+        const sesion = await AuthRepository.crearSesion(user.id_usuario, direccion_ip, navegador);
+
+        // Generar token JWT
 
         const token = JwtHelper.generateToken({
             id_usuario: user.id_usuario,
             correo: user.correo,
             rol: user.id_rol,
             rol_nombre: user.roles!.nombre_rol,
+            nombre: user.nombre,
+            id_area: user.id_area,
+            id_sesion: sesion.id_sesion,
         });
 
         return {
             token,
-            usuario: { 
+            usuario: {
                 id_usuario: user.id_usuario,
                 codigo_usuario: user.codigo_usuario,
                 nombre: user.nombre,
@@ -61,13 +68,10 @@ export class AuthService {
 
     }
 
-
-
-
-
-
-
-
+    /** Tokens emitidos antes de llevar `id_sesion` no tienen nada que cerrar del lado del servidor. */
+    static async logout(id_sesion?: number) {
+        if (id_sesion) await AuthRepository.cerrarSesion(id_sesion);
+    }
 
     static async home(){
         await AuthRepository.healthCheck();
@@ -78,10 +82,11 @@ export class AuthService {
                 "/register",
                 "/logout",
                 "/refresh-token",
-    
+
             ],
             database: "Connected",
         };
     }
 }
+
 

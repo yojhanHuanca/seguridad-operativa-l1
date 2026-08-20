@@ -393,7 +393,8 @@ function PlanForm({
   onCancel?: () => void;
 }) {
   const { data: areas } = useAreas();
-  const { data: usuarios } = useUsers();
+  const { data: usuariosPage } = useUsers({ page: 1, limit: 1000 });
+  const usuarios = usuariosPage?.items;
   const createPlans = useCreatePlans(caso.codigo_sop);
   const updatePlan = useUpdatePlan(caso.codigo_sop);
   const esEdicion = !!plan;

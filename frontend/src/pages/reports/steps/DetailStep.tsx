@@ -10,7 +10,7 @@ export function DetailStep({ form }: { form: UseFormReturn<ReportFormValues> }) 
   const { register, formState, watch } = form;
   const errors = formState.errors;
   const descripcion = watch("descripcion") ?? "";
-  const nearLimit = descripcion.length >= 280;
+  const nearLimit = descripcion.length >= 470;
 
   return (
     <Card className="p-5">
@@ -22,14 +22,14 @@ export function DetailStep({ form }: { form: UseFormReturn<ReportFormValues> }) 
       <Field label="Descripción" required error={errors.descripcion?.message}>
         <Textarea
           rows={6}
-          maxLength={300}
+          maxLength={500}
           placeholder="Describe brevemente lo que observaste y el riesgo que podría generar (ej. resbalón, incendio, parada de servicio)."
           className="transition-colors"
           {...register("descripcion")}
         />
       </Field>
       <p className={cn("mt-1.5 text-right text-xs transition-colors", nearLimit ? "font-medium text-warning-ink" : "text-ink-quiet")}>
-        {descripcion.length}/300 caracteres
+        {descripcion.length}/500 caracteres
       </p>
 
       <div className="mt-3.5 flex items-start gap-2.5 rounded-lg bg-info-soft p-3.5 text-[12.5px] text-info-ink">

@@ -17,10 +17,10 @@ import type { EventoListItem } from "../types";
  */
 export function AsignarEventoModal({ evento, onClose }: { evento: EventoListItem | null; onClose: () => void }) {
   const [idUsuario, setIdUsuario] = useState("");
-  const { data: usuarios } = useUsers();
+  const { data: usuarios } = useUsers({ page: 1, limit: 1000 });
   const asignar = useAsignarEvento();
 
-  const responsables = (usuarios ?? []).filter((u) => u.roles?.nombre_rol === "Seguridad Operativa");
+  const responsables = (usuarios?.items ?? []).filter((u) => u.roles?.nombre_rol === "Seguridad Operativa");
 
   const cerrar = () => {
     setIdUsuario("");

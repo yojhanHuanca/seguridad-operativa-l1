@@ -108,27 +108,34 @@ export function TrendBarChart({
   xKey = "label",
   color = CHART_COLORS.brand,
   height = 220,
+  barSize = 24,
 }: {
-  data: { label: string; value: number }[];
+  data: { label: string; value: number; color?: string }[];
   dataKey?: string;
   xKey?: string;
   color?: string;
   height?: number;
+  barSize?: number;
 }) {
   const anim = useSeriesAnimation();
+  // Cada punto puede traer su propio `color` (p. ej. Cerrado en verde, En
+  // Proceso en amarillo); si ninguno lo trae, todas las barras usan `color`.
+  const hasPerBarColor = data.some((d) => d.color);
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }} barCategoryGap={18}>
+      <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap={18}>
         <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.surface} vertical={false} />
         <XAxis dataKey={xKey} tick={{ fill: CHART_COLORS.inkFaint, fontSize: 11 }} tickLine={false} axisLine={false} dy={6} />
-        <YAxis tick={{ fill: CHART_COLORS.inkFaint, fontSize: 11 }} tickLine={false} axisLine={false} width={32} />
+        <YAxis tick={{ fill: CHART_COLORS.inkFaint, fontSize: 11 }} tickLine={false} axisLine={false} width={36} allowDecimals={false} />
         <Tooltip
           contentStyle={tooltipStyle}
           labelStyle={labelStyle}
           itemStyle={itemStyle}
           cursor={{ fill: CHART_COLORS.surface, fillOpacity: 0.4 }}
         />
-        <Bar dataKey={dataKey} fill={color} radius={[4, 4, 0, 0]} barSize={24} {...anim} />
+        <Bar dataKey={dataKey} fill={color} radius={[4, 4, 0, 0]} barSize={barSize} {...anim}>
+          {hasPerBarColor && data.map((d, i) => <Cell key={i} fill={d.color ?? color} />)}
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   );

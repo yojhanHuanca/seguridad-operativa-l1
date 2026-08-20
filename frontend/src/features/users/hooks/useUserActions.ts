@@ -8,6 +8,11 @@ function useUsersMutation<TInput>(fn: (input: TInput) => Promise<unknown>) {
     mutationFn: fn,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      // Claves aparte porque react-query invalida por prefijo exacto del
+      // arreglo: ["users"] no cubre ["users-paginado", ...] ni
+      // ["user-counts"] al ser un string distinto, no un elemento más.
+      queryClient.invalidateQueries({ queryKey: ["users-paginado"] });
+      queryClient.invalidateQueries({ queryKey: ["user-counts"] });
     },
   });
 }

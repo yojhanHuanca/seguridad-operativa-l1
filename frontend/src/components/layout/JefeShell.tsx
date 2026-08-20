@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
-import { Activity, Bell, Building2, Calendar, CheckCircle2, ChevronRight, Clock, FolderKanban, Plus, Timer, Train } from "lucide-react";
+import { Activity, Bell, Building2, Calendar, CheckCircle2, ChevronRight, Clock, FolderKanban, Timer, Train } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { Card } from "@/design-system/primitives/Card";
 import { usePlans } from "@/features/plans/hooks/usePlans";
@@ -143,12 +143,6 @@ export function JefeShell({ children }: { children: ReactNode }) {
                   {activeCount}
                 </span>
               )}
-            </Link>
-            <Link
-              to="/reportes/nuevo"
-              className="relative inline-flex h-10 items-center gap-2 rounded-lg px-4 text-[14px] font-medium text-ink-soft transition-colors hover:bg-surface hover:text-ink"
-            >
-              <Plus className="h-4 w-4" /> Nuevo reporte
             </Link>
           </nav>
 

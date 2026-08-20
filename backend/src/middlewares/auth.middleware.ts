@@ -1,22 +1,30 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
+import { AuthRepository } from "../modules/auth/auth.repository.js";
 
 
-interface AuthTokenPayload {
+export interface AuthTokenPayload {
     id_usuario: number;
     correo: string;
     rol: number | null;
     rol_nombre: string;
+    /** Puede faltar en tokens viejos — ver nombreDelActor(). */
+    nombre?: string;
+    /** Puede faltar en tokens emitidos antes de este campo — ver areaDelActor(). */
+    id_area?: number | null;
+    /** Puede faltar en tokens emitidos antes de este campo — en ese caso no
+     * hay sesión que comprobar, y el token sigue siendo válido igual que antes. */
+    id_sesion?: number;
 }
 
 export interface AuthenticatedRequest extends Request {
     user?: AuthTokenPayload;
 }
 
-export const verifyToken =  (
+export const verifyToken = async (
     req: AuthenticatedRequest,
-    res: Response, 
+    res: Response,
     next: NextFunction
 ) => {
     const authHeader = req.headers.authorization;
@@ -29,23 +37,38 @@ export const verifyToken =  (
     }
 
     const token = authHeader.replace("Bearer ", "");
+    let decoded: AuthTokenPayload;
     try {
-        const decoded = jwt.verify(
-            token, 
-            env.JWT_SECRET
-        );
-
-    req.user = decoded as AuthTokenPayload;
-
-    next();
-
+        decoded = jwt.verify(token, env.JWT_SECRET) as AuthTokenPayload;
     } catch {
         return res.status(401).json({
             success: false,
             message: "Token inválido",
-
         });
     }
+
+    // Cerrar sesión invalida el token de inmediato, aunque le queden horas de
+    // vigencia firmada. Sin esto "cerrar sesión" no invalidaba nada del lado
+    // del servidor: el token seguía sirviendo hasta que expirara solo.
+    if (decoded.id_sesion) {
+        try {
+            const activa = await AuthRepository.sesionActiva(decoded.id_sesion);
+            if (!activa) {
+                return res.status(401).json({
+                    success: false,
+                    message: "La sesión fue cerrada, vuelve a iniciar sesión",
+                });
+            }
+        } catch {
+            return res.status(401).json({
+                success: false,
+                message: "Token inválido",
+            });
+        }
+    }
+
+    req.user = decoded;
+    next();
 };
 
 export const requireRoles = (...roles: string[]) => (

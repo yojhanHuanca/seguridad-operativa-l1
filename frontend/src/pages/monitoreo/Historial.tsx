@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, RotateCcw, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -9,11 +9,11 @@ import { Field, Input } from "@/design-system/primitives/Input";
 import { Modal } from "@/design-system/primitives/Modal";
 import { EventosTable } from "@/features/eventos/components/EventosTable";
 import { AsignarEventoModal } from "@/features/eventos/components/AsignarEventoModal";
-import { useEventos } from "@/features/eventos/hooks/useEventos";
+import { useEventosPaginated } from "@/features/eventos/hooks/useEventosPaginated";
+import { useEventoCounts } from "@/features/eventos/hooks/useEventoCounts";
 import { useDeleteEvento } from "@/features/eventos/hooks/useEventoActions";
 import { type EstadoEvento } from "@/features/eventos/types";
-import { contarEventosPorEstado } from "@/features/eventos/lib/estado";
-import { COLUMNAS_EVENTO, coincideBusqueda } from "@/features/eventos/lib/tabla";
+import { COLUMNAS_EVENTO } from "@/features/eventos/lib/tabla";
 import { apiErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { EventoListItem } from "@/features/eventos/types";
@@ -22,39 +22,54 @@ const POR_PAGINA = 20;
 
 export function Historial() {
   const navigate = useNavigate();
-  const { data: eventos, isLoading } = useEventos();
-  const deleteEvento = useDeleteEvento();
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState(query);
   const [desde, setDesde] = useState("");
   const [hasta, setHasta] = useState("");
   const [estado, setEstado] = useState<EstadoEvento | "">("");
   const [pagina, setPagina] = useState(1);
   const [borrando, setBorrando] = useState<EventoListItem | null>(null);
   const [asignando, setAsignando] = useState<EventoListItem | null>(null);
-  const lista = eventos ?? [];
-  const conteo = contarEventosPorEstado(lista);
+  const deleteEvento = useDeleteEvento();
 
-  const filtrados = useMemo(() => {
-    return lista.filter((e) => {
-      if (!coincideBusqueda(e, query)) return false;
-      if (estado && e.estado !== estado) return false;
-      const fecha = e.fecha.slice(0, 10);
-      if (desde && fecha < desde) return false;
-      if (hasta && fecha > hasta) return false;
-      return true;
-    });
-  }, [lista, query, desde, hasta, estado]);
+  // La búsqueda ya no filtra en memoria: cada tecleo dispararía un pedido al
+  // servidor, así que se espera una pausa antes de mandarla — mismo criterio
+  // que la bandeja de Casos SOP. La página vuelve a 1 en el mismo callback
+  // (no en un efecto aparte que observe `debouncedQuery`): así no hay
+  // setState síncrono dentro de un efecto.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedQuery(query);
+      setPagina(1);
+    }, 350);
+    return () => clearTimeout(t);
+  }, [query]);
 
-  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / POR_PAGINA));
+  const { data: counts } = useEventoCounts();
+  const { data: pageData, isLoading } = useEventosPaginated({
+    estado: estado || undefined,
+    search: debouncedQuery.trim() || undefined,
+    desde: desde || undefined,
+    hasta: hasta || undefined,
+    page: pagina,
+    limit: POR_PAGINA,
+  });
+
+  const visibles = pageData?.items ?? [];
+  const total = pageData?.total ?? 0;
+  const totalPaginas = Math.max(1, Math.ceil(total / POR_PAGINA));
   const paginaActual = Math.min(pagina, totalPaginas);
-  const visibles = filtrados.slice((paginaActual - 1) * POR_PAGINA, paginaActual * POR_PAGINA);
   const hayFiltros = Boolean(query || desde || hasta || estado);
-  const estadoOpciones: { id: EstadoEvento | ""; label: string; count: number }[] = [
-    { id: "", label: "Todos", count: lista.length },
-    { id: "Registrado", label: "Registrados", count: conteo.registrados },
-    { id: "En investigación", label: "En investigación", count: conteo.enInvestigacion },
-    { id: "Cerrado", label: "Cerrados", count: conteo.cerrados },
-  ];
+
+  const estadoOpciones: { id: EstadoEvento | ""; label: string; count: number }[] = useMemo(
+    () => [
+      { id: "", label: "Todos", count: counts?.total ?? 0 },
+      { id: "Registrado", label: "Registrados", count: counts?.registrados ?? 0 },
+      { id: "En investigación", label: "En investigación", count: counts?.enInvestigacion ?? 0 },
+      { id: "Cerrado", label: "Cerrados", count: counts?.cerrados ?? 0 },
+    ],
+    [counts]
+  );
 
   const confirmarBorrado = () => {
     if (!borrando) return;
@@ -79,7 +94,7 @@ export function Historial() {
     <MonitoristaShell>
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-[13px] text-ink-quiet">{filtrados.length} de {lista.length} registros visibles</p>
+          <p className="text-[13px] text-ink-quiet">{total} registros{hayFiltros ? " con estos filtros" : ""}</p>
           <div className="flex items-center gap-2">
             {hayFiltros && (
               <Button variant="ghost" size="sm" onClick={limpiarFiltros}>
@@ -96,10 +111,7 @@ export function Historial() {
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
                 <Input
                   value={query}
-                  onChange={(e) => {
-                    setQuery(e.target.value);
-                    setPagina(1);
-                  }}
+                  onChange={(e) => setQuery(e.target.value)}
                   placeholder="Descripción, tipo o lugar..."
                   className="pl-9"
                 />
@@ -107,22 +119,22 @@ export function Historial() {
             </Field>
             <Field label="Desde">
               <Input
-                type="date"
                 value={desde}
                 onChange={(e) => {
                   setDesde(e.target.value);
                   setPagina(1);
                 }}
+                type="date"
               />
             </Field>
             <Field label="Hasta">
               <Input
-                type="date"
                 value={hasta}
                 onChange={(e) => {
                   setHasta(e.target.value);
                   setPagina(1);
                 }}
+                type="date"
               />
             </Field>
           </div>
@@ -159,10 +171,10 @@ export function Historial() {
           onAsignar={setAsignando}
         />
 
-        {filtrados.length > 0 && (
+        {total > 0 && (
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-[12px] text-ink-quiet">
-              Mostrando {(paginaActual - 1) * POR_PAGINA + 1}–{Math.min(paginaActual * POR_PAGINA, filtrados.length)} de {filtrados.length} eventos
+              Mostrando {(paginaActual - 1) * POR_PAGINA + 1}–{Math.min(paginaActual * POR_PAGINA, total)} de {total} eventos
             </p>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={() => setPagina((p) => Math.max(1, p - 1))} disabled={paginaActual === 1}>
