@@ -9,7 +9,6 @@ import {
   Clock,
   FolderKanban,
   Menu,
-  Plus,
   Timer,
   type LucideIcon,
 } from "lucide-react";
@@ -113,10 +112,6 @@ function SidebarContent({ collapsed, onNavigate, area }: { collapsed: boolean; o
           {items.map((item) => (
             <NavLink key={item.to} item={item} collapsed={collapsed} active={isActive(location.pathname, search, item.to)} onNavigate={onNavigate} />
           ))}
-        </div>
-
-        <div className={cn("mt-4 space-y-1 border-t border-line-soft pt-4", collapsed && "border-t-0 pt-1")}>
-          <NavLink item={{ to: "/reportes/nuevo", label: "Nuevo reporte", icon: Plus }} collapsed={collapsed} active={false} onNavigate={onNavigate} />
         </div>
       </nav>
 

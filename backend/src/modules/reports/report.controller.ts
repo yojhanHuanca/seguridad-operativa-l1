@@ -7,8 +7,12 @@ import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js"
 export class ReportController {
   static async getAll(req: Request, res: Response) {
     try {
-      const reportes = await ReportService.listReports((req as AuthenticatedRequest).user);
-      return res.json(ApiResponse.success("Reportes obtenidos correctamente", reportes));
+      const { data, total } = await ReportService.listReports(
+        (req as AuthenticatedRequest).user,
+        req.query as Record<string, string>
+      );
+      const body = ApiResponse.success("Reportes obtenidos correctamente", data);
+      return res.json(total !== undefined ? { ...body, meta: { total } } : body);
     } catch (error) {
       return res.status(500).json(ApiResponse.error("Error al obtener los reportes", error));
     }

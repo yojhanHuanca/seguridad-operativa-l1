@@ -8,15 +8,19 @@ import { Pill, StagePill } from "@/design-system/primitives/Pill";
 import { EmptyState } from "@/design-system/primitives/Progress";
 import { NuevoReporteModal } from "@/features/reports/components/NuevoReporteModal";
 import { useAreas } from "@/features/reports/hooks/useAreas";
-import { useCases } from "@/features/cases/hooks/useCases";
+import { useCasesPaginated } from "@/features/cases/hooks/useCasesPaginated";
+import { useCaseCounts } from "@/features/cases/hooks/useCaseCounts";
 import { toCaseRow, type CaseRow } from "@/features/cases/adapter";
-import { CASE_FILTERS, countByFilter, resolveFilter } from "@/features/cases/lib/filters";
+import { CASE_FILTERS, resolveFilter } from "@/features/cases/lib/filters";
+import { ESTADOS_POR_FILTRO } from "@/features/cases/lib/filterEstados";
 import { shortPlanCode } from "@/features/cases/lib/planLabels";
 import { slaEstado, diasRestantes } from "@/features/cases/lib/sla";
 import { EVENT_LABELS, TYPE_TONE } from "@/features/cases/domain";
 import { formatDate } from "@/lib/format";
 import { downloadCsv, sufijoFecha } from "@/lib/download";
+import { api, type ApiEnvelope } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import type { CaseListItem } from "@/features/cases/types";
 
 /**
  * Acción rápida por etapa. Todas llevan al expediente —es donde se ejecuta el
@@ -34,21 +38,48 @@ const QUICK_ACTION: Partial<Record<CaseRow["stage"], string>> = {
 
 const PAGE_SIZE = 8;
 const TAB_FILTER_IDS = ["todos", "prorrogas", "investigacion", "verificacion"] as const;
+const SORT_A_BACKEND = { recent: "recientes", priority: "prioridad", sla: "sla" } as const;
 
 export function SoCasosPage() {
   const [params, setParams] = useSearchParams();
   const filtro = resolveFilter(params.get("filtro"));
   const [query, setQuery] = useState(params.get("q") ?? "");
+  const [debouncedQuery, setDebouncedQuery] = useState(query);
   const [areaFilter, setAreaFilter] = useState<string>("");
   const [sort, setSort] = useState<"recent" | "priority" | "sla">("recent");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [nuevoOpen, setNuevoOpen] = useState(false);
+  const [exportando, setExportando] = useState(false);
 
-  const { data: rawCases, isLoading } = useCases({});
   const { data: areas } = useAreas();
+  const areaId = useMemo(() => areas?.find((a) => a.nombre_area === areaFilter)?.id_area, [areas, areaFilter]);
 
-  const cases = useMemo(() => (rawCases ?? []).map(toCaseRow), [rawCases]);
+  // La búsqueda ya no es un filtro en memoria: cada tecleo dispararía un
+  // pedido al servidor, así que se espera una pausa antes de mandarla.
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query), 350);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+    setExpandedId(null);
+  }, [filtro.id, areaFilter, debouncedQuery, sort]);
+
+  const { data: counts } = useCaseCounts(areaId);
+
+  const { data: pageData, isLoading } = useCasesPaginated({
+    estado: ESTADOS_POR_FILTRO[filtro.id],
+    area: areaId,
+    search: debouncedQuery.trim() || undefined,
+    sort: SORT_A_BACKEND[sort],
+    page: currentPage,
+    limit: PAGE_SIZE,
+  });
+
+  const cases = useMemo(() => (pageData?.items ?? []).map(toCaseRow), [pageData]);
+  const total = pageData?.total ?? 0;
 
   // Cambiar de pestaña no debe borrar lo que el usuario venía buscando.
   const setFilter = (id: string) => {
@@ -58,47 +89,14 @@ export function SoCasosPage() {
     setParams(next);
   };
 
-  const filtered = useMemo(() => {
-    let list = cases.filter(filtro.match);
-    if (areaFilter) list = list.filter((c) => c.area === areaFilter);
-    if (query.trim()) {
-      const q = query.toLowerCase();
-      list = list.filter(
-        (c) =>
-          c.id.toLowerCase().includes(q) ||
-          c.title.toLowerCase().includes(q) ||
-          c.station.toLowerCase().includes(q) ||
-          c.reporter.toLowerCase().includes(q)
-      );
-    }
-    const sorted = [...list];
-    if (sort === "priority") {
-      // Menor código de matriz = mayor severidad (1A es lo más grave).
-      sorted.sort((a, b) => (a.risk ?? "zz").localeCompare(b.risk ?? "zz"));
-    } else if (sort === "sla") {
-      // Los casos sin SLA (aún sin evaluar) van al final.
-      sorted.sort((a, b) => +new Date(a.slaDueDate ?? 8.64e15) - +new Date(b.slaDueDate ?? 8.64e15));
-    } else {
-      sorted.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
-    }
-    return sorted;
-  }, [cases, filtro, areaFilter, query, sort]);
-
-  const counts = useMemo(() => countByFilter(cases), [cases]);
   const tabFilters = useMemo(
     () => TAB_FILTER_IDS.map((id) => CASE_FILTERS.find((f) => f.id === id)).filter((f): f is (typeof CASE_FILTERS)[number] => Boolean(f)),
     []
   );
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const page = Math.min(currentPage, totalPages);
-  const pageStart = (page - 1) * PAGE_SIZE;
-  const pageEnd = Math.min(pageStart + PAGE_SIZE, filtered.length);
-  const paginated = filtered.slice(pageStart, pageStart + PAGE_SIZE);
-
-  useEffect(() => {
-    setCurrentPage(1);
-    setExpandedId(null);
-  }, [filtro.id, areaFilter, query, sort]);
+  const pageStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE;
+  const pageEnd = Math.min(pageStart + cases.length, total);
 
   const goToPage = (nextPage: number) => {
     setCurrentPage(Math.min(Math.max(nextPage, 1), totalPages));
@@ -118,8 +116,26 @@ export function SoCasosPage() {
           <Button size="sm" onClick={() => setNuevoOpen(true)}>
             <Plus className="h-4 w-4" /> Nuevo Reporte
           </Button>
-          <Button variant="outline" size="sm" onClick={() => exportCsv(filtered)}>
-            <Download className="h-4 w-4" /> Exportar lista
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={exportando}
+            onClick={async () => {
+              setExportando(true);
+              try {
+                const rows = await fetchAllForExport({
+                  estado: ESTADOS_POR_FILTRO[filtro.id],
+                  area: areaId,
+                  search: debouncedQuery.trim() || undefined,
+                  sort: SORT_A_BACKEND[sort],
+                });
+                exportCsv(rows.map(toCaseRow));
+              } finally {
+                setExportando(false);
+              }
+            }}
+          >
+            <Download className="h-4 w-4" /> {exportando ? "Exportando…" : "Exportar lista"}
           </Button>
         </div>
       </div>
@@ -143,7 +159,7 @@ export function SoCasosPage() {
                   filtro.id === f.id ? "bg-white/20" : "bg-surface-2 text-ink-quiet"
                 )}
               >
-                {counts[f.id]}
+                {counts?.[f.id] ?? 0}
               </span>
             </button>
           ))}
@@ -198,7 +214,7 @@ export function SoCasosPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-line-soft">
-              {paginated.map((c) => {
+              {cases.map((c) => {
                 const sla = slaEstado(c.slaDueDate, c.stage);
                 const hasPlan = c.planes.length > 0;
                 const isExpanded = expandedId === c.id;
@@ -323,7 +339,7 @@ export function SoCasosPage() {
           </table>
         </div>
 
-        {!isLoading && filtered.length === 0 && (
+        {!isLoading && total === 0 && (
           <EmptyState
             className="m-4 border-0 bg-transparent"
             icon={<FolderKanban className="h-5 w-5" />}
@@ -333,10 +349,10 @@ export function SoCasosPage() {
         )}
         {isLoading && <p className="p-6 text-center text-[13px] text-ink-quiet">Cargando casos…</p>}
 
-        {!isLoading && filtered.length > 0 && (
+        {!isLoading && total > 0 && (
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-white px-4 py-3">
             <p className="text-[11.5px] text-ink-quiet">
-              Mostrando {pageStart + 1}-{pageEnd} de {filtered.length} casos · Total general: {cases.length} · Filtro: {filtro.label}
+              Mostrando {pageStart + 1}-{pageEnd} de {total} casos · Total general: {counts?.todos ?? 0} · Filtro: {filtro.label}
             </p>
             {totalPages > 1 && (
               <div className="flex items-center gap-2">
@@ -406,6 +422,28 @@ function FilterSelect({
       </select>
     </div>
   );
+}
+
+/**
+ * "Exportar lista" siempre exportó TODO lo que matchea el filtro actual, no
+ * solo la página visible — así que acá sí se pide sin `page`/`limit` (mismo
+ * endpoint, mismos filtros), a propósito y solo cuando el usuario lo pide.
+ */
+async function fetchAllForExport(params: {
+  estado?: string[];
+  area?: number;
+  search?: string;
+  sort?: "recientes" | "prioridad" | "sla";
+}): Promise<CaseListItem[]> {
+  const { data } = await api.get<ApiEnvelope<CaseListItem[]>>("/cases", {
+    params: {
+      estado: params.estado?.length ? params.estado.join(",") : undefined,
+      area: params.area,
+      search: params.search,
+      sort: params.sort,
+    },
+  });
+  return data.data ?? [];
 }
 
 function exportCsv(rows: CaseRow[]) {

@@ -15,8 +15,9 @@ const SO_O_JEFE = requireRoles("Seguridad Operativa", "Jefe de Área", "Admin");
 const LECTURA = requireRoles("Seguridad Operativa", "Jefe de Área", "Admin");
 
 router.get("/", LECTURA, CaseController.getAll);
-// Antes de "/:codigo" para que no lo capture como si "planes" fuese un código.
+// Antes de "/:codigo" para que no lo capture como si "planes"/"counts" fuese un código.
 router.get("/planes", LECTURA, CaseController.getPlans);
+router.get("/counts", LECTURA, CaseController.getCounts);
 router.get("/:codigo", LECTURA, CaseController.getByCodigo);
 router.post("/:codigo/approve", SO, CaseController.approve);
 router.post("/:codigo/observation", SO, CaseController.addObservation);

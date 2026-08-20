@@ -1,4 +1,4 @@
-import { Activity, AlertTriangle, BarChart3, ListChecks } from "lucide-react";
+import { Activity, AlertTriangle, ListChecks } from "lucide-react";
 import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
 import { ComingSoon } from "@/components/layout/ComingSoon";
 
@@ -38,18 +38,6 @@ export function SoEventosPage() {
         icon={Activity}
         title="Eventos Operativos"
         description="Registro cronológico de eventos operativos de Línea 1, independiente de los casos SOP abiertos."
-      />
-    </SeguridadOperativaShell>
-  );
-}
-
-export function SoReportesPage() {
-  return (
-    <SeguridadOperativaShell>
-      <ComingSoon
-        icon={BarChart3}
-        title="Reportes e Indicadores"
-        description="Estadísticas del sistema y generación del expediente de caso en PDF."
       />
     </SeguridadOperativaShell>
   );

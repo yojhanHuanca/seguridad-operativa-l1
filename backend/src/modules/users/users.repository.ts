@@ -44,37 +44,88 @@ export class UserRepository {
         });
      }
 
-     static async findAll() {
-        return prisma.usuarios.findMany({
-            select: {
-                id_usuario: true,
-                codigo_usuario: true,
-                nombre: true,
-                correo: true,
-                cargo: true,
-                telefono: true,
-                estado: true,
-                es_responsable: true,
-                id_area: true,
-                id_rol: true,
-                roles: {
-                    select: {
-                        nombre_rol: true,
+     /**
+      * `page`/`limit` son opcionales y deben venir juntos — sin ellos se
+      * comporta exactamente igual que antes (trae todo). Es el mismo patrón
+      * aditivo que ya usan Casos SOP, Reportes y Planes de Acción.
+      */
+     static async findAll(opts?: {
+        search?: string;
+        rol?: number;
+        estado?: string;
+        page?: number;
+        limit?: number;
+     }) {
+        const where: Record<string, unknown> = {};
 
-                    },
-                },
-                areas: {
-                    select: {
-                        nombre_area: true,
-                    },
-                },
+        if (opts?.rol) where.id_rol = opts.rol;
+        if (opts?.estado === "activo") where.estado = "Activo";
+        else if (opts?.estado === "inactivo") where.estado = { not: "Activo" };
+        if (opts?.search) {
+            const q = opts.search;
+            where.OR = [
+                { codigo_usuario: { contains: q, mode: "insensitive" } },
+                { nombre: { contains: q, mode: "insensitive" } },
+                { correo: { contains: q, mode: "insensitive" } },
+                { areas: { nombre_area: { contains: q, mode: "insensitive" } } },
+            ];
+        }
 
-            },
-            orderBy: {
-              id_usuario: "asc",
-            },
+        const select = {
+            id_usuario: true,
+            codigo_usuario: true,
+            nombre: true,
+            correo: true,
+            cargo: true,
+            telefono: true,
+            estado: true,
+            es_responsable: true,
+            id_area: true,
+            id_rol: true,
+            roles: { select: { nombre_rol: true } },
+            areas: { select: { nombre_area: true } },
+        } as const;
+        const orderBy = { id_usuario: "asc" as const };
 
-        });
+        if (!opts?.page || !opts?.limit) {
+            const data = await prisma.usuarios.findMany({ where, select, orderBy });
+            return { data, total: undefined as number | undefined };
+        }
+
+        const [data, total] = await Promise.all([
+            prisma.usuarios.findMany({
+                where,
+                select,
+                orderBy,
+                skip: (opts.page - 1) * opts.limit,
+                take: opts.limit,
+            }),
+            prisma.usuarios.count({ where }),
+        ]);
+        return { data, total };
+     }
+
+     /**
+      * Conteos para las tarjetas de resumen y la pestaña "Roles y Permisos" —
+      * solo `COUNT`/`groupBy`, nunca trae las filas completas.
+      */
+     static async counts() {
+        const [total, activos, conRol, sinRol, porRol] = await Promise.all([
+            prisma.usuarios.count(),
+            prisma.usuarios.count({ where: { estado: "Activo" } }),
+            prisma.usuarios.count({ where: { id_rol: { not: null } } }),
+            prisma.usuarios.count({ where: { id_rol: null } }),
+            prisma.usuarios.groupBy({ by: ["id_rol"], _count: { id_rol: true } }),
+        ]);
+        return {
+            total,
+            activos,
+            conRol,
+            sinRol,
+            porRol: Object.fromEntries(
+                porRol.filter((r) => r.id_rol != null).map((r) => [String(r.id_rol), r._count.id_rol])
+            ) as Record<string, number>,
+        };
      }
 
      static async findById(id: number) {

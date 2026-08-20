@@ -245,22 +245,37 @@ async function assertPlanPropio(plan: { id_area: number | null; responsable: num
 }
 
 export class CaseService {
-  static async list(query: { estado?: string; area?: string; search?: string; sort?: string }, actor?: Actor) {
+  static async list(query: { estado?: string; area?: string; search?: string; sort?: string; page?: string; limit?: string }, actor?: Actor) {
     const estados = query.estado ? query.estado.split(",").filter(Boolean) : undefined;
     const area = await areaEfectiva(query.area, actor);
     const sort = query.sort === "prioridad" || query.sort === "sla" ? query.sort : "recientes";
     const filters = { sort } satisfies { sort: "recientes" | "prioridad" | "sla" };
+    // Ambos o ninguno: una página sin tamaño (o viceversa) no significa nada,
+    // así que se ignoran los dos y se cae al comportamiento sin paginar.
+    const page = Number(query.page);
+    const limit = Number(query.limit);
+    const paginar = Number.isInteger(page) && page > 0 && Number.isInteger(limit) && limit > 0;
     const fullFilters = {
       ...filters,
       ...(estados?.length ? { estados } : {}),
       ...(area != null ? { area } : {}),
       ...(query.search ? { search: query.search } : {}),
+      ...(paginar ? { page, limit } : {}),
     };
     return CaseRepository.findAll(fullFilters);
   }
 
-  static async listPlans(query: { area?: string }, actor?: Actor) {
-    return CaseRepository.findPlansByArea(await areaEfectiva(query.area, actor));
+  static async counts(query: { area?: string }, actor?: Actor) {
+    const area = await areaEfectiva(query.area, actor);
+    return CaseRepository.counts(area);
+  }
+
+  static async listPlans(query: { area?: string; codigo?: string }, actor?: Actor) {
+    const area = await areaEfectiva(query.area, actor);
+    return CaseRepository.findPlansByArea({
+      ...(area != null ? { id_area: area } : {}),
+      ...(query.codigo ? { codigo_sop: query.codigo } : {}),
+    });
   }
 
   static async getByCodigo(codigo: string) {

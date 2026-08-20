@@ -9,6 +9,10 @@ import { useArchivoProtegido } from "@/lib/archivos";
 import { formatDate, formatDateTime, initials } from "@/lib/format";
 import { useMyActivity, useMyProfile, useUpdatePhone, useUploadAvatar, useChangePassword } from "../hooks/useProfile";
 
+// Mismos límites que exige el backend (`uploadAvatar` en upload.middleware.ts).
+const AVATAR_TIPOS_PERMITIDOS = ["image/jpeg", "image/png", "image/webp"];
+const AVATAR_MAX_BYTES = 5 * 1024 * 1024;
+
 function Avatar({ nombre, fotoUrl, uploading, onPick }: { nombre: string; fotoUrl: string | null; uploading: boolean; onPick: () => void }) {
   const fotoSrc = useArchivoProtegido(fotoUrl);
 
@@ -82,6 +86,14 @@ export function ProfileContent() {
 
   const onFotoElegida = (file?: File) => {
     if (!file) return;
+    if (!AVATAR_TIPOS_PERMITIDOS.includes(file.type)) {
+      toast.error("La foto debe ser JPG, PNG o WEBP.");
+      return;
+    }
+    if (file.size > AVATAR_MAX_BYTES) {
+      toast.error("La foto supera los 5 MB permitidos.");
+      return;
+    }
     uploadAvatar.mutate(file, {
       onSuccess: () => toast.success("Foto de perfil actualizada"),
       onError: (e) => toast.error(apiErrorMessage(e, "No se pudo subir la foto")),

@@ -4,7 +4,7 @@ import { JwtHelper } from "../../utils/jwt.js";
 
 
 export class AuthService {
-    static async login(correo: string, password: string) {
+    static async login(correo: string, password: string, direccion_ip?: string, navegador?: string) {
 
 
         // Buscar usuarios 
@@ -35,6 +35,10 @@ export class AuthService {
             throw new Error("El usuario no tiene rol asignado");
         }
 
+        // Una fila en `sesiones` por login: es lo que permite invalidar el
+        // token al cerrar sesión (ver `verifyToken` y `AuthService.logout`).
+        const sesion = await AuthRepository.crearSesion(user.id_usuario, direccion_ip, navegador);
+
         // Generar token JWT
 
         const token = JwtHelper.generateToken({
@@ -45,6 +49,7 @@ export class AuthService {
             es_responsable: user.es_responsable,
             id_area: user.id_area,
             nombre: user.nombre,
+            id_sesion: sesion.id_sesion,
         });
 
         // Se guarda el acceso anterior antes de sobrescribirlo: así "último
@@ -80,16 +85,18 @@ export class AuthService {
 
 
 
+    /** Tokens emitidos antes de llevar `id_sesion` no tienen nada que cerrar del lado del servidor. */
+    static async logout(id_sesion?: number) {
+        if (id_sesion) await AuthRepository.cerrarSesion(id_sesion);
+    }
+
     static async home(){
         await AuthRepository.healthCheck();
 
         return {
             endpoints: [
                 "/login",
-                "/register",
                 "/logout",
-                "/refresh-token",
-    
             ],
             database: "Connected",
         };

@@ -17,7 +17,7 @@ export interface AuthValue {
   user: AuthUser | null;
   token: string | null;
   login: (correo: string, password: string) => Promise<AuthUser>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthValue | null>(null);

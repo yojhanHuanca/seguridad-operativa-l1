@@ -41,13 +41,51 @@ export class ReportRepository {
     });
   }
 
-  /** "Mis reportes" del trabajador: solo los casos que él mismo registró. */
-  static async findAllByCreator(id_usuario: number) {
-    return prisma.casos_sop.findMany({
-      where: { created_by: id_usuario },
-      orderBy: { created_at: "desc" },
-      include: LIST_INCLUDE,
-    });
+  /**
+   * "Mis reportes" del trabajador: solo los casos que él mismo registró.
+   *
+   * `page`/`limit` son opcionales y deben venir juntos — sin ellos se
+   * comporta exactamente igual que antes (trae todo). Eso es a propósito:
+   * `ReportanteShell` (badge), `ReportanteHomePage` (resumen) y
+   * `NotificationsPage` (solicitudes de información completas) siguen
+   * llamando esto sin paginar porque necesitan el listado entero para sus
+   * propios cálculos — solo `MyReportsPage` manda `page`/`limit`.
+   */
+  static async findAllByCreator(
+    id_usuario: number,
+    opts?: { filter?: "activos" | "pendientes_info" | "cerrados"; search?: string; page?: number; limit?: number }
+  ) {
+    const where: Record<string, unknown> = { created_by: id_usuario };
+
+    if (opts?.filter === "activos") {
+      where.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle = { nombre: { not: "Cerrado" } };
+    } else if (opts?.filter === "cerrados") {
+      where.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle = { nombre: "Cerrado" };
+    } else if (opts?.filter === "pendientes_info") {
+      where.solicitudes_informacion = { some: { respondida: false } };
+    }
+
+    if (opts?.search) {
+      const q = opts.search;
+      where.OR = [
+        { codigo_sop: { contains: q, mode: "insensitive" } },
+        { titulo: { contains: q, mode: "insensitive" } },
+        { descripcion: { contains: q, mode: "insensitive" } },
+      ];
+    }
+
+    const orderBy = { created_at: "desc" as const };
+
+    if (!opts?.page || !opts?.limit) {
+      const data = await prisma.casos_sop.findMany({ where, orderBy, include: LIST_INCLUDE });
+      return { data, total: undefined };
+    }
+
+    const [data, total] = await Promise.all([
+      prisma.casos_sop.findMany({ where, orderBy, include: LIST_INCLUDE, skip: (opts.page - 1) * opts.limit, take: opts.limit }),
+      prisma.casos_sop.count({ where }),
+    ]);
+    return { data, total };
   }
 
   static async findByCodigo(codigo_sop: string) {
@@ -95,7 +133,9 @@ export class ReportRepository {
               lugar_incidente: dto.id_lugar,
               ubicacion: dto.id_lugar_especifico ?? null,
               descripcion: dto.descripcion,
-              usuario_registra: id_usuario_creador ?? null,
+              // Anónimo real más abajo (ver `esIdentificado`): si no viene
+              // identificado, tampoco se guarda acá quién lo registró.
+              usuario_registra: dto.modalidad === "identificado" ? id_usuario_creador ?? null : null,
             },
           });
 
@@ -157,7 +197,11 @@ export class ReportRepository {
               nombre_reportante: esIdentificado ? nombreReportante : null,
               correo_reportante: esIdentificado ? dto.correo_reportante?.trim().toLowerCase() || null : null,
               telefono_reportante: esIdentificado ? dto.telefono_reportante?.trim() || null : null,
-              created_by: id_usuario_creador ?? null,
+              // Anonimato real: si eligió modalidad anónima, no se guarda
+              // quién lo reportó — ni oculto en pantalla, ausente de la base.
+              // Antes se guardaba igual (verificado en BD, caso 48), así que
+              // "anónimo" era anónimo solo en la interfaz.
+              created_by: esIdentificado ? id_usuario_creador ?? null : null,
               // Si lo registra SO directamente, esa persona ya es quien investiga.
               // Si viene de un Reportante, queda sin responsable hasta que SO lo evalúe.
               ...(esRegistroSO && id_usuario_creador ? { responsable_hallazgo: id_usuario_creador } : {}),

@@ -14,7 +14,7 @@ export const createReportSchema = z
       .string()
       .trim()
       .min(10, "La descripción debe tener al menos 10 caracteres")
-      .max(300, "La descripción no puede superar los 300 caracteres"),
+      .max(500, "La descripción no puede superar los 500 caracteres"),
     modalidad: z.enum(["anonimo", "identificado"]),
     nombre_reportante: z.string().trim().max(150).optional().nullable(),
     correo_reportante: z.string().trim().email("Ingrese un correo válido").max(150).optional().nullable().or(z.literal("")),
@@ -62,9 +62,28 @@ export class ReportService {
    * El Reportante solo ve lo que él registró; Seguridad Operativa, Jefe de
    * Área y Admin ven todos los casos porque los tienen que gestionar.
    */
-  static async listReports(actor?: Actor) {
-    if (esReportante(actor)) return ReportRepository.findAllByCreator(actor!.id_usuario);
-    return ReportRepository.findAll();
+  static async listReports(
+    actor?: Actor,
+    query?: { filter?: string; search?: string; page?: string; limit?: string }
+  ) {
+    if (!esReportante(actor)) {
+      const data = await ReportRepository.findAll();
+      return { data, total: undefined as number | undefined };
+    }
+
+    const filter =
+      query?.filter === "activos" || query?.filter === "pendientes_info" || query?.filter === "cerrados"
+        ? query.filter
+        : undefined;
+    const page = Number(query?.page);
+    const limit = Number(query?.limit);
+    const paginar = Number.isInteger(page) && page > 0 && Number.isInteger(limit) && limit > 0;
+
+    return ReportRepository.findAllByCreator(actor!.id_usuario, {
+      ...(filter ? { filter } : {}),
+      ...(query?.search ? { search: query.search } : {}),
+      ...(paginar ? { page, limit } : {}),
+    });
   }
 
   static async getByCodigo(codigo_sop: string, actor?: Actor) {

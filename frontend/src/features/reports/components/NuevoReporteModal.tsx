@@ -378,7 +378,7 @@ export function NuevoReporteModal({
               <Field label="Descripción del evento" required error={form.formState.errors.descripcion?.message}>
                 <Textarea
                   rows={5}
-                  maxLength={300}
+                  maxLength={500}
                   placeholder="Describa brevemente lo observado y el riesgo que puede generar."
                   {...form.register("descripcion")}
                 />
@@ -386,10 +386,10 @@ export function NuevoReporteModal({
               <p
                 className={cn(
                   "mt-1.5 text-right text-[11.5px]",
-                  descripcion.length >= 280 ? "font-medium text-warning-ink" : "text-ink-quiet"
+                  descripcion.length >= 470 ? "font-medium text-warning-ink" : "text-ink-quiet"
                 )}
               >
-                {descripcion.length}/300 caracteres
+                {descripcion.length}/500 caracteres
               </p>
             </>
           )}

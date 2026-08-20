@@ -8,6 +8,11 @@ function useEventosMutation<TInput, TOutput>(fn: (input: TInput) => Promise<TOut
     mutationFn: fn,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["eventos"] });
+      // Claves aparte porque react-query invalida por prefijo exacto del
+      // arreglo: ["eventos"] no cubre ["eventos-paginado", ...] ni
+      // ["evento-counts"] al ser un string distinto, no un elemento más.
+      queryClient.invalidateQueries({ queryKey: ["eventos-paginado"] });
+      queryClient.invalidateQueries({ queryKey: ["evento-counts"] });
     },
   });
 }
@@ -46,6 +51,8 @@ export function useAsignarEvento() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["eventos"] });
+      queryClient.invalidateQueries({ queryKey: ["eventos-paginado"] });
+      queryClient.invalidateQueries({ queryKey: ["evento-counts"] });
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
     },
   });

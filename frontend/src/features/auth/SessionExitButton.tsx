@@ -7,8 +7,8 @@ export function SessionExitButton({ withLabel = false, className }: { withLabel?
   const { logout } = useAuth();
   const navigate = useNavigate();
 
-  const exit = () => {
-    logout();
+  const exit = async () => {
+    await logout();
     navigate("/login", { replace: true });
   };
 

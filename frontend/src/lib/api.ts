@@ -30,6 +30,8 @@ export interface ApiEnvelope<T> {
   message: string;
   data?: T;
   errors?: unknown;
+  /** Solo lo llenan los endpoints paginados (ej. GET /cases con page+limit). */
+  meta?: { total: number };
 }
 
 export function apiErrorMessage(error: unknown, fallback: string): string {

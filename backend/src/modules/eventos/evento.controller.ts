@@ -4,12 +4,24 @@ import { ApiResponse } from "../../utils/ApiResponse.js";
 import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
 
 export class EventoController {
-  static async getAll(_req: Request, res: Response) {
+  static async getAll(req: Request, res: Response) {
     try {
-      const eventos = await EventoService.getAllEventos();
-      return res.json(ApiResponse.success("Eventos obtenidos correctamente", eventos));
+      const { data, total } = await EventoService.getAllEventos(req.query as Record<string, string>);
+      const body = ApiResponse.success("Eventos obtenidos correctamente", data);
+      // `total` solo viene cuando la petición mandó page+limit; si no, la
+      // respuesta es idéntica a la de siempre (sin este campo de más).
+      return res.json(total !== undefined ? { ...body, meta: { total } } : body);
     } catch (error) {
       return res.status(500).json(ApiResponse.error("Error al obtener los eventos", error));
+    }
+  }
+
+  static async getCounts(_req: Request, res: Response) {
+    try {
+      const counts = await EventoService.counts();
+      return res.json(ApiResponse.success("Conteos obtenidos correctamente", counts));
+    } catch (error) {
+      return res.status(500).json(ApiResponse.error("Error al obtener los conteos", error));
     }
   }
 
