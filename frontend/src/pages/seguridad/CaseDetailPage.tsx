@@ -531,45 +531,14 @@ function ExpedienteCompletoPrintDocument({ caso }: { caso: CaseDetail }) {
         <div className="mt-3">
           <PrintField label="Descripción" value={caso.descripcion} />
         </div>
-      </section>
-
-      <section className="mt-6">
-        <h2 className="border-b border-line pb-2 text-[18px] font-bold text-brand-800">
-          Línea de tiempo completa ({timeline.length} eventos)
-        </h2>
-        {timeline.length === 0 ? (
-          <p className="mt-3 text-[12px] text-ink-quiet">Sin eventos registrados en la bitácora.</p>
-        ) : (
-          <table className="mt-3 w-full table-fixed border-collapse text-left text-[11.5px]">
-            <colgroup>
-              <col className="w-[17%]" />
-              <col className="w-[16%]" />
-              <col className="w-[19%]" />
-              <col className="w-[48%]" />
-            </colgroup>
-            <thead>
-              <tr className="bg-surface">
-                <PrintTh>Fecha</PrintTh>
-                <PrintTh>Quién</PrintTh>
-                <PrintTh>Acción</PrintTh>
-                <PrintTh>Detalle</PrintTh>
-              </tr>
-            </thead>
-            <tbody>
-              {timeline.map((t) => (
-                <tr key={t.id_evento}>
-                  <PrintTd className="break-words">{t.fecha ? formatDateTime(t.fecha) : "—"}</PrintTd>
-                  <PrintTd className="break-words">
-                    {ACTOR_ROL_LABEL[t.actor_rol] ?? t.actor_rol}
-                    {t.actor && t.actor !== (ACTOR_ROL_LABEL[t.actor_rol] ?? t.actor_rol) ? ` · ${t.actor}` : ""}
-                  </PrintTd>
-                  <PrintTd className="break-words font-semibold">{compactPlanCodes(t.titulo)}</PrintTd>
-                  <PrintTd className="break-words">{t.detalle ? compactPlanCodes(humanEvidenceDetail(t.detalle)) : "—"}</PrintTd>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+        <div className="mt-5 grid grid-cols-3 gap-x-10 gap-y-5">
+          <PrintField label="Peligro" value={caso.peligro?.trim() || "No registrado"} />
+          <PrintField
+            label="Riesgo"
+            value={riesgo ? `${riesgo.codigo ?? "—"} — ${criterioAceptabilidad(riesgo.nombre, riesgo.codigo) ?? riesgo.nombre}` : "Sin evaluar"}
+          />
+          <PrintField label="Consecuencia" value={caso.consecuencia?.trim() || "No registrada"} />
+        </div>
       </section>
 
       {rows.length > 0 && (
@@ -615,6 +584,45 @@ function ExpedienteCompletoPrintDocument({ caso }: { caso: CaseDetail }) {
           </table>
         </section>
       )}
+
+      <section className="mt-6">
+        <h2 className="border-b border-line pb-2 text-[18px] font-bold text-brand-800">
+          Línea de tiempo ({timeline.length} eventos)
+        </h2>
+        {timeline.length === 0 ? (
+          <p className="mt-3 text-[12px] text-ink-quiet">Sin eventos registrados en la bitácora.</p>
+        ) : (
+          <table className="mt-3 w-full table-fixed border-collapse text-left text-[11.5px]">
+            <colgroup>
+              <col className="w-[17%]" />
+              <col className="w-[16%]" />
+              <col className="w-[19%]" />
+              <col className="w-[48%]" />
+            </colgroup>
+            <thead>
+              <tr className="bg-surface">
+                <PrintTh>Fecha</PrintTh>
+                <PrintTh>Quién</PrintTh>
+                <PrintTh>Acción</PrintTh>
+                <PrintTh>Detalle</PrintTh>
+              </tr>
+            </thead>
+            <tbody>
+              {timeline.map((t) => (
+                <tr key={t.id_evento}>
+                  <PrintTd className="break-words">{t.fecha ? formatDateTime(t.fecha) : "—"}</PrintTd>
+                  <PrintTd className="break-words">
+                    {ACTOR_ROL_LABEL[t.actor_rol] ?? t.actor_rol}
+                    {t.actor && t.actor !== (ACTOR_ROL_LABEL[t.actor_rol] ?? t.actor_rol) ? ` · ${t.actor}` : ""}
+                  </PrintTd>
+                  <PrintTd className="break-words font-semibold">{compactPlanCodes(t.titulo)}</PrintTd>
+                  <PrintTd className="break-words">{t.detalle ? compactPlanCodes(humanEvidenceDetail(t.detalle)) : "—"}</PrintTd>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
 
       <footer className="mt-8 border-t border-line pt-4 text-[12px] text-ink-quiet">
         Documento generado por SIGMA L1 · {formatDateTime(new Date())}

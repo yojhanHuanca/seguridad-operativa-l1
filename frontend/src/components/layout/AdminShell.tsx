@@ -52,15 +52,20 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
       <Link
         to="/admin/usuarios"
         onClick={onNavigate}
-        className={cn("flex h-[78px] shrink-0 items-center gap-3 border-b border-line-soft px-4", collapsed && "justify-center px-2")}
+        className={cn(
+          "flex shrink-0 items-center gap-3 border-b border-line-soft px-4",
+          collapsed ? "h-16 justify-center px-2" : "h-[112px]"
+        )}
       >
-        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700">
-          <ShieldCheck className="h-4.5 w-4.5" />
-        </div>
+        <Logo size={collapsed ? 32 : 66} withWordmark={false} />
         {!collapsed && (
           <div className="min-w-0 leading-tight">
-            <p className="truncate text-[13.5px] font-bold text-ink">Administrador</p>
-            <p className="truncate text-[10.5px] text-ink-quiet">SIGMA L1</p>
+            <p className="font-display text-[17px] font-bold tracking-tight text-ink">
+              SIGMA<span className="text-brand-600"> L1</span>
+            </p>
+            <p className="mt-0.5 max-w-[130px] text-[11.5px] font-medium leading-[1.2] text-ink-quiet">
+              Administración · Metro de Lima
+            </p>
           </div>
         )}
       </Link>
@@ -136,7 +141,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       <aside
         className={cn(
           "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-line bg-white transition-[width] duration-200 md:flex",
-          collapsed ? "w-[64px]" : "w-[264px]"
+          collapsed ? "w-[64px]" : "w-[296px]"
         )}
       >
         <SidebarContent collapsed={collapsed} />
@@ -154,7 +159,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       {mobileOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileOpen(false)} aria-hidden />
-          <aside className="absolute left-0 top-0 flex h-full w-[264px] flex-col bg-white shadow-xl">
+          <aside className="absolute left-0 top-0 flex h-full w-[296px] flex-col bg-white shadow-xl">
             <SidebarContent collapsed={false} onNavigate={() => setMobileOpen(false)} />
           </aside>
         </div>
@@ -176,9 +181,6 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 SIGMA L1 <span className="px-1.5 text-ink-faint">›</span> Administrador
               </p>
               <p className="mt-0.5 truncate font-display text-[19px] font-bold tracking-tight text-ink">{title}</p>
-            </div>
-            <div className="ml-auto hidden items-center gap-2.5 sm:flex">
-              <Logo size={28} withWordmark={false} />
             </div>
           </div>
         </header>
