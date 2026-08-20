@@ -11,13 +11,14 @@ import { SoCasosPage } from "@/pages/seguridad/CasosPage";
 import { CaseDetailPage } from "@/pages/seguridad/CaseDetailPage";
 import { JefeHome } from "@/pages/jefe/JefeHome";
 import { PlanDetail } from "@/pages/jefe/PlanDetail";
+import { JefeIndicadoresPage } from "@/pages/jefe/IndicadoresPage";
 import { ReportExportPage } from "@/pages/seguridad/ReportExportPage";
 import { SoKpisPage } from "@/pages/seguridad/reportes/KpisPage";
 import { SoEstadisticasPage } from "@/pages/seguridad/reportes/EstadisticasPage";
 import { SoNotificacionesPage } from "@/pages/seguridad/NotificacionesPage";
 import { EventosAsignadosPage } from "@/pages/seguridad/EventosAsignadosPage";
+import { SoAlertasPage } from "@/pages/seguridad/AlertasPage";
 import {
-  SoAlertasPage,
   SoEventosPage,
   SoPerfilPage,
   SoPlanesAccionPage,
@@ -29,7 +30,8 @@ import { Reportes as MonitoreoReportesPage } from "@/pages/monitoreo/Reportes";
 import { Detalle as MonitoreoDetallePage } from "@/pages/monitoreo/Detalle";
 import { Editar as MonitoreoEditarPage } from "@/pages/monitoreo/Editar";
 import { AdminUsuariosPage } from "@/pages/admin/UsuariosPage";
-import { AdminAuditoriaPage, AdminCatalogosPage, AdminConfiguracionPage } from "@/pages/admin/PlaceholderPages";
+import { AdminCatalogosPage, AdminConfiguracionPage } from "@/pages/admin/PlaceholderPages";
+import { AdminAuditoriaPage } from "@/pages/admin/AuditoriaPage";
 import { NotFoundPage } from "@/pages/NotFound";
 
 export function AppRouter() {
@@ -62,6 +64,7 @@ export function AppRouter() {
         {/* Portal Jefe de Área — sin login todavía; el área se elige a mano */}
         <Route path="/jefe" element={<ProtectedRoute roles={["Jefe de Área"]}><JefeHome /></ProtectedRoute>} />
         <Route path="/jefe/planes/:codigo" element={<ProtectedRoute roles={["Jefe de Área"]}><PlanDetail /></ProtectedRoute>} />
+        <Route path="/jefe/indicadores" element={<ProtectedRoute roles={["Jefe de Área"]}><JefeIndicadoresPage /></ProtectedRoute>} />
 
         {/* Panel de Monitoreo — en construcción, portado desde el prototipo */}
         <Route path="/monitoreo" element={<ProtectedRoute roles={["Monitorista"]}><MonitoreoDashboardPage /></ProtectedRoute>} />

@@ -1,47 +1,58 @@
 import { Router } from "express";
 import { CaseController } from "./case.controller.js";
 import { uploadEvidencia } from "../../middlewares/upload.middleware.js";
+import { requireRoles } from "../../middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.get("/", CaseController.getAll);
+const SO = requireRoles("Seguridad Operativa", "Admin");
+const JEFE = requireRoles("Jefe de Área", "Admin");
+// Comentarios: los puede dejar tanto quien investiga (SO) como el área que ejecuta el plan (Jefe).
+const SO_O_JEFE = requireRoles("Seguridad Operativa", "Jefe de Área", "Admin");
+
+// Leer el expediente es para quien lo gestiona. El trabajador que reporta
+// sigue su caso por /reports, que solo le muestra los suyos.
+const LECTURA = requireRoles("Seguridad Operativa", "Jefe de Área", "Admin");
+
+router.get("/", LECTURA, CaseController.getAll);
 // Antes de "/:codigo" para que no lo capture como si "planes"/"counts" fuese un código.
-router.get("/planes", CaseController.getPlans);
-router.get("/counts", CaseController.getCounts);
-router.get("/:codigo", CaseController.getByCodigo);
-router.post("/:codigo/approve", CaseController.approve);
-router.post("/:codigo/observation", CaseController.addObservation);
-router.post("/:codigo/evaluate", CaseController.evaluate);
-router.patch("/:codigo/tipo", CaseController.updateTipo);
-router.post("/:codigo/reject", CaseController.reject);
-router.post("/:codigo/request-info", CaseController.requestInfo);
-router.post("/:codigo/request-info/:idSolicitud/respond", CaseController.respondInfo);
-router.post("/:codigo/investigation", CaseController.saveInvestigation);
-router.post("/:codigo/plans/batch", CaseController.createPlans);
-router.post("/:codigo/plans", CaseController.createPlan);
-router.patch("/planes/:idPlan", CaseController.updatePlan);
-router.post("/planes/:idPlan/accept", CaseController.acceptPlanById);
-router.post("/planes/:idPlan/complete-execution", CaseController.completeExecutionByPlan);
-router.post("/planes/:idPlan/review-final", CaseController.reviewFinalPlanById);
-router.post("/planes/:idPlan/extension", CaseController.requestExtensionByPlan);
-router.post("/planes/:idPlan/extension/review", CaseController.reviewExtensionByPlan);
-router.post("/planes/:idPlan/comment", CaseController.addPlanComment);
-router.delete("/planes/:idPlan/evidence/:idAnexo", CaseController.removePlanEvidence);
-router.post("/planes/:idPlan/evidence", uploadEvidencia.array("evidencia", 10), CaseController.addEvidenceByPlan);
-router.post("/planes/:idPlan/actualizacion", uploadEvidencia.array("evidencia", 10), CaseController.addPlanUpdate);
-router.patch("/actividades/:idActividad", CaseController.updateActivity);
-router.post("/:codigo/extension", CaseController.requestExtension);
-router.post("/:codigo/extension/review", CaseController.reviewExtension);
-router.post("/:codigo/accept-plan", CaseController.acceptPlan);
-router.post("/:codigo/complete-execution", CaseController.completeExecution);
-router.post("/:codigo/start-execution", CaseController.startExecution);
-router.post("/:codigo/send-verification", CaseController.sendToVerification);
-router.post("/:codigo/keep-pending", CaseController.keepPending);
-router.post("/:codigo/reopen", CaseController.reopen);
-router.post("/:codigo/rollback", CaseController.rollbackStage);
-router.post("/:codigo/comment", CaseController.addComment);
-router.post("/:codigo/close", CaseController.close);
-router.post("/:codigo/evidence", uploadEvidencia.array("evidencia", 10), CaseController.addEvidence);
+router.get("/planes", LECTURA, CaseController.getPlans);
+router.get("/counts", LECTURA, CaseController.getCounts);
+router.get("/:codigo", LECTURA, CaseController.getByCodigo);
+router.post("/:codigo/approve", SO, CaseController.approve);
+router.post("/:codigo/observation", SO, CaseController.addObservation);
+router.post("/:codigo/evaluate", SO, CaseController.evaluate);
+router.patch("/:codigo/tipo", SO, CaseController.updateTipo);
+router.post("/:codigo/reject", SO, CaseController.reject);
+router.post("/:codigo/request-info", SO, CaseController.requestInfo);
+router.post("/:codigo/request-info/:idSolicitud/respond", SO, CaseController.respondInfo);
+router.post("/:codigo/investigation", SO, CaseController.saveInvestigation);
+router.post("/:codigo/plans/batch", SO, CaseController.createPlans);
+router.post("/:codigo/plans", SO, CaseController.createPlan);
+router.patch("/planes/:idPlan", SO, CaseController.updatePlan);
+router.post("/planes/:idPlan/accept", JEFE, CaseController.acceptPlanById);
+router.post("/planes/:idPlan/complete-execution", JEFE, CaseController.completeExecutionByPlan);
+router.post("/planes/:idPlan/review-final", SO, CaseController.reviewFinalPlanById);
+router.post("/planes/:idPlan/extension", JEFE, CaseController.requestExtensionByPlan);
+router.post("/planes/:idPlan/extension/review", SO, CaseController.reviewExtensionByPlan);
+router.post("/planes/:idPlan/comment", SO_O_JEFE, CaseController.addPlanComment);
+router.delete("/planes/:idPlan/evidence/:idAnexo", JEFE, CaseController.removePlanEvidence);
+router.post("/planes/:idPlan/evidence", JEFE, uploadEvidencia.array("evidencia", 10), CaseController.addEvidenceByPlan);
+router.post("/planes/:idPlan/actualizacion", JEFE, uploadEvidencia.array("evidencia", 10), CaseController.addPlanUpdate);
+router.patch("/actividades/:idActividad", JEFE, CaseController.updateActivity);
+router.post("/:codigo/extension", JEFE, CaseController.requestExtension);
+router.post("/:codigo/extension/review", SO, CaseController.reviewExtension);
+router.post("/:codigo/accept-plan", JEFE, CaseController.acceptPlan);
+router.post("/:codigo/complete-execution", JEFE, CaseController.completeExecution);
+router.post("/:codigo/start-execution", SO, CaseController.startExecution);
+router.post("/:codigo/send-verification", SO, CaseController.sendToVerification);
+router.post("/:codigo/keep-pending", SO, CaseController.keepPending);
+router.post("/:codigo/reopen", SO, CaseController.reopen);
+// "Revertir caso": solo Seguridad Operativa, que es quien controla el flujo del expediente.
+router.post("/:codigo/rollback", SO, CaseController.rollbackStage);
+router.post("/:codigo/comment", SO_O_JEFE, CaseController.addComment);
+router.post("/:codigo/close", SO, CaseController.close);
+router.post("/:codigo/evidence", SO, uploadEvidencia.array("evidencia", 10), CaseController.addEvidence);
 
 export default router;
 

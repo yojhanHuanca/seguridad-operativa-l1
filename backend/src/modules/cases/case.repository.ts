@@ -284,11 +284,11 @@ export class CaseRepository {
 
     // Sin `page`/`limit` se comporta exactamente igual que antes: trae todo
     // y no cuenta nada de más. Solo pagina cuando ambos vienen juntos — así
-    // los consumidores que ya existían (dashboard, indicadores, mapa,
+    // los 6 consumidores que ya existían (dashboard, indicadores, mapa,
     // exportar, badge del sidebar) no notan ningún cambio.
     if (!filtros.page || !filtros.limit) {
       const data = await prisma.casos_sop.findMany({ where, include: LIST_INCLUDE, orderBy });
-      return { data, total: undefined as number | undefined };
+      return { data, total: undefined };
     }
 
     const [data, total] = await Promise.all([
@@ -307,7 +307,8 @@ export class CaseRepository {
   /**
    * Conteos por pestaña de la bandeja de Casos SOP — solo `COUNT`, nunca trae
    * filas. Los grupos de `estado_hallazgo` por pestaña deben coincidir con
-   * los filtros de pestaña que use el frontend: si se agrega o renombra un
+   * `CASE_FILTERS`/`STAGE_BY_ESTADO` del frontend (`features/cases/lib/
+   * filters.ts` y `features/cases/domain.ts`): si se agrega o renombra un
    * estado allá, hay que actualizar esto también.
    */
   static async counts(area?: number) {
@@ -349,7 +350,7 @@ export class CaseRepository {
    * `codigo_sop` opcional acota a los planes de un solo caso — la usa
    * `PlanDetail.tsx` en vez de traer toda el área y filtrar en el navegador.
    */
-  static async findPlansByArea(opts?: { id_area?: number | undefined; codigo_sop?: string | undefined }) {
+  static async findPlansByArea(opts?: { id_area?: number; codigo_sop?: string }) {
     const where: Record<string, unknown> = {};
     if (opts?.id_area) where.id_area = opts.id_area;
     if (opts?.codigo_sop) where.casos_sop = { codigo_sop: opts.codigo_sop };
@@ -385,7 +386,7 @@ export class CaseRepository {
             // debe poder leerla: es donde van las recomendaciones.
             investigacion_caso: { select: { causa_raiz: true, hallazgos: true, conclusiones: true, observaciones: true } },
             timeline_caso: {
-              orderBy: { fecha: "desc" },
+              orderBy: { fecha: "desc" as const },
               select: {
                 id_evento: true,
                 kind: true,
@@ -397,7 +398,7 @@ export class CaseRepository {
               },
             },
             anexos_caso: {
-              orderBy: { fecha_subida: "desc" },
+              orderBy: { fecha_subida: "desc" as const },
               select: {
                 id_anexo: true,
                 nombre_archivo: true,
@@ -422,6 +423,40 @@ export class CaseRepository {
         catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { select: { nombre: true } },
       },
     });
+  }
+
+  /**
+   * Contexto mínimo de un plan para decidir si la acción procede: en qué etapa
+   * está su caso y de quién es el plan. Va en una sola consulta porque las dos
+   * comprobaciones (etapa y propiedad) se hacen siempre juntas.
+   */
+  static async findPlanContexto(id_plan: number) {
+    return prisma.planes_accion.findUnique({
+      where: { id_plan },
+      select: {
+        id_plan: true,
+        id_caso: true,
+        id_area: true,
+        responsable: true,
+        codigo_plan: true,
+        casos_sop: {
+          select: {
+            codigo_sop: true,
+            catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { select: { nombre: true } },
+          },
+        },
+      },
+    });
+  }
+
+  /** Igual que findPlanContexto, pero entrando por una actividad del plan. */
+  static async findActividadContexto(id_actividad: number) {
+    const actividad = await prisma.actividades_plan.findUnique({
+      where: { id_actividad },
+      select: { id_plan: true },
+    });
+    if (!actividad?.id_plan) return null;
+    return CaseRepository.findPlanContexto(actividad.id_plan);
   }
 
   static async findEstado(nombre: string) {

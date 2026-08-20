@@ -1,4 +1,4 @@
-import { Cog, History, ListTree } from "lucide-react";
+import { Cog, ListTree } from "lucide-react";
 import { AdminShell } from "@/components/layout/AdminShell";
 import { ComingSoon } from "@/components/layout/ComingSoon";
 
@@ -9,18 +9,6 @@ export function AdminCatalogosPage() {
         icon={ListTree}
         title="Catálogos"
         description="Áreas, tipos de incidente, estaciones y niveles de riesgo, editables sin tocar la base de datos."
-      />
-    </AdminShell>
-  );
-}
-
-export function AdminAuditoriaPage() {
-  return (
-    <AdminShell>
-      <ComingSoon
-        icon={History}
-        title="Auditoría"
-        description="Actividad global del sistema: quién hizo qué y cuándo, más allá del historial de un solo expediente."
       />
     </AdminShell>
   );

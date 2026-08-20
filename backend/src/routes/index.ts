@@ -10,6 +10,8 @@ import casesRoutes from "../modules/cases/case.routes.js";
 import notificationsRoutes from "../modules/notifications/notification.routes.js";
 import profileRoutes from "../modules/profile/profile.routes.js";
 import archivosRoutes from "../modules/archivos/archivo.routes.js";
+import dashboardRoutes from "../modules/dashboard/dashboard.routes.js";
+import auditoriaRoutes from "../modules/auditoria/auditoria.routes.js";
 import { AuthController } from "../modules/auth/auth.controller.js";
 import { verifyToken } from "../middlewares/auth.middleware.js";
 
@@ -35,6 +37,8 @@ router.use("/cases", casesRoutes);
 router.use("/notifications", notificationsRoutes);
 router.use("/profile", profileRoutes);
 router.use("/archivos", archivosRoutes);
+router.use("/dashboard", dashboardRoutes);
+router.use("/auditoria", auditoriaRoutes);
 router.get("/", AuthController.home);
 
 

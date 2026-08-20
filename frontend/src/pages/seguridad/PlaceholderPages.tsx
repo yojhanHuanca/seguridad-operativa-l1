@@ -1,18 +1,6 @@
-import { Activity, AlertTriangle, ListChecks, UserCircle2 } from "lucide-react";
+import { Activity, ListChecks, UserCircle2 } from "lucide-react";
 import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
 import { ComingSoon } from "@/components/layout/ComingSoon";
-
-export function SoAlertasPage() {
-  return (
-    <SeguridadOperativaShell>
-      <ComingSoon
-        icon={AlertTriangle}
-        title="Alertas"
-        description="Avisos de casos críticos, plazos por vencer e incumplimientos de SLA."
-      />
-    </SeguridadOperativaShell>
-  );
-}
 
 export function SoPlanesAccionPage() {
   return (

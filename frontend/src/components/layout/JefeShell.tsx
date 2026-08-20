@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
-import { Activity, Bell, Building2, Calendar, CheckCircle2, ChevronRight, Clock, FolderKanban, Timer, Train } from "lucide-react";
+import { Activity, BarChart3, Bell, Building2, Calendar, CheckCircle2, ChevronRight, Clock, FolderKanban, Timer, Train } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { Card } from "@/design-system/primitives/Card";
 import { usePlans } from "@/features/plans/hooks/usePlans";
@@ -134,7 +134,7 @@ export function JefeShell({ children }: { children: ReactNode }) {
               to="/jefe"
               className={cn(
                 "relative inline-flex h-10 items-center gap-2 rounded-lg px-4 text-[14px] font-medium transition-colors",
-                location.pathname.startsWith("/jefe") ? "bg-brand-50 text-brand-800" : "text-ink-soft hover:bg-surface hover:text-ink"
+                !location.pathname.startsWith("/jefe/indicadores") ? "bg-brand-50 text-brand-800" : "text-ink-soft hover:bg-surface hover:text-ink"
               )}
             >
               <Calendar className="h-4 w-4" /> Mi Plan
@@ -143,6 +143,15 @@ export function JefeShell({ children }: { children: ReactNode }) {
                   {activeCount}
                 </span>
               )}
+            </Link>
+            <Link
+              to="/jefe/indicadores"
+              className={cn(
+                "relative inline-flex h-10 items-center gap-2 rounded-lg px-4 text-[14px] font-medium transition-colors",
+                location.pathname.startsWith("/jefe/indicadores") ? "bg-brand-50 text-brand-800" : "text-ink-soft hover:bg-surface hover:text-ink"
+              )}
+            >
+              <BarChart3 className="h-4 w-4" /> Indicadores
             </Link>
           </nav>
 

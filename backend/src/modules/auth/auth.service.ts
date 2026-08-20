@@ -1,7 +1,7 @@
 import { AuthRepository } from "./auth.repository.js";
 import { BcryptHelper } from "../../utils/bcrypt.js";
 import { JwtHelper } from "../../utils/jwt.js";
-
+import { AuditoriaService } from "../auditoria/auditoria.service.js";
 
 export class AuthService {
     static async login(correo: string, password: string, direccion_ip?: string, navegador?: string) {
@@ -9,6 +9,11 @@ export class AuthService {
 
         // Buscar usuarios
         const user = await AuthRepository.findByEmail(correo);
+        // Un correo que no existe no se puede auditar contra ningún usuario
+        // (la tabla `auditoria` exige un `usuario` válido) — no hay a quién
+        // atribuírselo. Los intentos contra una cuenta real sí quedan, más
+        // abajo, que es el caso que de verdad importa (fuerza bruta contra
+        // una cuenta que existe).
         if (!user) {
             throw new Error("Correo o contraseña incorrectos");
         }
@@ -24,10 +29,26 @@ export class AuthService {
         );
 
         if (!isPasswordValid) {
+            await AuditoriaService.registrar({
+                tabla: "usuarios",
+                id_registro: user.id_usuario,
+                accion: "login_fallido",
+                descripcion: `Intento de acceso con contraseña incorrecta (${correo})`,
+                usuario: user.id_usuario,
+                ip: direccion_ip,
+            });
             throw new Error("Correo o contraseña incorrectos");
         }
 
         if ((user.estado ?? "").toLowerCase() !== "activo"){
+            await AuditoriaService.registrar({
+                tabla: "usuarios",
+                id_registro: user.id_usuario,
+                accion: "login_fallido",
+                descripcion: `Intento de acceso a una cuenta ${user.estado ?? "inactiva"}`,
+                usuario: user.id_usuario,
+                ip: direccion_ip,
+            });
             throw new Error("La cuenta se encuentra inactiva. Contacta al administrador.");
         }
 
@@ -38,6 +59,15 @@ export class AuthService {
         // Una fila en `sesiones` por login: es lo que permite invalidar el
         // token al cerrar sesión (ver `verifyToken` y `AuthService.logout`).
         const sesion = await AuthRepository.crearSesion(user.id_usuario, direccion_ip, navegador);
+
+        await AuditoriaService.registrar({
+            tabla: "sesiones",
+            id_registro: sesion.id_sesion,
+            accion: "login",
+            descripcion: `Inicio de sesión${navegador ? ` — ${navegador}` : ""}`,
+            usuario: user.id_usuario,
+            ip: direccion_ip,
+        });
 
         // Generar token JWT
 
@@ -88,5 +118,3 @@ export class AuthService {
         };
     }
 }
-
-
