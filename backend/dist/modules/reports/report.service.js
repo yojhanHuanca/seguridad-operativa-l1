@@ -1,5 +1,9 @@
 import { z } from "zod";
 import { ReportRepository } from "./report.repository.js";
+/** Solo el rol "Reportante" ve nada más que lo suyo; ver comentario en listReports. */
+function esReportante(actor) {
+    return (actor?.rol_nombre ?? "").trim().toLowerCase() === "reportante";
+}
 const idPositivo = z.coerce.number().int().positive();
 export const createReportSchema = z
     .object({
@@ -10,12 +14,14 @@ export const createReportSchema = z
         .string()
         .trim()
         .min(10, "La descripción debe tener al menos 10 caracteres")
-        .max(300, "La descripción no puede superar los 300 caracteres"),
+        .max(500, "La descripción no puede superar los 500 caracteres"),
     modalidad: z.enum(["anonimo", "identificado"]),
     nombre_reportante: z.string().trim().max(150).optional().nullable(),
     correo_reportante: z.string().trim().email("Ingrese un correo válido").max(150).optional().nullable().or(z.literal("")),
     telefono_reportante: z.string().trim().max(20).optional().nullable(),
     origen: z.enum(["reportante", "seguridad_operativa"]).default("reportante"),
+    /** Si el hallazgo se creó desde "Eventos asignados" de Monitoreo, el evento que le dio origen. */
+    id_evento_monitoreo: idPositivo.optional(),
 })
     .refine((data) => data.modalidad !== "identificado" || !!data.nombre_reportante?.trim(), {
     message: "El nombre completo es obligatorio para un reporte identificado",
@@ -31,7 +37,7 @@ async function assertCatalogo(id_detalle, catalogoEsperado) {
     }
 }
 export class ReportService {
-    static async createReport(rawBody, files) {
+    static async createReport(rawBody, files, id_usuario_creador) {
         const dto = createReportSchema.parse(rawBody);
         await assertCatalogo(dto.id_tipo, "Tipo de Reporte");
         await assertCatalogo(dto.id_lugar, "Lugar de Incidente");
@@ -40,10 +46,28 @@ export class ReportService {
         return ReportRepository.createFullReport({
             ...dto,
             correo_reportante: dto.correo_reportante || null,
-        }, files);
+        }, files, id_usuario_creador);
     }
-    static async listReports() {
-        return ReportRepository.findAll();
+    /**
+     * El Reportante solo ve lo que él registró; Seguridad Operativa, Jefe de
+     * Área y Admin ven todos los casos porque los tienen que gestionar.
+     */
+    static async listReports(actor, query) {
+        if (!esReportante(actor)) {
+            const data = await ReportRepository.findAll();
+            return { data, total: undefined };
+        }
+        const filter = query?.filter === "activos" || query?.filter === "pendientes_info" || query?.filter === "cerrados"
+            ? query.filter
+            : undefined;
+        const page = Number(query?.page);
+        const limit = Number(query?.limit);
+        const paginar = Number.isInteger(page) && page > 0 && Number.isInteger(limit) && limit > 0;
+        return ReportRepository.findAllByCreator(actor.id_usuario, {
+            ...(filter ? { filter } : {}),
+            ...(query?.search ? { search: query.search } : {}),
+            ...(paginar ? { page, limit } : {}),
+        });
     }
     static async getByCodigo(codigo_sop) {
         const caso = await ReportRepository.findByCodigo(codigo_sop);

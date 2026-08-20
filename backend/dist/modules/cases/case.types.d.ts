@@ -47,6 +47,12 @@ export interface CaseListFilters {
     area?: number | undefined;
     search?: string | undefined;
     sort?: "recientes" | "prioridad" | "sla" | undefined;
+    /** Ambos opcionales y deben venir juntos: sin ellos, `findAll` devuelve
+     * todo (comportamiento de siempre) — así los consumidores existentes
+     * (dashboard, indicadores, mapa, exportar, badge del sidebar) no cambian
+     * en nada. Solo la lista paginada de CasosPage los manda. */
+    page?: number | undefined;
+    limit?: number | undefined;
 }
 export interface UploadedFile {
     originalname: string;

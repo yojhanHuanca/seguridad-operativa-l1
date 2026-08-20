@@ -1,9 +1,9 @@
-import jwt from "jsonwebtoken";
+import jwt, {} from "jsonwebtoken";
 import { env } from "../config/env.js";
 export class JwtHelper {
     static generateToken(payload) {
         return jwt.sign(payload, env.JWT_SECRET, {
-            expiresIn: "8h",
+            expiresIn: (env.JWT_EXPIRES_IN ?? "8h"),
         });
     }
     static verifyToken(token) {

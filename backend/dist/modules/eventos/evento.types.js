@@ -37,4 +37,7 @@ export const updateEventoSchema = z.object({
     estado: z.enum(ESTADOS_EVENTO).optional(),
     ...camposEvento,
 });
+export const asignarEventoSchema = z.object({
+    id_usuario: z.coerce.number().int().positive(),
+});
 //# sourceMappingURL=evento.types.js.map

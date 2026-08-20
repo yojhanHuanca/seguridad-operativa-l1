@@ -7,6 +7,12 @@ const LIST_INCLUDE = {
     catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: { select: { id_detalle: true, codigo: true, nombre: true, orden: true } },
     areas: { select: { id_area: true, nombre_area: true } },
     anexos_caso: { select: { id_anexo: true } },
+    // Sin `seguimientos`: en la lista solo hace falta el avance (que sale de
+    // `porcentaje`/`catalogo_detalle` de cada actividad), no su historial de
+    // comentarios completo. Ese detalle profundo sigue viniendo completo en
+    // DETAIL_INCLUDE (findByCodigo, un caso a la vez) — acá, multiplicado por
+    // cada caso de la lista, es lo que hace pesada la consulta cuando hay
+    // miles de casos con años de seguimientos acumulados.
     planes_accion: {
         orderBy: { created_at: "asc" },
         include: {
@@ -18,10 +24,6 @@ const LIST_INCLUDE = {
                 include: {
                     usuarios: { select: { id_usuario: true, nombre: true, cargo: true } },
                     catalogo_detalle: { select: { nombre: true } },
-                    seguimientos: {
-                        orderBy: { fecha: "desc" },
-                        include: { usuarios: { select: { id_usuario: true, nombre: true, cargo: true } } },
-                    },
                 },
             },
         },
@@ -234,12 +236,61 @@ export class CaseRepository {
                 { codigo_sop: { contains: q, mode: "insensitive" } },
                 { titulo: { contains: q, mode: "insensitive" } },
                 { descripcion: { contains: q, mode: "insensitive" } },
+                { nombre_reportante: { contains: q, mode: "insensitive" } },
             ];
         }
         const orderBy = filtros.sort === "prioridad"
             ? [{ catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: { orden: "asc" } }, { created_at: "desc" }]
             : { created_at: "desc" };
-        return prisma.casos_sop.findMany({ where, include: LIST_INCLUDE, orderBy });
+        // Sin `page`/`limit` se comporta exactamente igual que antes: trae todo
+        // y no cuenta nada de más. Solo pagina cuando ambos vienen juntos — así
+        // los consumidores que ya existían (dashboard, indicadores, mapa,
+        // exportar, badge del sidebar) no notan ningún cambio.
+        if (!filtros.page || !filtros.limit) {
+            const data = await prisma.casos_sop.findMany({ where, include: LIST_INCLUDE, orderBy });
+            return { data, total: undefined };
+        }
+        const [data, total] = await Promise.all([
+            prisma.casos_sop.findMany({
+                where,
+                include: LIST_INCLUDE,
+                orderBy,
+                skip: (filtros.page - 1) * filtros.limit,
+                take: filtros.limit,
+            }),
+            prisma.casos_sop.count({ where }),
+        ]);
+        return { data, total };
+    }
+    /**
+     * Conteos por pestaña de la bandeja de Casos SOP — solo `COUNT`, nunca trae
+     * filas. Los grupos de `estado_hallazgo` por pestaña deben coincidir con
+     * los filtros de pestaña que use el frontend: si se agrega o renombra un
+     * estado allá, hay que actualizar esto también.
+     */
+    static async counts(area) {
+        const baseWhere = area ? { area_responsable: area } : {};
+        const grupos = {
+            nuevos: ["Recepción", "Evaluación", "En Proceso"],
+            pendientes: ["Pendiente de Información"],
+            investigacion: ["Investigación"],
+            proceso: ["Plan de Acción", "Ejecución", "Prórroga Solicitada"],
+            prorrogas: ["Prórroga Solicitada"],
+            verificacion: ["Verificación"],
+            cerrados: ["Cerrado", "Rechazado"],
+        };
+        const entradas = Object.entries(grupos);
+        const [todos, ...resto] = await Promise.all([
+            prisma.casos_sop.count({ where: baseWhere }),
+            ...entradas.map(([, estados]) => prisma.casos_sop.count({
+                where: { ...baseWhere, catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { nombre: { in: estados } } },
+            })),
+        ]);
+        const out = { todos };
+        entradas.forEach(([clave], i) => {
+            out[clave] = resto[i] ?? 0;
+        });
+        return out;
     }
     static async findByCodigo(codigo_sop) {
         return prisma.casos_sop.findUnique({ where: { codigo_sop }, include: DETAIL_INCLUDE });
@@ -247,10 +298,17 @@ export class CaseRepository {
     /**
      * Planes de acción visibles para un Jefe de Área. Si no se pasa área,
      * devuelve todos (útil mientras no hay login que fije el área del usuario).
+     * `codigo_sop` opcional acota a los planes de un solo caso — la usa
+     * `PlanDetail.tsx` en vez de traer toda el área y filtrar en el navegador.
      */
-    static async findPlansByArea(id_area) {
+    static async findPlansByArea(opts) {
+        const where = {};
+        if (opts?.id_area)
+            where.id_area = opts.id_area;
+        if (opts?.codigo_sop)
+            where.casos_sop = { codigo_sop: opts.codigo_sop };
         return prisma.planes_accion.findMany({
-            ...(id_area ? { where: { id_area } } : {}),
+            where,
             orderBy: { created_at: "desc" },
             include: {
                 areas: { select: { id_area: true, nombre_area: true } },
@@ -478,6 +536,10 @@ export class CaseRepository {
     }
     static async requestInfo(id_caso, estadoActualNombre, dto) {
         const estadoPausa = await CaseRepository.findEstado("Pendiente de Información");
+        const caso = await prisma.casos_sop.findUniqueOrThrow({
+            where: { id_caso },
+            select: { codigo_sop: true, created_by: true },
+        });
         return prisma.$transaction(async (tx) => {
             const solicitud = await tx.solicitudes_informacion.create({
                 data: { id_caso, mensaje: dto.mensaje, estado_previo: estadoActualNombre },
@@ -490,6 +552,17 @@ export class CaseRepository {
                 titulo: "Información adicional solicitada al reportante",
                 detalle: dto.mensaje,
             });
+            // Reporte "anónimo" (sin created_by asociado a un usuario) no tiene a
+            // quién avisar; el resto sí — antes esto no se emitía nunca y el
+            // reportante no se enteraba de que su caso estaba parado esperándolo.
+            if (caso.created_by) {
+                await NotificationRepository.emitir(tx, {
+                    para: { id_usuario: caso.created_by },
+                    tipo: "caso_devuelto",
+                    titulo: `Se necesita más información — ${caso.codigo_sop}`,
+                    mensaje: dto.mensaje,
+                });
+            }
             return solicitud;
         });
     }
@@ -498,6 +571,7 @@ export class CaseRepository {
         if (!solicitud || solicitud.id_caso !== id_caso)
             throw new Error("La solicitud de información no existe para este caso");
         const estadoDestino = await CaseRepository.findEstado(solicitud.estado_previo ?? "Evaluación");
+        const caso = await prisma.casos_sop.findUniqueOrThrow({ where: { id_caso }, select: { codigo_sop: true } });
         return prisma.$transaction(async (tx) => {
             const actualizada = await tx.solicitudes_informacion.update({
                 where: { id_solicitud },
@@ -510,6 +584,12 @@ export class CaseRepository {
                 actor_rol: "seguridad",
                 titulo: `Información recibida — vuelve a ${estadoDestino.nombre}`,
                 detalle: dto.respuesta ?? null,
+            });
+            await NotificationRepository.emitir(tx, {
+                para: { rol: "Seguridad Operativa" },
+                tipo: "info_respondida",
+                titulo: `El reportante respondió — ${caso.codigo_sop}`,
+                mensaje: dto.respuesta ?? "El reportante envió la información solicitada.",
             });
             return actualizada;
         });

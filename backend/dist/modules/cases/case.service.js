@@ -135,17 +135,30 @@ export class CaseService {
         const area = query.area ? Number(query.area) : undefined;
         const sort = query.sort === "prioridad" || query.sort === "sla" ? query.sort : "recientes";
         const filters = { sort };
+        // Ambos o ninguno: una página sin tamaño (o viceversa) no significa nada,
+        // así que se ignoran los dos y se cae al comportamiento sin paginar.
+        const page = Number(query.page);
+        const limit = Number(query.limit);
+        const paginar = Number.isInteger(page) && page > 0 && Number.isInteger(limit) && limit > 0;
         const fullFilters = {
             ...filters,
             ...(estados?.length ? { estados } : {}),
             ...(Number.isFinite(area) ? { area } : {}),
             ...(query.search ? { search: query.search } : {}),
+            ...(paginar ? { page, limit } : {}),
         };
         return CaseRepository.findAll(fullFilters);
     }
+    static async counts(query) {
+        const area = query.area ? Number(query.area) : undefined;
+        return CaseRepository.counts(Number.isFinite(area) ? area : undefined);
+    }
     static async listPlans(query) {
         const area = query.area ? Number(query.area) : undefined;
-        return CaseRepository.findPlansByArea(Number.isFinite(area) ? area : undefined);
+        return CaseRepository.findPlansByArea({
+            ...(Number.isFinite(area) ? { id_area: area } : {}),
+            ...(query.codigo ? { codigo_sop: query.codigo } : {}),
+        });
     }
     static async getByCodigo(codigo) {
         const caso = await CaseRepository.findByCodigo(codigo);

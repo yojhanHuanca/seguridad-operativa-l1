@@ -17,11 +17,23 @@ function param(req, name) {
 export class CaseController {
     static async getAll(req, res) {
         try {
-            const casos = await CaseService.list(req.query);
-            return res.json(ApiResponse.success("Casos obtenidos correctamente", casos));
+            const { data, total } = await CaseService.list(req.query);
+            const body = ApiResponse.success("Casos obtenidos correctamente", data);
+            // `total` solo viene cuando la petición mandó page+limit; si no, la
+            // respuesta es idéntica a la de siempre (sin este campo de más).
+            return res.json(total !== undefined ? { ...body, meta: { total } } : body);
         }
         catch (error) {
             return res.status(500).json(ApiResponse.error("Error al obtener los casos", error));
+        }
+    }
+    static async getCounts(req, res) {
+        try {
+            const counts = await CaseService.counts(req.query);
+            return res.json(ApiResponse.success("Conteos obtenidos correctamente", counts));
+        }
+        catch (error) {
+            return res.status(500).json(ApiResponse.error("Error al obtener los conteos", error));
         }
     }
     static async getPlans(req, res) {

@@ -18,9 +18,24 @@ export declare class AuthRepository {
         telefono: string | null;
         estado: string | null;
         fecha_ingreso: Date | null;
+        foto_url: string | null;
+        ultimo_acceso: Date | null;
+        es_responsable: boolean;
         id_area: number | null;
         id_rol: number | null;
     }) | null>;
     static healthCheck(): Promise<boolean>;
+    static crearSesion(usuario: number, direccion_ip?: string, navegador?: string): Promise<{
+        estado: string | null;
+        fecha_inicio: Date | null;
+        fecha_fin: Date | null;
+        direccion_ip: string | null;
+        navegador: string | null;
+        dispositivo: string | null;
+        id_sesion: number;
+        usuario: number;
+    }>;
+    static cerrarSesion(id_sesion: number): Promise<import("../../generated/prisma/internal/prismaNamespace.js").BatchPayload>;
+    static sesionActiva(id_sesion: number): Promise<boolean>;
 }
 //# sourceMappingURL=auth.repository.d.ts.map

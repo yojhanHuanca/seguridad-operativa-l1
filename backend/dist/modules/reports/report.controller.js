@@ -2,10 +2,11 @@ import { ZodError } from "zod";
 import { ReportService } from "./report.service.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 export class ReportController {
-    static async getAll(_req, res) {
+    static async getAll(req, res) {
         try {
-            const reportes = await ReportService.listReports();
-            return res.json(ApiResponse.success("Reportes obtenidos correctamente", reportes));
+            const { data, total } = await ReportService.listReports(req.user, req.query);
+            const body = ApiResponse.success("Reportes obtenidos correctamente", data);
+            return res.json(total !== undefined ? { ...body, meta: { total } } : body);
         }
         catch (error) {
             return res.status(500).json(ApiResponse.error("Error al obtener los reportes", error));
@@ -34,7 +35,12 @@ export class ReportController {
                 mimetype: f.mimetype,
                 size: f.size,
             }));
-            const result = await ReportService.createReport(req.body, files);
+            // Reportantes anónimos no traen sesión en el wizard público; si viene
+            // un usuario autenticado (SO registrando directo, o un trabajador
+            // logueado), se usa para firmar el reporte — ver anonimato real más
+            // abajo, en ReportRepository.createFullReport.
+            const id_usuario_creador = req.user?.id_usuario;
+            const result = await ReportService.createReport(req.body, files, id_usuario_creador);
             return res.status(201).json(ApiResponse.success("Reporte registrado correctamente", {
                 codigo_sop: result.caso.codigo_sop,
                 id_caso: result.caso.id_caso,

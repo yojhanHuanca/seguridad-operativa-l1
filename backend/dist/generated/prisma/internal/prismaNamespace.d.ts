@@ -3127,6 +3127,8 @@ export declare const Eventos_monitoreoScalarFieldEnum: {
     readonly demora: "demora";
     readonly estado: "estado";
     readonly usuario_registra: "usuario_registra";
+    readonly asignado_a: "asignado_a";
+    readonly id_caso_creado: "id_caso_creado";
     readonly created_at: "created_at";
     readonly updated_at: "updated_at";
 };
@@ -3335,6 +3337,9 @@ export declare const UsuariosScalarFieldEnum: {
     readonly telefono: "telefono";
     readonly estado: "estado";
     readonly fecha_ingreso: "fecha_ingreso";
+    readonly foto_url: "foto_url";
+    readonly ultimo_acceso: "ultimo_acceso";
+    readonly es_responsable: "es_responsable";
     readonly id_area: "id_area";
     readonly id_rol: "id_rol";
 };

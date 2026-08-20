@@ -453,6 +453,7 @@ export type casos_sopWhereInput = {
     investigacion_caso?: Prisma.XOR<Prisma.Investigacion_casoNullableScalarRelationFilter, Prisma.investigacion_casoWhereInput> | null;
     solicitudes_informacion?: Prisma.Solicitudes_informacionListRelationFilter;
     timeline_caso?: Prisma.Timeline_casoListRelationFilter;
+    eventos_monitoreo?: Prisma.XOR<Prisma.Eventos_monitoreoNullableScalarRelationFilter, Prisma.eventos_monitoreoWhereInput> | null;
 };
 export type casos_sopOrderByWithRelationInput = {
     id_caso?: Prisma.SortOrder;
@@ -504,6 +505,7 @@ export type casos_sopOrderByWithRelationInput = {
     investigacion_caso?: Prisma.investigacion_casoOrderByWithRelationInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionOrderByRelationAggregateInput;
     timeline_caso?: Prisma.timeline_casoOrderByRelationAggregateInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoOrderByWithRelationInput;
 };
 export type casos_sopWhereUniqueInput = Prisma.AtLeast<{
     id_caso?: number;
@@ -558,6 +560,7 @@ export type casos_sopWhereUniqueInput = Prisma.AtLeast<{
     investigacion_caso?: Prisma.XOR<Prisma.Investigacion_casoNullableScalarRelationFilter, Prisma.investigacion_casoWhereInput> | null;
     solicitudes_informacion?: Prisma.Solicitudes_informacionListRelationFilter;
     timeline_caso?: Prisma.Timeline_casoListRelationFilter;
+    eventos_monitoreo?: Prisma.XOR<Prisma.Eventos_monitoreoNullableScalarRelationFilter, Prisma.eventos_monitoreoWhereInput> | null;
 }, "id_caso" | "codigo_sop">;
 export type casos_sopOrderByWithAggregationInput = {
     id_caso?: Prisma.SortOrder;
@@ -673,6 +676,7 @@ export type casos_sopCreateInput = {
     investigacion_caso?: Prisma.investigacion_casoCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopUncheckedCreateInput = {
     id_caso?: number;
@@ -713,6 +717,7 @@ export type casos_sopUncheckedCreateInput = {
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoUncheckedCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopUpdateInput = {
     codigo_sop?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -752,6 +757,7 @@ export type casos_sopUpdateInput = {
     investigacion_caso?: Prisma.investigacion_casoUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -792,6 +798,7 @@ export type casos_sopUncheckedUpdateInput = {
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopCreateManyInput = {
     id_caso?: number;
@@ -1028,6 +1035,10 @@ export type casos_sopSumOrderByAggregateInput = {
     estado_plan?: Prisma.SortOrder;
     dias_abierto_plan?: Prisma.SortOrder;
     created_by?: Prisma.SortOrder;
+};
+export type Casos_sopNullableScalarRelationFilter = {
+    is?: Prisma.casos_sopWhereInput | null;
+    isNot?: Prisma.casos_sopWhereInput | null;
 };
 export type casos_sopCreateNestedOneWithoutAnexos_casoInput = {
     create?: Prisma.XOR<Prisma.casos_sopCreateWithoutAnexos_casoInput, Prisma.casos_sopUncheckedCreateWithoutAnexos_casoInput>;
@@ -1360,6 +1371,20 @@ export type casos_sopUpdateOneRequiredWithoutEvento_casoNestedInput = {
     connect?: Prisma.casos_sopWhereUniqueInput;
     update?: Prisma.XOR<Prisma.XOR<Prisma.casos_sopUpdateToOneWithWhereWithoutEvento_casoInput, Prisma.casos_sopUpdateWithoutEvento_casoInput>, Prisma.casos_sopUncheckedUpdateWithoutEvento_casoInput>;
 };
+export type casos_sopCreateNestedOneWithoutEventos_monitoreoInput = {
+    create?: Prisma.XOR<Prisma.casos_sopCreateWithoutEventos_monitoreoInput, Prisma.casos_sopUncheckedCreateWithoutEventos_monitoreoInput>;
+    connectOrCreate?: Prisma.casos_sopCreateOrConnectWithoutEventos_monitoreoInput;
+    connect?: Prisma.casos_sopWhereUniqueInput;
+};
+export type casos_sopUpdateOneWithoutEventos_monitoreoNestedInput = {
+    create?: Prisma.XOR<Prisma.casos_sopCreateWithoutEventos_monitoreoInput, Prisma.casos_sopUncheckedCreateWithoutEventos_monitoreoInput>;
+    connectOrCreate?: Prisma.casos_sopCreateOrConnectWithoutEventos_monitoreoInput;
+    upsert?: Prisma.casos_sopUpsertWithoutEventos_monitoreoInput;
+    disconnect?: Prisma.casos_sopWhereInput | boolean;
+    delete?: Prisma.casos_sopWhereInput | boolean;
+    connect?: Prisma.casos_sopWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.casos_sopUpdateToOneWithWhereWithoutEventos_monitoreoInput, Prisma.casos_sopUpdateWithoutEventos_monitoreoInput>, Prisma.casos_sopUncheckedUpdateWithoutEventos_monitoreoInput>;
+};
 export type casos_sopCreateNestedOneWithoutTimeline_casoInput = {
     create?: Prisma.XOR<Prisma.casos_sopCreateWithoutTimeline_casoInput, Prisma.casos_sopUncheckedCreateWithoutTimeline_casoInput>;
     connectOrCreate?: Prisma.casos_sopCreateOrConnectWithoutTimeline_casoInput;
@@ -1559,6 +1584,7 @@ export type casos_sopCreateWithoutAnexos_casoInput = {
     investigacion_caso?: Prisma.investigacion_casoCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopUncheckedCreateWithoutAnexos_casoInput = {
     id_caso?: number;
@@ -1598,6 +1624,7 @@ export type casos_sopUncheckedCreateWithoutAnexos_casoInput = {
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoUncheckedCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopCreateOrConnectWithoutAnexos_casoInput = {
     where: Prisma.casos_sopWhereUniqueInput;
@@ -1649,6 +1676,7 @@ export type casos_sopUpdateWithoutAnexos_casoInput = {
     investigacion_caso?: Prisma.investigacion_casoUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateWithoutAnexos_casoInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -1688,6 +1716,7 @@ export type casos_sopUncheckedUpdateWithoutAnexos_casoInput = {
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopCreateWithoutAreasInput = {
     codigo_sop: string;
@@ -1726,6 +1755,7 @@ export type casos_sopCreateWithoutAreasInput = {
     investigacion_caso?: Prisma.investigacion_casoCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopUncheckedCreateWithoutAreasInput = {
     id_caso?: number;
@@ -1765,6 +1795,7 @@ export type casos_sopUncheckedCreateWithoutAreasInput = {
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoUncheckedCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopCreateOrConnectWithoutAreasInput = {
     where: Prisma.casos_sopWhereUniqueInput;
@@ -1861,6 +1892,7 @@ export type casos_sopCreateWithoutCatalogo_detalle_casos_sop_estado_hallazgoToca
     investigacion_caso?: Prisma.investigacion_casoCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopUncheckedCreateWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput = {
     id_caso?: number;
@@ -1900,6 +1932,7 @@ export type casos_sopUncheckedCreateWithoutCatalogo_detalle_casos_sop_estado_hal
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoUncheckedCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopCreateOrConnectWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput = {
     where: Prisma.casos_sopWhereUniqueInput;
@@ -1946,6 +1979,7 @@ export type casos_sopCreateWithoutCatalogo_detalle_casos_sop_estado_planTocatalo
     investigacion_caso?: Prisma.investigacion_casoCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopUncheckedCreateWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput = {
     id_caso?: number;
@@ -1985,6 +2019,7 @@ export type casos_sopUncheckedCreateWithoutCatalogo_detalle_casos_sop_estado_pla
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoUncheckedCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopCreateOrConnectWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput = {
     where: Prisma.casos_sopWhereUniqueInput;
@@ -2031,6 +2066,7 @@ export type casos_sopCreateWithoutCatalogo_detalle_casos_sop_procedenciaTocatalo
     investigacion_caso?: Prisma.investigacion_casoCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopUncheckedCreateWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput = {
     id_caso?: number;
@@ -2070,6 +2106,7 @@ export type casos_sopUncheckedCreateWithoutCatalogo_detalle_casos_sop_procedenci
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoUncheckedCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopCreateOrConnectWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput = {
     where: Prisma.casos_sopWhereUniqueInput;
@@ -2116,6 +2153,7 @@ export type casos_sopCreateWithoutCatalogo_detalle_casos_sop_analisis_riesgoToca
     investigacion_caso?: Prisma.investigacion_casoCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopUncheckedCreateWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput = {
     id_caso?: number;
@@ -2155,6 +2193,7 @@ export type casos_sopUncheckedCreateWithoutCatalogo_detalle_casos_sop_analisis_r
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoUncheckedCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopCreateOrConnectWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput = {
     where: Prisma.casos_sopWhereUniqueInput;
@@ -2201,6 +2240,7 @@ export type casos_sopCreateWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalo
     investigacion_caso?: Prisma.investigacion_casoCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopUncheckedCreateWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput = {
     id_caso?: number;
@@ -2240,6 +2280,7 @@ export type casos_sopUncheckedCreateWithoutCatalogo_detalle_casos_sop_subtipo_so
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoUncheckedCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopCreateOrConnectWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput = {
     where: Prisma.casos_sopWhereUniqueInput;
@@ -2286,6 +2327,7 @@ export type casos_sopCreateWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_deta
     investigacion_caso?: Prisma.investigacion_casoCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopUncheckedCreateWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput = {
     id_caso?: number;
@@ -2325,6 +2367,7 @@ export type casos_sopUncheckedCreateWithoutCatalogo_detalle_casos_sop_tipoTocata
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoUncheckedCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopCreateOrConnectWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput = {
     where: Prisma.casos_sopWhereUniqueInput;
@@ -2371,6 +2414,7 @@ export type casos_sopCreateWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_
     investigacion_caso?: Prisma.investigacion_casoCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopUncheckedCreateWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput = {
     id_caso?: number;
@@ -2410,6 +2454,7 @@ export type casos_sopUncheckedCreateWithoutCatalogo_detalle_casos_sop_tipo_sopTo
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoUncheckedCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopCreateOrConnectWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput = {
     where: Prisma.casos_sopWhereUniqueInput;
@@ -2547,6 +2592,7 @@ export type casos_sopCreateWithoutEvento_casoInput = {
     investigacion_caso?: Prisma.investigacion_casoCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopUncheckedCreateWithoutEvento_casoInput = {
     id_caso?: number;
@@ -2586,6 +2632,7 @@ export type casos_sopUncheckedCreateWithoutEvento_casoInput = {
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoUncheckedCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopCreateOrConnectWithoutEvento_casoInput = {
     where: Prisma.casos_sopWhereUniqueInput;
@@ -2637,6 +2684,7 @@ export type casos_sopUpdateWithoutEvento_casoInput = {
     investigacion_caso?: Prisma.investigacion_casoUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateWithoutEvento_casoInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -2672,6 +2720,178 @@ export type casos_sopUncheckedUpdateWithoutEvento_casoInput = {
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     anexos_caso?: Prisma.anexos_casoUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateOneWithoutCasos_sopNestedInput;
+    solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    timeline_caso?: Prisma.timeline_casoUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateOneWithoutCasos_sopNestedInput;
+};
+export type casos_sopCreateWithoutEventos_monitoreoInput = {
+    codigo_sop: string;
+    titulo?: string | null;
+    nombre_reportante?: string | null;
+    correo_reportante?: string | null;
+    telefono_reportante?: string | null;
+    fecha_hallazgo: Date | string;
+    fecha_evento?: Date | string | null;
+    dias_abierto?: number | null;
+    descripcion: string;
+    peligro?: string | null;
+    consecuencia?: string | null;
+    descripcion_evento?: string | null;
+    clasificacion?: string | null;
+    acr?: string | null;
+    fecha_plan?: Date | string | null;
+    fecha_reprogramada?: Date | string | null;
+    dias_abierto_plan?: number | null;
+    observaciones?: string | null;
+    created_at?: Date | string | null;
+    updated_at?: Date | string | null;
+    anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutCasos_sopInput;
+    areas?: Prisma.areasCreateNestedOneWithoutCasos_sopInput;
+    usuarios_casos_sop_created_byTousuarios?: Prisma.usuariosCreateNestedOneWithoutCasos_sop_casos_sop_created_byTousuariosInput;
+    catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: Prisma.catalogo_detalleCreateNestedOneWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleInput;
+    catalogo_detalle_casos_sop_estado_planTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleInput;
+    catalogo_detalle_casos_sop_procedenciaTocatalogo_detalle: Prisma.catalogo_detalleCreateNestedOneWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleInput;
+    usuarios_casos_sop_responsable_hallazgoTousuarios?: Prisma.usuariosCreateNestedOneWithoutCasos_sop_casos_sop_responsable_hallazgoTousuariosInput;
+    usuarios_casos_sop_responsable_planTousuarios?: Prisma.usuariosCreateNestedOneWithoutCasos_sop_casos_sop_responsable_planTousuariosInput;
+    catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleInput;
+    catalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleInput;
+    catalogo_detalle_casos_sop_tipoTocatalogo_detalle: Prisma.catalogo_detalleCreateNestedOneWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleInput;
+    catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle: Prisma.catalogo_detalleCreateNestedOneWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleInput;
+    evento_caso?: Prisma.evento_casoCreateNestedManyWithoutCasos_sopInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCasos_sopInput;
+    investigacion_caso?: Prisma.investigacion_casoCreateNestedOneWithoutCasos_sopInput;
+    solicitudes_informacion?: Prisma.solicitudes_informacionCreateNestedManyWithoutCasos_sopInput;
+    timeline_caso?: Prisma.timeline_casoCreateNestedManyWithoutCasos_sopInput;
+};
+export type casos_sopUncheckedCreateWithoutEventos_monitoreoInput = {
+    id_caso?: number;
+    codigo_sop: string;
+    titulo?: string | null;
+    nombre_reportante?: string | null;
+    correo_reportante?: string | null;
+    telefono_reportante?: string | null;
+    fecha_hallazgo: Date | string;
+    fecha_evento?: Date | string | null;
+    estado_hallazgo: number;
+    dias_abierto?: number | null;
+    procedencia: number;
+    tipo: number;
+    descripcion: string;
+    responsable_hallazgo?: number | null;
+    tipo_sop: number;
+    subtipo_sop?: number | null;
+    peligro?: string | null;
+    consecuencia?: string | null;
+    descripcion_evento?: string | null;
+    clasificacion?: string | null;
+    analisis_riesgo?: number | null;
+    acr?: string | null;
+    area_responsable?: number | null;
+    responsable_plan?: number | null;
+    estado_plan?: number | null;
+    fecha_plan?: Date | string | null;
+    fecha_reprogramada?: Date | string | null;
+    dias_abierto_plan?: number | null;
+    observaciones?: string | null;
+    created_by?: number | null;
+    created_at?: Date | string | null;
+    updated_at?: Date | string | null;
+    anexos_caso?: Prisma.anexos_casoUncheckedCreateNestedManyWithoutCasos_sopInput;
+    evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutCasos_sopInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCasos_sopInput;
+    investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedOneWithoutCasos_sopInput;
+    solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedCreateNestedManyWithoutCasos_sopInput;
+    timeline_caso?: Prisma.timeline_casoUncheckedCreateNestedManyWithoutCasos_sopInput;
+};
+export type casos_sopCreateOrConnectWithoutEventos_monitoreoInput = {
+    where: Prisma.casos_sopWhereUniqueInput;
+    create: Prisma.XOR<Prisma.casos_sopCreateWithoutEventos_monitoreoInput, Prisma.casos_sopUncheckedCreateWithoutEventos_monitoreoInput>;
+};
+export type casos_sopUpsertWithoutEventos_monitoreoInput = {
+    update: Prisma.XOR<Prisma.casos_sopUpdateWithoutEventos_monitoreoInput, Prisma.casos_sopUncheckedUpdateWithoutEventos_monitoreoInput>;
+    create: Prisma.XOR<Prisma.casos_sopCreateWithoutEventos_monitoreoInput, Prisma.casos_sopUncheckedCreateWithoutEventos_monitoreoInput>;
+    where?: Prisma.casos_sopWhereInput;
+};
+export type casos_sopUpdateToOneWithWhereWithoutEventos_monitoreoInput = {
+    where?: Prisma.casos_sopWhereInput;
+    data: Prisma.XOR<Prisma.casos_sopUpdateWithoutEventos_monitoreoInput, Prisma.casos_sopUncheckedUpdateWithoutEventos_monitoreoInput>;
+};
+export type casos_sopUpdateWithoutEventos_monitoreoInput = {
+    codigo_sop?: Prisma.StringFieldUpdateOperationsInput | string;
+    titulo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre_reportante?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    correo_reportante?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    telefono_reportante?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    fecha_hallazgo?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    fecha_evento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    dias_abierto?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    descripcion?: Prisma.StringFieldUpdateOperationsInput | string;
+    peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    fecha_plan?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    fecha_reprogramada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    dias_abierto_plan?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    anexos_caso?: Prisma.anexos_casoUpdateManyWithoutCasos_sopNestedInput;
+    areas?: Prisma.areasUpdateOneWithoutCasos_sopNestedInput;
+    usuarios_casos_sop_created_byTousuarios?: Prisma.usuariosUpdateOneWithoutCasos_sop_casos_sop_created_byTousuariosNestedInput;
+    catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneRequiredWithoutCasos_sop_casos_sop_estado_hallazgoTocatalogo_detalleNestedInput;
+    catalogo_detalle_casos_sop_estado_planTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutCasos_sop_casos_sop_estado_planTocatalogo_detalleNestedInput;
+    catalogo_detalle_casos_sop_procedenciaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneRequiredWithoutCasos_sop_casos_sop_procedenciaTocatalogo_detalleNestedInput;
+    usuarios_casos_sop_responsable_hallazgoTousuarios?: Prisma.usuariosUpdateOneWithoutCasos_sop_casos_sop_responsable_hallazgoTousuariosNestedInput;
+    usuarios_casos_sop_responsable_planTousuarios?: Prisma.usuariosUpdateOneWithoutCasos_sop_casos_sop_responsable_planTousuariosNestedInput;
+    catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutCasos_sop_casos_sop_analisis_riesgoTocatalogo_detalleNestedInput;
+    catalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutCasos_sop_casos_sop_subtipo_sopTocatalogo_detalleNestedInput;
+    catalogo_detalle_casos_sop_tipoTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneRequiredWithoutCasos_sop_casos_sop_tipoTocatalogo_detalleNestedInput;
+    catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneRequiredWithoutCasos_sop_casos_sop_tipo_sopTocatalogo_detalleNestedInput;
+    evento_caso?: Prisma.evento_casoUpdateManyWithoutCasos_sopNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutCasos_sopNestedInput;
+    investigacion_caso?: Prisma.investigacion_casoUpdateOneWithoutCasos_sopNestedInput;
+    solicitudes_informacion?: Prisma.solicitudes_informacionUpdateManyWithoutCasos_sopNestedInput;
+    timeline_caso?: Prisma.timeline_casoUpdateManyWithoutCasos_sopNestedInput;
+};
+export type casos_sopUncheckedUpdateWithoutEventos_monitoreoInput = {
+    id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo_sop?: Prisma.StringFieldUpdateOperationsInput | string;
+    titulo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    nombre_reportante?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    correo_reportante?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    telefono_reportante?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    fecha_hallazgo?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    fecha_evento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    estado_hallazgo?: Prisma.IntFieldUpdateOperationsInput | number;
+    dias_abierto?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    procedencia?: Prisma.IntFieldUpdateOperationsInput | number;
+    tipo?: Prisma.IntFieldUpdateOperationsInput | number;
+    descripcion?: Prisma.StringFieldUpdateOperationsInput | string;
+    responsable_hallazgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    tipo_sop?: Prisma.IntFieldUpdateOperationsInput | number;
+    subtipo_sop?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    peligro?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    consecuencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    clasificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    analisis_riesgo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    acr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    area_responsable?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    responsable_plan?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    estado_plan?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    fecha_plan?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    fecha_reprogramada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    dias_abierto_plan?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    created_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    anexos_caso?: Prisma.anexos_casoUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutCasos_sopNestedInput;
     planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCasos_sopNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedUpdateManyWithoutCasos_sopNestedInput;
@@ -2714,6 +2934,7 @@ export type casos_sopCreateWithoutTimeline_casoInput = {
     planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCasos_sopInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopUncheckedCreateWithoutTimeline_casoInput = {
     id_caso?: number;
@@ -2753,6 +2974,7 @@ export type casos_sopUncheckedCreateWithoutTimeline_casoInput = {
     planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCasos_sopInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopCreateOrConnectWithoutTimeline_casoInput = {
     where: Prisma.casos_sopWhereUniqueInput;
@@ -2804,6 +3026,7 @@ export type casos_sopUpdateWithoutTimeline_casoInput = {
     planes_accion?: Prisma.planes_accionUpdateManyWithoutCasos_sopNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateWithoutTimeline_casoInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -2843,6 +3066,7 @@ export type casos_sopUncheckedUpdateWithoutTimeline_casoInput = {
     planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCasos_sopNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopCreateWithoutInvestigacion_casoInput = {
     codigo_sop: string;
@@ -2881,6 +3105,7 @@ export type casos_sopCreateWithoutInvestigacion_casoInput = {
     planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopUncheckedCreateWithoutInvestigacion_casoInput = {
     id_caso?: number;
@@ -2920,6 +3145,7 @@ export type casos_sopUncheckedCreateWithoutInvestigacion_casoInput = {
     planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoUncheckedCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopCreateOrConnectWithoutInvestigacion_casoInput = {
     where: Prisma.casos_sopWhereUniqueInput;
@@ -2971,6 +3197,7 @@ export type casos_sopUpdateWithoutInvestigacion_casoInput = {
     planes_accion?: Prisma.planes_accionUpdateManyWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateWithoutInvestigacion_casoInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -3010,6 +3237,7 @@ export type casos_sopUncheckedUpdateWithoutInvestigacion_casoInput = {
     planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopCreateWithoutPlanes_accionInput = {
     codigo_sop: string;
@@ -3048,6 +3276,7 @@ export type casos_sopCreateWithoutPlanes_accionInput = {
     investigacion_caso?: Prisma.investigacion_casoCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopUncheckedCreateWithoutPlanes_accionInput = {
     id_caso?: number;
@@ -3087,6 +3316,7 @@ export type casos_sopUncheckedCreateWithoutPlanes_accionInput = {
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoUncheckedCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopCreateOrConnectWithoutPlanes_accionInput = {
     where: Prisma.casos_sopWhereUniqueInput;
@@ -3138,6 +3368,7 @@ export type casos_sopUpdateWithoutPlanes_accionInput = {
     investigacion_caso?: Prisma.investigacion_casoUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateWithoutPlanes_accionInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -3177,6 +3408,7 @@ export type casos_sopUncheckedUpdateWithoutPlanes_accionInput = {
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopCreateWithoutSolicitudes_informacionInput = {
     codigo_sop: string;
@@ -3215,6 +3447,7 @@ export type casos_sopCreateWithoutSolicitudes_informacionInput = {
     planes_accion?: Prisma.planes_accionCreateNestedManyWithoutCasos_sopInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedOneWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopUncheckedCreateWithoutSolicitudes_informacionInput = {
     id_caso?: number;
@@ -3254,6 +3487,7 @@ export type casos_sopUncheckedCreateWithoutSolicitudes_informacionInput = {
     planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutCasos_sopInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedOneWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoUncheckedCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopCreateOrConnectWithoutSolicitudes_informacionInput = {
     where: Prisma.casos_sopWhereUniqueInput;
@@ -3305,6 +3539,7 @@ export type casos_sopUpdateWithoutSolicitudes_informacionInput = {
     planes_accion?: Prisma.planes_accionUpdateManyWithoutCasos_sopNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateOneWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateWithoutSolicitudes_informacionInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -3344,6 +3579,7 @@ export type casos_sopUncheckedUpdateWithoutSolicitudes_informacionInput = {
     planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutCasos_sopNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateOneWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopCreateWithoutUsuarios_casos_sop_created_byTousuariosInput = {
     codigo_sop: string;
@@ -3382,6 +3618,7 @@ export type casos_sopCreateWithoutUsuarios_casos_sop_created_byTousuariosInput =
     investigacion_caso?: Prisma.investigacion_casoCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopUncheckedCreateWithoutUsuarios_casos_sop_created_byTousuariosInput = {
     id_caso?: number;
@@ -3421,6 +3658,7 @@ export type casos_sopUncheckedCreateWithoutUsuarios_casos_sop_created_byTousuari
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoUncheckedCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopCreateOrConnectWithoutUsuarios_casos_sop_created_byTousuariosInput = {
     where: Prisma.casos_sopWhereUniqueInput;
@@ -3467,6 +3705,7 @@ export type casos_sopCreateWithoutUsuarios_casos_sop_responsable_hallazgoTousuar
     investigacion_caso?: Prisma.investigacion_casoCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopUncheckedCreateWithoutUsuarios_casos_sop_responsable_hallazgoTousuariosInput = {
     id_caso?: number;
@@ -3506,6 +3745,7 @@ export type casos_sopUncheckedCreateWithoutUsuarios_casos_sop_responsable_hallaz
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoUncheckedCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopCreateOrConnectWithoutUsuarios_casos_sop_responsable_hallazgoTousuariosInput = {
     where: Prisma.casos_sopWhereUniqueInput;
@@ -3552,6 +3792,7 @@ export type casos_sopCreateWithoutUsuarios_casos_sop_responsable_planTousuariosI
     investigacion_caso?: Prisma.investigacion_casoCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopUncheckedCreateWithoutUsuarios_casos_sop_responsable_planTousuariosInput = {
     id_caso?: number;
@@ -3591,6 +3832,7 @@ export type casos_sopUncheckedCreateWithoutUsuarios_casos_sop_responsable_planTo
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedOneWithoutCasos_sopInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedCreateNestedManyWithoutCasos_sopInput;
     timeline_caso?: Prisma.timeline_casoUncheckedCreateNestedManyWithoutCasos_sopInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedOneWithoutCasos_sopInput;
 };
 export type casos_sopCreateOrConnectWithoutUsuarios_casos_sop_responsable_planTousuariosInput = {
     where: Prisma.casos_sopWhereUniqueInput;
@@ -3709,6 +3951,7 @@ export type casos_sopUpdateWithoutAreasInput = {
     investigacion_caso?: Prisma.investigacion_casoUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateWithoutAreasInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -3748,6 +3991,7 @@ export type casos_sopUncheckedUpdateWithoutAreasInput = {
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateManyWithoutAreasInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -4050,6 +4294,7 @@ export type casos_sopUpdateWithoutCatalogo_detalle_casos_sop_estado_hallazgoToca
     investigacion_caso?: Prisma.investigacion_casoUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -4089,6 +4334,7 @@ export type casos_sopUncheckedUpdateWithoutCatalogo_detalle_casos_sop_estado_hal
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalleInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -4160,6 +4406,7 @@ export type casos_sopUpdateWithoutCatalogo_detalle_casos_sop_estado_planTocatalo
     investigacion_caso?: Prisma.investigacion_casoUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -4199,6 +4446,7 @@ export type casos_sopUncheckedUpdateWithoutCatalogo_detalle_casos_sop_estado_pla
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_estado_planTocatalogo_detalleInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -4270,6 +4518,7 @@ export type casos_sopUpdateWithoutCatalogo_detalle_casos_sop_procedenciaTocatalo
     investigacion_caso?: Prisma.investigacion_casoUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -4309,6 +4558,7 @@ export type casos_sopUncheckedUpdateWithoutCatalogo_detalle_casos_sop_procedenci
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_procedenciaTocatalogo_detalleInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -4380,6 +4630,7 @@ export type casos_sopUpdateWithoutCatalogo_detalle_casos_sop_analisis_riesgoToca
     investigacion_caso?: Prisma.investigacion_casoUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -4419,6 +4670,7 @@ export type casos_sopUncheckedUpdateWithoutCatalogo_detalle_casos_sop_analisis_r
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalleInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -4490,6 +4742,7 @@ export type casos_sopUpdateWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalo
     investigacion_caso?: Prisma.investigacion_casoUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -4529,6 +4782,7 @@ export type casos_sopUncheckedUpdateWithoutCatalogo_detalle_casos_sop_subtipo_so
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalleInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -4600,6 +4854,7 @@ export type casos_sopUpdateWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_deta
     investigacion_caso?: Prisma.investigacion_casoUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -4639,6 +4894,7 @@ export type casos_sopUncheckedUpdateWithoutCatalogo_detalle_casos_sop_tipoTocata
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipoTocatalogo_detalleInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -4710,6 +4966,7 @@ export type casos_sopUpdateWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_
     investigacion_caso?: Prisma.investigacion_casoUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -4749,6 +5006,7 @@ export type casos_sopUncheckedUpdateWithoutCatalogo_detalle_casos_sop_tipo_sopTo
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateManyWithoutCatalogo_detalle_casos_sop_tipo_sopTocatalogo_detalleInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -4919,6 +5177,7 @@ export type casos_sopUpdateWithoutUsuarios_casos_sop_created_byTousuariosInput =
     investigacion_caso?: Prisma.investigacion_casoUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateWithoutUsuarios_casos_sop_created_byTousuariosInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -4958,6 +5217,7 @@ export type casos_sopUncheckedUpdateWithoutUsuarios_casos_sop_created_byTousuari
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_created_byTousuariosInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -5029,6 +5289,7 @@ export type casos_sopUpdateWithoutUsuarios_casos_sop_responsable_hallazgoTousuar
     investigacion_caso?: Prisma.investigacion_casoUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateWithoutUsuarios_casos_sop_responsable_hallazgoTousuariosInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -5068,6 +5329,7 @@ export type casos_sopUncheckedUpdateWithoutUsuarios_casos_sop_responsable_hallaz
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_hallazgoTousuariosInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -5139,6 +5401,7 @@ export type casos_sopUpdateWithoutUsuarios_casos_sop_responsable_planTousuariosI
     investigacion_caso?: Prisma.investigacion_casoUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateWithoutUsuarios_casos_sop_responsable_planTousuariosInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -5178,6 +5441,7 @@ export type casos_sopUncheckedUpdateWithoutUsuarios_casos_sop_responsable_planTo
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateOneWithoutCasos_sopNestedInput;
     solicitudes_informacion?: Prisma.solicitudes_informacionUncheckedUpdateManyWithoutCasos_sopNestedInput;
     timeline_caso?: Prisma.timeline_casoUncheckedUpdateManyWithoutCasos_sopNestedInput;
+    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateOneWithoutCasos_sopNestedInput;
 };
 export type casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput = {
     id_caso?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -5318,6 +5582,7 @@ export type casos_sopSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
     investigacion_caso?: boolean | Prisma.casos_sop$investigacion_casoArgs<ExtArgs>;
     solicitudes_informacion?: boolean | Prisma.casos_sop$solicitudes_informacionArgs<ExtArgs>;
     timeline_caso?: boolean | Prisma.casos_sop$timeline_casoArgs<ExtArgs>;
+    eventos_monitoreo?: boolean | Prisma.casos_sop$eventos_monitoreoArgs<ExtArgs>;
     _count?: boolean | Prisma.Casos_sopCountOutputTypeDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["casos_sop"]>;
 export type casos_sopSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -5463,6 +5728,7 @@ export type casos_sopInclude<ExtArgs extends runtime.Types.Extensions.InternalAr
     investigacion_caso?: boolean | Prisma.casos_sop$investigacion_casoArgs<ExtArgs>;
     solicitudes_informacion?: boolean | Prisma.casos_sop$solicitudes_informacionArgs<ExtArgs>;
     timeline_caso?: boolean | Prisma.casos_sop$timeline_casoArgs<ExtArgs>;
+    eventos_monitoreo?: boolean | Prisma.casos_sop$eventos_monitoreoArgs<ExtArgs>;
     _count?: boolean | Prisma.Casos_sopCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type casos_sopIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -5511,6 +5777,10 @@ export type $casos_sopPayload<ExtArgs extends runtime.Types.Extensions.InternalA
         investigacion_caso: Prisma.$investigacion_casoPayload<ExtArgs> | null;
         solicitudes_informacion: Prisma.$solicitudes_informacionPayload<ExtArgs>[];
         timeline_caso: Prisma.$timeline_casoPayload<ExtArgs>[];
+        /**
+         * * Evento de Monitoreo del que nació este caso, cuando se creó desde "Eventos asignados".
+         */
+        eventos_monitoreo: Prisma.$eventos_monitoreoPayload<ExtArgs> | null;
     };
     scalars: runtime.Types.Extensions.GetPayloadResult<{
         id_caso: number;
@@ -5891,6 +6161,7 @@ export interface Prisma__casos_sopClient<T, Null = never, ExtArgs extends runtim
     investigacion_caso<T extends Prisma.casos_sop$investigacion_casoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.casos_sop$investigacion_casoArgs<ExtArgs>>): Prisma.Prisma__investigacion_casoClient<runtime.Types.Result.GetResult<Prisma.$investigacion_casoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
     solicitudes_informacion<T extends Prisma.casos_sop$solicitudes_informacionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.casos_sop$solicitudes_informacionArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$solicitudes_informacionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     timeline_caso<T extends Prisma.casos_sop$timeline_casoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.casos_sop$timeline_casoArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$timeline_casoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    eventos_monitoreo<T extends Prisma.casos_sop$eventos_monitoreoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.casos_sop$eventos_monitoreoArgs<ExtArgs>>): Prisma.Prisma__eventos_monitoreoClient<runtime.Types.Result.GetResult<Prisma.$eventos_monitoreoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6584,6 +6855,24 @@ export type casos_sop$timeline_casoArgs<ExtArgs extends runtime.Types.Extensions
     take?: number;
     skip?: number;
     distinct?: Prisma.Timeline_casoScalarFieldEnum | Prisma.Timeline_casoScalarFieldEnum[];
+};
+/**
+ * casos_sop.eventos_monitoreo
+ */
+export type casos_sop$eventos_monitoreoArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the eventos_monitoreo
+     */
+    select?: Prisma.eventos_monitoreoSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the eventos_monitoreo
+     */
+    omit?: Prisma.eventos_monitoreoOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.eventos_monitoreoInclude<ExtArgs> | null;
+    where?: Prisma.eventos_monitoreoWhereInput;
 };
 /**
  * casos_sop without action

@@ -30,7 +30,9 @@ const LIST_INCLUDE = {
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle: { select: { nombre: true } },
     catalogo_detalle_eventos_monitoreo_posible_causaTocatalogo_detalle: { select: { nombre: true } },
     catalogo_detalle_eventos_monitoreo_rango_horarioTocatalogo_detalle: { select: { nombre: true } },
-    usuarios: { select: { nombre: true } },
+    usuarios_eventos_monitoreo_usuario_registraTousuarios: { select: { nombre: true } },
+    usuarios_eventos_monitoreo_asignado_aTousuarios: { select: { id_usuario: true, nombre: true, cargo: true } },
+    casos_sop: { select: { codigo_sop: true } },
 };
 function datosDesdeDto(dto) {
     return {
@@ -57,20 +59,73 @@ export class EventoRepository {
             include: { catalogos: { select: { nombre: true } } },
         });
     }
-    /** Cuenta los eventos ya registrados este año, para el correlativo del código. */
-    static async contarDelAnio(year) {
-        const inicio = new Date(Date.UTC(year, 0, 1));
-        const fin = new Date(Date.UTC(year + 1, 0, 1));
-        return prisma.eventos_monitoreo.count({ where: { fecha: { gte: inicio, lt: fin } } });
+    /**
+     * `page`/`limit` son opcionales y deben venir juntos — sin ellos se
+     * comporta exactamente igual que antes (trae todo). Eso es a propósito:
+     * el Dashboard y Reportes de Monitoreo siguen llamando esto sin paginar
+     * porque necesitan el listado entero para sus propios agregados — solo
+     * el Historial manda `page`/`limit`, igual que ya hace Casos SOP.
+     */
+    static async findAll(opts) {
+        const where = {};
+        if (opts?.estado)
+            where.estado = opts.estado;
+        if (opts?.desde || opts?.hasta) {
+            where.fecha = {
+                ...(opts.desde ? { gte: new Date(`${opts.desde}T00:00:00.000Z`) } : {}),
+                ...(opts.hasta ? { lte: new Date(`${opts.hasta}T23:59:59.999Z`) } : {}),
+            };
+        }
+        if (opts?.search) {
+            const q = opts.search;
+            where.OR = [
+                { descripcion: { contains: q, mode: "insensitive" } },
+                { camara_monitoreada: { contains: q, mode: "insensitive" } },
+                { catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle: { nombre: { contains: q, mode: "insensitive" } } },
+                { catalogo_detalle_eventos_monitoreo_lugar_incidenteTocatalogo_detalle: { nombre: { contains: q, mode: "insensitive" } } },
+                { catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle: { nombre: { contains: q, mode: "insensitive" } } },
+            ];
+        }
+        const orderBy = [{ fecha: "desc" }, { id_evento: "desc" }];
+        if (!opts?.page || !opts?.limit) {
+            const data = await prisma.eventos_monitoreo.findMany({ where, include: LIST_INCLUDE, orderBy });
+            return { data, total: undefined };
+        }
+        const [data, total] = await Promise.all([
+            prisma.eventos_monitoreo.findMany({
+                where,
+                include: LIST_INCLUDE,
+                orderBy,
+                skip: (opts.page - 1) * opts.limit,
+                take: opts.limit,
+            }),
+            prisma.eventos_monitoreo.count({ where }),
+        ]);
+        return { data, total };
     }
-    static async findAll() {
+    /** Conteos por estado para las pestañas del Historial — solo `COUNT`, nunca trae filas. */
+    static async counts() {
+        const [total, registrados, enInvestigacion, cerrados] = await Promise.all([
+            prisma.eventos_monitoreo.count(),
+            prisma.eventos_monitoreo.count({ where: { estado: "Registrado" } }),
+            prisma.eventos_monitoreo.count({ where: { estado: "En investigación" } }),
+            prisma.eventos_monitoreo.count({ where: { estado: "Cerrado" } }),
+        ]);
+        return { total, registrados, enInvestigacion, cerrados };
+    }
+    static async findById(id_evento) {
+        return prisma.eventos_monitoreo.findUnique({ where: { id_evento }, include: LIST_INCLUDE });
+    }
+    /** Eventos que le asignaron a esta persona de Seguridad Operativa, para su bandeja. */
+    static async findByAsignado(id_usuario) {
         return prisma.eventos_monitoreo.findMany({
+            where: { asignado_a: id_usuario },
             include: LIST_INCLUDE,
             orderBy: [{ fecha: "desc" }, { id_evento: "desc" }],
         });
     }
-    static async findById(id_evento) {
-        return prisma.eventos_monitoreo.findUnique({ where: { id_evento }, include: LIST_INCLUDE });
+    static async asignar(id_evento, id_usuario) {
+        return prisma.eventos_monitoreo.update({ where: { id_evento }, data: { asignado_a: id_usuario } });
     }
     static async create(dto, actor) {
         const match = dto.fecha.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -94,11 +149,8 @@ export class EventoRepository {
             });
             rango_horario = rango?.id_detalle ?? null;
         }
-        const totalAnio = await EventoRepository.contarDelAnio(year);
-        const codigo_evento = `EVT ${String(totalAnio + 1).padStart(2, "0")}-${year}`;
         return prisma.eventos_monitoreo.create({
             data: {
-                codigo_evento,
                 fecha,
                 hora,
                 anio: dto.anio ?? year,

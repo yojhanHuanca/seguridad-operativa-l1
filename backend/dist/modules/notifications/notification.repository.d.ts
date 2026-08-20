@@ -3,7 +3,7 @@
  * los usa para elegir icono y color, así que son parte del contrato: no se
  * renombran sin tocar el cliente.
  */
-export type TipoNotificacion = "reporte_nuevo" | "plan_asignado" | "plan_aceptado" | "prorroga_solicitada" | "prorroga_resuelta" | "ejecucion_completada" | "plan_revisado" | "caso_devuelto" | "info_respondida";
+export type TipoNotificacion = "reporte_nuevo" | "plan_asignado" | "plan_aceptado" | "prorroga_solicitada" | "prorroga_resuelta" | "ejecucion_completada" | "plan_revisado" | "caso_devuelto" | "info_respondida" | "evento_asignado";
 /** Rol destinatario, o un usuario concreto cuando la notificación es personal. */
 export type Destinatario = {
     rol: string;
@@ -63,12 +63,12 @@ export declare class NotificationRepository {
      */
     static emitir(client: NotificationClient, n: NuevaNotificacion): Promise<void>;
     static listarPorUsuario(id_usuario: number, soloNoLeidas?: boolean): Promise<{
-        fecha: Date | null;
-        id_notificacion: number;
         usuario: number;
+        fecha: Date | null;
         titulo: string | null;
-        mensaje: string | null;
         tipo: string | null;
+        id_notificacion: number;
+        mensaje: string | null;
         leido: boolean | null;
     }[]>;
     static contarNoLeidas(id_usuario: number): Promise<number>;

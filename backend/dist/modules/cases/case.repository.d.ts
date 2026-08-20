@@ -20,8 +20,8 @@ export declare class CaseRepository {
     static addComment(id_caso: number, texto: string): Promise<{
         fecha: Date | null;
         id_evento: number;
-        titulo: string;
         id_caso: number;
+        titulo: string;
         kind: string;
         actor: string;
         actor_rol: string;
@@ -38,8 +38,8 @@ export declare class CaseRepository {
     static addPlanComment(id_plan: number, texto: string, rol?: "seguridad" | "jefe", actor?: string): Promise<{
         fecha: Date | null;
         id_evento: number;
-        titulo: string;
         id_caso: number;
+        titulo: string;
         kind: string;
         actor: string;
         actor_rol: string;
@@ -56,179 +56,175 @@ export declare class CaseRepository {
     static removePlanEvidence(id_plan: number, id_anexo: number, actor: string): Promise<{
         id_anexo: number;
     }>;
-    static findAll(filtros: CaseListFilters): Promise<({
-        anexos_caso: {
-            id_anexo: number;
-        }[];
-        evento_caso: ({
-            eventos_operativos: {
-                catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: {
-                    nombre: string;
-                } | null;
-                catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: {
-                    nombre: string;
-                    id_detalle: number;
+    static findAll(filtros: CaseListFilters): Promise<{
+        data: ({
+            anexos_caso: {
+                id_anexo: number;
+            }[];
+            evento_caso: ({
+                eventos_operativos: {
+                    catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: {
+                        nombre: string;
+                    } | null;
+                    catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: {
+                        nombre: string;
+                        id_detalle: number;
+                    };
+                    catalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalle: {
+                        nombre: string;
+                    } | null;
+                } & {
+                    estado: number | null;
+                    descripcion: string | null;
+                    created_at: Date | null;
+                    fecha: Date;
+                    hora: Date | null;
+                    anio: number | null;
+                    mes: number | null;
+                    semana: number | null;
+                    dia: string | null;
+                    numero_carrera: string | null;
+                    informacion_adicional: string | null;
+                    camara_monitoreada: string | null;
+                    demora: import("@prisma/client/runtime/library").Decimal | null;
+                    id_evento: number;
+                    codigo_evento: string | null;
+                    rango_horario: number | null;
+                    tipo_incidente: number;
+                    ubicacion: number | null;
+                    tipo_via: number | null;
+                    direccion_via: number | null;
+                    lugar_incidente: number | null;
+                    modelo_mr: number | null;
+                    numero_mr: number | null;
+                    personal_involucrado: number | null;
+                    tipo_causa: number | null;
+                    posible_causa: number | null;
+                    usuario_registra: number | null;
+                    updated_at: Date | null;
                 };
-                catalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalle: {
-                    nombre: string;
-                } | null;
             } & {
-                estado: number | null;
-                descripcion: string | null;
-                created_at: Date | null;
-                fecha: Date;
-                hora: Date | null;
-                anio: number | null;
-                mes: number | null;
-                semana: number | null;
-                dia: string | null;
-                numero_carrera: string | null;
-                informacion_adicional: string | null;
-                camara_monitoreada: string | null;
-                demora: import("@prisma/client/runtime/library").Decimal | null;
+                usuario: number | null;
+                id: number;
                 id_evento: number;
-                codigo_evento: string | null;
-                rango_horario: number | null;
-                tipo_incidente: number;
-                ubicacion: number | null;
-                tipo_via: number | null;
-                direccion_via: number | null;
-                lugar_incidente: number | null;
-                modelo_mr: number | null;
-                numero_mr: number | null;
-                personal_involucrado: number | null;
-                tipo_causa: number | null;
-                posible_causa: number | null;
-                usuario_registra: number | null;
-                updated_at: Date | null;
-            };
-        } & {
-            id: number;
-            id_evento: number;
-            usuario: number | null;
-            id_caso: number;
-            fecha_conversion: Date | null;
-        })[];
-        planes_accion: ({
-            actividades_plan: ({
-                seguimientos: ({
+                id_caso: number;
+                fecha_conversion: Date | null;
+            })[];
+            planes_accion: ({
+                actividades_plan: ({
                     usuarios: {
                         id_usuario: number;
                         nombre: string;
                         cargo: string | null;
                     } | null;
+                    catalogo_detalle: {
+                        nombre: string;
+                    } | null;
                 } & {
-                    fecha: Date | null;
-                    usuario: number | null;
-                    comentario: string | null;
+                    estado: number | null;
+                    fecha_inicio: Date | null;
+                    fecha_fin: Date | null;
+                    descripcion: string;
+                    created_at: Date | null;
+                    id_plan: number;
+                    responsable: number | null;
                     id_actividad: number;
                     porcentaje: import("@prisma/client/runtime/library").Decimal | null;
-                    id_seguimiento: number;
                 })[];
+                areas: {
+                    id_area: number;
+                    nombre_area: string;
+                };
                 usuarios: {
                     id_usuario: number;
                     nombre: string;
                     cargo: string | null;
-                } | null;
+                };
                 catalogo_detalle: {
                     nombre: string;
-                } | null;
+                };
             } & {
-                estado: number | null;
+                estado: number;
+                id_area: number;
                 descripcion: string;
                 created_at: Date | null;
+                updated_at: Date | null;
+                id_caso: number;
+                dias_abierto: number | null;
+                fecha_plan: Date;
+                fecha_reprogramada: Date | null;
+                observaciones: string | null;
                 id_plan: number;
-                responsable: number | null;
-                id_actividad: number;
-                fecha_inicio: Date | null;
-                fecha_fin: Date | null;
-                porcentaje: import("@prisma/client/runtime/library").Decimal | null;
+                codigo_plan: string;
+                responsable: number;
+                prorroga_motivo: string | null;
+                prorroga_fecha: Date | null;
+                prorroga_estado: string | null;
+                prorroga_fecha_sol: Date | null;
             })[];
             areas: {
                 id_area: number;
                 nombre_area: string;
-            };
-            usuarios: {
-                id_usuario: number;
+            } | null;
+            catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
                 nombre: string;
-                cargo: string | null;
+                color: string | null;
             };
-            catalogo_detalle: {
+            catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: {
+                nombre: string;
+                codigo: string | null;
+                orden: number | null;
+                id_detalle: number;
+            } | null;
+            catalogo_detalle_casos_sop_tipoTocatalogo_detalle: {
+                nombre: string;
+            };
+            catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle: {
                 nombre: string;
             };
         } & {
-            estado: number;
-            id_area: number;
             descripcion: string;
             created_at: Date | null;
             updated_at: Date | null;
             id_caso: number;
+            codigo_sop: string;
+            titulo: string | null;
+            nombre_reportante: string | null;
+            correo_reportante: string | null;
+            telefono_reportante: string | null;
+            fecha_hallazgo: Date;
+            fecha_evento: Date | null;
+            estado_hallazgo: number;
             dias_abierto: number | null;
-            fecha_plan: Date;
+            procedencia: number;
+            tipo: number;
+            responsable_hallazgo: number | null;
+            tipo_sop: number;
+            subtipo_sop: number | null;
+            peligro: string | null;
+            consecuencia: string | null;
+            descripcion_evento: string | null;
+            clasificacion: string | null;
+            analisis_riesgo: number | null;
+            acr: string | null;
+            area_responsable: number | null;
+            responsable_plan: number | null;
+            estado_plan: number | null;
+            fecha_plan: Date | null;
             fecha_reprogramada: Date | null;
+            dias_abierto_plan: number | null;
             observaciones: string | null;
-            id_plan: number;
-            codigo_plan: string;
-            responsable: number;
-            prorroga_motivo: string | null;
-            prorroga_fecha: Date | null;
-            prorroga_estado: string | null;
-            prorroga_fecha_sol: Date | null;
+            created_by: number | null;
         })[];
-        areas: {
-            id_area: number;
-            nombre_area: string;
-        } | null;
-        catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
-            nombre: string;
-            color: string | null;
-        };
-        catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: {
-            nombre: string;
-            codigo: string | null;
-            orden: number | null;
-            id_detalle: number;
-        } | null;
-        catalogo_detalle_casos_sop_tipoTocatalogo_detalle: {
-            nombre: string;
-        };
-        catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle: {
-            nombre: string;
-        };
-    } & {
-        descripcion: string;
-        created_at: Date | null;
-        updated_at: Date | null;
-        titulo: string | null;
-        tipo: number;
-        id_caso: number;
-        codigo_sop: string;
-        nombre_reportante: string | null;
-        correo_reportante: string | null;
-        telefono_reportante: string | null;
-        fecha_hallazgo: Date;
-        fecha_evento: Date | null;
-        estado_hallazgo: number;
-        dias_abierto: number | null;
-        procedencia: number;
-        responsable_hallazgo: number | null;
-        tipo_sop: number;
-        subtipo_sop: number | null;
-        peligro: string | null;
-        consecuencia: string | null;
-        descripcion_evento: string | null;
-        clasificacion: string | null;
-        analisis_riesgo: number | null;
-        acr: string | null;
-        area_responsable: number | null;
-        responsable_plan: number | null;
-        estado_plan: number | null;
-        fecha_plan: Date | null;
-        fecha_reprogramada: Date | null;
-        dias_abierto_plan: number | null;
-        observaciones: string | null;
-        created_by: number | null;
-    })[]>;
+        total: number | undefined;
+    }>;
+    /**
+     * Conteos por pestaña de la bandeja de Casos SOP — solo `COUNT`, nunca trae
+     * filas. Los grupos de `estado_hallazgo` por pestaña deben coincidir con
+     * los filtros de pestaña que use el frontend: si se agrega o renombra un
+     * estado allá, hay que actualizar esto también.
+     */
+    static counts(area?: number): Promise<Record<string, number>>;
     static findByCodigo(codigo_sop: string): Promise<({
         anexos_caso: {
             id_caso: number;
@@ -307,9 +303,9 @@ export declare class CaseRepository {
                 updated_at: Date | null;
             };
         } & {
+            usuario: number | null;
             id: number;
             id_evento: number;
-            usuario: number | null;
             id_caso: number;
             fecha_conversion: Date | null;
         })[];
@@ -339,8 +335,8 @@ export declare class CaseRepository {
                         cargo: string | null;
                     } | null;
                 } & {
-                    fecha: Date | null;
                     usuario: number | null;
+                    fecha: Date | null;
                     comentario: string | null;
                     id_actividad: number;
                     porcentaje: import("@prisma/client/runtime/library").Decimal | null;
@@ -356,13 +352,13 @@ export declare class CaseRepository {
                 } | null;
             } & {
                 estado: number | null;
+                fecha_inicio: Date | null;
+                fecha_fin: Date | null;
                 descripcion: string;
                 created_at: Date | null;
                 id_plan: number;
                 responsable: number | null;
                 id_actividad: number;
-                fecha_inicio: Date | null;
-                fecha_fin: Date | null;
                 porcentaje: import("@prisma/client/runtime/library").Decimal | null;
             })[];
             areas: {
@@ -400,6 +396,26 @@ export declare class CaseRepository {
             id_area: number;
             nombre_area: string;
         } | null;
+        timeline_caso: {
+            fecha: Date | null;
+            id_evento: number;
+            id_caso: number;
+            titulo: string;
+            kind: string;
+            actor: string;
+            actor_rol: string;
+            detalle: string | null;
+        }[];
+        solicitudes_informacion: {
+            id_caso: number;
+            mensaje: string;
+            id_solicitud: number;
+            respuesta: string | null;
+            respondida: boolean;
+            estado_previo: string | null;
+            fecha_solicitud: Date | null;
+            fecha_respuesta: Date | null;
+        }[];
         catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
             nombre: string;
             color: string | null;
@@ -435,34 +451,13 @@ export declare class CaseRepository {
         catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle: {
             nombre: string;
         };
-        solicitudes_informacion: {
-            mensaje: string;
-            id_caso: number;
-            id_solicitud: number;
-            respuesta: string | null;
-            respondida: boolean;
-            estado_previo: string | null;
-            fecha_solicitud: Date | null;
-            fecha_respuesta: Date | null;
-        }[];
-        timeline_caso: {
-            fecha: Date | null;
-            id_evento: number;
-            titulo: string;
-            id_caso: number;
-            kind: string;
-            actor: string;
-            actor_rol: string;
-            detalle: string | null;
-        }[];
     } & {
         descripcion: string;
         created_at: Date | null;
         updated_at: Date | null;
-        titulo: string | null;
-        tipo: number;
         id_caso: number;
         codigo_sop: string;
+        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -471,6 +466,7 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
+        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -492,8 +488,13 @@ export declare class CaseRepository {
     /**
      * Planes de acción visibles para un Jefe de Área. Si no se pasa área,
      * devuelve todos (útil mientras no hay login que fije el área del usuario).
+     * `codigo_sop` opcional acota a los planes de un solo caso — la usa
+     * `PlanDetail.tsx` en vez de traer toda el área y filtrar en el navegador.
      */
-    static findPlansByArea(id_area?: number): Promise<({
+    static findPlansByArea(opts?: {
+        id_area?: number | undefined;
+        codigo_sop?: string | undefined;
+    }): Promise<({
         actividades_plan: ({
             seguimientos: ({
                 usuarios: {
@@ -502,8 +503,8 @@ export declare class CaseRepository {
                     cargo: string | null;
                 } | null;
             } & {
-                fecha: Date | null;
                 usuario: number | null;
+                fecha: Date | null;
                 comentario: string | null;
                 id_actividad: number;
                 porcentaje: import("@prisma/client/runtime/library").Decimal | null;
@@ -519,13 +520,13 @@ export declare class CaseRepository {
             } | null;
         } & {
             estado: number | null;
+            fecha_inicio: Date | null;
+            fecha_fin: Date | null;
             descripcion: string;
             created_at: Date | null;
             id_plan: number;
             responsable: number | null;
             id_actividad: number;
-            fecha_inicio: Date | null;
-            fecha_fin: Date | null;
             porcentaje: import("@prisma/client/runtime/library").Decimal | null;
         })[];
         areas: {
@@ -552,18 +553,6 @@ export declare class CaseRepository {
                 causa_raiz: string;
                 conclusiones: string;
             } | null;
-            descripcion: string;
-            titulo: string | null;
-            id_caso: number;
-            codigo_sop: string;
-            fecha_hallazgo: Date;
-            catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
-                nombre: string;
-            };
-            catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: {
-                nombre: string;
-                codigo: string | null;
-            } | null;
             timeline_caso: {
                 fecha: Date | null;
                 id_evento: number;
@@ -573,6 +562,18 @@ export declare class CaseRepository {
                 actor_rol: string;
                 detalle: string | null;
             }[];
+            descripcion: string;
+            id_caso: number;
+            codigo_sop: string;
+            titulo: string | null;
+            fecha_hallazgo: Date;
+            catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
+                nombre: string;
+            };
+            catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: {
+                nombre: string;
+                codigo: string | null;
+            } | null;
         };
         catalogo_detalle: {
             nombre: string;
@@ -651,10 +652,9 @@ export declare class CaseRepository {
         descripcion: string;
         created_at: Date | null;
         updated_at: Date | null;
-        titulo: string | null;
-        tipo: number;
         id_caso: number;
         codigo_sop: string;
+        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -663,6 +663,7 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
+        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -685,10 +686,9 @@ export declare class CaseRepository {
         descripcion: string;
         created_at: Date | null;
         updated_at: Date | null;
-        titulo: string | null;
-        tipo: number;
         id_caso: number;
         codigo_sop: string;
+        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -697,6 +697,7 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
+        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -757,10 +758,9 @@ export declare class CaseRepository {
         descripcion: string;
         created_at: Date | null;
         updated_at: Date | null;
-        titulo: string | null;
-        tipo: number;
         id_caso: number;
         codigo_sop: string;
+        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -769,6 +769,7 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
+        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -791,10 +792,9 @@ export declare class CaseRepository {
         descripcion: string;
         created_at: Date | null;
         updated_at: Date | null;
-        titulo: string | null;
-        tipo: number;
         id_caso: number;
         codigo_sop: string;
+        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -803,6 +803,7 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
+        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -822,8 +823,8 @@ export declare class CaseRepository {
         created_by: number | null;
     }>;
     static requestInfo(id_caso: number, estadoActualNombre: string, dto: RequestInfoDto): Promise<{
-        mensaje: string;
         id_caso: number;
+        mensaje: string;
         id_solicitud: number;
         respuesta: string | null;
         respondida: boolean;
@@ -832,8 +833,8 @@ export declare class CaseRepository {
         fecha_respuesta: Date | null;
     }>;
     static respondInfo(id_caso: number, id_solicitud: number, dto: RespondInfoDto): Promise<{
-        mensaje: string;
         id_caso: number;
+        mensaje: string;
         id_solicitud: number;
         respuesta: string | null;
         respondida: boolean;
@@ -920,10 +921,9 @@ export declare class CaseRepository {
         descripcion: string;
         created_at: Date | null;
         updated_at: Date | null;
-        titulo: string | null;
-        tipo: number;
         id_caso: number;
         codigo_sop: string;
+        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -932,6 +932,7 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
+        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -968,10 +969,9 @@ export declare class CaseRepository {
         descripcion: string;
         created_at: Date | null;
         updated_at: Date | null;
-        titulo: string | null;
-        tipo: number;
         id_caso: number;
         codigo_sop: string;
+        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -980,6 +980,7 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
+        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -1111,10 +1112,9 @@ export declare class CaseRepository {
         descripcion: string;
         created_at: Date | null;
         updated_at: Date | null;
-        titulo: string | null;
-        tipo: number;
         id_caso: number;
         codigo_sop: string;
+        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -1123,6 +1123,7 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
+        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -1146,10 +1147,9 @@ export declare class CaseRepository {
         descripcion: string;
         created_at: Date | null;
         updated_at: Date | null;
-        titulo: string | null;
-        tipo: number;
         id_caso: number;
         codigo_sop: string;
+        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -1158,6 +1158,7 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
+        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -1188,13 +1189,13 @@ export declare class CaseRepository {
         };
     } & {
         estado: number | null;
+        fecha_inicio: Date | null;
+        fecha_fin: Date | null;
         descripcion: string;
         created_at: Date | null;
         id_plan: number;
         responsable: number | null;
         id_actividad: number;
-        fecha_inicio: Date | null;
-        fecha_fin: Date | null;
         porcentaje: import("@prisma/client/runtime/library").Decimal | null;
     }>;
     /** ETAPA 5 — el Jefe del Área solicita ampliación de plazo. */
@@ -1205,10 +1206,9 @@ export declare class CaseRepository {
         descripcion: string;
         created_at: Date | null;
         updated_at: Date | null;
-        titulo: string | null;
-        tipo: number;
         id_caso: number;
         codigo_sop: string;
+        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -1217,6 +1217,7 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
+        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -1240,10 +1241,9 @@ export declare class CaseRepository {
         descripcion: string;
         created_at: Date | null;
         updated_at: Date | null;
-        titulo: string | null;
-        tipo: number;
         id_caso: number;
         codigo_sop: string;
+        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -1252,6 +1252,7 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
+        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -1275,10 +1276,9 @@ export declare class CaseRepository {
         descripcion: string;
         created_at: Date | null;
         updated_at: Date | null;
-        titulo: string | null;
-        tipo: number;
         id_caso: number;
         codigo_sop: string;
+        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -1287,6 +1287,7 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
+        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -1310,10 +1311,9 @@ export declare class CaseRepository {
         descripcion: string;
         created_at: Date | null;
         updated_at: Date | null;
-        titulo: string | null;
-        tipo: number;
         id_caso: number;
         codigo_sop: string;
+        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -1322,6 +1322,7 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
+        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -1345,10 +1346,9 @@ export declare class CaseRepository {
         descripcion: string;
         created_at: Date | null;
         updated_at: Date | null;
-        titulo: string | null;
-        tipo: number;
         id_caso: number;
         codigo_sop: string;
+        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -1357,6 +1357,7 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
+        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;
@@ -1379,10 +1380,9 @@ export declare class CaseRepository {
         descripcion: string;
         created_at: Date | null;
         updated_at: Date | null;
-        titulo: string | null;
-        tipo: number;
         id_caso: number;
         codigo_sop: string;
+        titulo: string | null;
         nombre_reportante: string | null;
         correo_reportante: string | null;
         telefono_reportante: string | null;
@@ -1391,6 +1391,7 @@ export declare class CaseRepository {
         estado_hallazgo: number;
         dias_abierto: number | null;
         procedencia: number;
+        tipo: number;
         responsable_hallazgo: number | null;
         tipo_sop: number;
         subtipo_sop: number | null;

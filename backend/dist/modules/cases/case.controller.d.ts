@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 export declare class CaseController {
     static getAll(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
+    static getCounts(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static getPlans(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static getByCodigo(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static approve(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;

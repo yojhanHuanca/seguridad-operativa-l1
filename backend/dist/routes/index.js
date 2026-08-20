@@ -8,7 +8,10 @@ import eventosRoutes from "../modules/eventos/evento.routes.js";
 import reportsRoutes from "../modules/reports/report.routes.js";
 import casesRoutes from "../modules/cases/case.routes.js";
 import notificationsRoutes from "../modules/notifications/notification.routes.js";
+import profileRoutes from "../modules/profile/profile.routes.js";
+import archivosRoutes from "../modules/archivos/archivo.routes.js";
 import { AuthController } from "../modules/auth/auth.controller.js";
+import { verifyToken } from "../middlewares/auth.middleware.js";
 const router = Router();
 router.get("/", (_req, res) => {
     res.json({
@@ -18,6 +21,7 @@ router.get("/", (_req, res) => {
     });
 });
 router.use("/auth", authRoutes);
+router.use(verifyToken);
 router.use("/users", usersRoutes);
 router.use("/catalogs", catalogsRoutes);
 router.use("/areas", areasRoutes);
@@ -26,6 +30,8 @@ router.use("/eventos", eventosRoutes);
 router.use("/reports", reportsRoutes);
 router.use("/cases", casesRoutes);
 router.use("/notifications", notificationsRoutes);
+router.use("/profile", profileRoutes);
+router.use("/archivos", archivosRoutes);
 router.get("/", AuthController.home);
 export default router;
 //# sourceMappingURL=index.js.map

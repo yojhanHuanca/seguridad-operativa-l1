@@ -32,6 +32,9 @@ export type UsuariosMinAggregateOutputType = {
     telefono: string | null;
     estado: string | null;
     fecha_ingreso: Date | null;
+    foto_url: string | null;
+    ultimo_acceso: Date | null;
+    es_responsable: boolean | null;
     id_area: number | null;
     id_rol: number | null;
 };
@@ -45,6 +48,9 @@ export type UsuariosMaxAggregateOutputType = {
     telefono: string | null;
     estado: string | null;
     fecha_ingreso: Date | null;
+    foto_url: string | null;
+    ultimo_acceso: Date | null;
+    es_responsable: boolean | null;
     id_area: number | null;
     id_rol: number | null;
 };
@@ -58,6 +64,9 @@ export type UsuariosCountAggregateOutputType = {
     telefono: number;
     estado: number;
     fecha_ingreso: number;
+    foto_url: number;
+    ultimo_acceso: number;
+    es_responsable: number;
     id_area: number;
     id_rol: number;
     _all: number;
@@ -82,6 +91,9 @@ export type UsuariosMinAggregateInputType = {
     telefono?: true;
     estado?: true;
     fecha_ingreso?: true;
+    foto_url?: true;
+    ultimo_acceso?: true;
+    es_responsable?: true;
     id_area?: true;
     id_rol?: true;
 };
@@ -95,6 +107,9 @@ export type UsuariosMaxAggregateInputType = {
     telefono?: true;
     estado?: true;
     fecha_ingreso?: true;
+    foto_url?: true;
+    ultimo_acceso?: true;
+    es_responsable?: true;
     id_area?: true;
     id_rol?: true;
 };
@@ -108,6 +123,9 @@ export type UsuariosCountAggregateInputType = {
     telefono?: true;
     estado?: true;
     fecha_ingreso?: true;
+    foto_url?: true;
+    ultimo_acceso?: true;
+    es_responsable?: true;
     id_area?: true;
     id_rol?: true;
     _all?: true;
@@ -198,6 +216,9 @@ export type UsuariosGroupByOutputType = {
     telefono: string | null;
     estado: string | null;
     fecha_ingreso: Date | null;
+    foto_url: string | null;
+    ultimo_acceso: Date | null;
+    es_responsable: boolean;
     id_area: number | null;
     id_rol: number | null;
     _count: UsuariosCountAggregateOutputType | null;
@@ -222,6 +243,9 @@ export type usuariosWhereInput = {
     telefono?: Prisma.StringNullableFilter<"usuarios"> | string | null;
     estado?: Prisma.StringNullableFilter<"usuarios"> | string | null;
     fecha_ingreso?: Prisma.DateTimeNullableFilter<"usuarios"> | Date | string | null;
+    foto_url?: Prisma.StringNullableFilter<"usuarios"> | string | null;
+    ultimo_acceso?: Prisma.DateTimeNullableFilter<"usuarios"> | Date | string | null;
+    es_responsable?: Prisma.BoolFilter<"usuarios"> | boolean;
     id_area?: Prisma.IntNullableFilter<"usuarios"> | number | null;
     id_rol?: Prisma.IntNullableFilter<"usuarios"> | number | null;
     actividades_plan?: Prisma.Actividades_planListRelationFilter;
@@ -233,7 +257,8 @@ export type usuariosWhereInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.Casos_sopListRelationFilter;
     evento_caso?: Prisma.Evento_casoListRelationFilter;
     eventos_operativos?: Prisma.Eventos_operativosListRelationFilter;
-    eventos_monitoreo?: Prisma.Eventos_monitoreoListRelationFilter;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.Eventos_monitoreoListRelationFilter;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.Eventos_monitoreoListRelationFilter;
     evidencias_evento?: Prisma.Evidencias_eventoListRelationFilter;
     incidencias?: Prisma.IncidenciasListRelationFilter;
     investigacion_caso?: Prisma.Investigacion_casoListRelationFilter;
@@ -257,6 +282,9 @@ export type usuariosOrderByWithRelationInput = {
     telefono?: Prisma.SortOrderInput | Prisma.SortOrder;
     estado?: Prisma.SortOrderInput | Prisma.SortOrder;
     fecha_ingreso?: Prisma.SortOrderInput | Prisma.SortOrder;
+    foto_url?: Prisma.SortOrderInput | Prisma.SortOrder;
+    ultimo_acceso?: Prisma.SortOrderInput | Prisma.SortOrder;
+    es_responsable?: Prisma.SortOrder;
     id_area?: Prisma.SortOrderInput | Prisma.SortOrder;
     id_rol?: Prisma.SortOrderInput | Prisma.SortOrder;
     actividades_plan?: Prisma.actividades_planOrderByRelationAggregateInput;
@@ -268,7 +296,8 @@ export type usuariosOrderByWithRelationInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopOrderByRelationAggregateInput;
     evento_caso?: Prisma.evento_casoOrderByRelationAggregateInput;
     eventos_operativos?: Prisma.eventos_operativosOrderByRelationAggregateInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoOrderByRelationAggregateInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoOrderByRelationAggregateInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoOrderByRelationAggregateInput;
     evidencias_evento?: Prisma.evidencias_eventoOrderByRelationAggregateInput;
     incidencias?: Prisma.incidenciasOrderByRelationAggregateInput;
     investigacion_caso?: Prisma.investigacion_casoOrderByRelationAggregateInput;
@@ -295,6 +324,9 @@ export type usuariosWhereUniqueInput = Prisma.AtLeast<{
     telefono?: Prisma.StringNullableFilter<"usuarios"> | string | null;
     estado?: Prisma.StringNullableFilter<"usuarios"> | string | null;
     fecha_ingreso?: Prisma.DateTimeNullableFilter<"usuarios"> | Date | string | null;
+    foto_url?: Prisma.StringNullableFilter<"usuarios"> | string | null;
+    ultimo_acceso?: Prisma.DateTimeNullableFilter<"usuarios"> | Date | string | null;
+    es_responsable?: Prisma.BoolFilter<"usuarios"> | boolean;
     id_area?: Prisma.IntNullableFilter<"usuarios"> | number | null;
     id_rol?: Prisma.IntNullableFilter<"usuarios"> | number | null;
     actividades_plan?: Prisma.Actividades_planListRelationFilter;
@@ -306,7 +338,8 @@ export type usuariosWhereUniqueInput = Prisma.AtLeast<{
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.Casos_sopListRelationFilter;
     evento_caso?: Prisma.Evento_casoListRelationFilter;
     eventos_operativos?: Prisma.Eventos_operativosListRelationFilter;
-    eventos_monitoreo?: Prisma.Eventos_monitoreoListRelationFilter;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.Eventos_monitoreoListRelationFilter;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.Eventos_monitoreoListRelationFilter;
     evidencias_evento?: Prisma.Evidencias_eventoListRelationFilter;
     incidencias?: Prisma.IncidenciasListRelationFilter;
     investigacion_caso?: Prisma.Investigacion_casoListRelationFilter;
@@ -330,6 +363,9 @@ export type usuariosOrderByWithAggregationInput = {
     telefono?: Prisma.SortOrderInput | Prisma.SortOrder;
     estado?: Prisma.SortOrderInput | Prisma.SortOrder;
     fecha_ingreso?: Prisma.SortOrderInput | Prisma.SortOrder;
+    foto_url?: Prisma.SortOrderInput | Prisma.SortOrder;
+    ultimo_acceso?: Prisma.SortOrderInput | Prisma.SortOrder;
+    es_responsable?: Prisma.SortOrder;
     id_area?: Prisma.SortOrderInput | Prisma.SortOrder;
     id_rol?: Prisma.SortOrderInput | Prisma.SortOrder;
     _count?: Prisma.usuariosCountOrderByAggregateInput;
@@ -351,6 +387,9 @@ export type usuariosScalarWhereWithAggregatesInput = {
     telefono?: Prisma.StringNullableWithAggregatesFilter<"usuarios"> | string | null;
     estado?: Prisma.StringNullableWithAggregatesFilter<"usuarios"> | string | null;
     fecha_ingreso?: Prisma.DateTimeNullableWithAggregatesFilter<"usuarios"> | Date | string | null;
+    foto_url?: Prisma.StringNullableWithAggregatesFilter<"usuarios"> | string | null;
+    ultimo_acceso?: Prisma.DateTimeNullableWithAggregatesFilter<"usuarios"> | Date | string | null;
+    es_responsable?: Prisma.BoolWithAggregatesFilter<"usuarios"> | boolean;
     id_area?: Prisma.IntNullableWithAggregatesFilter<"usuarios"> | number | null;
     id_rol?: Prisma.IntNullableWithAggregatesFilter<"usuarios"> | number | null;
 };
@@ -363,6 +402,9 @@ export type usuariosCreateInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -372,7 +414,8 @@ export type usuariosCreateInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
@@ -396,6 +439,9 @@ export type usuariosUncheckedCreateInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -407,7 +453,8 @@ export type usuariosUncheckedCreateInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -428,6 +475,9 @@ export type usuariosUpdateInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -437,7 +487,8 @@ export type usuariosUpdateInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
@@ -461,6 +512,9 @@ export type usuariosUncheckedUpdateInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -472,7 +526,8 @@ export type usuariosUncheckedUpdateInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -494,6 +549,9 @@ export type usuariosCreateManyInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
 };
@@ -506,6 +564,9 @@ export type usuariosUpdateManyMutationInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 };
 export type usuariosUncheckedUpdateManyInput = {
     id_usuario?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -517,6 +578,9 @@ export type usuariosUncheckedUpdateManyInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 };
@@ -546,6 +610,9 @@ export type usuariosCountOrderByAggregateInput = {
     telefono?: Prisma.SortOrder;
     estado?: Prisma.SortOrder;
     fecha_ingreso?: Prisma.SortOrder;
+    foto_url?: Prisma.SortOrder;
+    ultimo_acceso?: Prisma.SortOrder;
+    es_responsable?: Prisma.SortOrder;
     id_area?: Prisma.SortOrder;
     id_rol?: Prisma.SortOrder;
 };
@@ -564,6 +631,9 @@ export type usuariosMaxOrderByAggregateInput = {
     telefono?: Prisma.SortOrder;
     estado?: Prisma.SortOrder;
     fecha_ingreso?: Prisma.SortOrder;
+    foto_url?: Prisma.SortOrder;
+    ultimo_acceso?: Prisma.SortOrder;
+    es_responsable?: Prisma.SortOrder;
     id_area?: Prisma.SortOrder;
     id_rol?: Prisma.SortOrder;
 };
@@ -577,6 +647,9 @@ export type usuariosMinOrderByAggregateInput = {
     telefono?: Prisma.SortOrder;
     estado?: Prisma.SortOrder;
     fecha_ingreso?: Prisma.SortOrder;
+    foto_url?: Prisma.SortOrder;
+    ultimo_acceso?: Prisma.SortOrder;
+    es_responsable?: Prisma.SortOrder;
     id_area?: Prisma.SortOrder;
     id_rol?: Prisma.SortOrder;
 };
@@ -745,19 +818,33 @@ export type usuariosUpdateOneWithoutEventos_operativosNestedInput = {
     connect?: Prisma.usuariosWhereUniqueInput;
     update?: Prisma.XOR<Prisma.XOR<Prisma.usuariosUpdateToOneWithWhereWithoutEventos_operativosInput, Prisma.usuariosUpdateWithoutEventos_operativosInput>, Prisma.usuariosUncheckedUpdateWithoutEventos_operativosInput>;
 };
-export type usuariosCreateNestedOneWithoutEventos_monitoreoInput = {
-    create?: Prisma.XOR<Prisma.usuariosCreateWithoutEventos_monitoreoInput, Prisma.usuariosUncheckedCreateWithoutEventos_monitoreoInput>;
-    connectOrCreate?: Prisma.usuariosCreateOrConnectWithoutEventos_monitoreoInput;
+export type usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput = {
+    create?: Prisma.XOR<Prisma.usuariosCreateWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput, Prisma.usuariosUncheckedCreateWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput>;
+    connectOrCreate?: Prisma.usuariosCreateOrConnectWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput;
     connect?: Prisma.usuariosWhereUniqueInput;
 };
-export type usuariosUpdateOneWithoutEventos_monitoreoNestedInput = {
-    create?: Prisma.XOR<Prisma.usuariosCreateWithoutEventos_monitoreoInput, Prisma.usuariosUncheckedCreateWithoutEventos_monitoreoInput>;
-    connectOrCreate?: Prisma.usuariosCreateOrConnectWithoutEventos_monitoreoInput;
-    upsert?: Prisma.usuariosUpsertWithoutEventos_monitoreoInput;
+export type usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput = {
+    create?: Prisma.XOR<Prisma.usuariosCreateWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput, Prisma.usuariosUncheckedCreateWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput>;
+    connectOrCreate?: Prisma.usuariosCreateOrConnectWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput;
+    connect?: Prisma.usuariosWhereUniqueInput;
+};
+export type usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosNestedInput = {
+    create?: Prisma.XOR<Prisma.usuariosCreateWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput, Prisma.usuariosUncheckedCreateWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput>;
+    connectOrCreate?: Prisma.usuariosCreateOrConnectWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput;
+    upsert?: Prisma.usuariosUpsertWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput;
     disconnect?: Prisma.usuariosWhereInput | boolean;
     delete?: Prisma.usuariosWhereInput | boolean;
     connect?: Prisma.usuariosWhereUniqueInput;
-    update?: Prisma.XOR<Prisma.XOR<Prisma.usuariosUpdateToOneWithWhereWithoutEventos_monitoreoInput, Prisma.usuariosUpdateWithoutEventos_monitoreoInput>, Prisma.usuariosUncheckedUpdateWithoutEventos_monitoreoInput>;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.usuariosUpdateToOneWithWhereWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput, Prisma.usuariosUpdateWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput>, Prisma.usuariosUncheckedUpdateWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput>;
+};
+export type usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosNestedInput = {
+    create?: Prisma.XOR<Prisma.usuariosCreateWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput, Prisma.usuariosUncheckedCreateWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput>;
+    connectOrCreate?: Prisma.usuariosCreateOrConnectWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput;
+    upsert?: Prisma.usuariosUpsertWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput;
+    disconnect?: Prisma.usuariosWhereInput | boolean;
+    delete?: Prisma.usuariosWhereInput | boolean;
+    connect?: Prisma.usuariosWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.usuariosUpdateToOneWithWhereWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput, Prisma.usuariosUpdateWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput>, Prisma.usuariosUncheckedUpdateWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput>;
 };
 export type usuariosCreateNestedOneWithoutEvidencias_eventoInput = {
     create?: Prisma.XOR<Prisma.usuariosCreateWithoutEvidencias_eventoInput, Prisma.usuariosUncheckedCreateWithoutEvidencias_eventoInput>;
@@ -940,6 +1027,9 @@ export type usuariosCreateWithoutActividades_planInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
     bitacora?: Prisma.bitacoraCreateNestedManyWithoutUsuariosInput;
@@ -948,7 +1038,8 @@ export type usuariosCreateWithoutActividades_planInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
@@ -972,6 +1063,9 @@ export type usuariosUncheckedCreateWithoutActividades_planInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     anexos_caso?: Prisma.anexos_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -982,7 +1076,8 @@ export type usuariosUncheckedCreateWithoutActividades_planInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1016,6 +1111,9 @@ export type usuariosUpdateWithoutActividades_planInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
     bitacora?: Prisma.bitacoraUpdateManyWithoutUsuariosNestedInput;
@@ -1024,7 +1122,8 @@ export type usuariosUpdateWithoutActividades_planInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
@@ -1048,6 +1147,9 @@ export type usuariosUncheckedUpdateWithoutActividades_planInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     anexos_caso?: Prisma.anexos_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -1058,7 +1160,8 @@ export type usuariosUncheckedUpdateWithoutActividades_planInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -1079,6 +1182,9 @@ export type usuariosCreateWithoutAnexos_casoInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
     bitacora?: Prisma.bitacoraCreateNestedManyWithoutUsuariosInput;
@@ -1087,7 +1193,8 @@ export type usuariosCreateWithoutAnexos_casoInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
@@ -1111,6 +1218,9 @@ export type usuariosUncheckedCreateWithoutAnexos_casoInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1121,7 +1231,8 @@ export type usuariosUncheckedCreateWithoutAnexos_casoInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1155,6 +1266,9 @@ export type usuariosUpdateWithoutAnexos_casoInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
     bitacora?: Prisma.bitacoraUpdateManyWithoutUsuariosNestedInput;
@@ -1163,7 +1277,8 @@ export type usuariosUpdateWithoutAnexos_casoInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
@@ -1187,6 +1302,9 @@ export type usuariosUncheckedUpdateWithoutAnexos_casoInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -1197,7 +1315,8 @@ export type usuariosUncheckedUpdateWithoutAnexos_casoInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -1218,6 +1337,9 @@ export type usuariosCreateWithoutAreasInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -1227,7 +1349,8 @@ export type usuariosCreateWithoutAreasInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
@@ -1250,6 +1373,9 @@ export type usuariosUncheckedCreateWithoutAreasInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1260,7 +1386,8 @@ export type usuariosUncheckedCreateWithoutAreasInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1306,6 +1433,9 @@ export type usuariosScalarWhereInput = {
     telefono?: Prisma.StringNullableFilter<"usuarios"> | string | null;
     estado?: Prisma.StringNullableFilter<"usuarios"> | string | null;
     fecha_ingreso?: Prisma.DateTimeNullableFilter<"usuarios"> | Date | string | null;
+    foto_url?: Prisma.StringNullableFilter<"usuarios"> | string | null;
+    ultimo_acceso?: Prisma.DateTimeNullableFilter<"usuarios"> | Date | string | null;
+    es_responsable?: Prisma.BoolFilter<"usuarios"> | boolean;
     id_area?: Prisma.IntNullableFilter<"usuarios"> | number | null;
     id_rol?: Prisma.IntNullableFilter<"usuarios"> | number | null;
 };
@@ -1318,6 +1448,9 @@ export type usuariosCreateWithoutAuditoriaInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     bitacora?: Prisma.bitacoraCreateNestedManyWithoutUsuariosInput;
@@ -1326,7 +1459,8 @@ export type usuariosCreateWithoutAuditoriaInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
@@ -1350,6 +1484,9 @@ export type usuariosUncheckedCreateWithoutAuditoriaInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1360,7 +1497,8 @@ export type usuariosUncheckedCreateWithoutAuditoriaInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1394,6 +1532,9 @@ export type usuariosUpdateWithoutAuditoriaInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     bitacora?: Prisma.bitacoraUpdateManyWithoutUsuariosNestedInput;
@@ -1402,7 +1543,8 @@ export type usuariosUpdateWithoutAuditoriaInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
@@ -1426,6 +1568,9 @@ export type usuariosUncheckedUpdateWithoutAuditoriaInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -1436,7 +1581,8 @@ export type usuariosUncheckedUpdateWithoutAuditoriaInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -1457,6 +1603,9 @@ export type usuariosCreateWithoutBitacoraInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -1465,7 +1614,8 @@ export type usuariosCreateWithoutBitacoraInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
@@ -1489,6 +1639,9 @@ export type usuariosUncheckedCreateWithoutBitacoraInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1499,7 +1652,8 @@ export type usuariosUncheckedCreateWithoutBitacoraInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1533,6 +1687,9 @@ export type usuariosUpdateWithoutBitacoraInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -1541,7 +1698,8 @@ export type usuariosUpdateWithoutBitacoraInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
@@ -1565,6 +1723,9 @@ export type usuariosUncheckedUpdateWithoutBitacoraInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -1575,7 +1736,8 @@ export type usuariosUncheckedUpdateWithoutBitacoraInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -1596,6 +1758,9 @@ export type usuariosCreateWithoutCasos_sop_casos_sop_created_byTousuariosInput =
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -1604,7 +1769,8 @@ export type usuariosCreateWithoutCasos_sop_casos_sop_created_byTousuariosInput =
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
@@ -1628,6 +1794,9 @@ export type usuariosUncheckedCreateWithoutCasos_sop_casos_sop_created_byTousuari
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1638,7 +1807,8 @@ export type usuariosUncheckedCreateWithoutCasos_sop_casos_sop_created_byTousuari
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1663,6 +1833,9 @@ export type usuariosCreateWithoutCasos_sop_casos_sop_responsable_hallazgoTousuar
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -1671,7 +1844,8 @@ export type usuariosCreateWithoutCasos_sop_casos_sop_responsable_hallazgoTousuar
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
@@ -1695,6 +1869,9 @@ export type usuariosUncheckedCreateWithoutCasos_sop_casos_sop_responsable_hallaz
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1705,7 +1882,8 @@ export type usuariosUncheckedCreateWithoutCasos_sop_casos_sop_responsable_hallaz
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1730,6 +1908,9 @@ export type usuariosCreateWithoutCasos_sop_casos_sop_responsable_planTousuariosI
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -1738,7 +1919,8 @@ export type usuariosCreateWithoutCasos_sop_casos_sop_responsable_planTousuariosI
     casos_sop_casos_sop_responsable_hallazgoTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_hallazgoTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
@@ -1762,6 +1944,9 @@ export type usuariosUncheckedCreateWithoutCasos_sop_casos_sop_responsable_planTo
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1772,7 +1957,8 @@ export type usuariosUncheckedCreateWithoutCasos_sop_casos_sop_responsable_planTo
     casos_sop_casos_sop_responsable_hallazgoTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_hallazgoTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1806,6 +1992,9 @@ export type usuariosUpdateWithoutCasos_sop_casos_sop_created_byTousuariosInput =
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -1814,7 +2003,8 @@ export type usuariosUpdateWithoutCasos_sop_casos_sop_created_byTousuariosInput =
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
@@ -1838,6 +2028,9 @@ export type usuariosUncheckedUpdateWithoutCasos_sop_casos_sop_created_byTousuari
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -1848,7 +2041,8 @@ export type usuariosUncheckedUpdateWithoutCasos_sop_casos_sop_created_byTousuari
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -1878,6 +2072,9 @@ export type usuariosUpdateWithoutCasos_sop_casos_sop_responsable_hallazgoTousuar
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -1886,7 +2083,8 @@ export type usuariosUpdateWithoutCasos_sop_casos_sop_responsable_hallazgoTousuar
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
@@ -1910,6 +2108,9 @@ export type usuariosUncheckedUpdateWithoutCasos_sop_casos_sop_responsable_hallaz
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -1920,7 +2121,8 @@ export type usuariosUncheckedUpdateWithoutCasos_sop_casos_sop_responsable_hallaz
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -1950,6 +2152,9 @@ export type usuariosUpdateWithoutCasos_sop_casos_sop_responsable_planTousuariosI
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -1958,7 +2163,8 @@ export type usuariosUpdateWithoutCasos_sop_casos_sop_responsable_planTousuariosI
     casos_sop_casos_sop_responsable_hallazgoTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_hallazgoTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
@@ -1982,6 +2188,9 @@ export type usuariosUncheckedUpdateWithoutCasos_sop_casos_sop_responsable_planTo
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -1992,7 +2201,8 @@ export type usuariosUncheckedUpdateWithoutCasos_sop_casos_sop_responsable_planTo
     casos_sop_casos_sop_responsable_hallazgoTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_hallazgoTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2013,6 +2223,9 @@ export type usuariosCreateWithoutEvento_casoInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -2021,7 +2234,8 @@ export type usuariosCreateWithoutEvento_casoInput = {
     casos_sop_casos_sop_responsable_hallazgoTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_hallazgoTousuariosInput;
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
@@ -2045,6 +2259,9 @@ export type usuariosUncheckedCreateWithoutEvento_casoInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -2055,7 +2272,8 @@ export type usuariosUncheckedCreateWithoutEvento_casoInput = {
     casos_sop_casos_sop_responsable_hallazgoTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_hallazgoTousuariosInput;
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -2089,6 +2307,9 @@ export type usuariosUpdateWithoutEvento_casoInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -2097,7 +2318,8 @@ export type usuariosUpdateWithoutEvento_casoInput = {
     casos_sop_casos_sop_responsable_hallazgoTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_hallazgoTousuariosNestedInput;
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
@@ -2121,6 +2343,9 @@ export type usuariosUncheckedUpdateWithoutEvento_casoInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2131,7 +2356,8 @@ export type usuariosUncheckedUpdateWithoutEvento_casoInput = {
     casos_sop_casos_sop_responsable_hallazgoTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_hallazgoTousuariosNestedInput;
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2152,6 +2378,9 @@ export type usuariosCreateWithoutEventos_operativosInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -2160,7 +2389,8 @@ export type usuariosCreateWithoutEventos_operativosInput = {
     casos_sop_casos_sop_responsable_hallazgoTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_hallazgoTousuariosInput;
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
@@ -2184,6 +2414,9 @@ export type usuariosUncheckedCreateWithoutEventos_operativosInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -2194,7 +2427,8 @@ export type usuariosUncheckedCreateWithoutEventos_operativosInput = {
     casos_sop_casos_sop_responsable_hallazgoTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_hallazgoTousuariosInput;
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -2228,6 +2462,9 @@ export type usuariosUpdateWithoutEventos_operativosInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -2236,7 +2473,8 @@ export type usuariosUpdateWithoutEventos_operativosInput = {
     casos_sop_casos_sop_responsable_hallazgoTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_hallazgoTousuariosNestedInput;
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
@@ -2260,6 +2498,9 @@ export type usuariosUncheckedUpdateWithoutEventos_operativosInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2270,7 +2511,8 @@ export type usuariosUncheckedUpdateWithoutEventos_operativosInput = {
     casos_sop_casos_sop_responsable_hallazgoTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_hallazgoTousuariosNestedInput;
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2282,7 +2524,7 @@ export type usuariosUncheckedUpdateWithoutEventos_operativosInput = {
     seguimientos?: Prisma.seguimientosUncheckedUpdateManyWithoutUsuariosNestedInput;
     sesiones?: Prisma.sesionesUncheckedUpdateManyWithoutUsuariosNestedInput;
 };
-export type usuariosCreateWithoutEventos_monitoreoInput = {
+export type usuariosCreateWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput = {
     codigo_usuario: string;
     nombre: string;
     cargo?: string | null;
@@ -2291,6 +2533,9 @@ export type usuariosCreateWithoutEventos_monitoreoInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -2300,6 +2545,7 @@ export type usuariosCreateWithoutEventos_monitoreoInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
@@ -2313,7 +2559,7 @@ export type usuariosCreateWithoutEventos_monitoreoInput = {
     areas?: Prisma.areasCreateNestedOneWithoutUsuariosInput;
     roles?: Prisma.rolesCreateNestedOneWithoutUsuariosInput;
 };
-export type usuariosUncheckedCreateWithoutEventos_monitoreoInput = {
+export type usuariosUncheckedCreateWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput = {
     id_usuario?: number;
     codigo_usuario: string;
     nombre: string;
@@ -2323,6 +2569,9 @@ export type usuariosUncheckedCreateWithoutEventos_monitoreoInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -2334,6 +2583,7 @@ export type usuariosUncheckedCreateWithoutEventos_monitoreoInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -2345,20 +2595,95 @@ export type usuariosUncheckedCreateWithoutEventos_monitoreoInput = {
     seguimientos?: Prisma.seguimientosUncheckedCreateNestedManyWithoutUsuariosInput;
     sesiones?: Prisma.sesionesUncheckedCreateNestedManyWithoutUsuariosInput;
 };
-export type usuariosCreateOrConnectWithoutEventos_monitoreoInput = {
+export type usuariosCreateOrConnectWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput = {
     where: Prisma.usuariosWhereUniqueInput;
-    create: Prisma.XOR<Prisma.usuariosCreateWithoutEventos_monitoreoInput, Prisma.usuariosUncheckedCreateWithoutEventos_monitoreoInput>;
+    create: Prisma.XOR<Prisma.usuariosCreateWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput, Prisma.usuariosUncheckedCreateWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput>;
 };
-export type usuariosUpsertWithoutEventos_monitoreoInput = {
-    update: Prisma.XOR<Prisma.usuariosUpdateWithoutEventos_monitoreoInput, Prisma.usuariosUncheckedUpdateWithoutEventos_monitoreoInput>;
-    create: Prisma.XOR<Prisma.usuariosCreateWithoutEventos_monitoreoInput, Prisma.usuariosUncheckedCreateWithoutEventos_monitoreoInput>;
+export type usuariosCreateWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput = {
+    codigo_usuario: string;
+    nombre: string;
+    cargo?: string | null;
+    correo: string;
+    password_hash?: string | null;
+    telefono?: string | null;
+    estado?: string | null;
+    fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
+    actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
+    anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
+    auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
+    bitacora?: Prisma.bitacoraCreateNestedManyWithoutUsuariosInput;
+    casos_sop_casos_sop_created_byTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_created_byTousuariosInput;
+    casos_sop_casos_sop_responsable_hallazgoTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_hallazgoTousuariosInput;
+    casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
+    evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
+    eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
+    incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
+    investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
+    investigaciones?: Prisma.investigacionesCreateNestedManyWithoutUsuariosInput;
+    logs_sistema?: Prisma.logs_sistemaCreateNestedManyWithoutUsuariosInput;
+    notificaciones?: Prisma.notificacionesCreateNestedManyWithoutUsuariosInput;
+    planes_accion?: Prisma.planes_accionCreateNestedManyWithoutUsuariosInput;
+    reporte_estadistico?: Prisma.reporte_estadisticoCreateNestedManyWithoutUsuariosInput;
+    seguimientos?: Prisma.seguimientosCreateNestedManyWithoutUsuariosInput;
+    sesiones?: Prisma.sesionesCreateNestedManyWithoutUsuariosInput;
+    areas?: Prisma.areasCreateNestedOneWithoutUsuariosInput;
+    roles?: Prisma.rolesCreateNestedOneWithoutUsuariosInput;
+};
+export type usuariosUncheckedCreateWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput = {
+    id_usuario?: number;
+    codigo_usuario: string;
+    nombre: string;
+    cargo?: string | null;
+    correo: string;
+    password_hash?: string | null;
+    telefono?: string | null;
+    estado?: string | null;
+    fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
+    id_area?: number | null;
+    id_rol?: number | null;
+    actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
+    anexos_caso?: Prisma.anexos_casoUncheckedCreateNestedManyWithoutUsuariosInput;
+    auditoria?: Prisma.auditoriaUncheckedCreateNestedManyWithoutUsuariosInput;
+    bitacora?: Prisma.bitacoraUncheckedCreateNestedManyWithoutUsuariosInput;
+    casos_sop_casos_sop_created_byTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_created_byTousuariosInput;
+    casos_sop_casos_sop_responsable_hallazgoTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_hallazgoTousuariosInput;
+    casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
+    evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
+    incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
+    investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
+    investigaciones?: Prisma.investigacionesUncheckedCreateNestedManyWithoutUsuariosInput;
+    logs_sistema?: Prisma.logs_sistemaUncheckedCreateNestedManyWithoutUsuariosInput;
+    notificaciones?: Prisma.notificacionesUncheckedCreateNestedManyWithoutUsuariosInput;
+    planes_accion?: Prisma.planes_accionUncheckedCreateNestedManyWithoutUsuariosInput;
+    reporte_estadistico?: Prisma.reporte_estadisticoUncheckedCreateNestedManyWithoutUsuariosInput;
+    seguimientos?: Prisma.seguimientosUncheckedCreateNestedManyWithoutUsuariosInput;
+    sesiones?: Prisma.sesionesUncheckedCreateNestedManyWithoutUsuariosInput;
+};
+export type usuariosCreateOrConnectWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput = {
+    where: Prisma.usuariosWhereUniqueInput;
+    create: Prisma.XOR<Prisma.usuariosCreateWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput, Prisma.usuariosUncheckedCreateWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput>;
+};
+export type usuariosUpsertWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput = {
+    update: Prisma.XOR<Prisma.usuariosUpdateWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput, Prisma.usuariosUncheckedUpdateWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput>;
+    create: Prisma.XOR<Prisma.usuariosCreateWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput, Prisma.usuariosUncheckedCreateWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput>;
     where?: Prisma.usuariosWhereInput;
 };
-export type usuariosUpdateToOneWithWhereWithoutEventos_monitoreoInput = {
+export type usuariosUpdateToOneWithWhereWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput = {
     where?: Prisma.usuariosWhereInput;
-    data: Prisma.XOR<Prisma.usuariosUpdateWithoutEventos_monitoreoInput, Prisma.usuariosUncheckedUpdateWithoutEventos_monitoreoInput>;
+    data: Prisma.XOR<Prisma.usuariosUpdateWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput, Prisma.usuariosUncheckedUpdateWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput>;
 };
-export type usuariosUpdateWithoutEventos_monitoreoInput = {
+export type usuariosUpdateWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput = {
     codigo_usuario?: Prisma.StringFieldUpdateOperationsInput | string;
     nombre?: Prisma.StringFieldUpdateOperationsInput | string;
     cargo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2367,6 +2692,9 @@ export type usuariosUpdateWithoutEventos_monitoreoInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -2376,6 +2704,7 @@ export type usuariosUpdateWithoutEventos_monitoreoInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
@@ -2389,7 +2718,7 @@ export type usuariosUpdateWithoutEventos_monitoreoInput = {
     areas?: Prisma.areasUpdateOneWithoutUsuariosNestedInput;
     roles?: Prisma.rolesUpdateOneWithoutUsuariosNestedInput;
 };
-export type usuariosUncheckedUpdateWithoutEventos_monitoreoInput = {
+export type usuariosUncheckedUpdateWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput = {
     id_usuario?: Prisma.IntFieldUpdateOperationsInput | number;
     codigo_usuario?: Prisma.StringFieldUpdateOperationsInput | string;
     nombre?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -2399,6 +2728,9 @@ export type usuariosUncheckedUpdateWithoutEventos_monitoreoInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2410,6 +2742,87 @@ export type usuariosUncheckedUpdateWithoutEventos_monitoreoInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
+    evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
+    investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    investigaciones?: Prisma.investigacionesUncheckedUpdateManyWithoutUsuariosNestedInput;
+    logs_sistema?: Prisma.logs_sistemaUncheckedUpdateManyWithoutUsuariosNestedInput;
+    notificaciones?: Prisma.notificacionesUncheckedUpdateManyWithoutUsuariosNestedInput;
+    planes_accion?: Prisma.planes_accionUncheckedUpdateManyWithoutUsuariosNestedInput;
+    reporte_estadistico?: Prisma.reporte_estadisticoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    seguimientos?: Prisma.seguimientosUncheckedUpdateManyWithoutUsuariosNestedInput;
+    sesiones?: Prisma.sesionesUncheckedUpdateManyWithoutUsuariosNestedInput;
+};
+export type usuariosUpsertWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput = {
+    update: Prisma.XOR<Prisma.usuariosUpdateWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput, Prisma.usuariosUncheckedUpdateWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput>;
+    create: Prisma.XOR<Prisma.usuariosCreateWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput, Prisma.usuariosUncheckedCreateWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput>;
+    where?: Prisma.usuariosWhereInput;
+};
+export type usuariosUpdateToOneWithWhereWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput = {
+    where?: Prisma.usuariosWhereInput;
+    data: Prisma.XOR<Prisma.usuariosUpdateWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput, Prisma.usuariosUncheckedUpdateWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput>;
+};
+export type usuariosUpdateWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput = {
+    codigo_usuario?: Prisma.StringFieldUpdateOperationsInput | string;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    cargo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    correo?: Prisma.StringFieldUpdateOperationsInput | string;
+    password_hash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
+    anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
+    auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
+    bitacora?: Prisma.bitacoraUpdateManyWithoutUsuariosNestedInput;
+    casos_sop_casos_sop_created_byTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_created_byTousuariosNestedInput;
+    casos_sop_casos_sop_responsable_hallazgoTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_hallazgoTousuariosNestedInput;
+    casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
+    evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
+    eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
+    incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
+    investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
+    investigaciones?: Prisma.investigacionesUpdateManyWithoutUsuariosNestedInput;
+    logs_sistema?: Prisma.logs_sistemaUpdateManyWithoutUsuariosNestedInput;
+    notificaciones?: Prisma.notificacionesUpdateManyWithoutUsuariosNestedInput;
+    planes_accion?: Prisma.planes_accionUpdateManyWithoutUsuariosNestedInput;
+    reporte_estadistico?: Prisma.reporte_estadisticoUpdateManyWithoutUsuariosNestedInput;
+    seguimientos?: Prisma.seguimientosUpdateManyWithoutUsuariosNestedInput;
+    sesiones?: Prisma.sesionesUpdateManyWithoutUsuariosNestedInput;
+    areas?: Prisma.areasUpdateOneWithoutUsuariosNestedInput;
+    roles?: Prisma.rolesUpdateOneWithoutUsuariosNestedInput;
+};
+export type usuariosUncheckedUpdateWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput = {
+    id_usuario?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo_usuario?: Prisma.StringFieldUpdateOperationsInput | string;
+    nombre?: Prisma.StringFieldUpdateOperationsInput | string;
+    cargo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    correo?: Prisma.StringFieldUpdateOperationsInput | string;
+    password_hash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
+    anexos_caso?: Prisma.anexos_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    auditoria?: Prisma.auditoriaUncheckedUpdateManyWithoutUsuariosNestedInput;
+    bitacora?: Prisma.bitacoraUncheckedUpdateManyWithoutUsuariosNestedInput;
+    casos_sop_casos_sop_created_byTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_created_byTousuariosNestedInput;
+    casos_sop_casos_sop_responsable_hallazgoTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_hallazgoTousuariosNestedInput;
+    casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
+    evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2430,6 +2843,9 @@ export type usuariosCreateWithoutEvidencias_eventoInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -2439,7 +2855,8 @@ export type usuariosCreateWithoutEvidencias_eventoInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
     investigaciones?: Prisma.investigacionesCreateNestedManyWithoutUsuariosInput;
@@ -2462,6 +2879,9 @@ export type usuariosUncheckedCreateWithoutEvidencias_eventoInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -2473,7 +2893,8 @@ export type usuariosUncheckedCreateWithoutEvidencias_eventoInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     investigaciones?: Prisma.investigacionesUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -2506,6 +2927,9 @@ export type usuariosUpdateWithoutEvidencias_eventoInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -2515,7 +2939,8 @@ export type usuariosUpdateWithoutEvidencias_eventoInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
     investigaciones?: Prisma.investigacionesUpdateManyWithoutUsuariosNestedInput;
@@ -2538,6 +2963,9 @@ export type usuariosUncheckedUpdateWithoutEvidencias_eventoInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2549,7 +2977,8 @@ export type usuariosUncheckedUpdateWithoutEvidencias_eventoInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigaciones?: Prisma.investigacionesUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2569,6 +2998,9 @@ export type usuariosCreateWithoutIncidenciasInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -2578,7 +3010,8 @@ export type usuariosCreateWithoutIncidenciasInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
     investigaciones?: Prisma.investigacionesCreateNestedManyWithoutUsuariosInput;
@@ -2601,6 +3034,9 @@ export type usuariosUncheckedCreateWithoutIncidenciasInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -2612,7 +3048,8 @@ export type usuariosUncheckedCreateWithoutIncidenciasInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     investigaciones?: Prisma.investigacionesUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -2645,6 +3082,9 @@ export type usuariosUpdateWithoutIncidenciasInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -2654,7 +3094,8 @@ export type usuariosUpdateWithoutIncidenciasInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
     investigaciones?: Prisma.investigacionesUpdateManyWithoutUsuariosNestedInput;
@@ -2677,6 +3118,9 @@ export type usuariosUncheckedUpdateWithoutIncidenciasInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2688,7 +3132,8 @@ export type usuariosUncheckedUpdateWithoutIncidenciasInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigaciones?: Prisma.investigacionesUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2708,6 +3153,9 @@ export type usuariosCreateWithoutInvestigacion_casoInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -2717,7 +3165,8 @@ export type usuariosCreateWithoutInvestigacion_casoInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigaciones?: Prisma.investigacionesCreateNestedManyWithoutUsuariosInput;
@@ -2740,6 +3189,9 @@ export type usuariosUncheckedCreateWithoutInvestigacion_casoInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -2751,7 +3203,8 @@ export type usuariosUncheckedCreateWithoutInvestigacion_casoInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigaciones?: Prisma.investigacionesUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -2784,6 +3237,9 @@ export type usuariosUpdateWithoutInvestigacion_casoInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -2793,7 +3249,8 @@ export type usuariosUpdateWithoutInvestigacion_casoInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigaciones?: Prisma.investigacionesUpdateManyWithoutUsuariosNestedInput;
@@ -2816,6 +3273,9 @@ export type usuariosUncheckedUpdateWithoutInvestigacion_casoInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2827,7 +3287,8 @@ export type usuariosUncheckedUpdateWithoutInvestigacion_casoInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigaciones?: Prisma.investigacionesUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2847,6 +3308,9 @@ export type usuariosCreateWithoutInvestigacionesInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -2856,7 +3320,8 @@ export type usuariosCreateWithoutInvestigacionesInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
@@ -2879,6 +3344,9 @@ export type usuariosUncheckedCreateWithoutInvestigacionesInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -2890,7 +3358,8 @@ export type usuariosUncheckedCreateWithoutInvestigacionesInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -2923,6 +3392,9 @@ export type usuariosUpdateWithoutInvestigacionesInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -2932,7 +3404,8 @@ export type usuariosUpdateWithoutInvestigacionesInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
@@ -2955,6 +3428,9 @@ export type usuariosUncheckedUpdateWithoutInvestigacionesInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2966,7 +3442,8 @@ export type usuariosUncheckedUpdateWithoutInvestigacionesInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2986,6 +3463,9 @@ export type usuariosCreateWithoutLogs_sistemaInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -2995,7 +3475,8 @@ export type usuariosCreateWithoutLogs_sistemaInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
@@ -3018,6 +3499,9 @@ export type usuariosUncheckedCreateWithoutLogs_sistemaInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -3029,7 +3513,8 @@ export type usuariosUncheckedCreateWithoutLogs_sistemaInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -3062,6 +3547,9 @@ export type usuariosUpdateWithoutLogs_sistemaInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -3071,7 +3559,8 @@ export type usuariosUpdateWithoutLogs_sistemaInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
@@ -3094,6 +3583,9 @@ export type usuariosUncheckedUpdateWithoutLogs_sistemaInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -3105,7 +3597,8 @@ export type usuariosUncheckedUpdateWithoutLogs_sistemaInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -3125,6 +3618,9 @@ export type usuariosCreateWithoutNotificacionesInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -3134,7 +3630,8 @@ export type usuariosCreateWithoutNotificacionesInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
@@ -3157,6 +3654,9 @@ export type usuariosUncheckedCreateWithoutNotificacionesInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -3168,7 +3668,8 @@ export type usuariosUncheckedCreateWithoutNotificacionesInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -3201,6 +3702,9 @@ export type usuariosUpdateWithoutNotificacionesInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -3210,7 +3714,8 @@ export type usuariosUpdateWithoutNotificacionesInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
@@ -3233,6 +3738,9 @@ export type usuariosUncheckedUpdateWithoutNotificacionesInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -3244,7 +3752,8 @@ export type usuariosUncheckedUpdateWithoutNotificacionesInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -3264,6 +3773,9 @@ export type usuariosCreateWithoutPlanes_accionInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -3273,7 +3785,8 @@ export type usuariosCreateWithoutPlanes_accionInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
@@ -3296,6 +3809,9 @@ export type usuariosUncheckedCreateWithoutPlanes_accionInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -3307,7 +3823,8 @@ export type usuariosUncheckedCreateWithoutPlanes_accionInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -3340,6 +3857,9 @@ export type usuariosUpdateWithoutPlanes_accionInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -3349,7 +3869,8 @@ export type usuariosUpdateWithoutPlanes_accionInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
@@ -3372,6 +3893,9 @@ export type usuariosUncheckedUpdateWithoutPlanes_accionInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -3383,7 +3907,8 @@ export type usuariosUncheckedUpdateWithoutPlanes_accionInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -3403,6 +3928,9 @@ export type usuariosCreateWithoutReporte_estadisticoInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -3412,7 +3940,8 @@ export type usuariosCreateWithoutReporte_estadisticoInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
@@ -3435,6 +3964,9 @@ export type usuariosUncheckedCreateWithoutReporte_estadisticoInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -3446,7 +3978,8 @@ export type usuariosUncheckedCreateWithoutReporte_estadisticoInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -3479,6 +4012,9 @@ export type usuariosUpdateWithoutReporte_estadisticoInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -3488,7 +4024,8 @@ export type usuariosUpdateWithoutReporte_estadisticoInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
@@ -3511,6 +4048,9 @@ export type usuariosUncheckedUpdateWithoutReporte_estadisticoInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -3522,7 +4062,8 @@ export type usuariosUncheckedUpdateWithoutReporte_estadisticoInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -3542,6 +4083,9 @@ export type usuariosCreateWithoutRolesInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -3551,7 +4095,8 @@ export type usuariosCreateWithoutRolesInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
@@ -3574,6 +4119,9 @@ export type usuariosUncheckedCreateWithoutRolesInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -3584,7 +4132,8 @@ export type usuariosUncheckedCreateWithoutRolesInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -3626,6 +4175,9 @@ export type usuariosCreateWithoutSeguimientosInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -3635,7 +4187,8 @@ export type usuariosCreateWithoutSeguimientosInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
@@ -3658,6 +4211,9 @@ export type usuariosUncheckedCreateWithoutSeguimientosInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -3669,7 +4225,8 @@ export type usuariosUncheckedCreateWithoutSeguimientosInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -3702,6 +4259,9 @@ export type usuariosUpdateWithoutSeguimientosInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -3711,7 +4271,8 @@ export type usuariosUpdateWithoutSeguimientosInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
@@ -3734,6 +4295,9 @@ export type usuariosUncheckedUpdateWithoutSeguimientosInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -3745,7 +4309,8 @@ export type usuariosUncheckedUpdateWithoutSeguimientosInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -3765,6 +4330,9 @@ export type usuariosCreateWithoutSesionesInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -3774,7 +4342,8 @@ export type usuariosCreateWithoutSesionesInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoCreateNestedManyWithoutUsuariosInput;
@@ -3797,6 +4366,9 @@ export type usuariosUncheckedCreateWithoutSesionesInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -3808,7 +4380,8 @@ export type usuariosUncheckedCreateWithoutSesionesInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedCreateNestedManyWithoutUsuarios_casos_sop_responsable_planTousuariosInput;
     evento_caso?: Prisma.evento_casoUncheckedCreateNestedManyWithoutUsuariosInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedCreateNestedManyWithoutUsuariosInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedCreateNestedManyWithoutUsuariosInput;
     incidencias?: Prisma.incidenciasUncheckedCreateNestedManyWithoutUsuariosInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -3841,6 +4414,9 @@ export type usuariosUpdateWithoutSesionesInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -3850,7 +4426,8 @@ export type usuariosUpdateWithoutSesionesInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
@@ -3873,6 +4450,9 @@ export type usuariosUncheckedUpdateWithoutSesionesInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -3884,7 +4464,8 @@ export type usuariosUncheckedUpdateWithoutSesionesInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -3905,6 +4486,9 @@ export type usuariosCreateManyAreasInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_rol?: number | null;
 };
 export type usuariosUpdateWithoutAreasInput = {
@@ -3916,6 +4500,9 @@ export type usuariosUpdateWithoutAreasInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -3925,7 +4512,8 @@ export type usuariosUpdateWithoutAreasInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
@@ -3948,6 +4536,9 @@ export type usuariosUncheckedUpdateWithoutAreasInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -3958,7 +4549,8 @@ export type usuariosUncheckedUpdateWithoutAreasInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -3980,6 +4572,9 @@ export type usuariosUncheckedUpdateManyWithoutAreasInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 };
 export type usuariosCreateManyRolesInput = {
@@ -3992,6 +4587,9 @@ export type usuariosCreateManyRolesInput = {
     telefono?: string | null;
     estado?: string | null;
     fecha_ingreso?: Date | string | null;
+    foto_url?: string | null;
+    ultimo_acceso?: Date | string | null;
+    es_responsable?: boolean;
     id_area?: number | null;
 };
 export type usuariosUpdateWithoutRolesInput = {
@@ -4003,6 +4601,9 @@ export type usuariosUpdateWithoutRolesInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -4012,7 +4613,8 @@ export type usuariosUpdateWithoutRolesInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUpdateManyWithoutUsuariosNestedInput;
@@ -4035,6 +4637,9 @@ export type usuariosUncheckedUpdateWithoutRolesInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -4045,7 +4650,8 @@ export type usuariosUncheckedUpdateWithoutRolesInput = {
     casos_sop_casos_sop_responsable_planTousuarios?: Prisma.casos_sopUncheckedUpdateManyWithoutUsuarios_casos_sop_responsable_planTousuariosNestedInput;
     evento_caso?: Prisma.evento_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
     eventos_operativos?: Prisma.eventos_operativosUncheckedUpdateManyWithoutUsuariosNestedInput;
-    eventos_monitoreo?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput;
     evidencias_evento?: Prisma.evidencias_eventoUncheckedUpdateManyWithoutUsuariosNestedInput;
     incidencias?: Prisma.incidenciasUncheckedUpdateManyWithoutUsuariosNestedInput;
     investigacion_caso?: Prisma.investigacion_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -4067,6 +4673,9 @@ export type usuariosUncheckedUpdateManyWithoutRolesInput = {
     telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     estado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha_ingreso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 };
 /**
@@ -4082,7 +4691,8 @@ export type UsuariosCountOutputType = {
     casos_sop_casos_sop_responsable_planTousuarios: number;
     evento_caso: number;
     eventos_operativos: number;
-    eventos_monitoreo: number;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios: number;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios: number;
     evidencias_evento: number;
     incidencias: number;
     investigacion_caso: number;
@@ -4104,7 +4714,8 @@ export type UsuariosCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensio
     casos_sop_casos_sop_responsable_planTousuarios?: boolean | UsuariosCountOutputTypeCountCasos_sop_casos_sop_responsable_planTousuariosArgs;
     evento_caso?: boolean | UsuariosCountOutputTypeCountEvento_casoArgs;
     eventos_operativos?: boolean | UsuariosCountOutputTypeCountEventos_operativosArgs;
-    eventos_monitoreo?: boolean | UsuariosCountOutputTypeCountEventos_monitoreoArgs;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: boolean | UsuariosCountOutputTypeCountEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosArgs;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: boolean | UsuariosCountOutputTypeCountEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosArgs;
     evidencias_evento?: boolean | UsuariosCountOutputTypeCountEvidencias_eventoArgs;
     incidencias?: boolean | UsuariosCountOutputTypeCountIncidenciasArgs;
     investigacion_caso?: boolean | UsuariosCountOutputTypeCountInvestigacion_casoArgs;
@@ -4182,7 +4793,13 @@ export type UsuariosCountOutputTypeCountEventos_operativosArgs<ExtArgs extends r
 /**
  * UsuariosCountOutputType without action
  */
-export type UsuariosCountOutputTypeCountEventos_monitoreoArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type UsuariosCountOutputTypeCountEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.eventos_monitoreoWhereInput;
+};
+/**
+ * UsuariosCountOutputType without action
+ */
+export type UsuariosCountOutputTypeCountEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     where?: Prisma.eventos_monitoreoWhereInput;
 };
 /**
@@ -4255,6 +4872,9 @@ export type usuariosSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
     telefono?: boolean;
     estado?: boolean;
     fecha_ingreso?: boolean;
+    foto_url?: boolean;
+    ultimo_acceso?: boolean;
+    es_responsable?: boolean;
     id_area?: boolean;
     id_rol?: boolean;
     actividades_plan?: boolean | Prisma.usuarios$actividades_planArgs<ExtArgs>;
@@ -4266,7 +4886,8 @@ export type usuariosSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
     casos_sop_casos_sop_responsable_planTousuarios?: boolean | Prisma.usuarios$casos_sop_casos_sop_responsable_planTousuariosArgs<ExtArgs>;
     evento_caso?: boolean | Prisma.usuarios$evento_casoArgs<ExtArgs>;
     eventos_operativos?: boolean | Prisma.usuarios$eventos_operativosArgs<ExtArgs>;
-    eventos_monitoreo?: boolean | Prisma.usuarios$eventos_monitoreoArgs<ExtArgs>;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: boolean | Prisma.usuarios$eventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosArgs<ExtArgs>;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: boolean | Prisma.usuarios$eventos_monitoreo_eventos_monitoreo_asignado_aTousuariosArgs<ExtArgs>;
     evidencias_evento?: boolean | Prisma.usuarios$evidencias_eventoArgs<ExtArgs>;
     incidencias?: boolean | Prisma.usuarios$incidenciasArgs<ExtArgs>;
     investigacion_caso?: boolean | Prisma.usuarios$investigacion_casoArgs<ExtArgs>;
@@ -4291,6 +4912,9 @@ export type usuariosSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
     telefono?: boolean;
     estado?: boolean;
     fecha_ingreso?: boolean;
+    foto_url?: boolean;
+    ultimo_acceso?: boolean;
+    es_responsable?: boolean;
     id_area?: boolean;
     id_rol?: boolean;
     areas?: boolean | Prisma.usuarios$areasArgs<ExtArgs>;
@@ -4306,6 +4930,9 @@ export type usuariosSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
     telefono?: boolean;
     estado?: boolean;
     fecha_ingreso?: boolean;
+    foto_url?: boolean;
+    ultimo_acceso?: boolean;
+    es_responsable?: boolean;
     id_area?: boolean;
     id_rol?: boolean;
     areas?: boolean | Prisma.usuarios$areasArgs<ExtArgs>;
@@ -4321,10 +4948,13 @@ export type usuariosSelectScalar = {
     telefono?: boolean;
     estado?: boolean;
     fecha_ingreso?: boolean;
+    foto_url?: boolean;
+    ultimo_acceso?: boolean;
+    es_responsable?: boolean;
     id_area?: boolean;
     id_rol?: boolean;
 };
-export type usuariosOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id_usuario" | "codigo_usuario" | "nombre" | "cargo" | "correo" | "password_hash" | "telefono" | "estado" | "fecha_ingreso" | "id_area" | "id_rol", ExtArgs["result"]["usuarios"]>;
+export type usuariosOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id_usuario" | "codigo_usuario" | "nombre" | "cargo" | "correo" | "password_hash" | "telefono" | "estado" | "fecha_ingreso" | "foto_url" | "ultimo_acceso" | "es_responsable" | "id_area" | "id_rol", ExtArgs["result"]["usuarios"]>;
 export type usuariosInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     actividades_plan?: boolean | Prisma.usuarios$actividades_planArgs<ExtArgs>;
     anexos_caso?: boolean | Prisma.usuarios$anexos_casoArgs<ExtArgs>;
@@ -4335,7 +4965,8 @@ export type usuariosInclude<ExtArgs extends runtime.Types.Extensions.InternalArg
     casos_sop_casos_sop_responsable_planTousuarios?: boolean | Prisma.usuarios$casos_sop_casos_sop_responsable_planTousuariosArgs<ExtArgs>;
     evento_caso?: boolean | Prisma.usuarios$evento_casoArgs<ExtArgs>;
     eventos_operativos?: boolean | Prisma.usuarios$eventos_operativosArgs<ExtArgs>;
-    eventos_monitoreo?: boolean | Prisma.usuarios$eventos_monitoreoArgs<ExtArgs>;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios?: boolean | Prisma.usuarios$eventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosArgs<ExtArgs>;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios?: boolean | Prisma.usuarios$eventos_monitoreo_eventos_monitoreo_asignado_aTousuariosArgs<ExtArgs>;
     evidencias_evento?: boolean | Prisma.usuarios$evidencias_eventoArgs<ExtArgs>;
     incidencias?: boolean | Prisma.usuarios$incidenciasArgs<ExtArgs>;
     investigacion_caso?: boolean | Prisma.usuarios$investigacion_casoArgs<ExtArgs>;
@@ -4370,7 +5001,8 @@ export type $usuariosPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
         casos_sop_casos_sop_responsable_planTousuarios: Prisma.$casos_sopPayload<ExtArgs>[];
         evento_caso: Prisma.$evento_casoPayload<ExtArgs>[];
         eventos_operativos: Prisma.$eventos_operativosPayload<ExtArgs>[];
-        eventos_monitoreo: Prisma.$eventos_monitoreoPayload<ExtArgs>[];
+        eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios: Prisma.$eventos_monitoreoPayload<ExtArgs>[];
+        eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios: Prisma.$eventos_monitoreoPayload<ExtArgs>[];
         evidencias_evento: Prisma.$evidencias_eventoPayload<ExtArgs>[];
         incidencias: Prisma.$incidenciasPayload<ExtArgs>[];
         investigacion_caso: Prisma.$investigacion_casoPayload<ExtArgs>[];
@@ -4394,6 +5026,9 @@ export type $usuariosPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
         telefono: string | null;
         estado: string | null;
         fecha_ingreso: Date | null;
+        foto_url: string | null;
+        ultimo_acceso: Date | null;
+        es_responsable: boolean;
         id_area: number | null;
         id_rol: number | null;
     }, ExtArgs["result"]["usuarios"]>;
@@ -4734,7 +5369,8 @@ export interface Prisma__usuariosClient<T, Null = never, ExtArgs extends runtime
     casos_sop_casos_sop_responsable_planTousuarios<T extends Prisma.usuarios$casos_sop_casos_sop_responsable_planTousuariosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usuarios$casos_sop_casos_sop_responsable_planTousuariosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$casos_sopPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     evento_caso<T extends Prisma.usuarios$evento_casoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usuarios$evento_casoArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$evento_casoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     eventos_operativos<T extends Prisma.usuarios$eventos_operativosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usuarios$eventos_operativosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$eventos_operativosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
-    eventos_monitoreo<T extends Prisma.usuarios$eventos_monitoreoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usuarios$eventos_monitoreoArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$eventos_monitoreoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios<T extends Prisma.usuarios$eventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usuarios$eventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$eventos_monitoreoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios<T extends Prisma.usuarios$eventos_monitoreo_eventos_monitoreo_asignado_aTousuariosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usuarios$eventos_monitoreo_eventos_monitoreo_asignado_aTousuariosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$eventos_monitoreoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     evidencias_evento<T extends Prisma.usuarios$evidencias_eventoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usuarios$evidencias_eventoArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$evidencias_eventoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     incidencias<T extends Prisma.usuarios$incidenciasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usuarios$incidenciasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$incidenciasPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     investigacion_caso<T extends Prisma.usuarios$investigacion_casoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usuarios$investigacion_casoArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$investigacion_casoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
@@ -4781,6 +5417,9 @@ export interface usuariosFieldRefs {
     readonly telefono: Prisma.FieldRef<"usuarios", 'String'>;
     readonly estado: Prisma.FieldRef<"usuarios", 'String'>;
     readonly fecha_ingreso: Prisma.FieldRef<"usuarios", 'DateTime'>;
+    readonly foto_url: Prisma.FieldRef<"usuarios", 'String'>;
+    readonly ultimo_acceso: Prisma.FieldRef<"usuarios", 'DateTime'>;
+    readonly es_responsable: Prisma.FieldRef<"usuarios", 'Boolean'>;
     readonly id_area: Prisma.FieldRef<"usuarios", 'Int'>;
     readonly id_rol: Prisma.FieldRef<"usuarios", 'Int'>;
 }
@@ -5369,9 +6008,32 @@ export type usuarios$eventos_operativosArgs<ExtArgs extends runtime.Types.Extens
     distinct?: Prisma.Eventos_operativosScalarFieldEnum | Prisma.Eventos_operativosScalarFieldEnum[];
 };
 /**
- * usuarios.eventos_monitoreo
+ * usuarios.eventos_monitoreo_eventos_monitoreo_usuario_registraTousuarios
  */
-export type usuarios$eventos_monitoreoArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type usuarios$eventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the eventos_monitoreo
+     */
+    select?: Prisma.eventos_monitoreoSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the eventos_monitoreo
+     */
+    omit?: Prisma.eventos_monitoreoOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.eventos_monitoreoInclude<ExtArgs> | null;
+    where?: Prisma.eventos_monitoreoWhereInput;
+    orderBy?: Prisma.eventos_monitoreoOrderByWithRelationInput | Prisma.eventos_monitoreoOrderByWithRelationInput[];
+    cursor?: Prisma.eventos_monitoreoWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.Eventos_monitoreoScalarFieldEnum | Prisma.Eventos_monitoreoScalarFieldEnum[];
+};
+/**
+ * usuarios.eventos_monitoreo_eventos_monitoreo_asignado_aTousuarios
+ */
+export type usuarios$eventos_monitoreo_eventos_monitoreo_asignado_aTousuariosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the eventos_monitoreo
      */

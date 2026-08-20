@@ -1,23 +1,38 @@
-import type { CreateUserDto, UpdateUserDto } from "./users.types.js";
 export declare class UsersService {
-    static getAllUsers(): Promise<{
-        id_usuario: number;
-        codigo_usuario: string;
-        correo: string;
-        nombre: string;
-        cargo: string | null;
-        telefono: string | null;
-        estado: string | null;
-        id_area: number | null;
-        id_rol: number | null;
-        areas: {
-            nombre_area: string;
-        } | null;
-        roles: {
-            nombre_rol: string;
-        } | null;
-    }[]>;
-    static getUserById(id: number): Promise<({
+    static getAllUsers(query?: {
+        search?: string;
+        rol?: string;
+        estado?: string;
+        page?: string;
+        limit?: string;
+    }): Promise<{
+        data: {
+            id_usuario: number;
+            codigo_usuario: string;
+            correo: string;
+            nombre: string;
+            cargo: string | null;
+            telefono: string | null;
+            estado: string | null;
+            id_area: number | null;
+            id_rol: number | null;
+            areas: {
+                nombre_area: string;
+            } | null;
+            roles: {
+                nombre_rol: string;
+            } | null;
+        }[];
+        total: number | undefined;
+    }>;
+    static getCounts(): Promise<{
+        total: number;
+        activos: number;
+        conRol: number;
+        sinRol: number;
+        porRol: Record<string, number>;
+    }>;
+    static getUserById(rawId: unknown): Promise<({
         areas: {
             id_area: number;
             nombre_area: string;
@@ -36,10 +51,13 @@ export declare class UsersService {
         telefono: string | null;
         estado: string | null;
         fecha_ingreso: Date | null;
+        foto_url: string | null;
+        ultimo_acceso: Date | null;
+        es_responsable: boolean;
         id_area: number | null;
         id_rol: number | null;
     }) | null>;
-    static createUser(data: CreateUserDto): Promise<{
+    static createUser(rawBody: unknown): Promise<{
         id_usuario: number;
         codigo_usuario: string;
         correo: string;
@@ -49,10 +67,13 @@ export declare class UsersService {
         telefono: string | null;
         estado: string | null;
         fecha_ingreso: Date | null;
+        foto_url: string | null;
+        ultimo_acceso: Date | null;
+        es_responsable: boolean;
         id_area: number | null;
         id_rol: number | null;
     }>;
-    static updateUser(id: number, data: UpdateUserDto): Promise<{
+    static updateUser(rawId: unknown, rawBody: unknown): Promise<{
         id_usuario: number;
         codigo_usuario: string;
         correo: string;
@@ -62,6 +83,9 @@ export declare class UsersService {
         telefono: string | null;
         estado: string | null;
         fecha_ingreso: Date | null;
+        foto_url: string | null;
+        ultimo_acceso: Date | null;
+        es_responsable: boolean;
         id_area: number | null;
         id_rol: number | null;
     }>;

@@ -53,6 +53,10 @@ export declare const updateEventoSchema: z.ZodObject<{
         Cerrado: "Cerrado";
     }>>;
 }, z.core.$strip>;
+export declare const asignarEventoSchema: z.ZodObject<{
+    id_usuario: z.ZodCoercedNumber<unknown>;
+}, z.core.$strip>;
 export type CreateEventoDto = z.infer<typeof createEventoSchema>;
 export type UpdateEventoDto = z.infer<typeof updateEventoSchema>;
+export type AsignarEventoDto = z.infer<typeof asignarEventoSchema>;
 //# sourceMappingURL=evento.types.d.ts.map

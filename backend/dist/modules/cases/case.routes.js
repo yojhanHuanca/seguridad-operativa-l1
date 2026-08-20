@@ -3,8 +3,9 @@ import { CaseController } from "./case.controller.js";
 import { uploadEvidencia } from "../../middlewares/upload.middleware.js";
 const router = Router();
 router.get("/", CaseController.getAll);
-// Antes de "/:codigo" para que no lo capture como si "planes" fuese un código.
+// Antes de "/:codigo" para que no lo capture como si "planes"/"counts" fuese un código.
 router.get("/planes", CaseController.getPlans);
+router.get("/counts", CaseController.getCounts);
 router.get("/:codigo", CaseController.getByCodigo);
 router.post("/:codigo/approve", CaseController.approve);
 router.post("/:codigo/observation", CaseController.addObservation);

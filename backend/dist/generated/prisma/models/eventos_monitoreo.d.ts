@@ -34,6 +34,8 @@ export type Eventos_monitoreoAvgAggregateOutputType = {
     posible_causa: number | null;
     demora: runtime.Decimal | null;
     usuario_registra: number | null;
+    asignado_a: number | null;
+    id_caso_creado: number | null;
 };
 export type Eventos_monitoreoSumAggregateOutputType = {
     id_evento: number | null;
@@ -53,6 +55,8 @@ export type Eventos_monitoreoSumAggregateOutputType = {
     posible_causa: number | null;
     demora: runtime.Decimal | null;
     usuario_registra: number | null;
+    asignado_a: number | null;
+    id_caso_creado: number | null;
 };
 export type Eventos_monitoreoMinAggregateOutputType = {
     id_evento: number | null;
@@ -81,6 +85,8 @@ export type Eventos_monitoreoMinAggregateOutputType = {
     demora: runtime.Decimal | null;
     estado: string | null;
     usuario_registra: number | null;
+    asignado_a: number | null;
+    id_caso_creado: number | null;
     created_at: Date | null;
     updated_at: Date | null;
 };
@@ -111,6 +117,8 @@ export type Eventos_monitoreoMaxAggregateOutputType = {
     demora: runtime.Decimal | null;
     estado: string | null;
     usuario_registra: number | null;
+    asignado_a: number | null;
+    id_caso_creado: number | null;
     created_at: Date | null;
     updated_at: Date | null;
 };
@@ -141,6 +149,8 @@ export type Eventos_monitoreoCountAggregateOutputType = {
     demora: number;
     estado: number;
     usuario_registra: number;
+    asignado_a: number;
+    id_caso_creado: number;
     created_at: number;
     updated_at: number;
     _all: number;
@@ -163,6 +173,8 @@ export type Eventos_monitoreoAvgAggregateInputType = {
     posible_causa?: true;
     demora?: true;
     usuario_registra?: true;
+    asignado_a?: true;
+    id_caso_creado?: true;
 };
 export type Eventos_monitoreoSumAggregateInputType = {
     id_evento?: true;
@@ -182,6 +194,8 @@ export type Eventos_monitoreoSumAggregateInputType = {
     posible_causa?: true;
     demora?: true;
     usuario_registra?: true;
+    asignado_a?: true;
+    id_caso_creado?: true;
 };
 export type Eventos_monitoreoMinAggregateInputType = {
     id_evento?: true;
@@ -210,6 +224,8 @@ export type Eventos_monitoreoMinAggregateInputType = {
     demora?: true;
     estado?: true;
     usuario_registra?: true;
+    asignado_a?: true;
+    id_caso_creado?: true;
     created_at?: true;
     updated_at?: true;
 };
@@ -240,6 +256,8 @@ export type Eventos_monitoreoMaxAggregateInputType = {
     demora?: true;
     estado?: true;
     usuario_registra?: true;
+    asignado_a?: true;
+    id_caso_creado?: true;
     created_at?: true;
     updated_at?: true;
 };
@@ -270,6 +288,8 @@ export type Eventos_monitoreoCountAggregateInputType = {
     demora?: true;
     estado?: true;
     usuario_registra?: true;
+    asignado_a?: true;
+    id_caso_creado?: true;
     created_at?: true;
     updated_at?: true;
     _all?: true;
@@ -377,6 +397,8 @@ export type Eventos_monitoreoGroupByOutputType = {
     demora: runtime.Decimal | null;
     estado: string;
     usuario_registra: number | null;
+    asignado_a: number | null;
+    id_caso_creado: number | null;
     created_at: Date | null;
     updated_at: Date | null;
     _count: Eventos_monitoreoCountAggregateOutputType | null;
@@ -418,6 +440,8 @@ export type eventos_monitoreoWhereInput = {
     demora?: Prisma.DecimalNullableFilter<"eventos_monitoreo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFilter<"eventos_monitoreo"> | string;
     usuario_registra?: Prisma.IntNullableFilter<"eventos_monitoreo"> | number | null;
+    asignado_a?: Prisma.IntNullableFilter<"eventos_monitoreo"> | number | null;
+    id_caso_creado?: Prisma.IntNullableFilter<"eventos_monitoreo"> | number | null;
     created_at?: Prisma.DateTimeNullableFilter<"eventos_monitoreo"> | Date | string | null;
     updated_at?: Prisma.DateTimeNullableFilter<"eventos_monitoreo"> | Date | string | null;
     catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle?: Prisma.XOR<Prisma.Catalogo_detalleNullableScalarRelationFilter, Prisma.catalogo_detalleWhereInput> | null;
@@ -431,7 +455,9 @@ export type eventos_monitoreoWhereInput = {
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.XOR<Prisma.Catalogo_detalleNullableScalarRelationFilter, Prisma.catalogo_detalleWhereInput> | null;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.XOR<Prisma.Catalogo_detalleNullableScalarRelationFilter, Prisma.catalogo_detalleWhereInput> | null;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.XOR<Prisma.Catalogo_detalleNullableScalarRelationFilter, Prisma.catalogo_detalleWhereInput> | null;
-    usuarios?: Prisma.XOR<Prisma.UsuariosNullableScalarRelationFilter, Prisma.usuariosWhereInput> | null;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.XOR<Prisma.UsuariosNullableScalarRelationFilter, Prisma.usuariosWhereInput> | null;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.XOR<Prisma.UsuariosNullableScalarRelationFilter, Prisma.usuariosWhereInput> | null;
+    casos_sop?: Prisma.XOR<Prisma.Casos_sopNullableScalarRelationFilter, Prisma.casos_sopWhereInput> | null;
 };
 export type eventos_monitoreoOrderByWithRelationInput = {
     id_evento?: Prisma.SortOrder;
@@ -460,6 +486,8 @@ export type eventos_monitoreoOrderByWithRelationInput = {
     demora?: Prisma.SortOrderInput | Prisma.SortOrder;
     estado?: Prisma.SortOrder;
     usuario_registra?: Prisma.SortOrderInput | Prisma.SortOrder;
+    asignado_a?: Prisma.SortOrderInput | Prisma.SortOrder;
+    id_caso_creado?: Prisma.SortOrderInput | Prisma.SortOrder;
     created_at?: Prisma.SortOrderInput | Prisma.SortOrder;
     updated_at?: Prisma.SortOrderInput | Prisma.SortOrder;
     catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle?: Prisma.catalogo_detalleOrderByWithRelationInput;
@@ -473,11 +501,14 @@ export type eventos_monitoreoOrderByWithRelationInput = {
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleOrderByWithRelationInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleOrderByWithRelationInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleOrderByWithRelationInput;
-    usuarios?: Prisma.usuariosOrderByWithRelationInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosOrderByWithRelationInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosOrderByWithRelationInput;
+    casos_sop?: Prisma.casos_sopOrderByWithRelationInput;
 };
 export type eventos_monitoreoWhereUniqueInput = Prisma.AtLeast<{
     id_evento?: number;
     codigo_evento?: string;
+    id_caso_creado?: number;
     AND?: Prisma.eventos_monitoreoWhereInput | Prisma.eventos_monitoreoWhereInput[];
     OR?: Prisma.eventos_monitoreoWhereInput[];
     NOT?: Prisma.eventos_monitoreoWhereInput | Prisma.eventos_monitoreoWhereInput[];
@@ -505,6 +536,7 @@ export type eventos_monitoreoWhereUniqueInput = Prisma.AtLeast<{
     demora?: Prisma.DecimalNullableFilter<"eventos_monitoreo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFilter<"eventos_monitoreo"> | string;
     usuario_registra?: Prisma.IntNullableFilter<"eventos_monitoreo"> | number | null;
+    asignado_a?: Prisma.IntNullableFilter<"eventos_monitoreo"> | number | null;
     created_at?: Prisma.DateTimeNullableFilter<"eventos_monitoreo"> | Date | string | null;
     updated_at?: Prisma.DateTimeNullableFilter<"eventos_monitoreo"> | Date | string | null;
     catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle?: Prisma.XOR<Prisma.Catalogo_detalleNullableScalarRelationFilter, Prisma.catalogo_detalleWhereInput> | null;
@@ -518,8 +550,10 @@ export type eventos_monitoreoWhereUniqueInput = Prisma.AtLeast<{
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.XOR<Prisma.Catalogo_detalleNullableScalarRelationFilter, Prisma.catalogo_detalleWhereInput> | null;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.XOR<Prisma.Catalogo_detalleNullableScalarRelationFilter, Prisma.catalogo_detalleWhereInput> | null;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.XOR<Prisma.Catalogo_detalleNullableScalarRelationFilter, Prisma.catalogo_detalleWhereInput> | null;
-    usuarios?: Prisma.XOR<Prisma.UsuariosNullableScalarRelationFilter, Prisma.usuariosWhereInput> | null;
-}, "id_evento" | "codigo_evento">;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.XOR<Prisma.UsuariosNullableScalarRelationFilter, Prisma.usuariosWhereInput> | null;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.XOR<Prisma.UsuariosNullableScalarRelationFilter, Prisma.usuariosWhereInput> | null;
+    casos_sop?: Prisma.XOR<Prisma.Casos_sopNullableScalarRelationFilter, Prisma.casos_sopWhereInput> | null;
+}, "id_evento" | "codigo_evento" | "id_caso_creado">;
 export type eventos_monitoreoOrderByWithAggregationInput = {
     id_evento?: Prisma.SortOrder;
     codigo_evento?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -547,6 +581,8 @@ export type eventos_monitoreoOrderByWithAggregationInput = {
     demora?: Prisma.SortOrderInput | Prisma.SortOrder;
     estado?: Prisma.SortOrder;
     usuario_registra?: Prisma.SortOrderInput | Prisma.SortOrder;
+    asignado_a?: Prisma.SortOrderInput | Prisma.SortOrder;
+    id_caso_creado?: Prisma.SortOrderInput | Prisma.SortOrder;
     created_at?: Prisma.SortOrderInput | Prisma.SortOrder;
     updated_at?: Prisma.SortOrderInput | Prisma.SortOrder;
     _count?: Prisma.eventos_monitoreoCountOrderByAggregateInput;
@@ -585,6 +621,8 @@ export type eventos_monitoreoScalarWhereWithAggregatesInput = {
     demora?: Prisma.DecimalNullableWithAggregatesFilter<"eventos_monitoreo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringWithAggregatesFilter<"eventos_monitoreo"> | string;
     usuario_registra?: Prisma.IntNullableWithAggregatesFilter<"eventos_monitoreo"> | number | null;
+    asignado_a?: Prisma.IntNullableWithAggregatesFilter<"eventos_monitoreo"> | number | null;
+    id_caso_creado?: Prisma.IntNullableWithAggregatesFilter<"eventos_monitoreo"> | number | null;
     created_at?: Prisma.DateTimeNullableWithAggregatesFilter<"eventos_monitoreo"> | Date | string | null;
     updated_at?: Prisma.DateTimeNullableWithAggregatesFilter<"eventos_monitoreo"> | Date | string | null;
 };
@@ -615,7 +653,9 @@ export type eventos_monitoreoCreateInput = {
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleInput;
-    usuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreoInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput;
+    casos_sop?: Prisma.casos_sopCreateNestedOneWithoutEventos_monitoreoInput;
 };
 export type eventos_monitoreoUncheckedCreateInput = {
     id_evento?: number;
@@ -644,6 +684,8 @@ export type eventos_monitoreoUncheckedCreateInput = {
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -674,7 +716,9 @@ export type eventos_monitoreoUpdateInput = {
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleNestedInput;
-    usuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreoNestedInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosNestedInput;
+    casos_sop?: Prisma.casos_sopUpdateOneWithoutEventos_monitoreoNestedInput;
 };
 export type eventos_monitoreoUncheckedUpdateInput = {
     id_evento?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -703,6 +747,8 @@ export type eventos_monitoreoUncheckedUpdateInput = {
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -733,6 +779,8 @@ export type eventos_monitoreoCreateManyInput = {
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -780,8 +828,14 @@ export type eventos_monitoreoUncheckedUpdateManyInput = {
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+};
+export type Eventos_monitoreoNullableScalarRelationFilter = {
+    is?: Prisma.eventos_monitoreoWhereInput | null;
+    isNot?: Prisma.eventos_monitoreoWhereInput | null;
 };
 export type Eventos_monitoreoListRelationFilter = {
     every?: Prisma.eventos_monitoreoWhereInput;
@@ -818,6 +872,8 @@ export type eventos_monitoreoCountOrderByAggregateInput = {
     demora?: Prisma.SortOrder;
     estado?: Prisma.SortOrder;
     usuario_registra?: Prisma.SortOrder;
+    asignado_a?: Prisma.SortOrder;
+    id_caso_creado?: Prisma.SortOrder;
     created_at?: Prisma.SortOrder;
     updated_at?: Prisma.SortOrder;
 };
@@ -839,6 +895,8 @@ export type eventos_monitoreoAvgOrderByAggregateInput = {
     posible_causa?: Prisma.SortOrder;
     demora?: Prisma.SortOrder;
     usuario_registra?: Prisma.SortOrder;
+    asignado_a?: Prisma.SortOrder;
+    id_caso_creado?: Prisma.SortOrder;
 };
 export type eventos_monitoreoMaxOrderByAggregateInput = {
     id_evento?: Prisma.SortOrder;
@@ -867,6 +925,8 @@ export type eventos_monitoreoMaxOrderByAggregateInput = {
     demora?: Prisma.SortOrder;
     estado?: Prisma.SortOrder;
     usuario_registra?: Prisma.SortOrder;
+    asignado_a?: Prisma.SortOrder;
+    id_caso_creado?: Prisma.SortOrder;
     created_at?: Prisma.SortOrder;
     updated_at?: Prisma.SortOrder;
 };
@@ -897,6 +957,8 @@ export type eventos_monitoreoMinOrderByAggregateInput = {
     demora?: Prisma.SortOrder;
     estado?: Prisma.SortOrder;
     usuario_registra?: Prisma.SortOrder;
+    asignado_a?: Prisma.SortOrder;
+    id_caso_creado?: Prisma.SortOrder;
     created_at?: Prisma.SortOrder;
     updated_at?: Prisma.SortOrder;
 };
@@ -918,6 +980,36 @@ export type eventos_monitoreoSumOrderByAggregateInput = {
     posible_causa?: Prisma.SortOrder;
     demora?: Prisma.SortOrder;
     usuario_registra?: Prisma.SortOrder;
+    asignado_a?: Prisma.SortOrder;
+    id_caso_creado?: Prisma.SortOrder;
+};
+export type eventos_monitoreoCreateNestedOneWithoutCasos_sopInput = {
+    create?: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutCasos_sopInput, Prisma.eventos_monitoreoUncheckedCreateWithoutCasos_sopInput>;
+    connectOrCreate?: Prisma.eventos_monitoreoCreateOrConnectWithoutCasos_sopInput;
+    connect?: Prisma.eventos_monitoreoWhereUniqueInput;
+};
+export type eventos_monitoreoUncheckedCreateNestedOneWithoutCasos_sopInput = {
+    create?: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutCasos_sopInput, Prisma.eventos_monitoreoUncheckedCreateWithoutCasos_sopInput>;
+    connectOrCreate?: Prisma.eventos_monitoreoCreateOrConnectWithoutCasos_sopInput;
+    connect?: Prisma.eventos_monitoreoWhereUniqueInput;
+};
+export type eventos_monitoreoUpdateOneWithoutCasos_sopNestedInput = {
+    create?: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutCasos_sopInput, Prisma.eventos_monitoreoUncheckedCreateWithoutCasos_sopInput>;
+    connectOrCreate?: Prisma.eventos_monitoreoCreateOrConnectWithoutCasos_sopInput;
+    upsert?: Prisma.eventos_monitoreoUpsertWithoutCasos_sopInput;
+    disconnect?: Prisma.eventos_monitoreoWhereInput | boolean;
+    delete?: Prisma.eventos_monitoreoWhereInput | boolean;
+    connect?: Prisma.eventos_monitoreoWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.eventos_monitoreoUpdateToOneWithWhereWithoutCasos_sopInput, Prisma.eventos_monitoreoUpdateWithoutCasos_sopInput>, Prisma.eventos_monitoreoUncheckedUpdateWithoutCasos_sopInput>;
+};
+export type eventos_monitoreoUncheckedUpdateOneWithoutCasos_sopNestedInput = {
+    create?: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutCasos_sopInput, Prisma.eventos_monitoreoUncheckedCreateWithoutCasos_sopInput>;
+    connectOrCreate?: Prisma.eventos_monitoreoCreateOrConnectWithoutCasos_sopInput;
+    upsert?: Prisma.eventos_monitoreoUpsertWithoutCasos_sopInput;
+    disconnect?: Prisma.eventos_monitoreoWhereInput | boolean;
+    delete?: Prisma.eventos_monitoreoWhereInput | boolean;
+    connect?: Prisma.eventos_monitoreoWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.eventos_monitoreoUpdateToOneWithWhereWithoutCasos_sopInput, Prisma.eventos_monitoreoUpdateWithoutCasos_sopInput>, Prisma.eventos_monitoreoUncheckedUpdateWithoutCasos_sopInput>;
 };
 export type eventos_monitoreoCreateNestedManyWithoutCatalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalleInput = {
     create?: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutCatalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalleInput, Prisma.eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalleInput> | Prisma.eventos_monitoreoCreateWithoutCatalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalleInput[] | Prisma.eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalleInput[];
@@ -1337,43 +1429,216 @@ export type eventos_monitoreoUncheckedUpdateManyWithoutCatalogo_detalle_eventos_
     updateMany?: Prisma.eventos_monitoreoUpdateManyWithWhereWithoutCatalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalleInput | Prisma.eventos_monitoreoUpdateManyWithWhereWithoutCatalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalleInput[];
     deleteMany?: Prisma.eventos_monitoreoScalarWhereInput | Prisma.eventos_monitoreoScalarWhereInput[];
 };
-export type eventos_monitoreoCreateNestedManyWithoutUsuariosInput = {
-    create?: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutUsuariosInput, Prisma.eventos_monitoreoUncheckedCreateWithoutUsuariosInput> | Prisma.eventos_monitoreoCreateWithoutUsuariosInput[] | Prisma.eventos_monitoreoUncheckedCreateWithoutUsuariosInput[];
-    connectOrCreate?: Prisma.eventos_monitoreoCreateOrConnectWithoutUsuariosInput | Prisma.eventos_monitoreoCreateOrConnectWithoutUsuariosInput[];
-    createMany?: Prisma.eventos_monitoreoCreateManyUsuariosInputEnvelope;
+export type eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput = {
+    create?: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput, Prisma.eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput> | Prisma.eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput[] | Prisma.eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput[];
+    connectOrCreate?: Prisma.eventos_monitoreoCreateOrConnectWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput | Prisma.eventos_monitoreoCreateOrConnectWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput[];
+    createMany?: Prisma.eventos_monitoreoCreateManyUsuarios_eventos_monitoreo_usuario_registraTousuariosInputEnvelope;
     connect?: Prisma.eventos_monitoreoWhereUniqueInput | Prisma.eventos_monitoreoWhereUniqueInput[];
 };
-export type eventos_monitoreoUncheckedCreateNestedManyWithoutUsuariosInput = {
-    create?: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutUsuariosInput, Prisma.eventos_monitoreoUncheckedCreateWithoutUsuariosInput> | Prisma.eventos_monitoreoCreateWithoutUsuariosInput[] | Prisma.eventos_monitoreoUncheckedCreateWithoutUsuariosInput[];
-    connectOrCreate?: Prisma.eventos_monitoreoCreateOrConnectWithoutUsuariosInput | Prisma.eventos_monitoreoCreateOrConnectWithoutUsuariosInput[];
-    createMany?: Prisma.eventos_monitoreoCreateManyUsuariosInputEnvelope;
+export type eventos_monitoreoCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput = {
+    create?: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput, Prisma.eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput> | Prisma.eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput[] | Prisma.eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput[];
+    connectOrCreate?: Prisma.eventos_monitoreoCreateOrConnectWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput | Prisma.eventos_monitoreoCreateOrConnectWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput[];
+    createMany?: Prisma.eventos_monitoreoCreateManyUsuarios_eventos_monitoreo_asignado_aTousuariosInputEnvelope;
     connect?: Prisma.eventos_monitoreoWhereUniqueInput | Prisma.eventos_monitoreoWhereUniqueInput[];
 };
-export type eventos_monitoreoUpdateManyWithoutUsuariosNestedInput = {
-    create?: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutUsuariosInput, Prisma.eventos_monitoreoUncheckedCreateWithoutUsuariosInput> | Prisma.eventos_monitoreoCreateWithoutUsuariosInput[] | Prisma.eventos_monitoreoUncheckedCreateWithoutUsuariosInput[];
-    connectOrCreate?: Prisma.eventos_monitoreoCreateOrConnectWithoutUsuariosInput | Prisma.eventos_monitoreoCreateOrConnectWithoutUsuariosInput[];
-    upsert?: Prisma.eventos_monitoreoUpsertWithWhereUniqueWithoutUsuariosInput | Prisma.eventos_monitoreoUpsertWithWhereUniqueWithoutUsuariosInput[];
-    createMany?: Prisma.eventos_monitoreoCreateManyUsuariosInputEnvelope;
+export type eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput = {
+    create?: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput, Prisma.eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput> | Prisma.eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput[] | Prisma.eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput[];
+    connectOrCreate?: Prisma.eventos_monitoreoCreateOrConnectWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput | Prisma.eventos_monitoreoCreateOrConnectWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput[];
+    createMany?: Prisma.eventos_monitoreoCreateManyUsuarios_eventos_monitoreo_usuario_registraTousuariosInputEnvelope;
+    connect?: Prisma.eventos_monitoreoWhereUniqueInput | Prisma.eventos_monitoreoWhereUniqueInput[];
+};
+export type eventos_monitoreoUncheckedCreateNestedManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput = {
+    create?: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput, Prisma.eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput> | Prisma.eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput[] | Prisma.eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput[];
+    connectOrCreate?: Prisma.eventos_monitoreoCreateOrConnectWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput | Prisma.eventos_monitoreoCreateOrConnectWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput[];
+    createMany?: Prisma.eventos_monitoreoCreateManyUsuarios_eventos_monitoreo_asignado_aTousuariosInputEnvelope;
+    connect?: Prisma.eventos_monitoreoWhereUniqueInput | Prisma.eventos_monitoreoWhereUniqueInput[];
+};
+export type eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput = {
+    create?: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput, Prisma.eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput> | Prisma.eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput[] | Prisma.eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput[];
+    connectOrCreate?: Prisma.eventos_monitoreoCreateOrConnectWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput | Prisma.eventos_monitoreoCreateOrConnectWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput[];
+    upsert?: Prisma.eventos_monitoreoUpsertWithWhereUniqueWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput | Prisma.eventos_monitoreoUpsertWithWhereUniqueWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput[];
+    createMany?: Prisma.eventos_monitoreoCreateManyUsuarios_eventos_monitoreo_usuario_registraTousuariosInputEnvelope;
     set?: Prisma.eventos_monitoreoWhereUniqueInput | Prisma.eventos_monitoreoWhereUniqueInput[];
     disconnect?: Prisma.eventos_monitoreoWhereUniqueInput | Prisma.eventos_monitoreoWhereUniqueInput[];
     delete?: Prisma.eventos_monitoreoWhereUniqueInput | Prisma.eventos_monitoreoWhereUniqueInput[];
     connect?: Prisma.eventos_monitoreoWhereUniqueInput | Prisma.eventos_monitoreoWhereUniqueInput[];
-    update?: Prisma.eventos_monitoreoUpdateWithWhereUniqueWithoutUsuariosInput | Prisma.eventos_monitoreoUpdateWithWhereUniqueWithoutUsuariosInput[];
-    updateMany?: Prisma.eventos_monitoreoUpdateManyWithWhereWithoutUsuariosInput | Prisma.eventos_monitoreoUpdateManyWithWhereWithoutUsuariosInput[];
+    update?: Prisma.eventos_monitoreoUpdateWithWhereUniqueWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput | Prisma.eventos_monitoreoUpdateWithWhereUniqueWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput[];
+    updateMany?: Prisma.eventos_monitoreoUpdateManyWithWhereWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput | Prisma.eventos_monitoreoUpdateManyWithWhereWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput[];
     deleteMany?: Prisma.eventos_monitoreoScalarWhereInput | Prisma.eventos_monitoreoScalarWhereInput[];
 };
-export type eventos_monitoreoUncheckedUpdateManyWithoutUsuariosNestedInput = {
-    create?: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutUsuariosInput, Prisma.eventos_monitoreoUncheckedCreateWithoutUsuariosInput> | Prisma.eventos_monitoreoCreateWithoutUsuariosInput[] | Prisma.eventos_monitoreoUncheckedCreateWithoutUsuariosInput[];
-    connectOrCreate?: Prisma.eventos_monitoreoCreateOrConnectWithoutUsuariosInput | Prisma.eventos_monitoreoCreateOrConnectWithoutUsuariosInput[];
-    upsert?: Prisma.eventos_monitoreoUpsertWithWhereUniqueWithoutUsuariosInput | Prisma.eventos_monitoreoUpsertWithWhereUniqueWithoutUsuariosInput[];
-    createMany?: Prisma.eventos_monitoreoCreateManyUsuariosInputEnvelope;
+export type eventos_monitoreoUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput = {
+    create?: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput, Prisma.eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput> | Prisma.eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput[] | Prisma.eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput[];
+    connectOrCreate?: Prisma.eventos_monitoreoCreateOrConnectWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput | Prisma.eventos_monitoreoCreateOrConnectWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput[];
+    upsert?: Prisma.eventos_monitoreoUpsertWithWhereUniqueWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput | Prisma.eventos_monitoreoUpsertWithWhereUniqueWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput[];
+    createMany?: Prisma.eventos_monitoreoCreateManyUsuarios_eventos_monitoreo_asignado_aTousuariosInputEnvelope;
     set?: Prisma.eventos_monitoreoWhereUniqueInput | Prisma.eventos_monitoreoWhereUniqueInput[];
     disconnect?: Prisma.eventos_monitoreoWhereUniqueInput | Prisma.eventos_monitoreoWhereUniqueInput[];
     delete?: Prisma.eventos_monitoreoWhereUniqueInput | Prisma.eventos_monitoreoWhereUniqueInput[];
     connect?: Prisma.eventos_monitoreoWhereUniqueInput | Prisma.eventos_monitoreoWhereUniqueInput[];
-    update?: Prisma.eventos_monitoreoUpdateWithWhereUniqueWithoutUsuariosInput | Prisma.eventos_monitoreoUpdateWithWhereUniqueWithoutUsuariosInput[];
-    updateMany?: Prisma.eventos_monitoreoUpdateManyWithWhereWithoutUsuariosInput | Prisma.eventos_monitoreoUpdateManyWithWhereWithoutUsuariosInput[];
+    update?: Prisma.eventos_monitoreoUpdateWithWhereUniqueWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput | Prisma.eventos_monitoreoUpdateWithWhereUniqueWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput[];
+    updateMany?: Prisma.eventos_monitoreoUpdateManyWithWhereWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput | Prisma.eventos_monitoreoUpdateManyWithWhereWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput[];
     deleteMany?: Prisma.eventos_monitoreoScalarWhereInput | Prisma.eventos_monitoreoScalarWhereInput[];
+};
+export type eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosNestedInput = {
+    create?: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput, Prisma.eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput> | Prisma.eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput[] | Prisma.eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput[];
+    connectOrCreate?: Prisma.eventos_monitoreoCreateOrConnectWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput | Prisma.eventos_monitoreoCreateOrConnectWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput[];
+    upsert?: Prisma.eventos_monitoreoUpsertWithWhereUniqueWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput | Prisma.eventos_monitoreoUpsertWithWhereUniqueWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput[];
+    createMany?: Prisma.eventos_monitoreoCreateManyUsuarios_eventos_monitoreo_usuario_registraTousuariosInputEnvelope;
+    set?: Prisma.eventos_monitoreoWhereUniqueInput | Prisma.eventos_monitoreoWhereUniqueInput[];
+    disconnect?: Prisma.eventos_monitoreoWhereUniqueInput | Prisma.eventos_monitoreoWhereUniqueInput[];
+    delete?: Prisma.eventos_monitoreoWhereUniqueInput | Prisma.eventos_monitoreoWhereUniqueInput[];
+    connect?: Prisma.eventos_monitoreoWhereUniqueInput | Prisma.eventos_monitoreoWhereUniqueInput[];
+    update?: Prisma.eventos_monitoreoUpdateWithWhereUniqueWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput | Prisma.eventos_monitoreoUpdateWithWhereUniqueWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput[];
+    updateMany?: Prisma.eventos_monitoreoUpdateManyWithWhereWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput | Prisma.eventos_monitoreoUpdateManyWithWhereWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput[];
+    deleteMany?: Prisma.eventos_monitoreoScalarWhereInput | Prisma.eventos_monitoreoScalarWhereInput[];
+};
+export type eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosNestedInput = {
+    create?: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput, Prisma.eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput> | Prisma.eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput[] | Prisma.eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput[];
+    connectOrCreate?: Prisma.eventos_monitoreoCreateOrConnectWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput | Prisma.eventos_monitoreoCreateOrConnectWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput[];
+    upsert?: Prisma.eventos_monitoreoUpsertWithWhereUniqueWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput | Prisma.eventos_monitoreoUpsertWithWhereUniqueWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput[];
+    createMany?: Prisma.eventos_monitoreoCreateManyUsuarios_eventos_monitoreo_asignado_aTousuariosInputEnvelope;
+    set?: Prisma.eventos_monitoreoWhereUniqueInput | Prisma.eventos_monitoreoWhereUniqueInput[];
+    disconnect?: Prisma.eventos_monitoreoWhereUniqueInput | Prisma.eventos_monitoreoWhereUniqueInput[];
+    delete?: Prisma.eventos_monitoreoWhereUniqueInput | Prisma.eventos_monitoreoWhereUniqueInput[];
+    connect?: Prisma.eventos_monitoreoWhereUniqueInput | Prisma.eventos_monitoreoWhereUniqueInput[];
+    update?: Prisma.eventos_monitoreoUpdateWithWhereUniqueWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput | Prisma.eventos_monitoreoUpdateWithWhereUniqueWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput[];
+    updateMany?: Prisma.eventos_monitoreoUpdateManyWithWhereWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput | Prisma.eventos_monitoreoUpdateManyWithWhereWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput[];
+    deleteMany?: Prisma.eventos_monitoreoScalarWhereInput | Prisma.eventos_monitoreoScalarWhereInput[];
+};
+export type eventos_monitoreoCreateWithoutCasos_sopInput = {
+    codigo_evento?: string | null;
+    fecha: Date | string;
+    hora?: Date | string | null;
+    anio?: number | null;
+    mes?: number | null;
+    semana?: number | null;
+    dia?: string | null;
+    descripcion?: string | null;
+    numero_carrera?: string | null;
+    informacion_adicional?: string | null;
+    camara_monitoreada?: string | null;
+    demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    estado?: string;
+    created_at?: Date | string | null;
+    updated_at?: Date | string | null;
+    catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_direccion_viaTocatalogo_detalleInput;
+    catalogo_detalle_eventos_monitoreo_lugar_incidenteTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_lugar_incidenteTocatalogo_detalleInput;
+    catalogo_detalle_eventos_monitoreo_modelo_mrTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_modelo_mrTocatalogo_detalleInput;
+    catalogo_detalle_eventos_monitoreo_numero_mrTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_numero_mrTocatalogo_detalleInput;
+    catalogo_detalle_eventos_monitoreo_personal_involucradoTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_personal_involucradoTocatalogo_detalleInput;
+    catalogo_detalle_eventos_monitoreo_posible_causaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_posible_causaTocatalogo_detalleInput;
+    catalogo_detalle_eventos_monitoreo_rango_horarioTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_rango_horarioTocatalogo_detalleInput;
+    catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_incidenteTocatalogo_detalleInput;
+    catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleInput;
+    catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleInput;
+    catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput;
+};
+export type eventos_monitoreoUncheckedCreateWithoutCasos_sopInput = {
+    id_evento?: number;
+    codigo_evento?: string | null;
+    fecha: Date | string;
+    hora?: Date | string | null;
+    anio?: number | null;
+    mes?: number | null;
+    semana?: number | null;
+    dia?: string | null;
+    rango_horario?: number | null;
+    tipo_incidente: number;
+    descripcion?: string | null;
+    ubicacion?: number | null;
+    tipo_via?: number | null;
+    direccion_via?: number | null;
+    lugar_incidente?: number | null;
+    modelo_mr?: number | null;
+    numero_mr?: number | null;
+    numero_carrera?: string | null;
+    personal_involucrado?: number | null;
+    tipo_causa?: number | null;
+    posible_causa?: number | null;
+    informacion_adicional?: string | null;
+    camara_monitoreada?: string | null;
+    demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    estado?: string;
+    usuario_registra?: number | null;
+    asignado_a?: number | null;
+    created_at?: Date | string | null;
+    updated_at?: Date | string | null;
+};
+export type eventos_monitoreoCreateOrConnectWithoutCasos_sopInput = {
+    where: Prisma.eventos_monitoreoWhereUniqueInput;
+    create: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutCasos_sopInput, Prisma.eventos_monitoreoUncheckedCreateWithoutCasos_sopInput>;
+};
+export type eventos_monitoreoUpsertWithoutCasos_sopInput = {
+    update: Prisma.XOR<Prisma.eventos_monitoreoUpdateWithoutCasos_sopInput, Prisma.eventos_monitoreoUncheckedUpdateWithoutCasos_sopInput>;
+    create: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutCasos_sopInput, Prisma.eventos_monitoreoUncheckedCreateWithoutCasos_sopInput>;
+    where?: Prisma.eventos_monitoreoWhereInput;
+};
+export type eventos_monitoreoUpdateToOneWithWhereWithoutCasos_sopInput = {
+    where?: Prisma.eventos_monitoreoWhereInput;
+    data: Prisma.XOR<Prisma.eventos_monitoreoUpdateWithoutCasos_sopInput, Prisma.eventos_monitoreoUncheckedUpdateWithoutCasos_sopInput>;
+};
+export type eventos_monitoreoUpdateWithoutCasos_sopInput = {
+    codigo_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    hora?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    anio?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    mes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    semana?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    dia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    numero_carrera?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    informacion_adicional?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    camara_monitoreada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    estado?: Prisma.StringFieldUpdateOperationsInput | string;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_direccion_viaTocatalogo_detalleNestedInput;
+    catalogo_detalle_eventos_monitoreo_lugar_incidenteTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_lugar_incidenteTocatalogo_detalleNestedInput;
+    catalogo_detalle_eventos_monitoreo_modelo_mrTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_modelo_mrTocatalogo_detalleNestedInput;
+    catalogo_detalle_eventos_monitoreo_numero_mrTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_numero_mrTocatalogo_detalleNestedInput;
+    catalogo_detalle_eventos_monitoreo_personal_involucradoTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_personal_involucradoTocatalogo_detalleNestedInput;
+    catalogo_detalle_eventos_monitoreo_posible_causaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_posible_causaTocatalogo_detalleNestedInput;
+    catalogo_detalle_eventos_monitoreo_rango_horarioTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_rango_horarioTocatalogo_detalleNestedInput;
+    catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneRequiredWithoutEventos_monitoreo_eventos_monitoreo_tipo_incidenteTocatalogo_detalleNestedInput;
+    catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleNestedInput;
+    catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleNestedInput;
+    catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleNestedInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosNestedInput;
+};
+export type eventos_monitoreoUncheckedUpdateWithoutCasos_sopInput = {
+    id_evento?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    hora?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    anio?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    mes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    semana?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    dia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    rango_horario?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    tipo_incidente?: Prisma.IntFieldUpdateOperationsInput | number;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ubicacion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    tipo_via?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    direccion_via?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    lugar_incidente?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    modelo_mr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    numero_mr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    numero_carrera?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    personal_involucrado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    tipo_causa?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    posible_causa?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    informacion_adicional?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    camara_monitoreada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    estado?: Prisma.StringFieldUpdateOperationsInput | string;
+    usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
 export type eventos_monitoreoCreateWithoutCatalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalleInput = {
     codigo_evento?: string | null;
@@ -1401,7 +1666,9 @@ export type eventos_monitoreoCreateWithoutCatalogo_detalle_eventos_monitoreo_dir
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleInput;
-    usuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreoInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput;
+    casos_sop?: Prisma.casos_sopCreateNestedOneWithoutEventos_monitoreoInput;
 };
 export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalleInput = {
     id_evento?: number;
@@ -1429,6 +1696,8 @@ export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_moni
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -1466,7 +1735,9 @@ export type eventos_monitoreoCreateWithoutCatalogo_detalle_eventos_monitoreo_lug
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleInput;
-    usuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreoInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput;
+    casos_sop?: Prisma.casos_sopCreateNestedOneWithoutEventos_monitoreoInput;
 };
 export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_monitoreo_lugar_incidenteTocatalogo_detalleInput = {
     id_evento?: number;
@@ -1494,6 +1765,8 @@ export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_moni
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -1531,7 +1804,9 @@ export type eventos_monitoreoCreateWithoutCatalogo_detalle_eventos_monitoreo_mod
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleInput;
-    usuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreoInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput;
+    casos_sop?: Prisma.casos_sopCreateNestedOneWithoutEventos_monitoreoInput;
 };
 export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_monitoreo_modelo_mrTocatalogo_detalleInput = {
     id_evento?: number;
@@ -1559,6 +1834,8 @@ export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_moni
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -1596,7 +1873,9 @@ export type eventos_monitoreoCreateWithoutCatalogo_detalle_eventos_monitoreo_num
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleInput;
-    usuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreoInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput;
+    casos_sop?: Prisma.casos_sopCreateNestedOneWithoutEventos_monitoreoInput;
 };
 export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_monitoreo_numero_mrTocatalogo_detalleInput = {
     id_evento?: number;
@@ -1624,6 +1903,8 @@ export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_moni
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -1661,7 +1942,9 @@ export type eventos_monitoreoCreateWithoutCatalogo_detalle_eventos_monitoreo_per
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleInput;
-    usuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreoInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput;
+    casos_sop?: Prisma.casos_sopCreateNestedOneWithoutEventos_monitoreoInput;
 };
 export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_monitoreo_personal_involucradoTocatalogo_detalleInput = {
     id_evento?: number;
@@ -1689,6 +1972,8 @@ export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_moni
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -1726,7 +2011,9 @@ export type eventos_monitoreoCreateWithoutCatalogo_detalle_eventos_monitoreo_pos
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleInput;
-    usuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreoInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput;
+    casos_sop?: Prisma.casos_sopCreateNestedOneWithoutEventos_monitoreoInput;
 };
 export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_monitoreo_posible_causaTocatalogo_detalleInput = {
     id_evento?: number;
@@ -1754,6 +2041,8 @@ export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_moni
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -1791,7 +2080,9 @@ export type eventos_monitoreoCreateWithoutCatalogo_detalle_eventos_monitoreo_ran
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleInput;
-    usuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreoInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput;
+    casos_sop?: Prisma.casos_sopCreateNestedOneWithoutEventos_monitoreoInput;
 };
 export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_monitoreo_rango_horarioTocatalogo_detalleInput = {
     id_evento?: number;
@@ -1819,6 +2110,8 @@ export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_moni
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -1856,7 +2149,9 @@ export type eventos_monitoreoCreateWithoutCatalogo_detalle_eventos_monitoreo_tip
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleInput;
-    usuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreoInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput;
+    casos_sop?: Prisma.casos_sopCreateNestedOneWithoutEventos_monitoreoInput;
 };
 export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalleInput = {
     id_evento?: number;
@@ -1884,6 +2179,8 @@ export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_moni
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -1921,7 +2218,9 @@ export type eventos_monitoreoCreateWithoutCatalogo_detalle_eventos_monitoreo_tip
     catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_incidenteTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleInput;
-    usuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreoInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput;
+    casos_sop?: Prisma.casos_sopCreateNestedOneWithoutEventos_monitoreoInput;
 };
 export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalleInput = {
     id_evento?: number;
@@ -1949,6 +2248,8 @@ export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_moni
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -1986,7 +2287,9 @@ export type eventos_monitoreoCreateWithoutCatalogo_detalle_eventos_monitoreo_tip
     catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_incidenteTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleInput;
-    usuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreoInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput;
+    casos_sop?: Prisma.casos_sopCreateNestedOneWithoutEventos_monitoreoInput;
 };
 export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalleInput = {
     id_evento?: number;
@@ -2014,6 +2317,8 @@ export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_moni
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -2051,7 +2356,9 @@ export type eventos_monitoreoCreateWithoutCatalogo_detalle_eventos_monitoreo_ubi
     catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_incidenteTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleInput;
-    usuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreoInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput;
+    casos_sop?: Prisma.casos_sopCreateNestedOneWithoutEventos_monitoreoInput;
 };
 export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalleInput = {
     id_evento?: number;
@@ -2079,6 +2386,8 @@ export type eventos_monitoreoUncheckedCreateWithoutCatalogo_detalle_eventos_moni
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -2133,6 +2442,8 @@ export type eventos_monitoreoScalarWhereInput = {
     demora?: Prisma.DecimalNullableFilter<"eventos_monitoreo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFilter<"eventos_monitoreo"> | string;
     usuario_registra?: Prisma.IntNullableFilter<"eventos_monitoreo"> | number | null;
+    asignado_a?: Prisma.IntNullableFilter<"eventos_monitoreo"> | number | null;
+    id_caso_creado?: Prisma.IntNullableFilter<"eventos_monitoreo"> | number | null;
     created_at?: Prisma.DateTimeNullableFilter<"eventos_monitoreo"> | Date | string | null;
     updated_at?: Prisma.DateTimeNullableFilter<"eventos_monitoreo"> | Date | string | null;
 };
@@ -2266,7 +2577,7 @@ export type eventos_monitoreoUpdateManyWithWhereWithoutCatalogo_detalle_eventos_
     where: Prisma.eventos_monitoreoScalarWhereInput;
     data: Prisma.XOR<Prisma.eventos_monitoreoUpdateManyMutationInput, Prisma.eventos_monitoreoUncheckedUpdateManyWithoutCatalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalleInput>;
 };
-export type eventos_monitoreoCreateWithoutUsuariosInput = {
+export type eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput = {
     codigo_evento?: string | null;
     fecha: Date | string;
     hora?: Date | string | null;
@@ -2293,8 +2604,10 @@ export type eventos_monitoreoCreateWithoutUsuariosInput = {
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosInput;
+    casos_sop?: Prisma.casos_sopCreateNestedOneWithoutEventos_monitoreoInput;
 };
-export type eventos_monitoreoUncheckedCreateWithoutUsuariosInput = {
+export type eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput = {
     id_evento?: number;
     codigo_evento?: string | null;
     fecha: Date | string;
@@ -2320,29 +2633,113 @@ export type eventos_monitoreoUncheckedCreateWithoutUsuariosInput = {
     camara_monitoreada?: string | null;
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
-export type eventos_monitoreoCreateOrConnectWithoutUsuariosInput = {
+export type eventos_monitoreoCreateOrConnectWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput = {
     where: Prisma.eventos_monitoreoWhereUniqueInput;
-    create: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutUsuariosInput, Prisma.eventos_monitoreoUncheckedCreateWithoutUsuariosInput>;
+    create: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput, Prisma.eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput>;
 };
-export type eventos_monitoreoCreateManyUsuariosInputEnvelope = {
-    data: Prisma.eventos_monitoreoCreateManyUsuariosInput | Prisma.eventos_monitoreoCreateManyUsuariosInput[];
+export type eventos_monitoreoCreateManyUsuarios_eventos_monitoreo_usuario_registraTousuariosInputEnvelope = {
+    data: Prisma.eventos_monitoreoCreateManyUsuarios_eventos_monitoreo_usuario_registraTousuariosInput | Prisma.eventos_monitoreoCreateManyUsuarios_eventos_monitoreo_usuario_registraTousuariosInput[];
     skipDuplicates?: boolean;
 };
-export type eventos_monitoreoUpsertWithWhereUniqueWithoutUsuariosInput = {
-    where: Prisma.eventos_monitoreoWhereUniqueInput;
-    update: Prisma.XOR<Prisma.eventos_monitoreoUpdateWithoutUsuariosInput, Prisma.eventos_monitoreoUncheckedUpdateWithoutUsuariosInput>;
-    create: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutUsuariosInput, Prisma.eventos_monitoreoUncheckedCreateWithoutUsuariosInput>;
+export type eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput = {
+    codigo_evento?: string | null;
+    fecha: Date | string;
+    hora?: Date | string | null;
+    anio?: number | null;
+    mes?: number | null;
+    semana?: number | null;
+    dia?: string | null;
+    descripcion?: string | null;
+    numero_carrera?: string | null;
+    informacion_adicional?: string | null;
+    camara_monitoreada?: string | null;
+    demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    estado?: string;
+    created_at?: Date | string | null;
+    updated_at?: Date | string | null;
+    catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_direccion_viaTocatalogo_detalleInput;
+    catalogo_detalle_eventos_monitoreo_lugar_incidenteTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_lugar_incidenteTocatalogo_detalleInput;
+    catalogo_detalle_eventos_monitoreo_modelo_mrTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_modelo_mrTocatalogo_detalleInput;
+    catalogo_detalle_eventos_monitoreo_numero_mrTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_numero_mrTocatalogo_detalleInput;
+    catalogo_detalle_eventos_monitoreo_personal_involucradoTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_personal_involucradoTocatalogo_detalleInput;
+    catalogo_detalle_eventos_monitoreo_posible_causaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_posible_causaTocatalogo_detalleInput;
+    catalogo_detalle_eventos_monitoreo_rango_horarioTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_rango_horarioTocatalogo_detalleInput;
+    catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_incidenteTocatalogo_detalleInput;
+    catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleInput;
+    catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleInput;
+    catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosCreateNestedOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosInput;
+    casos_sop?: Prisma.casos_sopCreateNestedOneWithoutEventos_monitoreoInput;
 };
-export type eventos_monitoreoUpdateWithWhereUniqueWithoutUsuariosInput = {
-    where: Prisma.eventos_monitoreoWhereUniqueInput;
-    data: Prisma.XOR<Prisma.eventos_monitoreoUpdateWithoutUsuariosInput, Prisma.eventos_monitoreoUncheckedUpdateWithoutUsuariosInput>;
+export type eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput = {
+    id_evento?: number;
+    codigo_evento?: string | null;
+    fecha: Date | string;
+    hora?: Date | string | null;
+    anio?: number | null;
+    mes?: number | null;
+    semana?: number | null;
+    dia?: string | null;
+    rango_horario?: number | null;
+    tipo_incidente: number;
+    descripcion?: string | null;
+    ubicacion?: number | null;
+    tipo_via?: number | null;
+    direccion_via?: number | null;
+    lugar_incidente?: number | null;
+    modelo_mr?: number | null;
+    numero_mr?: number | null;
+    numero_carrera?: string | null;
+    personal_involucrado?: number | null;
+    tipo_causa?: number | null;
+    posible_causa?: number | null;
+    informacion_adicional?: string | null;
+    camara_monitoreada?: string | null;
+    demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    estado?: string;
+    usuario_registra?: number | null;
+    id_caso_creado?: number | null;
+    created_at?: Date | string | null;
+    updated_at?: Date | string | null;
 };
-export type eventos_monitoreoUpdateManyWithWhereWithoutUsuariosInput = {
+export type eventos_monitoreoCreateOrConnectWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput = {
+    where: Prisma.eventos_monitoreoWhereUniqueInput;
+    create: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput, Prisma.eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput>;
+};
+export type eventos_monitoreoCreateManyUsuarios_eventos_monitoreo_asignado_aTousuariosInputEnvelope = {
+    data: Prisma.eventos_monitoreoCreateManyUsuarios_eventos_monitoreo_asignado_aTousuariosInput | Prisma.eventos_monitoreoCreateManyUsuarios_eventos_monitoreo_asignado_aTousuariosInput[];
+    skipDuplicates?: boolean;
+};
+export type eventos_monitoreoUpsertWithWhereUniqueWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput = {
+    where: Prisma.eventos_monitoreoWhereUniqueInput;
+    update: Prisma.XOR<Prisma.eventos_monitoreoUpdateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput, Prisma.eventos_monitoreoUncheckedUpdateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput>;
+    create: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput, Prisma.eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput>;
+};
+export type eventos_monitoreoUpdateWithWhereUniqueWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput = {
+    where: Prisma.eventos_monitoreoWhereUniqueInput;
+    data: Prisma.XOR<Prisma.eventos_monitoreoUpdateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput, Prisma.eventos_monitoreoUncheckedUpdateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput>;
+};
+export type eventos_monitoreoUpdateManyWithWhereWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput = {
     where: Prisma.eventos_monitoreoScalarWhereInput;
-    data: Prisma.XOR<Prisma.eventos_monitoreoUpdateManyMutationInput, Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuariosInput>;
+    data: Prisma.XOR<Prisma.eventos_monitoreoUpdateManyMutationInput, Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput>;
+};
+export type eventos_monitoreoUpsertWithWhereUniqueWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput = {
+    where: Prisma.eventos_monitoreoWhereUniqueInput;
+    update: Prisma.XOR<Prisma.eventos_monitoreoUpdateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput, Prisma.eventos_monitoreoUncheckedUpdateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput>;
+    create: Prisma.XOR<Prisma.eventos_monitoreoCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput, Prisma.eventos_monitoreoUncheckedCreateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput>;
+};
+export type eventos_monitoreoUpdateWithWhereUniqueWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput = {
+    where: Prisma.eventos_monitoreoWhereUniqueInput;
+    data: Prisma.XOR<Prisma.eventos_monitoreoUpdateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput, Prisma.eventos_monitoreoUncheckedUpdateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput>;
+};
+export type eventos_monitoreoUpdateManyWithWhereWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput = {
+    where: Prisma.eventos_monitoreoScalarWhereInput;
+    data: Prisma.XOR<Prisma.eventos_monitoreoUpdateManyMutationInput, Prisma.eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput>;
 };
 export type eventos_monitoreoCreateManyCatalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalleInput = {
     id_evento?: number;
@@ -2370,6 +2767,8 @@ export type eventos_monitoreoCreateManyCatalogo_detalle_eventos_monitoreo_direcc
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -2399,6 +2798,8 @@ export type eventos_monitoreoCreateManyCatalogo_detalle_eventos_monitoreo_lugar_
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -2428,6 +2829,8 @@ export type eventos_monitoreoCreateManyCatalogo_detalle_eventos_monitoreo_modelo
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -2457,6 +2860,8 @@ export type eventos_monitoreoCreateManyCatalogo_detalle_eventos_monitoreo_numero
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -2486,6 +2891,8 @@ export type eventos_monitoreoCreateManyCatalogo_detalle_eventos_monitoreo_person
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -2515,6 +2922,8 @@ export type eventos_monitoreoCreateManyCatalogo_detalle_eventos_monitoreo_posibl
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -2544,6 +2953,8 @@ export type eventos_monitoreoCreateManyCatalogo_detalle_eventos_monitoreo_rango_
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -2573,6 +2984,8 @@ export type eventos_monitoreoCreateManyCatalogo_detalle_eventos_monitoreo_tipo_i
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -2602,6 +3015,8 @@ export type eventos_monitoreoCreateManyCatalogo_detalle_eventos_monitoreo_tipo_c
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -2631,6 +3046,8 @@ export type eventos_monitoreoCreateManyCatalogo_detalle_eventos_monitoreo_tipo_v
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -2660,6 +3077,8 @@ export type eventos_monitoreoCreateManyCatalogo_detalle_eventos_monitoreo_ubicac
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
     usuario_registra?: number | null;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
@@ -2689,7 +3108,9 @@ export type eventos_monitoreoUpdateWithoutCatalogo_detalle_eventos_monitoreo_dir
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleNestedInput;
-    usuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreoNestedInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosNestedInput;
+    casos_sop?: Prisma.casos_sopUpdateOneWithoutEventos_monitoreoNestedInput;
 };
 export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalleInput = {
     id_evento?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -2717,6 +3138,8 @@ export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_moni
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -2746,6 +3169,8 @@ export type eventos_monitoreoUncheckedUpdateManyWithoutCatalogo_detalle_eventos_
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -2775,7 +3200,9 @@ export type eventos_monitoreoUpdateWithoutCatalogo_detalle_eventos_monitoreo_lug
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleNestedInput;
-    usuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreoNestedInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosNestedInput;
+    casos_sop?: Prisma.casos_sopUpdateOneWithoutEventos_monitoreoNestedInput;
 };
 export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_monitoreo_lugar_incidenteTocatalogo_detalleInput = {
     id_evento?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -2803,6 +3230,8 @@ export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_moni
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -2832,6 +3261,8 @@ export type eventos_monitoreoUncheckedUpdateManyWithoutCatalogo_detalle_eventos_
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -2861,7 +3292,9 @@ export type eventos_monitoreoUpdateWithoutCatalogo_detalle_eventos_monitoreo_mod
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleNestedInput;
-    usuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreoNestedInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosNestedInput;
+    casos_sop?: Prisma.casos_sopUpdateOneWithoutEventos_monitoreoNestedInput;
 };
 export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_monitoreo_modelo_mrTocatalogo_detalleInput = {
     id_evento?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -2889,6 +3322,8 @@ export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_moni
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -2918,6 +3353,8 @@ export type eventos_monitoreoUncheckedUpdateManyWithoutCatalogo_detalle_eventos_
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -2947,7 +3384,9 @@ export type eventos_monitoreoUpdateWithoutCatalogo_detalle_eventos_monitoreo_num
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleNestedInput;
-    usuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreoNestedInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosNestedInput;
+    casos_sop?: Prisma.casos_sopUpdateOneWithoutEventos_monitoreoNestedInput;
 };
 export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_monitoreo_numero_mrTocatalogo_detalleInput = {
     id_evento?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -2975,6 +3414,8 @@ export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_moni
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -3004,6 +3445,8 @@ export type eventos_monitoreoUncheckedUpdateManyWithoutCatalogo_detalle_eventos_
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -3033,7 +3476,9 @@ export type eventos_monitoreoUpdateWithoutCatalogo_detalle_eventos_monitoreo_per
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleNestedInput;
-    usuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreoNestedInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosNestedInput;
+    casos_sop?: Prisma.casos_sopUpdateOneWithoutEventos_monitoreoNestedInput;
 };
 export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_monitoreo_personal_involucradoTocatalogo_detalleInput = {
     id_evento?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -3061,6 +3506,8 @@ export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_moni
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -3090,6 +3537,8 @@ export type eventos_monitoreoUncheckedUpdateManyWithoutCatalogo_detalle_eventos_
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -3119,7 +3568,9 @@ export type eventos_monitoreoUpdateWithoutCatalogo_detalle_eventos_monitoreo_pos
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleNestedInput;
-    usuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreoNestedInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosNestedInput;
+    casos_sop?: Prisma.casos_sopUpdateOneWithoutEventos_monitoreoNestedInput;
 };
 export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_monitoreo_posible_causaTocatalogo_detalleInput = {
     id_evento?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -3147,6 +3598,8 @@ export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_moni
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -3176,6 +3629,8 @@ export type eventos_monitoreoUncheckedUpdateManyWithoutCatalogo_detalle_eventos_
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -3205,7 +3660,9 @@ export type eventos_monitoreoUpdateWithoutCatalogo_detalle_eventos_monitoreo_ran
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleNestedInput;
-    usuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreoNestedInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosNestedInput;
+    casos_sop?: Prisma.casos_sopUpdateOneWithoutEventos_monitoreoNestedInput;
 };
 export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_monitoreo_rango_horarioTocatalogo_detalleInput = {
     id_evento?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -3233,6 +3690,8 @@ export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_moni
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -3262,6 +3721,8 @@ export type eventos_monitoreoUncheckedUpdateManyWithoutCatalogo_detalle_eventos_
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -3291,7 +3752,9 @@ export type eventos_monitoreoUpdateWithoutCatalogo_detalle_eventos_monitoreo_tip
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleNestedInput;
-    usuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreoNestedInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosNestedInput;
+    casos_sop?: Prisma.casos_sopUpdateOneWithoutEventos_monitoreoNestedInput;
 };
 export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalleInput = {
     id_evento?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -3319,6 +3782,8 @@ export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_moni
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -3348,6 +3813,8 @@ export type eventos_monitoreoUncheckedUpdateManyWithoutCatalogo_detalle_eventos_
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -3377,7 +3844,9 @@ export type eventos_monitoreoUpdateWithoutCatalogo_detalle_eventos_monitoreo_tip
     catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneRequiredWithoutEventos_monitoreo_eventos_monitoreo_tipo_incidenteTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleNestedInput;
-    usuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreoNestedInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosNestedInput;
+    casos_sop?: Prisma.casos_sopUpdateOneWithoutEventos_monitoreoNestedInput;
 };
 export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalleInput = {
     id_evento?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -3405,6 +3874,8 @@ export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_moni
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -3434,6 +3905,8 @@ export type eventos_monitoreoUncheckedUpdateManyWithoutCatalogo_detalle_eventos_
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -3463,7 +3936,9 @@ export type eventos_monitoreoUpdateWithoutCatalogo_detalle_eventos_monitoreo_tip
     catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneRequiredWithoutEventos_monitoreo_eventos_monitoreo_tipo_incidenteTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleNestedInput;
-    usuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreoNestedInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosNestedInput;
+    casos_sop?: Prisma.casos_sopUpdateOneWithoutEventos_monitoreoNestedInput;
 };
 export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalleInput = {
     id_evento?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -3491,6 +3966,8 @@ export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_moni
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -3520,6 +3997,8 @@ export type eventos_monitoreoUncheckedUpdateManyWithoutCatalogo_detalle_eventos_
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -3549,7 +4028,9 @@ export type eventos_monitoreoUpdateWithoutCatalogo_detalle_eventos_monitoreo_ubi
     catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneRequiredWithoutEventos_monitoreo_eventos_monitoreo_tipo_incidenteTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleNestedInput;
-    usuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreoNestedInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosNestedInput;
+    casos_sop?: Prisma.casos_sopUpdateOneWithoutEventos_monitoreoNestedInput;
 };
 export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalleInput = {
     id_evento?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -3577,6 +4058,8 @@ export type eventos_monitoreoUncheckedUpdateWithoutCatalogo_detalle_eventos_moni
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -3606,10 +4089,12 @@ export type eventos_monitoreoUncheckedUpdateManyWithoutCatalogo_detalle_eventos_
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
-export type eventos_monitoreoCreateManyUsuariosInput = {
+export type eventos_monitoreoCreateManyUsuarios_eventos_monitoreo_usuario_registraTousuariosInput = {
     id_evento?: number;
     codigo_evento?: string | null;
     fecha: Date | string;
@@ -3635,10 +4120,43 @@ export type eventos_monitoreoCreateManyUsuariosInput = {
     camara_monitoreada?: string | null;
     demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: string;
+    asignado_a?: number | null;
+    id_caso_creado?: number | null;
     created_at?: Date | string | null;
     updated_at?: Date | string | null;
 };
-export type eventos_monitoreoUpdateWithoutUsuariosInput = {
+export type eventos_monitoreoCreateManyUsuarios_eventos_monitoreo_asignado_aTousuariosInput = {
+    id_evento?: number;
+    codigo_evento?: string | null;
+    fecha: Date | string;
+    hora?: Date | string | null;
+    anio?: number | null;
+    mes?: number | null;
+    semana?: number | null;
+    dia?: string | null;
+    rango_horario?: number | null;
+    tipo_incidente: number;
+    descripcion?: string | null;
+    ubicacion?: number | null;
+    tipo_via?: number | null;
+    direccion_via?: number | null;
+    lugar_incidente?: number | null;
+    modelo_mr?: number | null;
+    numero_mr?: number | null;
+    numero_carrera?: string | null;
+    personal_involucrado?: number | null;
+    tipo_causa?: number | null;
+    posible_causa?: number | null;
+    informacion_adicional?: string | null;
+    camara_monitoreada?: string | null;
+    demora?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    estado?: string;
+    usuario_registra?: number | null;
+    id_caso_creado?: number | null;
+    created_at?: Date | string | null;
+    updated_at?: Date | string | null;
+};
+export type eventos_monitoreoUpdateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput = {
     codigo_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     hora?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -3665,8 +4183,10 @@ export type eventos_monitoreoUpdateWithoutUsuariosInput = {
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleNestedInput;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleNestedInput;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_asignado_aTousuariosNestedInput;
+    casos_sop?: Prisma.casos_sopUpdateOneWithoutEventos_monitoreoNestedInput;
 };
-export type eventos_monitoreoUncheckedUpdateWithoutUsuariosInput = {
+export type eventos_monitoreoUncheckedUpdateWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput = {
     id_evento?: Prisma.IntFieldUpdateOperationsInput | number;
     codigo_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -3688,14 +4208,77 @@ export type eventos_monitoreoUncheckedUpdateWithoutUsuariosInput = {
     personal_involucrado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     tipo_causa?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     posible_causa?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    informacion_adicional?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    camara_monitoreada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    estado?: Prisma.StringFieldUpdateOperationsInput | string;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+};
+export type eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_usuario_registraTousuariosInput = {
+    id_evento?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    hora?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    anio?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    mes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    semana?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    dia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    rango_horario?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    tipo_incidente?: Prisma.IntFieldUpdateOperationsInput | number;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ubicacion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    tipo_via?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    direccion_via?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    lugar_incidente?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    modelo_mr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    numero_mr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    numero_carrera?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    personal_involucrado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    tipo_causa?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    posible_causa?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    informacion_adicional?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    camara_monitoreada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    estado?: Prisma.StringFieldUpdateOperationsInput | string;
+    asignado_a?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+};
+export type eventos_monitoreoUpdateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput = {
+    codigo_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    hora?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    anio?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    mes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    semana?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    dia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    numero_carrera?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     informacion_adicional?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     camara_monitoreada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_direccion_viaTocatalogo_detalleNestedInput;
+    catalogo_detalle_eventos_monitoreo_lugar_incidenteTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_lugar_incidenteTocatalogo_detalleNestedInput;
+    catalogo_detalle_eventos_monitoreo_modelo_mrTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_modelo_mrTocatalogo_detalleNestedInput;
+    catalogo_detalle_eventos_monitoreo_numero_mrTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_numero_mrTocatalogo_detalleNestedInput;
+    catalogo_detalle_eventos_monitoreo_personal_involucradoTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_personal_involucradoTocatalogo_detalleNestedInput;
+    catalogo_detalle_eventos_monitoreo_posible_causaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_posible_causaTocatalogo_detalleNestedInput;
+    catalogo_detalle_eventos_monitoreo_rango_horarioTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_rango_horarioTocatalogo_detalleNestedInput;
+    catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneRequiredWithoutEventos_monitoreo_eventos_monitoreo_tipo_incidenteTocatalogo_detalleNestedInput;
+    catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_causaTocatalogo_detalleNestedInput;
+    catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_tipo_viaTocatalogo_detalleNestedInput;
+    catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: Prisma.catalogo_detalleUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_ubicacionTocatalogo_detalleNestedInput;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: Prisma.usuariosUpdateOneWithoutEventos_monitoreo_eventos_monitoreo_usuario_registraTousuariosNestedInput;
+    casos_sop?: Prisma.casos_sopUpdateOneWithoutEventos_monitoreoNestedInput;
 };
-export type eventos_monitoreoUncheckedUpdateManyWithoutUsuariosInput = {
+export type eventos_monitoreoUncheckedUpdateWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput = {
     id_evento?: Prisma.IntFieldUpdateOperationsInput | number;
     codigo_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -3721,6 +4304,39 @@ export type eventos_monitoreoUncheckedUpdateManyWithoutUsuariosInput = {
     camara_monitoreada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     estado?: Prisma.StringFieldUpdateOperationsInput | string;
+    usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+};
+export type eventos_monitoreoUncheckedUpdateManyWithoutUsuarios_eventos_monitoreo_asignado_aTousuariosInput = {
+    id_evento?: Prisma.IntFieldUpdateOperationsInput | number;
+    codigo_evento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    hora?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    anio?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    mes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    semana?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    dia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    rango_horario?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    tipo_incidente?: Prisma.IntFieldUpdateOperationsInput | number;
+    descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    ubicacion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    tipo_via?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    direccion_via?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    lugar_incidente?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    modelo_mr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    numero_mr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    numero_carrera?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    personal_involucrado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    tipo_causa?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    posible_causa?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    informacion_adicional?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    camara_monitoreada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    demora?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    estado?: Prisma.StringFieldUpdateOperationsInput | string;
+    usuario_registra?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    id_caso_creado?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
@@ -3751,6 +4367,8 @@ export type eventos_monitoreoSelect<ExtArgs extends runtime.Types.Extensions.Int
     demora?: boolean;
     estado?: boolean;
     usuario_registra?: boolean;
+    asignado_a?: boolean;
+    id_caso_creado?: boolean;
     created_at?: boolean;
     updated_at?: boolean;
     catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalleArgs<ExtArgs>;
@@ -3764,7 +4382,9 @@ export type eventos_monitoreoSelect<ExtArgs extends runtime.Types.Extensions.Int
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalleArgs<ExtArgs>;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalleArgs<ExtArgs>;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalleArgs<ExtArgs>;
-    usuarios?: boolean | Prisma.eventos_monitoreo$usuariosArgs<ExtArgs>;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: boolean | Prisma.eventos_monitoreo$usuarios_eventos_monitoreo_usuario_registraTousuariosArgs<ExtArgs>;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: boolean | Prisma.eventos_monitoreo$usuarios_eventos_monitoreo_asignado_aTousuariosArgs<ExtArgs>;
+    casos_sop?: boolean | Prisma.eventos_monitoreo$casos_sopArgs<ExtArgs>;
 }, ExtArgs["result"]["eventos_monitoreo"]>;
 export type eventos_monitoreoSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
     id_evento?: boolean;
@@ -3793,6 +4413,8 @@ export type eventos_monitoreoSelectCreateManyAndReturn<ExtArgs extends runtime.T
     demora?: boolean;
     estado?: boolean;
     usuario_registra?: boolean;
+    asignado_a?: boolean;
+    id_caso_creado?: boolean;
     created_at?: boolean;
     updated_at?: boolean;
     catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalleArgs<ExtArgs>;
@@ -3806,7 +4428,9 @@ export type eventos_monitoreoSelectCreateManyAndReturn<ExtArgs extends runtime.T
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalleArgs<ExtArgs>;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalleArgs<ExtArgs>;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalleArgs<ExtArgs>;
-    usuarios?: boolean | Prisma.eventos_monitoreo$usuariosArgs<ExtArgs>;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: boolean | Prisma.eventos_monitoreo$usuarios_eventos_monitoreo_usuario_registraTousuariosArgs<ExtArgs>;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: boolean | Prisma.eventos_monitoreo$usuarios_eventos_monitoreo_asignado_aTousuariosArgs<ExtArgs>;
+    casos_sop?: boolean | Prisma.eventos_monitoreo$casos_sopArgs<ExtArgs>;
 }, ExtArgs["result"]["eventos_monitoreo"]>;
 export type eventos_monitoreoSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
     id_evento?: boolean;
@@ -3835,6 +4459,8 @@ export type eventos_monitoreoSelectUpdateManyAndReturn<ExtArgs extends runtime.T
     demora?: boolean;
     estado?: boolean;
     usuario_registra?: boolean;
+    asignado_a?: boolean;
+    id_caso_creado?: boolean;
     created_at?: boolean;
     updated_at?: boolean;
     catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalleArgs<ExtArgs>;
@@ -3848,7 +4474,9 @@ export type eventos_monitoreoSelectUpdateManyAndReturn<ExtArgs extends runtime.T
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalleArgs<ExtArgs>;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalleArgs<ExtArgs>;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalleArgs<ExtArgs>;
-    usuarios?: boolean | Prisma.eventos_monitoreo$usuariosArgs<ExtArgs>;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: boolean | Prisma.eventos_monitoreo$usuarios_eventos_monitoreo_usuario_registraTousuariosArgs<ExtArgs>;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: boolean | Prisma.eventos_monitoreo$usuarios_eventos_monitoreo_asignado_aTousuariosArgs<ExtArgs>;
+    casos_sop?: boolean | Prisma.eventos_monitoreo$casos_sopArgs<ExtArgs>;
 }, ExtArgs["result"]["eventos_monitoreo"]>;
 export type eventos_monitoreoSelectScalar = {
     id_evento?: boolean;
@@ -3877,10 +4505,12 @@ export type eventos_monitoreoSelectScalar = {
     demora?: boolean;
     estado?: boolean;
     usuario_registra?: boolean;
+    asignado_a?: boolean;
+    id_caso_creado?: boolean;
     created_at?: boolean;
     updated_at?: boolean;
 };
-export type eventos_monitoreoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id_evento" | "codigo_evento" | "fecha" | "hora" | "anio" | "mes" | "semana" | "dia" | "rango_horario" | "tipo_incidente" | "descripcion" | "ubicacion" | "tipo_via" | "direccion_via" | "lugar_incidente" | "modelo_mr" | "numero_mr" | "numero_carrera" | "personal_involucrado" | "tipo_causa" | "posible_causa" | "informacion_adicional" | "camara_monitoreada" | "demora" | "estado" | "usuario_registra" | "created_at" | "updated_at", ExtArgs["result"]["eventos_monitoreo"]>;
+export type eventos_monitoreoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id_evento" | "codigo_evento" | "fecha" | "hora" | "anio" | "mes" | "semana" | "dia" | "rango_horario" | "tipo_incidente" | "descripcion" | "ubicacion" | "tipo_via" | "direccion_via" | "lugar_incidente" | "modelo_mr" | "numero_mr" | "numero_carrera" | "personal_involucrado" | "tipo_causa" | "posible_causa" | "informacion_adicional" | "camara_monitoreada" | "demora" | "estado" | "usuario_registra" | "asignado_a" | "id_caso_creado" | "created_at" | "updated_at", ExtArgs["result"]["eventos_monitoreo"]>;
 export type eventos_monitoreoInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalleArgs<ExtArgs>;
     catalogo_detalle_eventos_monitoreo_lugar_incidenteTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_lugar_incidenteTocatalogo_detalleArgs<ExtArgs>;
@@ -3893,7 +4523,9 @@ export type eventos_monitoreoInclude<ExtArgs extends runtime.Types.Extensions.In
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalleArgs<ExtArgs>;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalleArgs<ExtArgs>;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalleArgs<ExtArgs>;
-    usuarios?: boolean | Prisma.eventos_monitoreo$usuariosArgs<ExtArgs>;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: boolean | Prisma.eventos_monitoreo$usuarios_eventos_monitoreo_usuario_registraTousuariosArgs<ExtArgs>;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: boolean | Prisma.eventos_monitoreo$usuarios_eventos_monitoreo_asignado_aTousuariosArgs<ExtArgs>;
+    casos_sop?: boolean | Prisma.eventos_monitoreo$casos_sopArgs<ExtArgs>;
 };
 export type eventos_monitoreoIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalleArgs<ExtArgs>;
@@ -3907,7 +4539,9 @@ export type eventos_monitoreoIncludeCreateManyAndReturn<ExtArgs extends runtime.
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalleArgs<ExtArgs>;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalleArgs<ExtArgs>;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalleArgs<ExtArgs>;
-    usuarios?: boolean | Prisma.eventos_monitoreo$usuariosArgs<ExtArgs>;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: boolean | Prisma.eventos_monitoreo$usuarios_eventos_monitoreo_usuario_registraTousuariosArgs<ExtArgs>;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: boolean | Prisma.eventos_monitoreo$usuarios_eventos_monitoreo_asignado_aTousuariosArgs<ExtArgs>;
+    casos_sop?: boolean | Prisma.eventos_monitoreo$casos_sopArgs<ExtArgs>;
 };
 export type eventos_monitoreoIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalleArgs<ExtArgs>;
@@ -3921,7 +4555,9 @@ export type eventos_monitoreoIncludeUpdateManyAndReturn<ExtArgs extends runtime.
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalleArgs<ExtArgs>;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalleArgs<ExtArgs>;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle?: boolean | Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalleArgs<ExtArgs>;
-    usuarios?: boolean | Prisma.eventos_monitoreo$usuariosArgs<ExtArgs>;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios?: boolean | Prisma.eventos_monitoreo$usuarios_eventos_monitoreo_usuario_registraTousuariosArgs<ExtArgs>;
+    usuarios_eventos_monitoreo_asignado_aTousuarios?: boolean | Prisma.eventos_monitoreo$usuarios_eventos_monitoreo_asignado_aTousuariosArgs<ExtArgs>;
+    casos_sop?: boolean | Prisma.eventos_monitoreo$casos_sopArgs<ExtArgs>;
 };
 export type $eventos_monitoreoPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     name: "eventos_monitoreo";
@@ -3937,7 +4573,9 @@ export type $eventos_monitoreoPayload<ExtArgs extends runtime.Types.Extensions.I
         catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle: Prisma.$catalogo_detallePayload<ExtArgs> | null;
         catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle: Prisma.$catalogo_detallePayload<ExtArgs> | null;
         catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle: Prisma.$catalogo_detallePayload<ExtArgs> | null;
-        usuarios: Prisma.$usuariosPayload<ExtArgs> | null;
+        usuarios_eventos_monitoreo_usuario_registraTousuarios: Prisma.$usuariosPayload<ExtArgs> | null;
+        usuarios_eventos_monitoreo_asignado_aTousuarios: Prisma.$usuariosPayload<ExtArgs> | null;
+        casos_sop: Prisma.$casos_sopPayload<ExtArgs> | null;
     };
     scalars: runtime.Types.Extensions.GetPayloadResult<{
         id_evento: number;
@@ -3970,6 +4608,14 @@ export type $eventos_monitoreoPayload<ExtArgs extends runtime.Types.Extensions.I
          */
         estado: string;
         usuario_registra: number | null;
+        /**
+         * * Persona de Seguridad Operativa a la que se le asignó el evento (ver EventoService.asignarEvento).
+         */
+        asignado_a: number | null;
+        /**
+         * * Caso SOP que se creó a partir de este evento (si ya se hizo el hallazgo). Único: un evento da como mucho un caso.
+         */
+        id_caso_creado: number | null;
         created_at: Date | null;
         updated_at: Date | null;
     }, ExtArgs["result"]["eventos_monitoreo"]>;
@@ -4312,7 +4958,9 @@ export interface Prisma__eventos_monitoreoClient<T, Null = never, ExtArgs extend
     catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle<T extends Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalleArgs<ExtArgs>>): Prisma.Prisma__catalogo_detalleClient<runtime.Types.Result.GetResult<Prisma.$catalogo_detallePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
     catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle<T extends Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalleArgs<ExtArgs>>): Prisma.Prisma__catalogo_detalleClient<runtime.Types.Result.GetResult<Prisma.$catalogo_detallePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
     catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle<T extends Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.eventos_monitoreo$catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalleArgs<ExtArgs>>): Prisma.Prisma__catalogo_detalleClient<runtime.Types.Result.GetResult<Prisma.$catalogo_detallePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
-    usuarios<T extends Prisma.eventos_monitoreo$usuariosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.eventos_monitoreo$usuariosArgs<ExtArgs>>): Prisma.Prisma__usuariosClient<runtime.Types.Result.GetResult<Prisma.$usuariosPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
+    usuarios_eventos_monitoreo_usuario_registraTousuarios<T extends Prisma.eventos_monitoreo$usuarios_eventos_monitoreo_usuario_registraTousuariosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.eventos_monitoreo$usuarios_eventos_monitoreo_usuario_registraTousuariosArgs<ExtArgs>>): Prisma.Prisma__usuariosClient<runtime.Types.Result.GetResult<Prisma.$usuariosPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
+    usuarios_eventos_monitoreo_asignado_aTousuarios<T extends Prisma.eventos_monitoreo$usuarios_eventos_monitoreo_asignado_aTousuariosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.eventos_monitoreo$usuarios_eventos_monitoreo_asignado_aTousuariosArgs<ExtArgs>>): Prisma.Prisma__usuariosClient<runtime.Types.Result.GetResult<Prisma.$usuariosPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
+    casos_sop<T extends Prisma.eventos_monitoreo$casos_sopArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.eventos_monitoreo$casos_sopArgs<ExtArgs>>): Prisma.Prisma__casos_sopClient<runtime.Types.Result.GetResult<Prisma.$casos_sopPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4364,6 +5012,8 @@ export interface eventos_monitoreoFieldRefs {
     readonly demora: Prisma.FieldRef<"eventos_monitoreo", 'Decimal'>;
     readonly estado: Prisma.FieldRef<"eventos_monitoreo", 'String'>;
     readonly usuario_registra: Prisma.FieldRef<"eventos_monitoreo", 'Int'>;
+    readonly asignado_a: Prisma.FieldRef<"eventos_monitoreo", 'Int'>;
+    readonly id_caso_creado: Prisma.FieldRef<"eventos_monitoreo", 'Int'>;
     readonly created_at: Prisma.FieldRef<"eventos_monitoreo", 'DateTime'>;
     readonly updated_at: Prisma.FieldRef<"eventos_monitoreo", 'DateTime'>;
 }
@@ -4925,9 +5575,9 @@ export type eventos_monitoreo$catalogo_detalle_eventos_monitoreo_ubicacionTocata
     where?: Prisma.catalogo_detalleWhereInput;
 };
 /**
- * eventos_monitoreo.usuarios
+ * eventos_monitoreo.usuarios_eventos_monitoreo_usuario_registraTousuarios
  */
-export type eventos_monitoreo$usuariosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type eventos_monitoreo$usuarios_eventos_monitoreo_usuario_registraTousuariosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the usuarios
      */
@@ -4941,6 +5591,42 @@ export type eventos_monitoreo$usuariosArgs<ExtArgs extends runtime.Types.Extensi
      */
     include?: Prisma.usuariosInclude<ExtArgs> | null;
     where?: Prisma.usuariosWhereInput;
+};
+/**
+ * eventos_monitoreo.usuarios_eventos_monitoreo_asignado_aTousuarios
+ */
+export type eventos_monitoreo$usuarios_eventos_monitoreo_asignado_aTousuariosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the usuarios
+     */
+    select?: Prisma.usuariosSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the usuarios
+     */
+    omit?: Prisma.usuariosOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.usuariosInclude<ExtArgs> | null;
+    where?: Prisma.usuariosWhereInput;
+};
+/**
+ * eventos_monitoreo.casos_sop
+ */
+export type eventos_monitoreo$casos_sopArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the casos_sop
+     */
+    select?: Prisma.casos_sopSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the casos_sop
+     */
+    omit?: Prisma.casos_sopOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.casos_sopInclude<ExtArgs> | null;
+    where?: Prisma.casos_sopWhereInput;
 };
 /**
  * eventos_monitoreo without action

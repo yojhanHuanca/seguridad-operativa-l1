@@ -269,6 +269,8 @@ export const Eventos_monitoreoScalarFieldEnum = {
     demora: 'demora',
     estado: 'estado',
     usuario_registra: 'usuario_registra',
+    asignado_a: 'asignado_a',
+    id_caso_creado: 'id_caso_creado',
     created_at: 'created_at',
     updated_at: 'updated_at'
 };
@@ -457,6 +459,9 @@ export const UsuariosScalarFieldEnum = {
     telefono: 'telefono',
     estado: 'estado',
     fecha_ingreso: 'fecha_ingreso',
+    foto_url: 'foto_url',
+    ultimo_acceso: 'ultimo_acceso',
+    es_responsable: 'es_responsable',
     id_area: 'id_area',
     id_rol: 'id_rol'
 };

@@ -1,13 +1,25 @@
 import { EventoService } from "./evento.service.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 export class EventoController {
-    static async getAll(_req, res) {
+    static async getAll(req, res) {
         try {
-            const eventos = await EventoService.getAllEventos();
-            return res.json(ApiResponse.success("Eventos obtenidos correctamente", eventos));
+            const { data, total } = await EventoService.getAllEventos(req.query);
+            const body = ApiResponse.success("Eventos obtenidos correctamente", data);
+            // `total` solo viene cuando la petición mandó page+limit; si no, la
+            // respuesta es idéntica a la de siempre (sin este campo de más).
+            return res.json(total !== undefined ? { ...body, meta: { total } } : body);
         }
         catch (error) {
             return res.status(500).json(ApiResponse.error("Error al obtener los eventos", error));
+        }
+    }
+    static async getCounts(_req, res) {
+        try {
+            const counts = await EventoService.counts();
+            return res.json(ApiResponse.success("Conteos obtenidos correctamente", counts));
+        }
+        catch (error) {
+            return res.status(500).json(ApiResponse.error("Error al obtener los conteos", error));
         }
     }
     static async getById(req, res) {
@@ -36,6 +48,24 @@ export class EventoController {
         }
         catch (error) {
             return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al actualizar el evento", error));
+        }
+    }
+    static async getAsignados(req, res) {
+        try {
+            const eventos = await EventoService.getAsignados(Number(req.params.id_usuario));
+            return res.json(ApiResponse.success("Eventos asignados obtenidos correctamente", eventos));
+        }
+        catch (error) {
+            return res.status(500).json(ApiResponse.error("Error al obtener los eventos asignados", error));
+        }
+    }
+    static async asignar(req, res) {
+        try {
+            const resultado = await EventoService.asignarEvento(Number(req.params.id), req.body);
+            return res.json(ApiResponse.success(`Evento asignado a ${resultado.nombre}`, resultado));
+        }
+        catch (error) {
+            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al asignar el evento", error));
         }
     }
     static async remove(req, res) {

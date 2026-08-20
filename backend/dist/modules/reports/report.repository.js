@@ -36,6 +36,42 @@ export class ReportRepository {
             include: LIST_INCLUDE,
         });
     }
+    /**
+     * "Mis reportes" del trabajador: solo los casos que él mismo registró.
+     *
+     * `page`/`limit` son opcionales y deben venir juntos — sin ellos se
+     * comporta exactamente igual que antes (trae todo).
+     */
+    static async findAllByCreator(id_usuario, opts) {
+        const where = { created_by: id_usuario };
+        if (opts?.filter === "activos") {
+            where.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle = { nombre: { not: "Cerrado" } };
+        }
+        else if (opts?.filter === "cerrados") {
+            where.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle = { nombre: "Cerrado" };
+        }
+        else if (opts?.filter === "pendientes_info") {
+            where.solicitudes_informacion = { some: { respondida: false } };
+        }
+        if (opts?.search) {
+            const q = opts.search;
+            where.OR = [
+                { codigo_sop: { contains: q, mode: "insensitive" } },
+                { titulo: { contains: q, mode: "insensitive" } },
+                { descripcion: { contains: q, mode: "insensitive" } },
+            ];
+        }
+        const orderBy = { created_at: "desc" };
+        if (!opts?.page || !opts?.limit) {
+            const data = await prisma.casos_sop.findMany({ where, orderBy, include: LIST_INCLUDE });
+            return { data, total: undefined };
+        }
+        const [data, total] = await Promise.all([
+            prisma.casos_sop.findMany({ where, orderBy, include: LIST_INCLUDE, skip: (opts.page - 1) * opts.limit, take: opts.limit }),
+            prisma.casos_sop.count({ where }),
+        ]);
+        return { data, total };
+    }
     static async findByCodigo(codigo_sop) {
         return prisma.casos_sop.findUnique({
             where: { codigo_sop },
@@ -53,7 +89,7 @@ export class ReportRepository {
             include: { catalogos: { select: { nombre: true } } },
         });
     }
-    static async createFullReport(dto, archivos) {
+    static async createFullReport(dto, archivos, id_usuario_creador) {
         const MAX_INTENTOS = 3;
         let intento = 0;
         while (true) {
@@ -74,7 +110,9 @@ export class ReportRepository {
                             lugar_incidente: dto.id_lugar,
                             ubicacion: dto.id_lugar_especifico ?? null,
                             descripcion: dto.descripcion,
-                            // usuario_registra: TODO(auth) — asignar req.user?.id_usuario cuando exista login real.
+                            // Anónimo real más abajo (ver `esIdentificado`): si no viene
+                            // identificado, tampoco se guarda acá quién lo registró.
+                            usuario_registra: dto.modalidad === "identificado" ? id_usuario_creador ?? null : null,
                         },
                     });
                     // El wizard no pide Área, Tipo SOP ni Tipo (No Conformidad/
@@ -138,13 +176,27 @@ export class ReportRepository {
                             nombre_reportante: esIdentificado ? nombreReportante : null,
                             correo_reportante: esIdentificado ? dto.correo_reportante?.trim().toLowerCase() || null : null,
                             telefono_reportante: esIdentificado ? dto.telefono_reportante?.trim() || null : null,
-                            // responsable_hallazgo / created_by: TODO(auth) — asignar req.user?.id_usuario cuando exista login real.
+                            // Anonimato real: si eligió modalidad anónima, no se guarda
+                            // quién lo reportó — ni oculto en pantalla, ausente de la base.
+                            created_by: esIdentificado ? id_usuario_creador ?? null : null,
+                            // Si lo registra SO directamente, esa persona ya es quien investiga.
+                            // Si viene de un Reportante, queda sin responsable hasta que SO lo evalúe.
+                            ...(esRegistroSO && id_usuario_creador ? { responsable_hallazgo: id_usuario_creador } : {}),
                             // area_responsable: lo define Seguridad Operativa al derivar el caso.
                         },
                     });
                     await tx.evento_caso.create({
                         data: { id_evento: evento.id_evento, id_caso: caso.id_caso },
                     });
+                    // Si el hallazgo se creó desde "Eventos asignados" de Monitoreo,
+                    // deja registrado a qué caso dio origen ese evento — así esa
+                    // tarjeta pasa de "Crear hallazgo" a "Ver hallazgo" y no se repite.
+                    if (dto.id_evento_monitoreo != null) {
+                        await tx.eventos_monitoreo.update({
+                            where: { id_evento: dto.id_evento_monitoreo },
+                            data: { id_caso_creado: caso.id_caso },
+                        });
+                    }
                     const actorReportante = esIdentificado ? nombreReportante || "Reportante Identificado" : "Reporte Anónimo";
                     await tx.timeline_caso.create({
                         data: {
