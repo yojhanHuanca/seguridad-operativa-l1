@@ -37,8 +37,9 @@ import { AdminAreasPage } from "@/pages/admin/AreasPage";
 import { AdminEstacionesPage } from "@/pages/admin/EstacionesPage";
 import { AdminMaterialRodantePage } from "@/pages/admin/MaterialRodantePage";
 import { AdminConfiguracionPage } from "@/pages/admin/PlaceholderPages";
-import { AdminAuditoriaPage } from "@/pages/admin/AuditoriaPage";
+import { AdminAuditoriaPage } from "@/pages/AuditoriaPage";
 import { AdminPerfilPage } from "@/pages/admin/PerfilPage";
+import { AdminImportacionPage } from "@/pages/admin/ImportacionPage";
 import { ReportantePerfilPage } from "@/pages/reports/PerfilPage";
 import { NotFoundPage } from "@/pages/NotFound";
 
@@ -50,7 +51,8 @@ export function AppRouter() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/inicio" element={<Navigate to="/" replace />} />
         <Route path="/reportes" element={<ProtectedRoute roles={["Reportante"]}><ReportanteHomePage /></ProtectedRoute>} />
-        <Route path="/reportes/nuevo" element={<ProtectedRoute roles={["Reportante"]}><NewReportPage /></ProtectedRoute>} />
+        {/* Pública, sin sesión: quien reporta llega desde un QR/URL, sin cuenta. */}
+        <Route path="/reportes/nuevo" element={<NewReportPage />} />
         <Route path="/reportes/mis-reportes" element={<ProtectedRoute roles={["Reportante"]}><MyReportsPage /></ProtectedRoute>} />
         <Route path="/reportes/notificaciones" element={<ProtectedRoute roles={["Reportante"]}><NotificationsPage /></ProtectedRoute>} />
         <Route path="/reportes/perfil" element={<ProtectedRoute roles={["Reportante"]}><ReportantePerfilPage /></ProtectedRoute>} />
@@ -93,6 +95,7 @@ export function AppRouter() {
         <Route path="/admin/catalogos" element={<ProtectedRoute roles={["Admin"]}><AdminAreasPage /></ProtectedRoute>} />
         <Route path="/admin/estaciones" element={<ProtectedRoute roles={["Admin"]}><AdminEstacionesPage /></ProtectedRoute>} />
         <Route path="/admin/material-rodante" element={<ProtectedRoute roles={["Admin"]}><AdminMaterialRodantePage /></ProtectedRoute>} />
+        <Route path="/admin/importacion" element={<ProtectedRoute roles={["Admin"]}><AdminImportacionPage /></ProtectedRoute>} />
         <Route path="/admin/auditoria" element={<ProtectedRoute roles={["Admin"]}><AdminAuditoriaPage /></ProtectedRoute>} />
         <Route path="/admin/configuracion" element={<ProtectedRoute roles={["Admin"]}><AdminConfiguracionPage /></ProtectedRoute>} />
         <Route path="/admin/perfil" element={<ProtectedRoute roles={["Admin"]}><AdminPerfilPage /></ProtectedRoute>} />
