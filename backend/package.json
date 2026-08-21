@@ -6,6 +6,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "postinstall": "prisma generate",
     "build": "tsc",
     "postbuild": "node scripts/copy-prisma-engine.mjs",
     "start": "node dist/server.js",
