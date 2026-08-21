@@ -13,6 +13,9 @@ import profileRoutes from "../modules/profile/profile.routes.js";
 import archivosRoutes from "../modules/archivos/archivo.routes.js";
 import { AuthController } from "../modules/auth/auth.controller.js";
 import { verifyToken } from "../middlewares/auth.middleware.js";
+import { CatalogController } from "../modules/catalogs/catalog.controller.js";
+import { ReportController } from "../modules/reports/report.controller.js";
+import { uploadEvidencia } from "../middlewares/upload.middleware.js";
 
 const router = Router();
 
@@ -25,6 +28,14 @@ router.get("/", (_req, res) => {
 });
 
 router.use("/auth", authRoutes);
+
+// Público, sin sesión: la persona que reporta escanea un QR/URL y llena el
+// formulario ahí mismo, no tiene ni necesita cuenta. Solo se expone crear el
+// reporte y los catálogos que llenan sus selects (tipo, ubicación, etc.) —
+// todo lo demás de /reports y /catalogs sigue exigiendo sesión más abajo.
+router.get("/catalogs", CatalogController.getAll);
+router.post("/reports", uploadEvidencia.array("evidencia", 10), ReportController.create);
+
 router.use(verifyToken);
 router.use("/users", usersRoutes);
 router.use("/catalogs", catalogsRoutes);

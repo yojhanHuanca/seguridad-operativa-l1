@@ -47,7 +47,8 @@ export function AppRouter() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/inicio" element={<Navigate to="/" replace />} />
         <Route path="/reportes" element={<ProtectedRoute roles={["Reportante"]}><ReportanteHomePage /></ProtectedRoute>} />
-        <Route path="/reportes/nuevo" element={<ProtectedRoute roles={["Reportante"]}><NewReportPage /></ProtectedRoute>} />
+        {/* Pública, sin sesión: quien reporta llega desde un QR/URL, sin cuenta. */}
+        <Route path="/reportes/nuevo" element={<NewReportPage />} />
         <Route path="/reportes/mis-reportes" element={<ProtectedRoute roles={["Reportante"]}><MyReportsPage /></ProtectedRoute>} />
         <Route path="/reportes/notificaciones" element={<ProtectedRoute roles={["Reportante"]}><NotificationsPage /></ProtectedRoute>} />
         <Route path="/reportes/perfil" element={<ProtectedRoute roles={["Reportante"]}><ReportantePerfilPage /></ProtectedRoute>} />
