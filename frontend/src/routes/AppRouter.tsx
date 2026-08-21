@@ -11,13 +11,15 @@ import { SoCasosPage } from "@/pages/seguridad/CasosPage";
 import { CaseDetailPage } from "@/pages/seguridad/CaseDetailPage";
 import { JefeHome } from "@/pages/jefe/JefeHome";
 import { PlanDetail } from "@/pages/jefe/PlanDetail";
+import { JefeIndicadoresPage } from "@/pages/jefe/IndicadoresPage";
 import { ReportExportPage } from "@/pages/seguridad/ReportExportPage";
 import { SoKpisPage } from "@/pages/seguridad/reportes/KpisPage";
 import { SoEstadisticasPage } from "@/pages/seguridad/reportes/EstadisticasPage";
 import { SoNotificacionesPage } from "@/pages/seguridad/NotificacionesPage";
 import { EventosAsignadosPage } from "@/pages/seguridad/EventosAsignadosPage";
+import { SoAlertasPage } from "@/pages/seguridad/AlertasPage";
+import { SoAuditoriaPage } from "@/pages/seguridad/AuditoriaPage";
 import {
-  SoAlertasPage,
   SoEventosPage,
   SoPlanesAccionPage,
 } from "@/pages/seguridad/PlaceholderPages";
@@ -34,8 +36,10 @@ import { AdminUsuariosPage } from "@/pages/admin/UsuariosPage";
 import { AdminAreasPage } from "@/pages/admin/AreasPage";
 import { AdminEstacionesPage } from "@/pages/admin/EstacionesPage";
 import { AdminMaterialRodantePage } from "@/pages/admin/MaterialRodantePage";
-import { AdminAuditoriaPage, AdminConfiguracionPage } from "@/pages/admin/PlaceholderPages";
+import { AdminConfiguracionPage } from "@/pages/admin/PlaceholderPages";
+import { AdminAuditoriaPage } from "@/pages/AuditoriaPage";
 import { AdminPerfilPage } from "@/pages/admin/PerfilPage";
+import { AdminImportacionPage } from "@/pages/admin/ImportacionPage";
 import { ReportantePerfilPage } from "@/pages/reports/PerfilPage";
 import { NotFoundPage } from "@/pages/NotFound";
 
@@ -58,6 +62,7 @@ export function AppRouter() {
         <Route path="/seguridad/casos" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoCasosPage /></ProtectedRoute>} />
         <Route path="/seguridad/casos/:codigo" element={<ProtectedRoute roles={["Seguridad Operativa"]}><CaseDetailPage /></ProtectedRoute>} />
         <Route path="/seguridad/alertas" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoAlertasPage /></ProtectedRoute>} />
+        <Route path="/seguridad/auditoria" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoAuditoriaPage /></ProtectedRoute>} />
         <Route path="/seguridad/planes-accion" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoPlanesAccionPage /></ProtectedRoute>} />
         <Route path="/seguridad/eventos" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoEventosPage /></ProtectedRoute>} />
         <Route path="/seguridad/reportes" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoKpisPage /></ProtectedRoute>} />
@@ -71,6 +76,7 @@ export function AppRouter() {
         {/* Portal Jefe de Área — sin login todavía; el área se elige a mano */}
         <Route path="/jefe" element={<ProtectedRoute roles={["Jefe de Área"]}><JefeHome /></ProtectedRoute>} />
         <Route path="/jefe/planes/:codigo" element={<ProtectedRoute roles={["Jefe de Área"]}><PlanDetail /></ProtectedRoute>} />
+        <Route path="/jefe/indicadores" element={<ProtectedRoute roles={["Jefe de Área"]}><JefeIndicadoresPage /></ProtectedRoute>} />
         <Route path="/jefe/perfil" element={<ProtectedRoute roles={["Jefe de Área"]}><JefePerfilPage /></ProtectedRoute>} />
 
         {/* Panel de Monitoreo — en construcción, portado desde el prototipo */}
@@ -89,6 +95,7 @@ export function AppRouter() {
         <Route path="/admin/catalogos" element={<ProtectedRoute roles={["Admin"]}><AdminAreasPage /></ProtectedRoute>} />
         <Route path="/admin/estaciones" element={<ProtectedRoute roles={["Admin"]}><AdminEstacionesPage /></ProtectedRoute>} />
         <Route path="/admin/material-rodante" element={<ProtectedRoute roles={["Admin"]}><AdminMaterialRodantePage /></ProtectedRoute>} />
+        <Route path="/admin/importacion" element={<ProtectedRoute roles={["Admin"]}><AdminImportacionPage /></ProtectedRoute>} />
         <Route path="/admin/auditoria" element={<ProtectedRoute roles={["Admin"]}><AdminAuditoriaPage /></ProtectedRoute>} />
         <Route path="/admin/configuracion" element={<ProtectedRoute roles={["Admin"]}><AdminConfiguracionPage /></ProtectedRoute>} />
         <Route path="/admin/perfil" element={<ProtectedRoute roles={["Admin"]}><AdminPerfilPage /></ProtectedRoute>} />

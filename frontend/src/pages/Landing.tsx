@@ -70,7 +70,6 @@ interface Portal {
   label: string;
   description: string;
   icon: LucideIcon;
-  /** Sin login: va directo a /reportes/nuevo en vez de /login. */
   publico?: boolean;
 }
 
@@ -207,6 +206,9 @@ function Hero() {
           >
             Ingresar al sistema <ArrowRight className="h-4 w-4" />
           </Link>
+          <a href="#video" className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/25 bg-white/5 px-6 text-[14px] font-semibold text-white backdrop-blur transition-colors hover:bg-white/15">
+            <PlayCircle className="h-4.5 w-4.5" /> Ver recorrido
+          </a>
           {/* Pública, sin login: para quien llega desde un QR/URL a reportar directo. */}
           <Link
             to="/reportes/nuevo"
@@ -214,9 +216,6 @@ function Hero() {
           >
             <FileText className="h-4.5 w-4.5" /> Reportar sin cuenta
           </Link>
-          <a href="#video" className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/25 bg-white/5 px-6 text-[14px] font-semibold text-white backdrop-blur transition-colors hover:bg-white/15">
-            <PlayCircle className="h-4.5 w-4.5" /> Ver recorrido
-          </a>
         </motion.div>
       </motion.div>
     </section>

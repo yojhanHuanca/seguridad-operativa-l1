@@ -2,6 +2,7 @@ import { type ReactNode, useEffect, useState } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import {
   Activity,
+  BarChart3,
   Calendar,
   ChevronsLeft,
   ChevronsRight,
@@ -33,6 +34,7 @@ const COLLAPSE_KEY = "sigma-jefe-sidebar-collapsed";
 
 const TITLES: Record<string, { title: string; crumb: string }> = {
   "/jefe": { title: "Mi Plan de Acción", crumb: "Inicio" },
+  "/jefe/indicadores": { title: "Indicadores", crumb: "Inicio / Indicadores" },
 };
 
 function isActive(pathname: string, search: string, to: string) {
@@ -88,6 +90,7 @@ function SidebarContent({ collapsed, onNavigate, area }: { collapsed: boolean; o
     { to: "/jefe?estado=ejecucion", label: "En Ejecución", icon: Activity, count: counts.ejecucion },
     { to: "/jefe?estado=verificacion", label: "En Verificación", icon: Timer, count: counts.verificacion },
     { to: "/jefe?estado=cerrados", label: "Cerrados", icon: CheckCircle2, count: counts.cerrados },
+    { to: "/jefe/indicadores", label: "Indicadores", icon: BarChart3 },
   ];
 
   const search = location.pathname === "/jefe" ? `?${searchParams.toString()}`.replace(/\?$/, "") : "";
@@ -199,6 +202,9 @@ export function JefeShell({ children }: { children: ReactNode }) {
               <div className="ml-auto flex items-center gap-2.5">
                 <Link to="/jefe" className="grid h-9 w-9 place-items-center rounded-lg text-ink-soft transition-colors hover:bg-surface hover:text-ink" aria-label="Mi Plan">
                   <Calendar className="h-4 w-4" />
+                </Link>
+                <Link to="/jefe/indicadores" className="grid h-9 w-9 place-items-center rounded-lg text-ink-soft transition-colors hover:bg-surface hover:text-ink" aria-label="Indicadores">
+                  <BarChart3 className="h-4 w-4" />
                 </Link>
                 <AdminPanelSwitcher />
               </div>

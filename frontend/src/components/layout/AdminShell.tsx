@@ -6,6 +6,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Cog,
+  FileSpreadsheet,
   History,
   MapPin,
   Menu,
@@ -33,6 +34,7 @@ const ITEMS: NavItem[] = [
   { to: "/admin/catalogos", label: "Gestión de Áreas", icon: Building2 },
   { to: "/admin/estaciones", label: "Gestión de Estaciones", icon: MapPin },
   { to: "/admin/material-rodante", label: "Material Rodante", icon: TrainFront },
+  { to: "/admin/importacion", label: "Importación Histórica", icon: FileSpreadsheet },
 ];
 
 const TITLES: Record<string, string> = {
@@ -41,6 +43,7 @@ const TITLES: Record<string, string> = {
   "/admin/catalogos": "Gestión de áreas",
   "/admin/estaciones": "Gestión de estaciones",
   "/admin/material-rodante": "Material rodante",
+  "/admin/importacion": "Importación histórica",
   "/admin/auditoria": "Auditoría",
   "/admin/configuracion": "Configuración",
 };
