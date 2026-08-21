@@ -54,6 +54,7 @@ export class AuditoriaRepository {
     usuario?: number;
     tabla?: string;
     accion?: AccionAuditoria;
+    search?: string;
     desde?: string;
     hasta?: string;
   }): Record<string, unknown> {
@@ -61,6 +62,15 @@ export class AuditoriaRepository {
     if (opts.usuario) where.usuario = opts.usuario;
     if (opts.tabla) where.tabla_afectada = opts.tabla;
     if (opts.accion) where.accion = opts.accion;
+    if (opts.search?.trim()) {
+      const search = opts.search.trim();
+      where.OR = [
+        { descripcion: { contains: search, mode: "insensitive" } },
+        { tabla_afectada: { contains: search, mode: "insensitive" } },
+        { usuarios: { nombre: { contains: search, mode: "insensitive" } } },
+        { usuarios: { cargo: { contains: search, mode: "insensitive" } } },
+      ];
+    }
     if (opts.desde || opts.hasta) {
       where.fecha = {
         ...(opts.desde ? { gte: new Date(`${opts.desde}T00:00:00.000Z`) } : {}),
@@ -74,6 +84,7 @@ export class AuditoriaRepository {
     usuario?: number;
     tabla?: string;
     accion?: AccionAuditoria;
+    search?: string;
     desde?: string;
     hasta?: string;
     page: number;
@@ -103,6 +114,7 @@ export class AuditoriaRepository {
     usuario?: number;
     tabla?: string;
     accion?: AccionAuditoria;
+    search?: string;
     desde?: string;
     hasta?: string;
   }) {

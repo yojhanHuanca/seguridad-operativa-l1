@@ -4,10 +4,10 @@ import { requireRoles } from "../../middlewares/auth.middleware.js";
 
 const router = Router();
 
-// Admin y Seguridad Operativa revisan trazabilidad del flujo SOP.
+// La auditoría del sistema pertenece al Centro de Administración.
 // "/export" y "/tablas" antes de cualquier ruta con parámetro para que no la capturen.
-router.get("/", requireRoles("Admin", "Seguridad Operativa"), AuditoriaController.getAll);
-router.get("/tablas", requireRoles("Admin", "Seguridad Operativa"), AuditoriaController.getTablas);
-router.get("/export", requireRoles("Admin", "Seguridad Operativa"), AuditoriaController.exportarCsv);
+router.get("/", requireRoles("Admin"), AuditoriaController.getAll);
+router.get("/tablas", requireRoles("Admin"), AuditoriaController.getTablas);
+router.get("/export", requireRoles("Admin"), AuditoriaController.exportarCsv);
 
 export default router;

@@ -4,6 +4,7 @@ import { LoginPage } from "@/pages/Login";
 import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
 import { ReportanteHomePage } from "@/pages/reports/ReportanteHomePage";
 import { NewReportPage } from "@/pages/reports/NewReportPage";
+import { ConsultarReportePage } from "@/pages/reports/ConsultarReportePage";
 import { MyReportsPage } from "@/pages/reports/MyReportsPage";
 import { NotificationsPage } from "@/pages/reports/NotificationsPage";
 import { SoDashboardPage } from "@/pages/seguridad/DashboardPage";
@@ -18,7 +19,6 @@ import { SoEstadisticasPage } from "@/pages/seguridad/reportes/EstadisticasPage"
 import { SoNotificacionesPage } from "@/pages/seguridad/NotificacionesPage";
 import { EventosAsignadosPage } from "@/pages/seguridad/EventosAsignadosPage";
 import { SoAlertasPage } from "@/pages/seguridad/AlertasPage";
-import { SoAuditoriaPage } from "@/pages/seguridad/AuditoriaPage";
 import { SoEventosPage } from "@/pages/seguridad/EventosOperativosPage";
 import { SoPlanesAccionPage } from "@/pages/seguridad/PlaceholderPages";
 import { SoPerfilPage } from "@/pages/seguridad/PerfilPage";
@@ -51,6 +51,8 @@ export function AppRouter() {
         <Route path="/reportes" element={<ProtectedRoute roles={["Reportante"]}><ReportanteHomePage /></ProtectedRoute>} />
         {/* Pública, sin sesión: quien reporta llega desde un QR/URL, sin cuenta. */}
         <Route path="/reportes/nuevo" element={<NewReportPage />} />
+        {/* Pública, sin sesión: seguimiento por código para quien reportó sin cuenta. */}
+        <Route path="/reportes/consulta" element={<ConsultarReportePage />} />
         <Route path="/reportes/mis-reportes" element={<ProtectedRoute roles={["Reportante"]}><MyReportsPage /></ProtectedRoute>} />
         <Route path="/reportes/notificaciones" element={<ProtectedRoute roles={["Reportante"]}><NotificationsPage /></ProtectedRoute>} />
         <Route path="/reportes/perfil" element={<ProtectedRoute roles={["Reportante"]}><ReportantePerfilPage /></ProtectedRoute>} />
@@ -60,7 +62,6 @@ export function AppRouter() {
         <Route path="/seguridad/casos" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoCasosPage /></ProtectedRoute>} />
         <Route path="/seguridad/casos/:codigo" element={<ProtectedRoute roles={["Seguridad Operativa"]}><CaseDetailPage /></ProtectedRoute>} />
         <Route path="/seguridad/alertas" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoAlertasPage /></ProtectedRoute>} />
-        <Route path="/seguridad/auditoria" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoAuditoriaPage /></ProtectedRoute>} />
         <Route path="/seguridad/planes-accion" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoPlanesAccionPage /></ProtectedRoute>} />
         <Route path="/seguridad/eventos" element={<ProtectedRoute roles={["Seguridad Operativa"]} requireResponsable><SoEventosPage /></ProtectedRoute>} />
         <Route path="/seguridad/reportes" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoKpisPage /></ProtectedRoute>} />

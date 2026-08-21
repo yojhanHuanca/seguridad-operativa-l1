@@ -7,6 +7,6 @@ async function fetchReports(): Promise<ReportListItem[]> {
   return data.data ?? [];
 }
 
-export function useReports() {
-  return useQuery({ queryKey: ["reports"], queryFn: fetchReports });
+export function useReports(options?: { enabled?: boolean }) {
+  return useQuery({ queryKey: ["reports"], queryFn: fetchReports, enabled: options?.enabled ?? true });
 }

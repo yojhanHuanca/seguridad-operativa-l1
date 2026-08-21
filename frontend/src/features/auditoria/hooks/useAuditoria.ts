@@ -6,6 +6,7 @@ export interface AuditoriaParams {
   usuario?: number;
   tabla?: string;
   accion?: string;
+  search?: string;
   desde?: string;
   hasta?: string;
   page: number;
@@ -23,6 +24,7 @@ async function fetchAuditoria(params: AuditoriaParams): Promise<AuditoriaPage> {
       usuario: params.usuario,
       tabla: params.tabla || undefined,
       accion: params.accion || undefined,
+      search: params.search || undefined,
       desde: params.desde || undefined,
       hasta: params.hasta || undefined,
       page: params.page,
@@ -39,6 +41,7 @@ export async function descargarAuditoriaCsv(params: Omit<AuditoriaParams, "page"
       usuario: params.usuario,
       tabla: params.tabla || undefined,
       accion: params.accion || undefined,
+      search: params.search || undefined,
       desde: params.desde || undefined,
       hasta: params.hasta || undefined,
     },

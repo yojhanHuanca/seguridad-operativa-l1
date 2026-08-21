@@ -8,6 +8,7 @@ import { AdminPanelSwitcher } from "@/features/auth/AdminPanelSwitcher";
 import { AdminViewingBanner } from "@/features/auth/AdminViewingBanner";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/features/auth/auth";
 import { useReports } from "@/features/reports/hooks/useReports";
 
 const NAV: { to: string; label: string }[] = [
@@ -17,14 +18,29 @@ const NAV: { to: string; label: string }[] = [
   { to: "/reportes/notificaciones", label: "Notificaciones" },
 ];
 
+// Sin cuenta, el seguimiento es por código (ConsultarReportePage), no por
+// "Mis reportes" — reemplaza ese ítem en vez de dejar al anónimo sin nada.
+const NAV_ANONIMO: { to: string; label: string }[] = [
+  { to: "/reportes/nuevo", label: "Nuevo reporte" },
+  { to: "/reportes/consulta", label: "Consultar mi reporte" },
+];
+
 export function ReportanteShell({ children }: { children: ReactNode }) {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-  const { data: reports } = useReports();
+  // Quien reporta sin cuenta (QR/URL pública) llega a esta misma cáscara —
+  // /reports exige sesión, así que no se pide si no hay una: antes esa
+  // llamada devolvía 401 y el interceptor global mandaba a /login incluso
+  // en la página que se supone es pública.
+  const { token } = useAuth();
+  const estaAutenticado = Boolean(token);
+  const { data: reports } = useReports({ enabled: estaAutenticado });
   const solicitudesPendientes = reports?.reduce(
     (total, report) => total + (report.solicitudes_informacion?.some((solicitud) => !solicitud.respondida) ? 1 : 0),
     0
   ) ?? 0;
+
+  const nav = estaAutenticado ? NAV : NAV_ANONIMO;
 
   const isActive = (to: string) => (to === "/reportes" ? location.pathname === "/reportes" : location.pathname.startsWith(to));
 
@@ -37,11 +53,11 @@ export function ReportanteShell({ children }: { children: ReactNode }) {
             así que la barra ya no reserva espacio muerto. */}
         <div className="mx-auto flex h-[88px] max-w-[1200px] items-center justify-between gap-4 px-4 sm:px-6">
           <div className="flex items-center gap-8">
-            <Link to="/reportes">
+            <Link to={estaAutenticado ? "/reportes" : "/"}>
               <Logo size={66} />
             </Link>
             <nav className="hidden items-center gap-1 md:flex">
-              {NAV.map((item) => (
+              {nav.map((item) => (
                 <Link
                   key={item.to}
                   to={item.to}
@@ -62,33 +78,41 @@ export function ReportanteShell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="flex items-center gap-2">
-            <AdminPanelSwitcher />
-            <SessionExitButton />
+            {estaAutenticado && (
+              <>
+                <AdminPanelSwitcher />
+                <SessionExitButton />
+              </>
+            )}
             <Link to="/reportes/nuevo" className="hidden sm:block">
               <Button size="sm">
                 <Plus className="h-4 w-4" /> Registrar reporte
               </Button>
             </Link>
-            <Link
-              to="/reportes/notificaciones"
-              className="relative grid h-9 w-9 place-items-center rounded-lg text-ink-soft transition-colors hover:bg-surface hover:text-ink"
-              aria-label="Notificaciones"
-            >
-              <Bell className="h-[18px] w-[18px]" />
-              {solicitudesPendientes > 0 && (
-                <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-warning px-1 text-[10px] font-bold leading-none text-warning-ink ring-2 ring-white">
-                  {solicitudesPendientes}
-                </span>
-              )}
-            </Link>
-            <Link
-              to="/reportes/perfil"
-              className="grid h-9 w-9 place-items-center rounded-full bg-brand-100 text-[11px] font-bold text-brand-800 transition-colors hover:bg-brand-200"
-              aria-label="Mi perfil"
-              title="Mi perfil"
-            >
-              RE
-            </Link>
+            {estaAutenticado && (
+              <>
+                <Link
+                  to="/reportes/notificaciones"
+                  className="relative grid h-9 w-9 place-items-center rounded-lg text-ink-soft transition-colors hover:bg-surface hover:text-ink"
+                  aria-label="Notificaciones"
+                >
+                  <Bell className="h-[18px] w-[18px]" />
+                  {solicitudesPendientes > 0 && (
+                    <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-warning px-1 text-[10px] font-bold leading-none text-warning-ink ring-2 ring-white">
+                      {solicitudesPendientes}
+                    </span>
+                  )}
+                </Link>
+                <Link
+                  to="/reportes/perfil"
+                  className="grid h-9 w-9 place-items-center rounded-full bg-brand-100 text-[11px] font-bold text-brand-800 transition-colors hover:bg-brand-200"
+                  aria-label="Mi perfil"
+                  title="Mi perfil"
+                >
+                  RE
+                </Link>
+              </>
+            )}
             <button
               type="button"
               onClick={() => setMenuOpen((o) => !o)}
@@ -102,7 +126,7 @@ export function ReportanteShell({ children }: { children: ReactNode }) {
 
         {menuOpen && (
           <nav className="flex flex-col gap-1 border-t border-line-soft bg-white px-4 py-3 md:hidden">
-            {NAV.map((item) => (
+            {nav.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}

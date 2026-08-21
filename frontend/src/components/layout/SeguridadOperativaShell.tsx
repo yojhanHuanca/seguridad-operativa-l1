@@ -17,7 +17,6 @@ import {
   FilePlus2,
   Folder,
   Gauge,
-  History,
   Home,
   LayoutDashboard,
   Menu,
@@ -132,7 +131,6 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
           match: (p) => p === "/seguridad/eventos-asignados",
         },
         { to: "/seguridad/alertas", label: "Alertas", icon: AlertTriangle, badge: pendingDecisions || undefined, badgeTone: "neutral", match: (p) => p === "/seguridad/alertas" },
-        { to: "/seguridad/auditoria", label: "Auditoría", icon: History, match: (p) => p === "/seguridad/auditoria" },
         // Solo para el RSO (flag es_responsable) — mismo permiso con el que ya entra a Monitoreo.
         ...(soUser?.es_responsable
           ? [{ to: "/seguridad/eventos", label: "Eventos Operativos", icon: Activity, match: (p: string) => p === "/seguridad/eventos" }]
@@ -441,7 +439,6 @@ function getPageTitle(pathname: string) {
   if (pathname.startsWith("/seguridad/casos")) return "Gestión de Casos";
   if (pathname === "/seguridad/eventos-asignados") return "Eventos asignados";
   if (pathname === "/seguridad/alertas") return "Alertas";
-  if (pathname === "/seguridad/auditoria") return "Auditoría";
   if (pathname === "/seguridad/reportes" || pathname === "/seguridad/reportes/kpis") return "KPIs";
   if (pathname === "/seguridad/reportes/estadisticas") return "Estadísticas";
   if (pathname === "/seguridad/reportes/exportar") return "Exportar Reportes";
@@ -456,7 +453,6 @@ function getBreadcrumb(pathname: string) {
   if (pathname.startsWith("/seguridad/casos")) return "Inicio / Casos";
   if (pathname === "/seguridad/eventos-asignados") return "Inicio / Eventos asignados";
   if (pathname === "/seguridad/alertas") return "Inicio / Alertas";
-  if (pathname === "/seguridad/auditoria") return "Inicio / Auditoría";
   if (pathname === "/seguridad/reportes" || pathname === "/seguridad/reportes/kpis") return "Inicio / Reportes / KPIs";
   if (pathname === "/seguridad/reportes/estadisticas") return "Inicio / Reportes / Estadísticas";
   if (pathname === "/seguridad/reportes/exportar") return "Inicio / Reportes / Exportar";

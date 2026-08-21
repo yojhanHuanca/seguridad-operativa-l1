@@ -2,7 +2,7 @@ import { AuditoriaRepository, type AccionAuditoria, type NuevaAuditoria } from "
 
 const ACCIONES_VALIDAS: AccionAuditoria[] = ["crear", "editar", "eliminar", "login", "login_fallido"];
 
-type FiltroQuery = { usuario?: string; tabla?: string; accion?: string; desde?: string; hasta?: string };
+type FiltroQuery = { usuario?: string; tabla?: string; accion?: string; search?: string; desde?: string; hasta?: string };
 
 function parseFiltros(query: FiltroQuery) {
   const usuario = Number(query.usuario);
@@ -11,6 +11,7 @@ function parseFiltros(query: FiltroQuery) {
     ...(Number.isInteger(usuario) && usuario > 0 ? { usuario } : {}),
     ...(query.tabla ? { tabla: query.tabla } : {}),
     ...(accion ? { accion } : {}),
+    ...(query.search ? { search: query.search } : {}),
     ...(query.desde ? { desde: query.desde } : {}),
     ...(query.hasta ? { hasta: query.hasta } : {}),
   };

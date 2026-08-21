@@ -1,11 +1,10 @@
-import { useState } from "react";
-import { ChevronDown, ChevronLeft, ChevronRight, Download, History, LogIn, PlusCircle, ShieldAlert, Trash2, UserCog } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ChevronDown, ChevronLeft, ChevronRight, Download, History, LogIn, PlusCircle, Search, ShieldAlert, Trash2, UserCog, UserRound } from "lucide-react";
 import { AdminShell } from "@/components/layout/AdminShell";
 import { Button } from "@/design-system/primitives/Button";
 import { Input, Select } from "@/design-system/primitives/Input";
 import { Card } from "@/components/ui/card";
-import { descargarAuditoriaCsv, useAuditoria, useAuditoriaTablas } from "@/features/auditoria/hooks/useAuditoria";
-import { useUsersBasicos } from "@/features/users/hooks/useUsersBasicos";
+import { descargarAuditoriaCsv, useAuditoria } from "@/features/auditoria/hooks/useAuditoria";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { AccionAuditoria, AuditoriaItem } from "@/features/auditoria/types";
@@ -36,6 +35,22 @@ const ACCION_TONE: Record<AccionAuditoria, string> = {
   login_fallido: "bg-orange-50 text-orange-700",
 };
 
+const TABLA_LABEL: Record<string, string> = {
+  auditoria: "Auditoría",
+  casos_sop: "Casos SOP",
+  caso_sop: "Casos SOP",
+  planes_accion: "Planes de Acción",
+  importacion_historica: "Importación Histórica",
+  usuarios: "Usuarios",
+  roles: "Roles",
+  catalogos: "Catálogos",
+  catalogo_detalle: "Catálogos",
+  eventos_operativos: "Eventos Operativos",
+  eventos_monitoreo: "Monitoreo",
+  auth: "Sistema",
+  sesiones: "Sesiones",
+};
+
 /** Nombre de campo → etiqueta legible, para el detalle de cambios. Lo que no está acá se muestra tal cual. */
 const CAMPO_LABEL: Record<string, string> = {
   nombre: "Nombre",
@@ -52,6 +67,26 @@ function formatValor(v: unknown): string {
   if (v === null || v === undefined || v === "") return "—";
   if (typeof v === "boolean") return v ? "Sí" : "No";
   return String(v);
+}
+
+function capitalizar(valor: string) {
+  return valor
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (letra) => letra.toUpperCase());
+}
+
+function destinoRegistro(registro: AuditoriaItem): string {
+  if (registro.accion === "login" || registro.accion === "login_fallido") return "Centro de Administración";
+
+  const codigo = registro.descripcion?.match(/\b(?:SOP|EXP|PLAN|PLA)[\s-]?\d{1,6}(?:-\d{2,4})?\b/i)?.[0];
+  if (codigo) return codigo;
+
+  const tabla = TABLA_LABEL[registro.tabla_afectada] ?? capitalizar(registro.tabla_afectada);
+  return registro.id_registro != null ? `${tabla} #${registro.id_registro}` : tabla;
+}
+
+function detalleRegistro(registro: AuditoriaItem): string {
+  return registro.descripcion?.trim() || "—";
 }
 
 /** Antes/después lado a lado — lo que de verdad importa en una auditoría "de empresa grande": qué cambió exactamente. */
@@ -85,6 +120,7 @@ function FilaAuditoria({ registro }: { registro: AuditoriaItem }) {
   const [abierto, setAbierto] = useState(false);
   const Icon = ACCION_ICON[registro.accion];
   const tieneDetalle = Boolean(registro.datos_previos || registro.datos_nuevos || registro.ip || registro.user_agent);
+  const actorCargo = registro.usuarios.cargo || "Administrador";
 
   return (
     <>
@@ -92,18 +128,23 @@ function FilaAuditoria({ registro }: { registro: AuditoriaItem }) {
         className={cn("border-b border-line-soft last:border-0 hover:bg-surface", tieneDetalle && "cursor-pointer")}
         onClick={() => tieneDetalle && setAbierto((v) => !v)}
       >
-        <td className="px-4 py-3 whitespace-nowrap text-ink-soft">{formatDateTime(registro.fecha)}</td>
-        <td className="px-4 py-3">
-          <p className="font-medium text-ink">{registro.usuarios.nombre}</p>
-          {registro.usuarios.cargo && <p className="text-[10.5px] text-ink-faint">{registro.usuarios.cargo}</p>}
-        </td>
+        <td className="px-4 py-4 align-top whitespace-nowrap font-mono text-[11.5px] leading-relaxed text-ink-soft">{formatDateTime(registro.fecha)}</td>
         <td className="px-4 py-3">
           <span className={cn("inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[10.5px] font-medium", ACCION_TONE[registro.accion])}>
             <Icon className="h-3.5 w-3.5" /> {ACCION_LABEL[registro.accion]}
           </span>
         </td>
-        <td className="px-4 py-3 font-mono text-[10.5px] text-ink-soft">{registro.tabla_afectada}</td>
-        <td className="px-4 py-3 text-ink-soft">{registro.descripcion ?? "—"}</td>
+        <td className="px-4 py-3">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <UserRound className="h-4 w-4 shrink-0 text-ink-faint" />
+            <div className="min-w-0">
+              <p className="font-semibold text-ink">{registro.usuarios.nombre}</p>
+              <p className="text-[11.5px] text-ink-faint">({actorCargo})</p>
+            </div>
+          </div>
+        </td>
+        <td className="px-4 py-3 font-semibold text-ink">{destinoRegistro(registro)}</td>
+        <td className="px-4 py-3 text-ink-soft">{detalleRegistro(registro)}</td>
         <td className="px-4 py-3 text-right">
           {tieneDetalle && (
             <ChevronDown className={cn("ml-auto h-4 w-4 text-ink-faint transition-transform", abierto && "rotate-180")} />
@@ -131,23 +172,23 @@ function FilaAuditoria({ registro }: { registro: AuditoriaItem }) {
 }
 
 export function AuditoriaPanelContent() {
-  const { data: usuarios = [] } = useUsersBasicos();
-  const { data: tablas = [] } = useAuditoriaTablas();
-
-  const [usuarioFiltro, setUsuarioFiltro] = useState("todos");
-  const [tablaFiltro, setTablaFiltro] = useState("todas");
   const [accionFiltro, setAccionFiltro] = useState("todas");
-  const [desde, setDesde] = useState("");
-  const [hasta, setHasta] = useState("");
+  const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [pagina, setPagina] = useState(1);
   const [exportando, setExportando] = useState(false);
 
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setDebouncedQuery(query.trim());
+      setPagina(1);
+    }, 300);
+    return () => window.clearTimeout(timeout);
+  }, [query]);
+
   const filtrosActivos = {
-    usuario: usuarioFiltro !== "todos" ? Number(usuarioFiltro) : undefined,
-    tabla: tablaFiltro !== "todas" ? tablaFiltro : undefined,
     accion: accionFiltro !== "todas" ? accionFiltro : undefined,
-    desde: desde || undefined,
-    hasta: hasta || undefined,
+    search: debouncedQuery || undefined,
   };
 
   const { data: pageData, isLoading } = useAuditoria({ ...filtrosActivos, page: pagina, limit: POR_PAGINA });
@@ -156,7 +197,7 @@ export function AuditoriaPanelContent() {
   const total = pageData?.total ?? 0;
   const totalPaginas = Math.max(1, Math.ceil(total / POR_PAGINA));
   const paginaActual = Math.min(pagina, totalPaginas);
-  const hayFiltros = usuarioFiltro !== "todos" || tablaFiltro !== "todas" || accionFiltro !== "todas" || Boolean(desde) || Boolean(hasta);
+  const hayFiltros = accionFiltro !== "todas" || Boolean(debouncedQuery);
 
   async function exportar() {
     setExportando(true);
@@ -171,41 +212,25 @@ export function AuditoriaPanelContent() {
     <>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="font-display text-[20px] font-bold text-ink">Auditoría</h1>
-          <p className="mt-1 text-[12.5px] text-ink-quiet">{total} acciones registradas</p>
+          <h1 className="font-display text-[24px] font-bold text-ink">Auditoría del Sistema</h1>
+          <p className="mt-1 text-[13px] text-ink-quiet">{total} registros · Trazabilidad completa de acciones</p>
         </div>
         <Button variant="outline" size="sm" onClick={exportar} disabled={exportando || total === 0}>
           <Download className="h-3.5 w-3.5" /> {exportando ? "Exportando..." : "Exportar CSV"}
         </Button>
       </div>
 
-      <div className="mt-5 grid gap-3 rounded-2xl border border-line bg-white p-4 sm:grid-cols-2 lg:grid-cols-5">
-        <Select
-          value={usuarioFiltro}
-          onChange={(e) => {
-            setUsuarioFiltro(e.target.value);
-            setPagina(1);
-          }}
-          aria-label="Filtrar por usuario"
-        >
-          <option value="todos">Todos los usuarios</option>
-          {usuarios.map((u) => (
-            <option key={u.id_usuario} value={u.id_usuario}>{u.nombre}</option>
-          ))}
-        </Select>
-        <Select
-          value={tablaFiltro}
-          onChange={(e) => {
-            setTablaFiltro(e.target.value);
-            setPagina(1);
-          }}
-          aria-label="Filtrar por tabla"
-        >
-          <option value="todas">Todas las tablas</option>
-          {tablas.map((t) => (
-            <option key={t} value={t}>{t}</option>
-          ))}
-        </Select>
+      <div className="mt-8 grid gap-3 rounded-2xl border border-line bg-white p-4 md:grid-cols-[minmax(260px,1fr)_250px]">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Buscar por actor, destino o detalle..."
+            className="pl-10"
+            aria-label="Buscar auditoría"
+          />
+        </div>
         <Select
           value={accionFiltro}
           onChange={(e) => {
@@ -219,24 +244,6 @@ export function AuditoriaPanelContent() {
             <option key={a} value={a}>{ACCION_LABEL[a]}</option>
           ))}
         </Select>
-        <Input
-          type="date"
-          value={desde}
-          onChange={(e) => {
-            setDesde(e.target.value);
-            setPagina(1);
-          }}
-          aria-label="Desde"
-        />
-        <Input
-          type="date"
-          value={hasta}
-          onChange={(e) => {
-            setHasta(e.target.value);
-            setPagina(1);
-          }}
-          aria-label="Hasta"
-        />
       </div>
 
       {isLoading ? (
@@ -251,15 +258,15 @@ export function AuditoriaPanelContent() {
         </Card>
       ) : (
         <>
-          <Card className="mt-4 overflow-hidden p-0">
+          <Card className="mt-7 overflow-hidden rounded-2xl border border-line bg-white p-0">
             <div className="overflow-x-auto">
-              <table className="min-w-[900px] w-full text-left text-[12.5px]">
+              <table className="min-w-[1040px] w-full text-left text-[13px]">
                 <thead>
-                  <tr className="border-b border-line bg-surface text-[11px] text-ink-quiet">
-                    <th className="px-4 py-3 font-semibold">Fecha</th>
-                    <th className="px-4 py-3 font-semibold">Usuario</th>
+                  <tr className="border-b border-line bg-surface text-[12px] text-ink-quiet">
+                    <th className="px-4 py-4 font-semibold">Fecha/Hora</th>
                     <th className="px-4 py-3 font-semibold">Acción</th>
-                    <th className="px-4 py-3 font-semibold">Tabla</th>
+                    <th className="px-4 py-3 font-semibold">Actor</th>
+                    <th className="px-4 py-3 font-semibold">Destino</th>
                     <th className="px-4 py-3 font-semibold">Detalle</th>
                     <th className="px-4 py-3 font-semibold" />
                   </tr>
