@@ -70,10 +70,12 @@ interface Portal {
   label: string;
   description: string;
   icon: LucideIcon;
+  /** Sin login: va directo a /reportes/nuevo en vez de /login. */
+  publico?: boolean;
 }
 
 const PORTALES: Portal[] = [
-  { label: "Reporte del trabajador", description: "Registro de condiciones y actos inseguros, con seguimiento del estado de cada reporte.", icon: FileText },
+  { label: "Reporte del trabajador", description: "Registro de condiciones y actos inseguros, con seguimiento del estado de cada reporte.", icon: FileText, publico: true },
   { label: "Seguridad Operativa", description: "Evaluación de riesgos, investigación de casos y control de planes de acción.", icon: ShieldCheck },
   { label: "Responsables de área", description: "Ejecución y seguimiento de medidas correctivas asignadas a cada área.", icon: Users },
   { label: "Monitoreo operacional", description: "Registro y análisis de eventos operativos de la Línea 1 en tiempo real.", icon: ActivitySquare },
@@ -205,6 +207,13 @@ function Hero() {
           >
             Ingresar al sistema <ArrowRight className="h-4 w-4" />
           </Link>
+          {/* Pública, sin login: para quien llega desde un QR/URL a reportar directo. */}
+          <Link
+            to="/reportes/nuevo"
+            className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/25 bg-white/5 px-6 text-[14px] font-semibold text-white backdrop-blur transition-colors hover:bg-white/15"
+          >
+            <FileText className="h-4.5 w-4.5" /> Reportar sin cuenta
+          </Link>
           <a href="#video" className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/25 bg-white/5 px-6 text-[14px] font-semibold text-white backdrop-blur transition-colors hover:bg-white/15">
             <PlayCircle className="h-4.5 w-4.5" /> Ver recorrido
           </a>
@@ -252,16 +261,16 @@ function PortalesSection() {
       <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={staggerContainer} className="grid border-y border-line sm:grid-cols-2 lg:grid-cols-3">
         {PORTALES.map((portal) => (
           <motion.div key={portal.label} variants={riseItem} className="group min-h-[220px] border-b border-line p-6 sm:border-r lg:p-7">
-              <div className="flex h-full flex-col">
+              <Link to={portal.publico ? "/reportes/nuevo" : "/login"} className="flex h-full flex-col">
                 <div className="grid h-11 w-11 place-items-center rounded-lg bg-brand-50 text-brand-700 transition-colors group-hover:bg-brand-700 group-hover:text-white">
                   <portal.icon className="h-6 w-6" />
                 </div>
                 <h3 className="mt-4 text-[16px] font-semibold text-ink">{portal.label}</h3>
                 <p className="mt-1.5 flex-1 text-[13px] leading-relaxed text-ink-quiet">{portal.description}</p>
                 <span className="mt-4 inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase text-brand-700">
-                  Módulo integrado <ShieldCheck className="h-3.5 w-3.5" />
+                  {portal.publico ? "Sin cuenta" : "Módulo integrado"} <ShieldCheck className="h-3.5 w-3.5" />
                 </span>
-              </div>
+              </Link>
           </motion.div>
         ))}
       </motion.div>
@@ -361,7 +370,7 @@ function Footer() {
             <ul className="mt-3 space-y-2">
               {PORTALES.map((portal) => (
                 <li key={portal.label}>
-                  <Link to="/login" className="text-[13px] text-white/70 hover:text-white">{portal.label}</Link>
+                  <Link to={portal.publico ? "/reportes/nuevo" : "/login"} className="text-[13px] text-white/70 hover:text-white">{portal.label}</Link>
                 </li>
               ))}
             </ul>
