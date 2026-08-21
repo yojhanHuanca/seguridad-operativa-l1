@@ -56,6 +56,14 @@ model auditoria {
   descripcion    String?
   usuario        Int
   ip             String?   @db.VarChar(50)
+  user_agent     String?   @db.VarChar(300)
+  // Mismo nombre de columna que `bitacora` (tabla técnica ya existente pero
+  // sin usar) para no inventar una segunda convención: valor del registro
+  // justo antes y justo después de la acción, solo en las acciones que
+  // modifican campos (crear/editar). Null en acciones de solo lectura o de
+  // sesión (login).
+  datos_previos  Json?
+  datos_nuevos   Json?
   fecha          DateTime? @default(now()) @db.Timestamp(6)
   usuarios       usuarios  @relation(fields: [usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_auditoria_usuario")
 

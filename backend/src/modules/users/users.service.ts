@@ -1,6 +1,15 @@
 import { UserRepository } from "./users.repository.js";
 import { BcryptHelper } from "../../utils/bcrypt.js";
 import { createUserSchema, idParamSchema, updateUserSchema } from "./users.schema.js";
+import { AuditoriaService, diffCampos } from "../auditoria/auditoria.service.js";
+import type { Actor } from "../../utils/actor.js";
+
+/** Campos sensibles que nunca deben llegar al registro de auditoría en texto plano. */
+const CAMPOS_SENSIBLES = new Set(["password", "password_hash"]);
+
+function paraAuditoria(usuario: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(usuario).filter(([key]) => !CAMPOS_SENSIBLES.has(key)));
+}
 
 /**
  * Zod deja `key?: T | undefined` en el tipo inferido para todo campo
@@ -52,7 +61,7 @@ export class UsersService {
     return user;
   }
 
-    static async createUser(rawBody: unknown) {
+    static async createUser(rawBody: unknown, actor?: Actor, ip?: string | null) {
         const data = createUserSchema.parse(rawBody);
 
         // Verificar correo electrónico
@@ -67,16 +76,27 @@ export class UsersService {
 
 
         // Crear el ususario
-        return await UserRepository.createWithGeneratedCode(sinIndefinidos({
+        const creado = await UserRepository.createWithGeneratedCode(sinIndefinidos({
             ...data,
             password_hash,
         }));
 
+        if (actor) {
+            await AuditoriaService.registrar({
+                tabla: "usuarios",
+                id_registro: creado.id_usuario,
+                accion: "crear",
+                descripcion: `Creó al usuario ${creado.nombre} (${creado.correo})`,
+                usuario: actor.id_usuario,
+                ip,
+                despues: paraAuditoria(creado as unknown as Record<string, unknown>),
+            });
+        }
 
-
+        return creado;
     }
 
-    static async updateUser(rawId: unknown, rawBody: unknown) {
+    static async updateUser(rawId: unknown, rawBody: unknown, actor?: Actor, ip?: string | null) {
         const id = idParamSchema.parse(rawId);
         const data = updateUserSchema.parse(rawBody);
 
@@ -97,9 +117,28 @@ export class UsersService {
         const { password, ...rest } = data;
         const password_hash = password ? await BcryptHelper.hash(password) : undefined;
 
-        return await UserRepository.update(id, sinIndefinidos({
+        const actualizado = await UserRepository.update(id, sinIndefinidos({
             ...rest,
             ...(password_hash ? { password_hash } : {}),
         }));
+
+        if (actor) {
+            const cambios = diffCampos(
+                paraAuditoria(usuario as unknown as Record<string, unknown>),
+                paraAuditoria(actualizado as unknown as Record<string, unknown>)
+            );
+            const resumen = cambios ? `Campos modificados: ${Object.keys(cambios.despues).join(", ")}` : "Sin cambios en los campos auditados";
+            await AuditoriaService.registrar({
+                tabla: "usuarios",
+                id_registro: id,
+                accion: "editar",
+                descripcion: `Editó al usuario ${actualizado.nombre}. ${resumen}`,
+                usuario: actor.id_usuario,
+                ip,
+                ...(cambios ? { antes: cambios.antes, despues: cambios.despues } : {}),
+            });
+        }
+
+        return actualizado;
     }
 }

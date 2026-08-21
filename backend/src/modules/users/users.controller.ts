@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { ZodError } from "zod";
 import { UsersService } from "./users.service.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
+import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
 
 function isZodError(error: unknown): error is ZodError {
   return error instanceof ZodError;
@@ -58,7 +59,7 @@ export class UsersController {
 
   static async create(req: Request, res: Response) {
     try {
-      const user = await UsersService.createUser(req.body);
+      const user = await UsersService.createUser(req.body, (req as AuthenticatedRequest).user, req.ip);
       return res.status(201).json(ApiResponse.success("Usuario creado correctamente", user));
     } catch (error) {
       if (isZodError(error)) {
@@ -70,7 +71,7 @@ export class UsersController {
 
   static async update(req: Request, res: Response) {
     try {
-      const user = await UsersService.updateUser(req.params.id, req.body);
+      const user = await UsersService.updateUser(req.params.id, req.body, (req as AuthenticatedRequest).user, req.ip);
       return res.json(ApiResponse.success("Usuario actualizado correctamente", user));
     } catch (error) {
       if (isZodError(error)) {

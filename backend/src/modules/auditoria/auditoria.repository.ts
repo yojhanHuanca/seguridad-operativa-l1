@@ -1,4 +1,10 @@
 import prisma from "../../lib/prisma.js";
+import type { Prisma } from "../../generated/prisma/client.js";
+
+/** Los objetos que llegan de Prisma pueden traer `Date`/`Decimal`; esto los deja en JSON puro. */
+function aJson(valor: Record<string, unknown>): Prisma.InputJsonValue {
+  return JSON.parse(JSON.stringify(valor)) as Prisma.InputJsonValue;
+}
 
 /** Acciones que se registran — mismo vocabulario en todos los módulos. */
 export type AccionAuditoria = "crear" | "editar" | "eliminar" | "login" | "login_fallido";
@@ -10,6 +16,10 @@ export interface NuevaAuditoria {
   descripcion?: string;
   usuario: number;
   ip?: string | null | undefined;
+  user_agent?: string | null | undefined;
+  /** Estado del registro justo antes/después de la acción — solo en crear/editar. */
+  antes?: Record<string, unknown> | null;
+  despues?: Record<string, unknown> | null;
 }
 
 export class AuditoriaRepository {
@@ -29,6 +39,9 @@ export class AuditoriaRepository {
           descripcion: n.descripcion ?? null,
           usuario: n.usuario,
           ip: n.ip ?? null,
+          user_agent: n.user_agent ?? null,
+          ...(n.antes ? { datos_previos: aJson(n.antes) } : {}),
+          ...(n.despues ? { datos_nuevos: aJson(n.despues) } : {}),
         },
       });
     } catch (error) {
@@ -36,23 +49,37 @@ export class AuditoriaRepository {
     }
   }
 
-  static async findAll(opts: {
+  /** Construye el `where` una sola vez — lo usan el listado paginado y la exportación. */
+  private static buildWhere(opts: {
     usuario?: number;
     tabla?: string;
+    accion?: AccionAuditoria;
     desde?: string;
     hasta?: string;
-    page: number;
-    limit: number;
-  }) {
+  }): Record<string, unknown> {
     const where: Record<string, unknown> = {};
     if (opts.usuario) where.usuario = opts.usuario;
     if (opts.tabla) where.tabla_afectada = opts.tabla;
+    if (opts.accion) where.accion = opts.accion;
     if (opts.desde || opts.hasta) {
       where.fecha = {
         ...(opts.desde ? { gte: new Date(`${opts.desde}T00:00:00.000Z`) } : {}),
         ...(opts.hasta ? { lte: new Date(`${opts.hasta}T23:59:59.999Z`) } : {}),
       };
     }
+    return where;
+  }
+
+  static async findAll(opts: {
+    usuario?: number;
+    tabla?: string;
+    accion?: AccionAuditoria;
+    desde?: string;
+    hasta?: string;
+    page: number;
+    limit: number;
+  }) {
+    const where = AuditoriaRepository.buildWhere(opts);
 
     const [data, total] = await Promise.all([
       prisma.auditoria.findMany({
@@ -65,6 +92,27 @@ export class AuditoriaRepository {
       prisma.auditoria.count({ where }),
     ]);
     return { data, total };
+  }
+
+  /**
+   * Igual que `findAll`, sin paginar: para la exportación a CSV. Tope duro de
+   * 20 000 filas — un export más grande que eso ya no es "revisar el filtro
+   * de hoy", es un caso para pedir un dump directo de la base de datos.
+   */
+  static async findParaExportar(opts: {
+    usuario?: number;
+    tabla?: string;
+    accion?: AccionAuditoria;
+    desde?: string;
+    hasta?: string;
+  }) {
+    const where = AuditoriaRepository.buildWhere(opts);
+    return prisma.auditoria.findMany({
+      where,
+      include: { usuarios: { select: { nombre: true, cargo: true, codigo_usuario: true } } },
+      orderBy: { fecha: "desc" },
+      take: 20000,
+    });
   }
 
   /** Nombres de tabla ya usados, para llenar el filtro sin inventar valores que no existen todavía. */

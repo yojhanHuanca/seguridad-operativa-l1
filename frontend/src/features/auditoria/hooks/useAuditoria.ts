@@ -5,6 +5,7 @@ import type { AuditoriaItem } from "../types";
 export interface AuditoriaParams {
   usuario?: number;
   tabla?: string;
+  accion?: string;
   desde?: string;
   hasta?: string;
   page: number;
@@ -21,6 +22,7 @@ async function fetchAuditoria(params: AuditoriaParams): Promise<AuditoriaPage> {
     params: {
       usuario: params.usuario,
       tabla: params.tabla || undefined,
+      accion: params.accion || undefined,
       desde: params.desde || undefined,
       hasta: params.hasta || undefined,
       page: params.page,
@@ -28,6 +30,26 @@ async function fetchAuditoria(params: AuditoriaParams): Promise<AuditoriaPage> {
     },
   });
   return { items: data.data ?? [], total: data.meta?.total ?? data.data?.length ?? 0 };
+}
+
+/** Descarga el CSV con los mismos filtros que la tabla y dispara el guardado en el navegador. */
+export async function descargarAuditoriaCsv(params: Omit<AuditoriaParams, "page" | "limit">) {
+  const { data } = await api.get<Blob>("/auditoria/export", {
+    params: {
+      usuario: params.usuario,
+      tabla: params.tabla || undefined,
+      accion: params.accion || undefined,
+      desde: params.desde || undefined,
+      hasta: params.hasta || undefined,
+    },
+    responseType: "blob",
+  });
+  const url = URL.createObjectURL(data);
+  const enlace = document.createElement("a");
+  enlace.href = url;
+  enlace.download = `auditoria_${new Date().toISOString().slice(0, 10)}.csv`;
+  enlace.click();
+  URL.revokeObjectURL(url);
 }
 
 export function useAuditoria(params: AuditoriaParams) {

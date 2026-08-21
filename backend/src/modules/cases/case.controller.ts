@@ -4,6 +4,7 @@ import { CaseService, PlanAjenoError } from "./case.service.js";
 import { TransicionInvalidaError } from "./case.workflow.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
+import { AuditoriaService } from "../auditoria/auditoria.service.js";
 
 function handleError(res: Response, error: unknown, fallback: string) {
   if (error instanceof ZodError) {
@@ -18,6 +19,27 @@ function handleError(res: Response, error: unknown, fallback: string) {
     return res.status(403).json(ApiResponse.error(error.message));
   }
   return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : fallback, error));
+}
+
+/**
+ * Deja el rastro de una acción sobre un caso o un plan de acción. Va acá y
+ * no en `CaseService` porque ese archivo ya demostró ser el que más se
+ * revierte en esta rama — mientras tanto, un cambio en el controlador no se
+ * pierde si vuelve a pasar. `id_registro` es opcional: no todas las
+ * respuestas exponen el id numérico (algunas solo el código).
+ */
+async function auditarCaso(req: Request, tabla: "casos_sop" | "planes_accion", descripcion: string, id_registro?: number) {
+  const actor = (req as AuthenticatedRequest).user;
+  if (!actor) return;
+  await AuditoriaService.registrar({
+    tabla,
+    ...(id_registro != null ? { id_registro } : {}),
+    accion: "editar",
+    descripcion,
+    usuario: actor.id_usuario,
+    ip: req.ip,
+    user_agent: req.headers["user-agent"],
+  });
 }
 
 function param(req: Request, name: string): string {
@@ -71,6 +93,7 @@ export class CaseController {
   static async approve(req: Request, res: Response) {
     try {
       const caso = await CaseService.approve(param(req, "codigo"));
+      await auditarCaso(req, "casos_sop", `Aprobó el reporte ${caso.codigo_sop}, pasó a Evaluación`, caso.id_caso);
       return res.json(ApiResponse.success("Reporte aprobado, pasó a Evaluación", caso));
     } catch (error) {
       return handleError(res, error, "Error al aprobar el reporte");
@@ -98,6 +121,7 @@ export class CaseController {
   static async evaluate(req: Request, res: Response) {
     try {
       const caso = await CaseService.evaluate(param(req, "codigo"), req.body);
+      await auditarCaso(req, "casos_sop", `Evaluó el caso ${caso.codigo_sop} (riesgo, clasificación)`, caso.id_caso);
       return res.json(ApiResponse.success("Caso evaluado correctamente", caso));
     } catch (error) {
       return handleError(res, error, "Error al evaluar el caso");
@@ -107,6 +131,7 @@ export class CaseController {
   static async reject(req: Request, res: Response) {
     try {
       const caso = await CaseService.reject(param(req, "codigo"), req.body);
+      await auditarCaso(req, "casos_sop", `Rechazó el caso ${caso.codigo_sop}`, caso.id_caso);
       return res.json(ApiResponse.success("Caso rechazado", caso));
     } catch (error) {
       return handleError(res, error, "Error al rechazar el caso");
@@ -133,7 +158,9 @@ export class CaseController {
 
   static async saveInvestigation(req: Request, res: Response) {
     try {
-      const investigacion = await CaseService.saveInvestigation(param(req, "codigo"), req.body);
+      const codigo = param(req, "codigo");
+      const investigacion = await CaseService.saveInvestigation(codigo, req.body);
+      await auditarCaso(req, "casos_sop", `Guardó la investigación del caso ${codigo}`, investigacion.id_caso);
       return res.json(ApiResponse.success("Investigación guardada, caso pasó a Plan de Acción", investigacion));
     } catch (error) {
       return handleError(res, error, "Error al guardar la investigación");
@@ -151,7 +178,9 @@ export class CaseController {
 
   static async createPlans(req: Request, res: Response) {
     try {
-      const planes = await CaseService.createPlans(param(req, "codigo"), req.body);
+      const codigo = param(req, "codigo");
+      const planes = await CaseService.createPlans(codigo, req.body);
+      await auditarCaso(req, "planes_accion", `Creó ${planes.length} plan(es) de acción para el caso ${codigo}`, planes[0]?.id_caso);
       return res.status(201).json(ApiResponse.success("Planes de acción creados y enviados", planes));
     } catch (error) {
       return handleError(res, error, "Error al crear los planes de acción");
@@ -161,6 +190,7 @@ export class CaseController {
   static async close(req: Request, res: Response) {
     try {
       const caso = await CaseService.closeCase(param(req, "codigo"), req.body);
+      await auditarCaso(req, "casos_sop", `Cerró el caso ${caso.codigo_sop}`, caso.id_caso);
       return res.json(ApiResponse.success("Caso cerrado correctamente", caso));
     } catch (error) {
       return handleError(res, error, "Error al cerrar el caso");
@@ -179,7 +209,9 @@ export class CaseController {
 
   static async acceptPlanById(req: Request, res: Response) {
     try {
-      const plan = await CaseService.acceptPlanById(param(req, "idPlan"), req.body, (req as AuthenticatedRequest).user);
+      const idPlan = param(req, "idPlan");
+      const plan = await CaseService.acceptPlanById(idPlan, req.body, (req as AuthenticatedRequest).user);
+      await auditarCaso(req, "planes_accion", `Aceptó el plan ${plan.codigo_plan ?? idPlan}, inició la ejecución`, plan.id_plan);
       return res.json(ApiResponse.success("Plan aceptado, la ejecución ha iniciado", plan));
     } catch (error) {
       return handleError(res, error, "Error al aceptar el plan");
@@ -188,7 +220,9 @@ export class CaseController {
 
   static async completeExecutionByPlan(req: Request, res: Response) {
     try {
-      const plan = await CaseService.completeExecutionByPlan(param(req, "idPlan"), req.body, (req as AuthenticatedRequest).user);
+      const idPlan = param(req, "idPlan");
+      const plan = await CaseService.completeExecutionByPlan(idPlan, req.body, (req as AuthenticatedRequest).user);
+      await auditarCaso(req, "planes_accion", `Cerró la ejecución del plan ${plan?.codigo_plan ?? idPlan}`, plan?.id_plan);
       return res.json(ApiResponse.success("Plan completado correctamente", plan));
     } catch (error) {
       return handleError(res, error, "Error al completar el plan");
@@ -197,7 +231,10 @@ export class CaseController {
 
   static async reviewFinalPlanById(req: Request, res: Response) {
     try {
-      const plan = await CaseService.reviewFinalPlanById(param(req, "idPlan"), req.body);
+      const idPlan = param(req, "idPlan");
+      const plan = await CaseService.reviewFinalPlanById(idPlan, req.body);
+      const decision = (req.body as { decision?: string })?.decision ?? "";
+      await auditarCaso(req, "planes_accion", `Revisión final del plan ${plan.codigo_plan ?? idPlan}: ${decision}`, plan.id_plan);
       return res.json(ApiResponse.success("Revisión final del plan registrada", plan));
     } catch (error) {
       return handleError(res, error, "Error al revisar el plan");
@@ -206,7 +243,9 @@ export class CaseController {
 
   static async requestExtensionByPlan(req: Request, res: Response) {
     try {
-      const plan = await CaseService.requestExtensionByPlan(param(req, "idPlan"), req.body, (req as AuthenticatedRequest).user);
+      const idPlan = param(req, "idPlan");
+      const plan = await CaseService.requestExtensionByPlan(idPlan, req.body, (req as AuthenticatedRequest).user);
+      await auditarCaso(req, "planes_accion", `Solicitó ampliación de plazo para el plan ${plan.codigo_plan ?? idPlan}`, plan.id_plan);
       return res.status(201).json(ApiResponse.success("Ampliación de plazo solicitada", plan));
     } catch (error) {
       return handleError(res, error, "Error al solicitar la ampliación");
@@ -215,7 +254,10 @@ export class CaseController {
 
   static async reviewExtensionByPlan(req: Request, res: Response) {
     try {
-      const plan = await CaseService.reviewExtensionByPlan(param(req, "idPlan"), req.body);
+      const idPlan = param(req, "idPlan");
+      const plan = await CaseService.reviewExtensionByPlan(idPlan, req.body);
+      const decision = (req.body as { decision?: string })?.decision ?? "";
+      await auditarCaso(req, "planes_accion", `Resolvió la ampliación de plazo del plan ${plan.codigo_plan ?? idPlan}: ${decision}`, plan.id_plan);
       return res.json(ApiResponse.success("Solicitud de ampliación del plan resuelta", plan));
     } catch (error) {
       return handleError(res, error, "Error al resolver la ampliación del plan");
@@ -261,6 +303,7 @@ export class CaseController {
   static async reopen(req: Request, res: Response) {
     try {
       const caso = await CaseService.reopenCase(param(req, "codigo"), req.body);
+      await auditarCaso(req, "casos_sop", `Reabrió el caso ${caso.codigo_sop}`, caso.id_caso);
       return res.json(ApiResponse.success("Caso reabierto", caso));
     } catch (error) {
       return handleError(res, error, "Error al reabrir el caso");
@@ -269,7 +312,10 @@ export class CaseController {
 
   static async rollbackStage(req: Request, res: Response) {
     try {
-      const caso = await CaseService.rollbackStage(param(req, "codigo"), req.body);
+      const codigo = param(req, "codigo");
+      const caso = await CaseService.rollbackStage(codigo, req.body);
+      const motivo = (req.body as { motivo?: string })?.motivo ?? "";
+      await auditarCaso(req, "casos_sop", `Retrocedió de etapa el caso ${codigo}: ${motivo}`, caso.id_caso);
       return res.json(ApiResponse.success("Caso retrocedido de etapa", caso));
     } catch (error) {
       return handleError(res, error, "Error al retroceder el caso");
