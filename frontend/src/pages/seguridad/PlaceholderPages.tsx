@@ -1,18 +1,6 @@
-import { Activity, AlertTriangle, ListChecks } from "lucide-react";
+import { ListChecks } from "lucide-react";
 import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
 import { ComingSoon } from "@/components/layout/ComingSoon";
-
-export function SoAlertasPage() {
-  return (
-    <SeguridadOperativaShell>
-      <ComingSoon
-        icon={AlertTriangle}
-        title="Alertas"
-        description="Avisos de casos críticos, plazos por vencer e incumplimientos de SLA."
-      />
-    </SeguridadOperativaShell>
-  );
-}
 
 export function SoPlanesAccionPage() {
   return (
@@ -31,17 +19,7 @@ export function SoPlanesAccionPage() {
   );
 }
 
-export function SoEventosPage() {
-  return (
-    <SeguridadOperativaShell>
-      <ComingSoon
-        icon={Activity}
-        title="Eventos Operativos"
-        description="Registro cronológico de eventos operativos de Línea 1, independiente de los casos SOP abiertos."
-      />
-    </SeguridadOperativaShell>
-  );
-}
-
+// Alertas ya está implementada en ./AlertasPage.
+// Eventos Operativos ya está implementada en ./EventosOperativosPage.
 // Notificaciones ya está implementada en ./NotificacionesPage.
 // Mi Perfil ya está implementada en ./PerfilPage.

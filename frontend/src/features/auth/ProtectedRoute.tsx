@@ -6,11 +6,14 @@ export function ProtectedRoute({
   children,
   roles,
   allowResponsableRole,
+  requireResponsable,
 }: {
   children: ReactNode;
   roles?: string[];
   /** Además de `roles`, deja pasar a este rol si tiene el flag es_responsable (ej. el RSO de SO visitando Monitoreo). */
   allowResponsableRole?: string;
+  /** Dentro de `roles`, restringe aún más: solo entra quien además tiene el flag es_responsable (RSO). */
+  requireResponsable?: boolean;
 }) {
   const { user, token } = useAuth();
   const location = useLocation();
@@ -23,6 +26,9 @@ export function ProtectedRoute({
     allowResponsableRole && user.es_responsable && user.rol.toLowerCase() === allowResponsableRole.toLowerCase();
 
   if (!esAdmin && roles && !tieneRolPermitido && !esResponsableInvitado) {
+    return <Navigate to={homeForRole(user.rol)} replace />;
+  }
+  if (!esAdmin && requireResponsable && !user.es_responsable) {
     return <Navigate to={homeForRole(user.rol)} replace />;
   }
   return children;

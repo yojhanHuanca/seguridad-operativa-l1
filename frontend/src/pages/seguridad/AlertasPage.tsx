@@ -119,10 +119,11 @@ export function SoAlertasPage() {
   const stats = useMemo(() => {
     const critical = alerts.filter((a) => a.severity === "critica").length;
     const high = alerts.filter((a) => a.severity === "alta").length;
+    const media = alerts.length - critical - high;
     const sla = alerts.filter((a) => a.type === "sla").length;
     const prorroga = alerts.filter((a) => a.type === "prorroga").length;
     const operationalHealth = alerts.length === 0 ? 100 : Math.max(0, Math.round(((openCases.length - critical - high) / Math.max(openCases.length, 1)) * 100));
-    return { critical, high, sla, prorroga, operationalHealth };
+    return { critical, high, media, sla, prorroga, operationalHealth };
   }, [alerts, openCases.length]);
 
   const clearFilters = () => {
@@ -160,13 +161,34 @@ export function SoAlertasPage() {
         </div>
       </div>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        <MetricCard icon={<ShieldAlert className="h-4.5 w-4.5" />} label="Alertas criticas" value={stats.critical} tone={stats.critical ? "critical" : "brand"} />
-        <MetricCard icon={<AlertTriangle className="h-4.5 w-4.5" />} label="Prioridad alta" value={stats.high} tone={stats.high ? "warning" : "neutral"} />
-        <MetricCard icon={<CalendarClock className="h-4.5 w-4.5" />} label="SLA por revisar" value={stats.sla} tone={stats.sla ? "warning" : "neutral"} />
-        <MetricCard icon={<Timer className="h-4.5 w-4.5" />} label="Prorrogas" value={stats.prorroga} tone={stats.prorroga ? "warning" : "neutral"} />
-        <MetricCard icon={<CheckCircle2 className="h-4.5 w-4.5" />} label="Salud operativa" value={stats.operationalHealth} suffix="%" tone={stats.operationalHealth >= 85 ? "brand" : "warning"} />
-      </div>
+      <Card className="mt-5 overflow-hidden p-0">
+        <div className="grid gap-6 p-5 lg:grid-cols-[1.4fr_1fr] lg:divide-x lg:divide-line">
+          <div>
+            <div className="flex items-baseline justify-between gap-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Distribución por severidad</p>
+              <p className="text-[12px] text-ink-quiet">{alerts.length} alerta{alerts.length === 1 ? "" : "s"} generada{alerts.length === 1 ? "" : "s"}</p>
+            </div>
+            <SeverityBar critical={stats.critical} alta={stats.high} media={stats.media} />
+            <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2">
+              <SeverityStat swatch="bg-red-500" label="Criticas" value={stats.critical} />
+              <SeverityStat swatch="bg-amber-400" label="Alta" value={stats.high} />
+              <SeverityStat swatch="bg-brand-300" label="Media" value={stats.media} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4 lg:pl-6">
+            <InlineStat icon={<CalendarClock className="h-4 w-4" />} label="SLA por revisar" value={stats.sla} tone={stats.sla ? "warning" : "neutral"} />
+            <InlineStat icon={<Timer className="h-4 w-4" />} label="Prorrogas" value={stats.prorroga} tone={stats.prorroga ? "warning" : "neutral"} />
+            <InlineStat
+              icon={<CheckCircle2 className="h-4 w-4" />}
+              label="Salud operativa"
+              value={stats.operationalHealth}
+              suffix="%"
+              tone={stats.operationalHealth >= 85 ? "brand" : "warning"}
+            />
+          </div>
+        </div>
+      </Card>
 
       <Card className="mt-5 p-4">
         <div className="grid gap-3 lg:grid-cols-[minmax(240px,1fr)_190px_190px_auto]">
@@ -420,7 +442,30 @@ function buildAlerts(cases: CaseRow[]): AlertItem[] {
   });
 }
 
-function MetricCard({
+/** Barra apilada proporcional a cada severidad — reemplaza la grilla de tarjetas repetida en otras pantallas. */
+function SeverityBar({ critical, alta, media }: { critical: number; alta: number; media: number }) {
+  const total = Math.max(critical + alta + media, 1);
+  const pct = (n: number) => `${(n / total) * 100}%`;
+  return (
+    <div className="mt-3 flex h-2.5 w-full overflow-hidden rounded-full bg-surface-2">
+      {critical > 0 && <div className="bg-red-500" style={{ width: pct(critical) }} title={`${critical} criticas`} />}
+      {alta > 0 && <div className="bg-amber-400" style={{ width: pct(alta) }} title={`${alta} alta`} />}
+      {media > 0 && <div className="bg-brand-300" style={{ width: pct(media) }} title={`${media} media`} />}
+    </div>
+  );
+}
+
+function SeverityStat({ swatch, label, value }: { swatch: string; label: string; value: number }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className={cn("h-2.5 w-2.5 shrink-0 rounded-full", swatch)} />
+      <span className="text-[12.5px] text-ink-soft">{label}</span>
+      <span className="font-display text-[14px] font-bold text-ink">{value}</span>
+    </div>
+  );
+}
+
+function InlineStat({
   icon,
   label,
   value,
@@ -431,40 +476,26 @@ function MetricCard({
   label: string;
   value: number;
   suffix?: string;
-  tone: "brand" | "critical" | "warning" | "neutral";
+  tone: "brand" | "warning" | "neutral";
 }) {
   return (
-    <Card className="min-h-[112px] p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div
-          className={cn(
-            "grid h-9 w-9 shrink-0 place-items-center rounded-lg",
-            tone === "brand" && "bg-brand-50 text-brand-700",
-            tone === "critical" && "bg-critical-soft text-critical-ink",
-            tone === "warning" && "bg-warning-soft text-warning-ink",
-            tone === "neutral" && "bg-surface-2 text-ink-soft"
-          )}
-        >
-          {icon}
-        </div>
-        <span
-          className={cn(
-            "rounded-full px-2 py-0.5 text-[10.5px] font-semibold",
-            tone === "brand" && "bg-brand-50 text-brand-800",
-            tone === "critical" && "bg-critical-soft text-critical-ink",
-            tone === "warning" && "bg-warning-soft text-warning-ink",
-            tone === "neutral" && "bg-surface-2 text-ink-quiet"
-          )}
-        >
-          {tone === "brand" ? "OK" : tone === "neutral" ? "Base" : "Atencion"}
-        </span>
+    <div>
+      <div
+        className={cn(
+          "grid h-8 w-8 place-items-center rounded-lg",
+          tone === "brand" && "bg-brand-50 text-brand-700",
+          tone === "warning" && "bg-warning-soft text-warning-ink",
+          tone === "neutral" && "bg-surface-2 text-ink-soft"
+        )}
+      >
+        {icon}
       </div>
-      <p className="mt-3 font-display text-[24px] font-bold leading-none tracking-tight text-ink">
+      <p className="mt-2 font-display text-[20px] font-bold leading-none tracking-tight text-ink">
         {value}
         {suffix}
       </p>
-      <p className="mt-1.5 text-[12px] text-ink-quiet">{label}</p>
-    </Card>
+      <p className="mt-1 text-[11.5px] text-ink-quiet">{label}</p>
+    </div>
   );
 }
 

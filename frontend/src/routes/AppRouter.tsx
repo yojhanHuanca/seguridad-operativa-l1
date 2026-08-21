@@ -19,10 +19,8 @@ import { SoNotificacionesPage } from "@/pages/seguridad/NotificacionesPage";
 import { EventosAsignadosPage } from "@/pages/seguridad/EventosAsignadosPage";
 import { SoAlertasPage } from "@/pages/seguridad/AlertasPage";
 import { SoAuditoriaPage } from "@/pages/seguridad/AuditoriaPage";
-import {
-  SoEventosPage,
-  SoPlanesAccionPage,
-} from "@/pages/seguridad/PlaceholderPages";
+import { SoEventosPage } from "@/pages/seguridad/EventosOperativosPage";
+import { SoPlanesAccionPage } from "@/pages/seguridad/PlaceholderPages";
 import { SoPerfilPage } from "@/pages/seguridad/PerfilPage";
 import { JefePerfilPage } from "@/pages/jefe/PerfilPage";
 import { Dashboard as MonitoreoDashboardPage } from "@/pages/monitoreo/Dashboard";
@@ -64,7 +62,7 @@ export function AppRouter() {
         <Route path="/seguridad/alertas" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoAlertasPage /></ProtectedRoute>} />
         <Route path="/seguridad/auditoria" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoAuditoriaPage /></ProtectedRoute>} />
         <Route path="/seguridad/planes-accion" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoPlanesAccionPage /></ProtectedRoute>} />
-        <Route path="/seguridad/eventos" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoEventosPage /></ProtectedRoute>} />
+        <Route path="/seguridad/eventos" element={<ProtectedRoute roles={["Seguridad Operativa"]} requireResponsable><SoEventosPage /></ProtectedRoute>} />
         <Route path="/seguridad/reportes" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoKpisPage /></ProtectedRoute>} />
         <Route path="/seguridad/reportes/kpis" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoKpisPage /></ProtectedRoute>} />
         <Route path="/seguridad/reportes/estadisticas" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoEstadisticasPage /></ProtectedRoute>} />

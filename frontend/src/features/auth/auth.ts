@@ -11,6 +11,8 @@ export interface AuthUser {
   id_area: number | null;
   ultimo_acceso: string | null;
   es_responsable: boolean;
+  puede_reabrir_casos: boolean;
+  puede_rechazar_reportes: boolean;
 }
 
 export interface AuthValue {

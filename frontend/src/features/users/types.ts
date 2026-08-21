@@ -19,6 +19,8 @@ export interface UserBasic {
 export interface UserListItem extends UserBasic {
   correo: string;
   telefono: string | null;
+  puede_reabrir_casos: boolean;
+  puede_rechazar_reportes: boolean;
 }
 
 export interface Role {
@@ -35,6 +37,8 @@ export interface CreateUserInput {
   id_area: number;
   id_rol: number;
   es_responsable?: boolean;
+  puede_reabrir_casos?: boolean;
+  puede_rechazar_reportes?: boolean;
 }
 
 export interface UpdateUserInput {
@@ -47,5 +51,7 @@ export interface UpdateUserInput {
   id_rol?: number;
   estado?: string;
   es_responsable?: boolean;
+  puede_reabrir_casos?: boolean;
+  puede_rechazar_reportes?: boolean;
   password?: string;
 }

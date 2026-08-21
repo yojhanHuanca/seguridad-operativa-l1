@@ -11,6 +11,8 @@ const PUBLIC_SELECT = {
   estado: true,
   fecha_ingreso: true,
   es_responsable: true,
+  puede_reabrir_casos: true,
+  puede_rechazar_reportes: true,
   id_area: true,
   id_rol: true,
   roles: true,
@@ -146,6 +148,8 @@ export class UserRepository {
       id_area: number;
       id_rol: number;
       es_responsable?: boolean;
+      puede_reabrir_casos?: boolean;
+      puede_rechazar_reportes?: boolean;
     }) {
       return prisma.$transaction(async (tx) => {
         const created = await tx.usuarios.create({
@@ -159,6 +163,8 @@ export class UserRepository {
             id_area: data.id_area,
             id_rol: data.id_rol,
             es_responsable: data.es_responsable ?? false,
+            puede_reabrir_casos: data.puede_reabrir_casos ?? false,
+            puede_rechazar_reportes: data.puede_rechazar_reportes ?? false,
             estado: "Activo",
           },
         });
@@ -189,6 +195,8 @@ export class UserRepository {
       id_rol?: number;
       estado?: string;
       es_responsable?: boolean;
+      puede_reabrir_casos?: boolean;
+      puede_rechazar_reportes?: boolean;
       password_hash?: string;
     }) {
       return await prisma.usuarios.update({

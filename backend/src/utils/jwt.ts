@@ -7,6 +7,9 @@ interface JwtPayload {
     rol: number | null;
     rol_nombre: string;
     es_responsable?: boolean;
+    /** Permisos puntuales dentro del rol — ver comentario en el modelo `usuarios`. */
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     /** Área del usuario: el backend filtra por ella lo que ve un Jefe de Área. */
     id_area?: number | null;
     /** Nombre con el que se firma el expediente. */

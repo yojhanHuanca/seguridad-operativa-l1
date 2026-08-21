@@ -636,6 +636,10 @@ model usuarios {
   // Operativa puede derivar eventos a su equipo; un analista normal no).
   // Genérico a propósito para reusarlo en casos similares que vayan saliendo.
   es_responsable                                     Boolean               @default(false)
+  // Permisos puntuales dentro de Seguridad Operativa para acciones que
+  // deshacen o saltan el flujo normal — no todo analista de SO los tiene.
+  puede_reabrir_casos                                Boolean               @default(false)
+  puede_rechazar_reportes                            Boolean               @default(false)
   id_area                                            Int?
   id_rol                                             Int?
   actividades_plan                                   actividades_plan[]

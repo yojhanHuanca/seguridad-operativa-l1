@@ -6,6 +6,7 @@ import { Modal } from "@/design-system/primitives/Modal";
 import { Field, Select, Textarea } from "@/design-system/primitives/Input";
 import { Pill } from "@/design-system/primitives/Pill";
 import { StageSection, DescriptionBlock } from "@/features/cases/components/CaseParts";
+import { useAuth } from "@/features/auth/auth";
 import { useApproveCase, useRejectCase, useRequestInfo, useAddObservation, useUpdateTipo } from "@/features/cases/hooks/useCaseActions";
 import { useCatalogs } from "@/features/reports/hooks/useCatalogs";
 import { apiErrorMessage } from "@/lib/api";
@@ -16,6 +17,8 @@ import type { CaseDetail } from "@/features/cases/types";
 // Portado de pages/seguridad/CaseFile.tsx → ReceptionStage.
 // Cubre Recepción y Evaluación: es la misma tarjeta, cambia el copy y el cuerpo.
 export function ReceptionStage({ caso, isRecepcion }: { caso: CaseDetail; isRecepcion: boolean }) {
+  const { user } = useAuth();
+  const puedeRechazar = user?.rol === "Admin" || user?.puede_rechazar_reportes;
   const [rejectOpen, setRejectOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [infoOpen, setInfoOpen] = useState(false);
@@ -112,9 +115,11 @@ export function ReceptionStage({ caso, isRecepcion }: { caso: CaseDetail; isRece
             <Button variant="outline" size="sm" onClick={() => setObsOpen(true)}>
               <StickyNote className="h-4 w-4" /> Registrar observación
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => setRejectOpen(true)} className="text-critical hover:bg-critical-soft">
-              <X className="h-4 w-4" /> Rechazar
-            </Button>
+            {puedeRechazar && (
+              <Button variant="ghost" size="sm" onClick={() => setRejectOpen(true)} className="text-critical hover:bg-critical-soft">
+                <X className="h-4 w-4" /> Rechazar
+              </Button>
+            )}
           </div>
         ) : (
           <>

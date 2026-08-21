@@ -11,8 +11,10 @@ import type {
 
 const DIAS = ["dom", "lun", "mar", "mie", "jue", "vie", "sab"];
 
-const REQUIRED_COLUMNS = ["Código", "Tipo", "Título", "Estación", "Estado", "Fecha"];
+const REQUIRED_COLUMNS = ["Código", "Tipo", "Estado", "Fecha"];
 const OPTIONAL_COLUMNS = [
+  "Título",
+  "Estación",
   "Reportante",
   "Área",
   "Riesgo",
@@ -28,7 +30,7 @@ const OPTIONAL_COLUMNS = [
 ];
 
 const CASE_ALIASES = {
-  codigo: ["codigo", "código", "codigo sop", "código sop", "codigo_sop", "sop"],
+  codigo: ["codigo", "código", "codigo sop", "código sop", "codigo_sop", "sop", "nuevo codigo", "nuevo código"],
   tipo: ["tipo", "tipo de reporte", "tipo_reporte"],
   titulo: ["titulo", "título", "title"],
   reportante: ["reportante", "nombre reportante", "nombre_reportante", "solicitante"],
@@ -36,18 +38,24 @@ const CASE_ALIASES = {
   area: ["area", "área", "area responsable", "área responsable", "area_responsable"],
   riesgo: ["riesgo", "analisis riesgo", "análisis riesgo", "analisis de riesgo", "análisis de riesgo"],
   estado: ["estado", "estado hallazgo", "estado_hallazgo"],
-  fecha: ["fecha", "fecha hallazgo", "fecha_hallazgo", "fecha evento", "fecha_evento"],
+  fecha: ["fecha", "fecha hallazgo", "fecha_hallazgo", "fecha evento", "fecha_evento", "fecha del hallazgo", "fecha de evento"],
   descripcion: ["descripcion", "descripción", "detalle", "observacion", "observación"],
 } as const;
 
 const PLAN_ALIASES = {
-  codigo: ["codigo plan", "código plan", "codigo_plan", "plan", "id plan"],
-  descripcion: ["descripcion plan", "descripción plan", "descripcion_plan", "plan de accion", "plan de acción"],
+  codigo: ["codigo plan", "código plan", "codigo_plan", "plan", "id plan", "plan de accion", "plan de acción"],
+  descripcion: [
+    "descripcion plan",
+    "descripción plan",
+    "descripcion_plan",
+    "descripcion de plan de accion",
+    "descripción de plan de acción",
+  ],
   estado: ["estado plan", "estado_plan", "estado plan de accion", "estado plan de acción"],
   fecha: ["fecha plan", "fecha_plan", "vencimiento plan", "fecha vencimiento"],
   fechaReprogramada: ["fecha reprogramada", "fecha_reprogramada", "nueva fecha"],
   area: ["area plan", "área plan", "area_plan", "area responsable plan", "área responsable plan"],
-  responsable: ["responsable plan", "responsable_plan", "responsable"],
+  responsable: ["responsable plan", "responsable_plan", "responsable", "responsable plan de accion", "responsable plan de acción"],
   observaciones: ["observaciones plan", "observacion plan", "observación plan", "observaciones"],
 } as const;
 
@@ -59,6 +67,34 @@ const DEFAULTS = {
 } as const;
 
 const EMPTY_RISK_VALUES = new Set(["", "sinevaluar", "sinriesgo", "naevaluar", "n/a", "na"]);
+
+// La BD histórica escribe el riesgo como "4C Aceptable sin revisión" (código de matriz + nombre).
+// El catálogo lo tiene separado (codigo="4C", nombre="Aceptable sin revisión"), así que se
+// extrae el código inicial para resolverlo por "codigo" en vez de comparar la celda completa.
+const RIESGO_CODE = /^([1-4][A-E])\b/i;
+function extractRiesgoCode(value: string): string {
+  const match = value.match(RIESGO_CODE);
+  return match?.[1] ? match[1].toUpperCase() : value;
+}
+
+// La BD histórica usa palabras propias que no están en los catálogos actuales del sistema
+// (compartidos con el formulario público de reporte). En vez de tocar esos catálogos, se
+// traduce el valor de la BD histórica al equivalente que ya existe, solo para importación.
+const TIPO_HALLAZGO_MAP: Record<string, string> = {
+  noconformidad: "Hallazgo",
+  observacion: "Hallazgo",
+};
+const ESTADO_HALLAZGO_MAP: Record<string, string> = {
+  abierto: "En Proceso",
+};
+const ESTADO_PLAN_MAP: Record<string, string> = {
+  abierto: "En Ejecución",
+  enproceso: "En Ejecución",
+};
+
+function mapHistoricalValue(value: string, map: Record<string, string>): string {
+  return map[normalizeText(value)] ?? value;
+}
 
 interface CatalogDetail {
   id_detalle: number;
@@ -133,7 +169,7 @@ interface PreparedCase {
   ids: {
     tipoReporte: number;
     estadoHallazgo: number;
-    estacion: number;
+    estacion: number | null;
     ubicacion: number | null;
     area: number | null;
     riesgo: number | null;
@@ -281,8 +317,6 @@ function buildParsedCases(payload: ImportacionPayload, issues: ImportacionIssue[
   const missingColumns = [
     { label: "Código", aliases: CASE_ALIASES.codigo },
     { label: "Tipo", aliases: CASE_ALIASES.tipo },
-    { label: "Título", aliases: CASE_ALIASES.titulo },
-    { label: "Estación", aliases: CASE_ALIASES.estacion },
     { label: "Estado", aliases: CASE_ALIASES.estado },
     { label: "Fecha", aliases: CASE_ALIASES.fecha },
   ].filter((column) => !hasColumn(payload.rows, column.aliases));
@@ -306,7 +340,10 @@ function buildParsedCases(payload: ImportacionPayload, issues: ImportacionIssue[
 
     const codigo = getCell(row, CASE_ALIASES.codigo);
     const tipo = getCell(row, CASE_ALIASES.tipo);
-    const titulo = getCell(row, CASE_ALIASES.titulo);
+    const tituloRaw = getCell(row, CASE_ALIASES.titulo);
+    const descripcionRaw = getCell(row, CASE_ALIASES.descripcion);
+    // Sin columna "Título" dedicada, se deriva de la Descripción (formato real de la BD histórica).
+    const titulo = tituloRaw || descripcionRaw.slice(0, 200);
     const estacion = getCell(row, CASE_ALIASES.estacion);
     const estado = getCell(row, CASE_ALIASES.estado);
     const fechaRaw = getCell(row, CASE_ALIASES.fecha);
@@ -314,12 +351,11 @@ function buildParsedCases(payload: ImportacionPayload, issues: ImportacionIssue[
     const reportante = getCell(row, CASE_ALIASES.reportante) || null;
     const area = getCell(row, CASE_ALIASES.area) || null;
     const riesgo = getCell(row, CASE_ALIASES.riesgo) || null;
-    const descripcion = getCell(row, CASE_ALIASES.descripcion) || titulo;
+    const descripcion = descripcionRaw || titulo;
 
     if (!codigo) addIssue(issues, requiredIssue(rowNumber, "Código", codigo));
     if (!tipo) addIssue(issues, requiredIssue(rowNumber, "Tipo", tipo));
     if (!titulo) addIssue(issues, requiredIssue(rowNumber, "Título", titulo));
-    if (!estacion) addIssue(issues, requiredIssue(rowNumber, "Estación", estacion));
     if (!estado) addIssue(issues, requiredIssue(rowNumber, "Estado", estado));
     if (!fechaRaw) {
       addIssue(issues, requiredIssue(rowNumber, "Fecha", fechaRaw));
@@ -561,12 +597,27 @@ function resolveRequiredDefault(ctx: BuildContext, catalogName: string, value: s
 
 function resolveArea(ctx: BuildContext, value: string | null, row: number, field: string, issues: ImportacionIssue[]): AreaRef | null {
   if (!value) return null;
-  const found = ctx.areas.find((area) => normalizeText(area.nombre_area) === normalizeText(value));
+  const direct = ctx.areas.find((area) => normalizeText(area.nombre_area) === normalizeText(value));
+  // La BD histórica a veces junta dos áreas responsables en una celda ("MR / INGENIERIA");
+  // si no hay coincidencia exacta, se prueba cada parte separada por "/".
+  const found =
+    direct ??
+    (value.includes("/")
+      ? value
+          .split("/")
+          .map((part) => part.trim())
+          .filter(Boolean)
+          .map((part) => ctx.areas.find((area) => normalizeText(area.nombre_area) === normalizeText(part)))
+          .find((match): match is AreaRef => Boolean(match))
+      : undefined);
+
   if (!found) {
+    // Aviso, no error: no bloquea la importación de los demás casos/planes del archivo.
+    // El caso puede guardarse sin área; un plan sin área reconocida se omite (el área es obligatoria en planes_accion).
     addIssue(issues, {
       row,
       field,
-      severity: "error",
+      severity: "warning",
       message: `No existe el área "${value}".`,
       value,
     });
@@ -597,7 +648,7 @@ function buildPreparedCases(parsed: ParsedCase[], ctx: BuildContext, issues: Imp
   const defaultTipoCaso = resolveRequiredDefault(ctx, "Tipo", DEFAULTS.tipoCaso, issues);
 
   for (const item of parsed) {
-    if (!item.codigo || !item.tipo || !item.titulo || !item.estacion || !item.estado || !item.fecha) continue;
+    if (!item.codigo || !item.tipo || !item.titulo || !item.estado || !item.fecha) continue;
 
     if (ctx.existingCodes.has(normalizeText(item.codigo))) {
       addIssue(issues, {
@@ -610,20 +661,21 @@ function buildPreparedCases(parsed: ParsedCase[], ctx: BuildContext, issues: Imp
       continue;
     }
 
-    const tipoReporte = resolveCatalog(ctx, "Tipo de Reporte", item.tipo, item.row, "Tipo", issues);
-    const estadoHallazgo = resolveCatalog(ctx, "Estado Hallazgo", item.estado, item.row, "Estado", issues);
-    const estacion = resolveCatalog(ctx, "Lugar de Incidente", item.estacion, item.row, "Estación", issues);
+    const tipoReporte = resolveCatalog(ctx, "Tipo de Reporte", mapHistoricalValue(item.tipo, TIPO_HALLAZGO_MAP), item.row, "Tipo", issues);
+    const estadoHallazgo = resolveCatalog(ctx, "Estado Hallazgo", mapHistoricalValue(item.estado, ESTADO_HALLAZGO_MAP), item.row, "Estado", issues);
+    // La estación es opcional: la BD histórica no registra un lugar por caso.
+    const estacion = item.estacion ? resolveCatalog(ctx, "Lugar de Incidente", item.estacion, item.row, "Estación", issues) : null;
     const area = resolveArea(ctx, item.area, item.row, "Área", issues);
     const riesgo =
       item.riesgo && !EMPTY_RISK_VALUES.has(normalizeText(item.riesgo))
-        ? resolveCatalog(ctx, "Análisis de riesgo", item.riesgo, item.row, "Riesgo", issues)
+        ? resolveCatalog(ctx, "Análisis de riesgo", extractRiesgoCode(item.riesgo), item.row, "Riesgo", issues)
         : null;
     const ubicacion = resolveUbicacionDesdeTitulo(ctx, item.titulo);
     const reportanteUsuario = isAnonymousReporter(item.reportante) ? null : resolveUser(ctx, item.reportante);
 
     const preparedPlans = buildPreparedPlans(item, ctx, issues);
 
-    if (!tipoReporte || !estadoHallazgo || !estacion || !defaultProcedencia || !defaultTipoSop || !defaultTipoCaso) continue;
+    if (!tipoReporte || !estadoHallazgo || !defaultProcedencia || !defaultTipoSop || !defaultTipoCaso) continue;
 
     prepared.push({
       row: item.row,
@@ -640,7 +692,7 @@ function buildPreparedCases(parsed: ParsedCase[], ctx: BuildContext, issues: Imp
       ids: {
         tipoReporte: tipoReporte.id_detalle,
         estadoHallazgo: estadoHallazgo.id_detalle,
-        estacion: estacion.id_detalle,
+        estacion: estacion?.id_detalle ?? null,
         ubicacion: ubicacion?.id_detalle ?? null,
         area: area?.id_area ?? null,
         riesgo: riesgo?.id_detalle ?? null,
@@ -684,15 +736,24 @@ function buildPreparedPlans(item: ParsedCase, ctx: BuildContext, issues: Importa
       return;
     }
 
-    const estado = resolveCatalog(ctx, "Estado Plan de acción", plan.estado || DEFAULTS.estadoPlan, plan.row, "Estado Plan", issues);
+    const estado = resolveCatalog(
+      ctx,
+      "Estado Plan de acción",
+      mapHistoricalValue(plan.estado || DEFAULTS.estadoPlan, ESTADO_PLAN_MAP),
+      plan.row,
+      "Estado Plan",
+      issues,
+    );
     const area = resolveArea(ctx, plan.area || item.area, plan.row, "Área Plan", issues);
     const responsable = resolveUser(ctx, plan.responsable);
     if (!responsable) {
+      // No bloquea la importación del caso: el plan se omite (no se inventa un responsable)
+      // y queda como aviso para crear a esa persona como usuario más adelante si hace falta.
       addIssue(issues, {
         row: plan.row,
         field: "Responsable Plan",
-        severity: "error",
-        message: `No existe un usuario para el responsable "${plan.responsable}".`,
+        severity: "warning",
+        message: `No existe un usuario para el responsable "${plan.responsable}"; el plan se omitirá.`,
         value: plan.responsable,
       });
     }

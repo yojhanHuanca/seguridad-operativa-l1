@@ -13,6 +13,7 @@ import { EmptyState, Progress } from "@/design-system/primitives/Progress";
 import { Modal } from "@/design-system/primitives/Modal";
 import { Field, Input, Select, Textarea } from "@/design-system/primitives/Input";
 import { StageSection } from "@/features/cases/components/CaseParts";
+import { useAuth } from "@/features/auth/auth";
 import { useCurrentSoUser } from "@/features/users/hooks/useCurrentSoUser";
 import {
   useAddPlanComment,
@@ -1405,6 +1406,8 @@ export function ExecutionSummaryCard({
 
 /** Resumen final del expediente cerrado (ClosedStage del prototipo). */
 function ClosedSummary({ caso }: { caso: CaseDetail }) {
+  const { user } = useAuth();
+  const puedeReabrir = user?.rol === "Admin" || user?.puede_reabrir_casos;
   const reopen = useReopenCase(caso.codigo_sop);
   const [reopenOpen, setReopenOpen] = useState(false);
   const [reopenNote, setReopenNote] = useState("");
@@ -1487,14 +1490,16 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
         </p>
       </div>
 
-      <div className="mt-4 pt-4 border-t border-line-soft flex items-center justify-between gap-3 flex-wrap">
-        <p className="text-[11.5px] text-ink-quiet">
-          Reabrir conserva el historial y permite elegir la etapa exacta a corregir.
-        </p>
-        <Button variant="outline" size="sm" onClick={() => setReopenOpen(true)}>
-          <CornerUpLeft className="h-4 w-4" /> Reabrir caso
-        </Button>
-      </div>
+      {puedeReabrir && (
+        <div className="mt-4 pt-4 border-t border-line-soft flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-[11.5px] text-ink-quiet">
+            Reabrir conserva el historial y permite elegir la etapa exacta a corregir.
+          </p>
+          <Button variant="outline" size="sm" onClick={() => setReopenOpen(true)}>
+            <CornerUpLeft className="h-4 w-4" /> Reabrir caso
+          </Button>
+        </div>
+      )}
 
       <div className="grid sm:grid-cols-2 gap-3">
         {resumen.map((r) => (

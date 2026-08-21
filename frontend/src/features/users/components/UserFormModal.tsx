@@ -26,6 +26,8 @@ interface FormState {
   id_rol: string;
   estado: string;
   es_responsable: boolean;
+  puede_reabrir_casos: boolean;
+  puede_rechazar_reportes: boolean;
 }
 
 const EMPTY_FORM: FormState = {
@@ -39,6 +41,8 @@ const EMPTY_FORM: FormState = {
   id_rol: "",
   estado: "Activo",
   es_responsable: false,
+  puede_reabrir_casos: false,
+  puede_rechazar_reportes: false,
 };
 
 function fromUser(user: UserListItem): FormState {
@@ -55,6 +59,8 @@ function fromUser(user: UserListItem): FormState {
     id_rol: user.id_rol ? String(user.id_rol) : "",
     estado: user.estado ?? "Activo",
     es_responsable: user.es_responsable ?? false,
+    puede_reabrir_casos: user.puede_reabrir_casos ?? false,
+    puede_rechazar_reportes: user.puede_rechazar_reportes ?? false,
   };
 }
 
@@ -117,6 +123,8 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
       id_area: Number(form.id_area),
       id_rol: Number(form.id_rol),
       es_responsable: form.es_responsable,
+      puede_reabrir_casos: form.puede_reabrir_casos,
+      puede_rechazar_reportes: form.puede_rechazar_reportes,
     };
 
     if (isEdit) {
@@ -268,10 +276,38 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
                 <span>
                   <span className="block text-[13px] font-medium text-ink">Es responsable (RSO)</span>
                   <span className="block text-[11.5px] text-ink-quiet">
-                    Puede derivar eventos de Monitoreo a su equipo y entrar a ese panel para hacerlo.
+                    Puede derivar eventos de Monitoreo a su equipo, entrar a ese panel y ver "Eventos Operativos" en su propio panel de SO.
                   </span>
                 </span>
               </label>
+            )}
+            {rolSeleccionado?.nombre_rol === "Seguridad Operativa" && (
+              <div className="grid gap-2 sm:grid-cols-2">
+                <label className="flex items-start gap-2.5 rounded-lg border border-line bg-surface/50 px-3 py-2.5">
+                  <input
+                    type="checkbox"
+                    checked={form.puede_reabrir_casos}
+                    onChange={(e) => set("puede_reabrir_casos", e.target.checked)}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-brand-700"
+                  />
+                  <span>
+                    <span className="block text-[13px] font-medium text-ink">Puede reabrir casos</span>
+                    <span className="block text-[11.5px] text-ink-quiet">Reabre un expediente ya cerrado.</span>
+                  </span>
+                </label>
+                <label className="flex items-start gap-2.5 rounded-lg border border-line bg-surface/50 px-3 py-2.5">
+                  <input
+                    type="checkbox"
+                    checked={form.puede_rechazar_reportes}
+                    onChange={(e) => set("puede_rechazar_reportes", e.target.checked)}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-brand-700"
+                  />
+                  <span>
+                    <span className="block text-[13px] font-medium text-ink">Puede rechazar reportes</span>
+                    <span className="block text-[11.5px] text-ink-quiet">Descarta un reporte del trabajador sin más trámite.</span>
+                  </span>
+                </label>
+              </div>
             )}
             <Field
               label={isEdit ? "Restablecer contraseña" : "Contraseña"}

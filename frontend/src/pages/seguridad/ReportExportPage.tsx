@@ -29,10 +29,17 @@ import { CASE_FILTERS, type CaseFilterId } from "@/features/cases/lib/filters";
 import { shortPlanCode } from "@/features/cases/lib/planLabels";
 import { EVENT_LABELS } from "@/features/cases/domain";
 import { formatDate, formatDateTime } from "@/lib/format";
+import { exportarTablaExcel } from "@/lib/excelBranded";
 import { cn } from "@/lib/utils";
 import type { CaseListItem, PlanAccion } from "@/features/cases/types";
 
-type ExportScope = "resumen" | "planes";
+type ExportScope = "casos" | "planes" | "combinado";
+
+const SCOPE_META: Record<ExportScope, { label: string; pill: string; sheetName: string; noun: string }> = {
+  casos: { label: "Casos SOP", pill: "Solo casos SOP", sheetName: "Casos SOP", noun: "caso" },
+  planes: { label: "Planes de acción", pill: "Solo planes de acción", sheetName: "Planes de acción", noun: "plan" },
+  combinado: { label: "Casos + Planes", pill: "Casos con sus planes", sheetName: "Casos y planes", noun: "fila" },
+};
 type DatePreset = "today" | "7d" | "30d" | "month";
 
 const DATE_PRESETS: Array<{ id: DatePreset; label: string }> = [
@@ -58,8 +65,9 @@ export function ReportExportPage() {
   const [area, setArea] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  const [scope, setScope] = useState<ExportScope>("resumen");
+  const [scope, setScope] = useState<ExportScope>("casos");
   const [printActive, setPrintActive] = useState(false);
+  const [exportingExcel, setExportingExcel] = useState(false);
 
   const { data: rawCases, isLoading } = useCases({});
   const { data: areas } = useAreas();
@@ -156,7 +164,7 @@ export function ReportExportPage() {
     setArea("");
     setFrom("");
     setTo("");
-    setScope("resumen");
+    setScope("casos");
   };
 
   const applyDatePreset = (preset: DatePreset) => {
@@ -181,6 +189,25 @@ export function ReportExportPage() {
     if (exportRows.length === 0) return;
     setPrintActive(true);
     window.setTimeout(() => window.print(), 0);
+  };
+
+  const downloadExcel = async () => {
+    if (exportRows.length === 0) return;
+    const meta = SCOPE_META[scope];
+    setExportingExcel(true);
+    try {
+      await exportarTablaExcel({
+        sheetName: meta.sheetName,
+        columnas: Object.keys(exportRows[0] ?? {}),
+        filas: exportRows,
+        fileName: `${fileName}.xlsx`,
+        title: `Exportación · ${meta.label}`,
+        subtitle: `Línea 1 · Metro de Lima · ${activeFilter.tabLabel ?? activeFilter.label}`,
+        totalLabel: `${filtered.length} reporte${filtered.length === 1 ? "" : "s"} · ${exportRows.length} ${meta.noun}${exportRows.length === 1 ? "" : "s"}`,
+      });
+    } finally {
+      setExportingExcel(false);
+    }
   };
 
   return (
@@ -224,8 +251,11 @@ export function ReportExportPage() {
               <Button variant="outline" size="sm" disabled={exportRows.length === 0} onClick={printReport}>
                 <Printer className="h-4 w-4" /> PDF
               </Button>
-              <Button size="sm" disabled={exportRows.length === 0} onClick={() => downloadCsv(exportRows, fileName)}>
-                <FileSpreadsheet className="h-4 w-4" /> Descargar CSV
+              <Button variant="outline" size="sm" disabled={exportRows.length === 0} onClick={() => downloadCsv(exportRows, fileName)}>
+                <Table2 className="h-4 w-4" /> CSV
+              </Button>
+              <Button size="sm" disabled={exportRows.length === 0 || exportingExcel} onClick={() => void downloadExcel()}>
+                <FileSpreadsheet className="h-4 w-4" /> {exportingExcel ? "Generando..." : "Descargar Excel"}
               </Button>
             </div>
           </div>
@@ -254,7 +284,7 @@ export function ReportExportPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <Pill tone={activeCriteria.length ? "brand" : "neutral"}>{activeCriteria.length} filtros activos</Pill>
-                  <Pill tone="info">{scope === "resumen" ? "Resumen por reporte" : "Reporte completo"}</Pill>
+                  <Pill tone="info">{SCOPE_META[scope].pill}</Pill>
                 </div>
               </div>
 
@@ -268,9 +298,10 @@ export function ReportExportPage() {
                     placeholder="Buscar por código SOP, título, estación, reportante, riesgo o área..."
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
-                  <ScopeButton active={scope === "resumen"} icon={<Table2 className="h-4 w-4" />} label="Resumen" onClick={() => setScope("resumen")} />
-                  <ScopeButton active={scope === "planes"} icon={<Layers3 className="h-4 w-4" />} label="Completo" onClick={() => setScope("planes")} />
+                <div className="flex flex-wrap items-center gap-2">
+                  <ScopeButton active={scope === "casos"} icon={<Table2 className="h-4 w-4" />} label="Casos SOP" onClick={() => setScope("casos")} />
+                  <ScopeButton active={scope === "planes"} icon={<ClipboardList className="h-4 w-4" />} label="Planes de acción" onClick={() => setScope("planes")} />
+                  <ScopeButton active={scope === "combinado"} icon={<Layers3 className="h-4 w-4" />} label="Casos + Planes" onClick={() => setScope("combinado")} />
                 </div>
               </div>
             </div>
@@ -380,7 +411,13 @@ export function ReportExportPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                {scope === "resumen" ? <SummaryPreview rows={filtered.slice(0, 10)} /> : <PlanPreview rows={filtered.slice(0, 10)} />}
+                {scope === "casos" ? (
+                  <SummaryPreview rows={filtered.slice(0, 10)} />
+                ) : scope === "planes" ? (
+                  <PlanOnlyPreview rows={filtered} />
+                ) : (
+                  <PlanPreview rows={filtered.slice(0, 10)} />
+                )}
               </div>
             )}
           </Card>
@@ -430,7 +467,7 @@ function ScopeButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex h-10 items-center justify-center gap-2 rounded-lg border px-3.5 text-[12.5px] font-semibold transition-all",
+        "inline-flex h-10 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg border px-3.5 text-[12.5px] font-semibold transition-all",
         active
           ? "border-brand-700 bg-brand-700 text-white shadow-sm"
           : "border-line bg-white text-ink-soft hover:border-brand-200 hover:bg-brand-50 hover:text-brand-800"
@@ -497,6 +534,43 @@ function SummaryPreview({ rows }: { rows: ExportCase[] }) {
             <PreviewTd>{item.areas.join(", ") || "—"}</PreviewTd>
             <PreviewTd>{item.row.risk ? `${item.row.risk} · ${item.row.riskCategoria ?? ""}` : "Sin evaluar"}</PreviewTd>
             <PreviewTd>{formatDate(item.source.created_at)}</PreviewTd>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function PlanOnlyPreview({ rows }: { rows: ExportCase[] }) {
+  const plans = rows.flatMap((item) => item.source.planes_accion.map((plan) => ({ item, plan }))).slice(0, 10);
+  if (plans.length === 0) {
+    return <p className="p-8 text-center text-[13px] text-ink-quiet">Ninguno de los reportes filtrados tiene planes de acción.</p>;
+  }
+  return (
+    <table className="min-w-[980px] w-full text-left">
+      <thead>
+        <tr className="bg-surface/60 border-b border-line">
+          <PreviewTh>Plan</PreviewTh>
+          <PreviewTh>Código SOP</PreviewTh>
+          <PreviewTh>Área</PreviewTh>
+          <PreviewTh>Responsable</PreviewTh>
+          <PreviewTh>Estado</PreviewTh>
+          <PreviewTh>Avance</PreviewTh>
+          <PreviewTh>Fecha límite</PreviewTh>
+          <PreviewTh>Prórroga</PreviewTh>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-line-soft">
+        {plans.map(({ item, plan }) => (
+          <tr key={plan.id_plan} className="hover:bg-surface/40">
+            <PreviewTd className="font-mono font-semibold text-brand-700">{shortPlanCode(plan.codigo_plan)}</PreviewTd>
+            <PreviewTd className="font-mono">{item.row.id}</PreviewTd>
+            <PreviewTd>{plan.areas.nombre_area}</PreviewTd>
+            <PreviewTd>{plan.usuarios.nombre}</PreviewTd>
+            <PreviewTd>{plan.catalogo_detalle.nombre}</PreviewTd>
+            <PreviewTd>{planProgress(plan)}%</PreviewTd>
+            <PreviewTd>{formatDate(plan.fecha_reprogramada ?? plan.fecha_plan)}</PreviewTd>
+            <PreviewTd>{plan.prorroga_estado ?? "Sin solicitud"}</PreviewTd>
           </tr>
         ))}
       </tbody>
@@ -576,7 +650,7 @@ function ReportExportPrintDocument({
         <div className="min-w-[190px] rounded-lg border border-line bg-surface/40 p-3 text-right">
           <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-faint">Generado</p>
           <p className="mt-1 text-[12px] font-semibold text-ink">{formatDateTime(generatedAt)}</p>
-          <p className="mt-1 text-[11px] text-ink-quiet">{scope === "resumen" ? "Resumen por reporte" : "Reporte completo"}</p>
+          <p className="mt-1 text-[11px] text-ink-quiet">{SCOPE_META[scope].pill}</p>
         </div>
       </header>
       <div className="mt-5 h-[3px] w-full bg-brand-700" />
@@ -593,7 +667,7 @@ function ReportExportPrintDocument({
         <div className="rounded-lg border border-line p-3">
           <h2 className="text-[13px] font-bold text-brand-800">Alcance del documento</h2>
           <div className="mt-3 grid gap-2">
-            <PrintField label="Contenido" value={scope === "resumen" ? "Resumen de reportes" : "Reporte completo con planes vinculados"} />
+            <PrintField label="Contenido" value={SCOPE_META[scope].pill} />
             <PrintField label="Estado base" value={filterLabel} />
             <PrintField label="Reportes incluidos" value={String(totalCases)} />
           </div>
@@ -608,20 +682,22 @@ function ReportExportPrintDocument({
         </div>
       </section>
 
-      <section className="mt-6">
-        <div className="flex items-end justify-between gap-4 border-b border-line pb-2">
-          <div>
-            <h2 className="text-[17px] font-bold text-brand-800">Reportes incluidos</h2>
-            <p className="mt-0.5 text-[11px] text-ink-quiet">
-              Datos generales del expediente SOP, estado, ubicación, área responsable, riesgo y cantidad de planes.
-            </p>
+      {scope !== "planes" && (
+        <section className="mt-6">
+          <div className="flex items-end justify-between gap-4 border-b border-line pb-2">
+            <div>
+              <h2 className="text-[17px] font-bold text-brand-800">Reportes incluidos</h2>
+              <p className="mt-0.5 text-[11px] text-ink-quiet">
+                Datos generales del expediente SOP, estado, ubicación, área responsable, riesgo y cantidad de planes.
+              </p>
+            </div>
+            <p className="text-[11px] font-semibold text-ink-quiet">{items.length} reportes</p>
           </div>
-          <p className="text-[11px] font-semibold text-ink-quiet">{items.length} reportes</p>
-        </div>
-        <PrintSummaryTable items={items} />
-      </section>
+          <PrintSummaryTable items={items} />
+        </section>
+      )}
 
-      {scope === "planes" && (
+      {scope !== "casos" && (
         <section className="mt-6">
           <div className="flex items-end justify-between gap-4 border-b border-line pb-2">
             <div>
@@ -651,6 +727,25 @@ function ReportExportPrintDocument({
 
 function buildRows(items: ExportCase[], scope: ExportScope): ExportRow[] {
   if (scope === "planes") {
+    return items.flatMap((item) =>
+      item.source.planes_accion.map((plan) => ({
+        "Código Plan": shortPlanCode(plan.codigo_plan),
+        "Código SOP": item.row.id,
+        "Reporte": item.row.title,
+        "Área responsable": plan.areas.nombre_area,
+        "Responsable": plan.usuarios.nombre,
+        "Cargo responsable": plan.usuarios.cargo ?? "—",
+        "Estado plan": plan.catalogo_detalle.nombre,
+        "Descripción plan": plan.descripcion,
+        "Avance": `${planProgress(plan)}%`,
+        "Actividades": plan.actividades_plan.length,
+        "Fecha límite": formatDate(plan.fecha_reprogramada ?? plan.fecha_plan),
+        "Prórroga": plan.prorroga_estado ?? "Sin solicitud",
+      })),
+    );
+  }
+
+  if (scope === "combinado") {
     return items.flatMap((item) => {
       const reportBase = {
         "Código SOP": item.row.id,

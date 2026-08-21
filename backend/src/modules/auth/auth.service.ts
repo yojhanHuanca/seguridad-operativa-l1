@@ -81,6 +81,8 @@ export class AuthService {
             rol: user.id_rol,
             rol_nombre: user.roles!.nombre_rol,
             es_responsable: user.es_responsable,
+            puede_reabrir_casos: user.puede_reabrir_casos,
+            puede_rechazar_reportes: user.puede_rechazar_reportes,
             id_area: user.id_area,
             nombre: user.nombre,
             id_sesion: sesion.id_sesion,
@@ -104,6 +106,8 @@ export class AuthService {
                 id_area: user.id_area,
                 ultimo_acceso: ultimoAccesoPrevio,
                 es_responsable: user.es_responsable,
+                puede_reabrir_casos: user.puede_reabrir_casos,
+                puede_rechazar_reportes: user.puede_rechazar_reportes,
 
             },
         };

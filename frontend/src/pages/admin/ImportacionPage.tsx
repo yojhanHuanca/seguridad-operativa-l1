@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import { useImportarCasos, useValidarImportacion } from "@/features/importacion/hooks/useImportacion";
 import type { ImportacionPayload, ImportacionPreview, ImportacionResult, ImportacionRow } from "@/features/importacion/types";
 
-const ACCEPTED_EXTENSIONS = [".csv", ".xlsx"];
+const ACCEPTED_EXTENSIONS = [".csv", ".xlsx", ".xlsm"];
 
 interface ParsedFile {
   filename: string;
@@ -131,7 +131,7 @@ async function parseXlsx(file: File): Promise<ImportacionRow[]> {
 async function parseFile(file: File): Promise<ParsedFile> {
   const extension = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
   if (!ACCEPTED_EXTENSIONS.includes(extension)) {
-    throw new Error("Formato no soportado. Usa CSV o XLSX.");
+    throw new Error("Formato no soportado. Usa CSV, XLSX o XLSM.");
   }
 
   const rows = extension === ".csv" ? matrixToRows(parseCsv(await file.text())) : await parseXlsx(file);
@@ -257,7 +257,7 @@ export function AdminImportacionPage() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="font-display text-[20px] font-bold text-ink">Importación histórica</h1>
-          <p className="mt-1 text-[12.5px] text-ink-quiet">Carga controlada de casos SOP desde CSV o XLSX.</p>
+          <p className="mt-1 text-[12.5px] text-ink-quiet">Carga controlada de casos SOP desde CSV, XLSX o XLSM.</p>
         </div>
         <ValidationBadge preview={preview} />
       </div>
@@ -268,11 +268,11 @@ export function AdminImportacionPage() {
             <label className="flex min-h-[158px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-line-strong bg-surface px-4 py-6 text-center transition-colors hover:border-brand-600 hover:bg-brand-50/40">
               <UploadCloud className="h-8 w-8 text-brand-700" />
               <span className="mt-3 text-[14px] font-semibold text-ink">Seleccionar archivo</span>
-              <span className="mt-1 text-[12px] text-ink-quiet">CSV o XLSX · máximo 10 000 filas</span>
+              <span className="mt-1 text-[12px] text-ink-quiet">CSV, XLSX o XLSM · máximo 10 000 filas</span>
               <input
                 ref={inputRef}
                 type="file"
-                accept=".csv,.xlsx"
+                accept=".csv,.xlsx,.xlsm"
                 className="sr-only"
                 onChange={(event) => {
                   void handleFileChange(event.target.files?.[0]);

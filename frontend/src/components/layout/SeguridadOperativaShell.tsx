@@ -133,6 +133,10 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
         },
         { to: "/seguridad/alertas", label: "Alertas", icon: AlertTriangle, badge: pendingDecisions || undefined, badgeTone: "neutral", match: (p) => p === "/seguridad/alertas" },
         { to: "/seguridad/auditoria", label: "Auditoría", icon: History, match: (p) => p === "/seguridad/auditoria" },
+        // Solo para el RSO (flag es_responsable) — mismo permiso con el que ya entra a Monitoreo.
+        ...(soUser?.es_responsable
+          ? [{ to: "/seguridad/eventos", label: "Eventos Operativos", icon: Activity, match: (p: string) => p === "/seguridad/eventos" }]
+          : []),
       ],
     },
     {

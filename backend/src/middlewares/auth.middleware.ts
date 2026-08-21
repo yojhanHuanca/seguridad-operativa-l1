@@ -10,6 +10,9 @@ export interface AuthTokenPayload {
     rol: number | null;
     rol_nombre: string;
     es_responsable?: boolean;
+    /** Permisos puntuales dentro del rol — ver comentario en el modelo `usuarios`. */
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     /** Puede faltar en tokens emitidos antes de este campo — ver areaDelActor(). */
     id_area?: number | null;
     /** Puede faltar en tokens viejos — ver nombreDelActor(). */
@@ -102,4 +105,25 @@ export const requireRolesOrResponsable = (roles: string[], responsableRoles: str
     if (roles.some((role) => role.toLowerCase() === rolNombre)) return next();
     if (req.user?.es_responsable && responsableRoles.some((role) => role.toLowerCase() === rolNombre)) return next();
     return res.status(403).json({ success: false, message: "No tienes permisos para realizar esta acción" });
+};
+
+/**
+ * Como `requireRoles`, pero además exige un permiso puntual del usuario (ej.
+ * `puede_reabrir_casos`) — no todo el rol lo tiene, solo a quien el Admin se
+ * lo marcó en su ficha. Admin siempre pasa, sin necesitar el flag.
+ */
+export const requireRolesAndPermission = (
+    roles: string[],
+    permission: "puede_reabrir_casos" | "puede_rechazar_reportes",
+) => (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction,
+) => {
+    const rolNombre = req.user?.rol_nombre?.toLowerCase();
+    if (!rolNombre || !roles.some((role) => role.toLowerCase() === rolNombre)) {
+        return res.status(403).json({ success: false, message: "No tienes permisos para realizar esta acción" });
+    }
+    if (rolNombre === "admin" || req.user?.[permission]) return next();
+    return res.status(403).json({ success: false, message: "No tienes el permiso para realizar esta acción" });
 };

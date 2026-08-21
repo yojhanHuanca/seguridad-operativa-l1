@@ -34,8 +34,9 @@ export function EventosTable({
   emptyDescription?: string;
   showEstado?: boolean;
   onView: (evento: EventoListItem) => void;
-  onEdit: (evento: EventoListItem) => void;
-  onDelete: (evento: EventoListItem) => void;
+  /** Si no se pasan, la tabla queda de solo lectura (sin lápiz ni papelera) — ej. la vista de Seguridad Operativa. */
+  onEdit?: (evento: EventoListItem) => void;
+  onDelete?: (evento: EventoListItem) => void;
   /** Seguridad Operativa toma el evento y abre el hallazgo (caso SOP) desde acá mismo. */
   onAsignar?: (evento: EventoListItem) => void;
 }) {
@@ -139,24 +140,28 @@ export function EventosTable({
                       >
                         <Eye className="h-3.5 w-3.5" />
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => onEdit(evento)}
-                        title="Editar evento"
-                        className="grid h-7 w-7 place-items-center rounded-lg text-ink-quiet transition-colors hover:bg-surface-2 hover:text-ink"
-                        aria-label="Editar evento"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onDelete(evento)}
-                        title="Eliminar evento"
-                        className="grid h-7 w-7 place-items-center rounded-lg text-critical-ink transition-colors hover:bg-critical-soft"
-                        aria-label="Eliminar evento"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
+                      {onEdit && (
+                        <button
+                          type="button"
+                          onClick={() => onEdit(evento)}
+                          title="Editar evento"
+                          className="grid h-7 w-7 place-items-center rounded-lg text-ink-quiet transition-colors hover:bg-surface-2 hover:text-ink"
+                          aria-label="Editar evento"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                      {onDelete && (
+                        <button
+                          type="button"
+                          onClick={() => onDelete(evento)}
+                          title="Eliminar evento"
+                          className="grid h-7 w-7 place-items-center rounded-lg text-critical-ink transition-colors hover:bg-critical-soft"
+                          aria-label="Eliminar evento"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
