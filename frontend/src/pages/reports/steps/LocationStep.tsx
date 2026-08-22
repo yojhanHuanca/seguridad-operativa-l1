@@ -20,7 +20,7 @@ export function LocationStep({
   const tipoUbicacion = form.watch("tipo_ubicacion");
   const lugarEspecificoValue = form.watch("id_lugar_especifico");
 
-  const lugares = catalogs.get("Lugar de Incidente")?.catalogo_detalle ?? [];
+  const lugares = useMemo(() => catalogs.get("Lugar de Incidente")?.catalogo_detalle ?? [], [catalogs]);
   const estaciones = useMemo(() => lugares.filter((l) => !!l.codigo), [lugares]);
   const patios = useMemo(() => lugares.filter((l) => !l.codigo), [lugares]);
   const lugaresEspecificos = catalogs.get("Lugar Específico")?.catalogo_detalle ?? [];

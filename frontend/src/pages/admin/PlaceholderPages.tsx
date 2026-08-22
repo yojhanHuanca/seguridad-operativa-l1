@@ -9,6 +9,7 @@ export function AdminAuditoriaPage() {
         icon={History}
         title="Auditoría"
         description="Actividad global del sistema: quién hizo qué y cuándo, más allá del historial de un solo expediente."
+        hideTitle
       />
     </AdminShell>
   );
@@ -21,6 +22,7 @@ export function AdminConfiguracionPage() {
         icon={Cog}
         title="Configuración"
         description="Parámetros del sistema, como los plazos de SLA por nivel de riesgo."
+        hideTitle
       />
     </AdminShell>
   );

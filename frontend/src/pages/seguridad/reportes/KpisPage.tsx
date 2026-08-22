@@ -24,12 +24,7 @@ export function SoKpisPage() {
 
   return (
     <SeguridadOperativaShell>
-      <div>
-        <h1 className="text-[22px] font-bold text-ink tracking-tight">KPIs</h1>
-        <p className="mt-1 text-[13px] text-ink-quiet">Indicadores generales de reportes SOP y planes de acción del sistema.</p>
-      </div>
-
-      <div className="mt-5 grid gap-5 md:grid-cols-2">
+      <div className="grid gap-5 md:grid-cols-2">
         <Card>
           <div className="mb-4 flex items-center gap-3">
             <span className="grid h-9 w-9 place-items-center rounded-lg bg-brand-50 text-brand-700">

@@ -21,6 +21,15 @@ export class AuditoriaController {
     }
   }
 
+  static async getCounts(_req: Request, res: Response) {
+    try {
+      const counts = await AuditoriaService.counts();
+      return res.json(ApiResponse.success("Conteos obtenidos correctamente", counts));
+    } catch (error) {
+      return res.status(500).json(ApiResponse.error("Error al obtener los conteos", error));
+    }
+  }
+
   static async exportarCsv(req: Request, res: Response) {
     try {
       const csv = await AuditoriaService.exportarCsv(req.query as Record<string, string>);

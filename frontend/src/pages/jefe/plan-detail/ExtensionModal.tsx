@@ -10,9 +10,15 @@ import { apiErrorMessage } from "@/lib/api";
 import type { PlanItem } from "@/features/plans/types";
 import { ACTOR } from "./constants";
 
+function defaultExtensionDate() {
+  const date = new Date();
+  date.setDate(date.getDate() + 7);
+  return date.toISOString().slice(0, 10);
+}
+
 export function ExtensionModal({ plan, open, onClose }: { plan: PlanItem; open: boolean; onClose: () => void }) {
   const requestExt = useRequestPlanExtension();
-  const [nuevaFecha, setNuevaFecha] = useState(new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10));
+  const [nuevaFecha, setNuevaFecha] = useState(defaultExtensionDate);
   const [justificacion, setJustificacion] = useState("");
 
   return (

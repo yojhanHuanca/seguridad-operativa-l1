@@ -6,11 +6,18 @@ export interface CaseListItem {
   nombre_reportante: string | null;
   fecha_hallazgo: string;
   fecha_evento: string | null;
+  dias_abierto: number | null;
+  peligro: string | null;
+  consecuencia: string | null;
+  acr: string | null;
   created_at: string;
   catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { nombre: string; color: string | null };
   catalogo_detalle_casos_sop_tipoTocatalogo_detalle: { nombre: string };
   catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle: { nombre: string };
   catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: { id_detalle?: number; codigo: string | null; nombre: string; orden: number | null } | null;
+  catalogo_detalle_casos_sop_procedenciaTocatalogo_detalle: { nombre: string } | null;
+  catalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalle: { nombre: string } | null;
+  usuarios_casos_sop_responsable_hallazgoTousuarios: { id_usuario: number; nombre: string; cargo: string | null } | null;
   areas: { id_area: number; nombre_area: string } | null;
   anexos_caso: { id_anexo: number }[];
   planes_accion: PlanAccion[];

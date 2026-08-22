@@ -64,9 +64,7 @@ export function SoNotificacionesPage() {
     <SeguridadOperativaShell>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold tracking-[0.14em] uppercase text-brand-700 mb-1.5">Actividad del sistema</p>
-          <h1 className="text-[22px] font-bold text-ink leading-tight tracking-tight">Notificaciones</h1>
-          <p className="text-[13.5px] text-ink-quiet mt-1.5 max-w-2xl">
+          <p className="max-w-2xl text-[13.5px] text-ink-quiet">
             Lo que hicieron las áreas y los reportantes. Para lo que requiere una decisión suya, vaya al Centro de Decisiones.
           </p>
         </div>

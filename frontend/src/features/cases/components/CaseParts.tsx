@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import type { ReactNode } from "react";
 import { Check, X, AlertCircle, Inbox, FileSearch, Microscope, ClipboardList, Rocket, Activity, CheckCircle2 } from "lucide-react";
 import { Card } from "@/design-system/primitives/Card";

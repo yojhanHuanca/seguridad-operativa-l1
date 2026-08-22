@@ -4,7 +4,6 @@ import {
   CalendarDays,
   CheckCircle2,
   ClipboardList,
-  Download,
   FileJson,
   FileSpreadsheet,
   FileText,
@@ -107,7 +106,7 @@ export function ReportExportPage() {
           .join(" ");
         return normalizeText(haystack).includes(q);
       })
-      .sort((a, b) => +new Date(b.source.created_at) - +new Date(a.source.created_at));
+      .sort((a, b) => compareBySopCode(a.row.id, b.row.id, a.source.created_at, b.source.created_at));
   }, [activeFilter, area, cases, from, query, to]);
 
   const exportRows = useMemo(() => buildRows(filtered, scope), [filtered, scope]);
@@ -231,20 +230,15 @@ export function ReportExportPage() {
         )}
 
         <div data-report-export-screen>
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-[12px] font-medium text-brand-800">
-                <Download className="h-3.5 w-3.5" /> Reportes
-              </div>
-              <h1 className="mt-3 text-[24px] font-bold tracking-tight text-ink">Exportar reportes</h1>
-              <p className="mt-1 max-w-3xl text-[13px] leading-relaxed text-ink-quiet">
-                Genere archivos con información real del flujo SOP. La exportación respeta los filtros aplicados y no agrega datos manuales.
-              </p>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <StatChip icon={<FileText className="h-3.5 w-3.5" />} label="Filtrados" value={stats.total} tone="brand" />
+              <StatChip icon={<ClipboardList className="h-3.5 w-3.5" />} label="Con planes" value={stats.conPlanes} />
+              <StatChip icon={<CheckCircle2 className="h-3.5 w-3.5" />} label="Cerrados" value={stats.cerrados} />
+              <StatChip icon={<CalendarDays className="h-3.5 w-3.5" />} label="Prórrogas" value={stats.prorrogas} tone={stats.prorrogas > 0 ? "warning" : "neutral"} />
+              <StatChip icon={<BarChart3 className="h-3.5 w-3.5" />} label="Filas a exportar" value={exportRows.length} tone="info" />
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Button variant="outline" size="sm" onClick={resetFilters}>
-                <RefreshCcw className="h-4 w-4" /> Limpiar filtros
-              </Button>
               <Button variant="outline" size="sm" disabled={exportRows.length === 0} onClick={() => downloadJson(exportRows, fileName)}>
                 <FileJson className="h-4 w-4" /> JSON
               </Button>
@@ -259,14 +253,9 @@ export function ReportExportPage() {
               </Button>
             </div>
           </div>
-
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-            <MetricCard icon={<FileText className="h-4 w-4" />} label="Reportes filtrados" value={stats.total} tone="brand" />
-            <MetricCard icon={<ClipboardList className="h-4 w-4" />} label="Con planes" value={stats.conPlanes} />
-            <MetricCard icon={<CheckCircle2 className="h-4 w-4" />} label="Cerrados" value={stats.cerrados} />
-            <MetricCard icon={<CalendarDays className="h-4 w-4" />} label="Prórrogas" value={stats.prorrogas} tone={stats.prorrogas > 0 ? "warning" : "neutral"} />
-            <MetricCard icon={<BarChart3 className="h-4 w-4" />} label="Filas a exportar" value={exportRows.length} tone="info" />
-          </div>
+          <p className="mt-2 max-w-3xl text-[12.5px] leading-relaxed text-ink-quiet">
+            Genere archivos con información real del flujo SOP. La exportación respeta los filtros aplicados y no agrega datos manuales.
+          </p>
 
           <Card padded={false} className="mt-5 overflow-hidden">
             <div className="border-b border-line bg-white px-4 py-4">
@@ -427,7 +416,7 @@ export function ReportExportPage() {
   );
 }
 
-function MetricCard({
+function StatChip({
   icon,
   label,
   value,
@@ -439,15 +428,23 @@ function MetricCard({
   tone?: "neutral" | "brand" | "warning" | "info";
 }) {
   return (
-    <Card className={cn("p-4", tone === "brand" && "border-brand-200 bg-brand-50/60", tone === "warning" && "border-warning/30 bg-warning-soft/60")}>
-      <div className="flex items-center justify-between gap-3">
-        <span className={cn("grid h-9 w-9 place-items-center rounded-lg bg-surface-2 text-ink-soft", tone === "brand" && "bg-white text-brand-700")}>
-          {icon}
-        </span>
-        <span className="font-mono text-[22px] font-bold text-ink tabular-nums">{value}</span>
-      </div>
-      <p className="mt-3 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{label}</p>
-    </Card>
+    <div
+      className={cn(
+        "flex items-center gap-2 rounded-xl border px-3 py-2",
+        tone === "brand" && "border-brand-200 bg-brand-50/70",
+        tone === "warning" && "border-warning/30 bg-warning-soft/60",
+        tone === "info" && "border-line bg-white",
+        tone === "neutral" && "border-line bg-white"
+      )}
+    >
+      <span className={cn("grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-surface-2 text-ink-soft", tone === "brand" && "bg-white text-brand-700")}>
+        {icon}
+      </span>
+      <span>
+        <span className="block font-mono text-[15px] font-bold leading-none text-ink tabular-nums">{value}</span>
+        <span className="mt-0.5 block text-[10.5px] font-medium text-ink-faint">{label}</span>
+      </span>
+    </div>
   );
 }
 
@@ -725,86 +722,105 @@ function ReportExportPrintDocument({
   );
 }
 
+/** Los mismos 15 campos del "hallazgo" que trae el histórico oficial (BD), en el mismo orden y con el mismo nombre de columna. */
+function hallazgoColumns(item: ExportCase) {
+  const riesgo = item.row.risk ? `${item.row.risk} — ${item.row.riskCategoria ?? ""}` : "Sin evaluar";
+  return {
+    "Nuevo código": item.row.id,
+    "Fecha del hallazgo": formatDate(item.source.fecha_hallazgo),
+    "Fecha de evento": item.source.fecha_evento ? formatDate(item.source.fecha_evento) : "—",
+    "Estado Hallazgo": item.row.estado,
+    "Días abierto": item.source.dias_abierto ?? "—",
+    "Procedencia": item.source.catalogo_detalle_casos_sop_procedenciaTocatalogo_detalle?.nombre ?? "—",
+    "Tipo": item.source.catalogo_detalle_casos_sop_tipoTocatalogo_detalle?.nombre ?? "—",
+    "Descripción": item.source.descripcion,
+    "Responsable de Hallazgo/ Investigación/ RSO": item.source.usuarios_casos_sop_responsable_hallazgoTousuarios?.nombre ?? "—",
+    "Tipo SOP": item.source.catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle?.nombre ?? "—",
+    "Subtipo SOP": item.source.catalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalle?.nombre ?? "—",
+    "Peligro": item.source.peligro ?? "—",
+    "Consecuencias": item.source.consecuencia ?? "—",
+    "Análisis de riesgo": riesgo,
+    "ACR": item.source.acr ?? "—",
+  };
+}
+
+/** Extra que ya calculábamos y que no está en la plantilla oficial — se agrega al final, sin pisar el formato de referencia. */
+function hallazgoExtra(item: ExportCase) {
+  return {
+    "Reportante": item.row.reporter,
+    "Estación": item.row.station || "—",
+    "Ubicación": item.row.location || "—",
+    "Fecha creación": formatDateTime(item.source.created_at),
+    "Evidencias": item.row.evidencias,
+    "Prórroga solicitada": item.row.prorrogaSolicitada ? "Sí" : "No",
+  };
+}
+
+function planColumns(plan: PlanAccion) {
+  return {
+    "Plan de Acción": shortPlanCode(plan.codigo_plan),
+    "Descripción de Plan de Acción": plan.descripcion,
+    "Área": plan.areas.nombre_area,
+    "Responsable Plan de Acción": plan.usuarios.nombre,
+    "Estado Plan de acción": plan.catalogo_detalle.nombre,
+  };
+}
+
+function planExtra(plan: PlanAccion) {
+  return {
+    "Cargo responsable": plan.usuarios.cargo ?? "—",
+    "Avance": `${planProgress(plan)}%`,
+    "Actividades": plan.actividades_plan.length,
+    "Fecha límite": formatDate(plan.fecha_reprogramada ?? plan.fecha_plan),
+    "Prórroga": plan.prorroga_estado ?? "Sin solicitud",
+  };
+}
+
+const SIN_PLAN_COLUMNS = {
+  "Plan de Acción": "—",
+  "Descripción de Plan de Acción": "—",
+  "Área": "—",
+  "Responsable Plan de Acción": "—",
+  "Estado Plan de acción": "Sin plan de acción",
+};
+
+const SIN_PLAN_EXTRA = {
+  "Cargo responsable": "—",
+  "Avance": "—",
+  "Actividades": 0,
+  "Fecha límite": "—",
+  "Prórroga": "Sin solicitud",
+};
+
 function buildRows(items: ExportCase[], scope: ExportScope): ExportRow[] {
   if (scope === "planes") {
     return items.flatMap((item) =>
       item.source.planes_accion.map((plan) => ({
-        "Código Plan": shortPlanCode(plan.codigo_plan),
-        "Código SOP": item.row.id,
-        "Reporte": item.row.title,
-        "Área responsable": plan.areas.nombre_area,
-        "Responsable": plan.usuarios.nombre,
-        "Cargo responsable": plan.usuarios.cargo ?? "—",
-        "Estado plan": plan.catalogo_detalle.nombre,
-        "Descripción plan": plan.descripcion,
-        "Avance": `${planProgress(plan)}%`,
-        "Actividades": plan.actividades_plan.length,
-        "Fecha límite": formatDate(plan.fecha_reprogramada ?? plan.fecha_plan),
-        "Prórroga": plan.prorroga_estado ?? "Sin solicitud",
+        "Nuevo código": item.row.id,
+        ...planColumns(plan),
+        ...planExtra(plan),
+        "Título del reporte": item.row.title,
       })),
     );
   }
 
   if (scope === "combinado") {
     return items.flatMap((item) => {
-      const reportBase = {
-        "Código SOP": item.row.id,
-        "Tipo": EVENT_LABELS[item.row.type],
-        "Título reporte": item.row.title,
-        "Estado reporte": item.row.estado,
-        "Reportante": item.row.reporter,
-        "Estación": item.row.station || "—",
-        "Ubicación": item.row.location || "—",
-        "Riesgo": item.row.risk ? `${item.row.risk} — ${item.row.riskCategoria ?? ""}` : "Sin evaluar",
-        "Fecha creación": formatDateTime(item.source.created_at),
-      };
+      const hallazgo = hallazgoColumns(item);
+      const extra = hallazgoExtra(item);
       if (item.source.planes_accion.length === 0) {
-        return [{
-          ...reportBase,
-          "Plan": "—",
-          "Estado plan": "Sin plan de acción",
-          "Área responsable": item.areas.join(", ") || "—",
-          "Responsable": "—",
-          "Cargo responsable": "—",
-          "Descripción plan": "—",
-          "Avance": "—",
-          "Actividades": 0,
-          "Fecha límite": "—",
-          "Prórroga": "Sin solicitud",
-        }];
+        return [{ ...hallazgo, ...SIN_PLAN_COLUMNS, ...extra, ...SIN_PLAN_EXTRA }];
       }
       return item.source.planes_accion.map((plan) => ({
-        ...reportBase,
-        "Plan": shortPlanCode(plan.codigo_plan),
-        "Estado plan": plan.catalogo_detalle.nombre,
-        "Área responsable": plan.areas.nombre_area,
-        "Responsable": plan.usuarios.nombre,
-        "Cargo responsable": plan.usuarios.cargo ?? "—",
-        "Descripción plan": plan.descripcion,
-        "Avance": `${planProgress(plan)}%`,
-        "Actividades": plan.actividades_plan.length,
-        "Fecha límite": formatDate(plan.fecha_reprogramada ?? plan.fecha_plan),
-        "Prórroga": plan.prorroga_estado ?? "Sin solicitud",
+        ...hallazgo,
+        ...planColumns(plan),
+        ...extra,
+        ...planExtra(plan),
       }));
     });
   }
 
-  return items.map((item) => ({
-    "Código SOP": item.row.id,
-    "Tipo": EVENT_LABELS[item.row.type],
-    "Estado": item.row.estado,
-    "Título": item.row.title,
-    "Reportante": item.row.reporter,
-    "Estación": item.row.station || "—",
-    "Ubicación": item.row.location || "—",
-    "Área responsable": item.areas.join(", ") || "—",
-    "Riesgo": item.row.risk ? `${item.row.risk} — ${item.row.riskCategoria ?? ""}` : "Sin evaluar",
-    "Fecha creación": formatDateTime(item.source.created_at),
-    "Fecha límite SLA": item.row.slaDueDate ? formatDate(item.row.slaDueDate) : "—",
-    "Evidencias": item.row.evidencias,
-    "Planes de acción": item.source.planes_accion.length,
-    "Prórroga solicitada": item.row.prorrogaSolicitada ? "Sí" : "No",
-  }));
+  return items.map((item) => ({ ...hallazgoColumns(item), ...hallazgoExtra(item) }));
 }
 
 function PrintSummaryTable({ items }: { items: ExportCase[] }) {
@@ -911,6 +927,23 @@ function planProgress(plan: PlanAccion): number {
   const total = plan.actividades_plan.length;
   const sum = plan.actividades_plan.reduce((acc, activity) => acc + Number(activity.porcentaje ?? 0), 0);
   return Math.round(sum / total);
+}
+
+/** SOP 01-2024, SOP 02-2024... en orden ascendente, como en el histórico oficial — no por fecha de creación. */
+function sopSortKey(id: string): { year: number; num: number } | null {
+  const match = id.match(/(\d+)\s*-\s*(\d+)/);
+  if (!match) return null;
+  return { num: Number(match[1]), year: Number(match[2]) };
+}
+
+function compareBySopCode(idA: string, idB: string, createdAtA: string, createdAtB: string): number {
+  const a = sopSortKey(idA);
+  const b = sopSortKey(idB);
+  if (a && b) {
+    if (a.year !== b.year) return a.year - b.year;
+    return a.num - b.num;
+  }
+  return +new Date(createdAtA) - +new Date(createdAtB);
 }
 
 function normalizeText(value: unknown): string {

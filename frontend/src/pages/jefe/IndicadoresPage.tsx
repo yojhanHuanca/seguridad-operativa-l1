@@ -13,12 +13,7 @@ import { DetalleTable } from "@/features/indicadores/components/DetalleTable";
 export function JefeIndicadoresPage() {
   return (
     <JefeShell>
-      <div>
-        <h1 className="text-[22px] font-bold text-ink tracking-tight">Indicadores</h1>
-        <p className="mt-1 text-[13px] text-ink-quiet">Seguimiento de los planes de acción del sistema.</p>
-      </div>
-
-      <div className="mt-5 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         <TotalPlanesCard />
         <PlanesCharts />
       </div>

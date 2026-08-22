@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useForm, type Resolver } from "react-hook-form";
+import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Building2,
@@ -87,7 +87,7 @@ export function NuevoReporteModal({
     defaultValues: { tipo_ubicacion: "estacion" },
   });
 
-  const valores = form.watch();
+  const valores = useWatch({ control: form.control }) as Partial<SoReportFormValues>;
   const tipos = catalogs.byName.get("Tipo de Reporte")?.catalogo_detalle ?? [];
   // Las estaciones del catálogo llevan código de estación; los patios taller no.
   const lugares = catalogs.byName.get("Lugar de Incidente")?.catalogo_detalle ?? [];

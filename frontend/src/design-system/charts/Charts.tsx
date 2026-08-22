@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 // Portado del prototipo SIGMA L1 (design-system/charts/Charts.tsx), con la
 // animación de entrada alineada al resto de la app.
 import { useReducedMotion } from "framer-motion";

@@ -90,7 +90,7 @@ export function IncidentMap() {
   const selected = selectedStation || selectedTaller;
 
   const { byName: catalogsByName } = useCatalogs();
-  const lugares = catalogsByName.get("Lugar de Incidente")?.catalogo_detalle ?? [];
+  const lugares = useMemo(() => catalogsByName.get("Lugar de Incidente")?.catalogo_detalle ?? [], [catalogsByName]);
   const stationCoords = useMemo(() => resolveStationCoords(lugares), [lugares]);
   const talleres = useMemo(() => resolveTalleresCoords(lugares, stationCoords), [lugares, stationCoords]);
 
@@ -108,13 +108,16 @@ export function IncidentMap() {
 
   useEffect(() => {
     if (!stations.length) return;
-    setSelectedStation((current) => {
-      if (current) {
-        const fresh = stations.find((station) => station.name === current.name);
-        if (fresh) return fresh;
-      }
-      return null;
-    });
+    const timer = window.setTimeout(() => {
+      setSelectedStation((current) => {
+        if (current) {
+          const fresh = stations.find((station) => station.name === current.name);
+          if (fresh) return fresh;
+        }
+        return null;
+      });
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [stations]);
 
   const linePath = useMemo(() => {

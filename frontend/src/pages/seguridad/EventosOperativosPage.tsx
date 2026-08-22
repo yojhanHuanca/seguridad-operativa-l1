@@ -74,11 +74,7 @@ export function SoEventosPage() {
   return (
     <SeguridadOperativaShell>
       <div>
-        <div className="inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-[12px] font-medium text-brand-800">
-          Registro operativo
-        </div>
-        <h1 className="mt-3 text-[22px] font-bold leading-tight tracking-tight text-ink">Eventos operativos</h1>
-        <p className="mt-1.5 max-w-2xl text-[13.5px] text-ink-quiet">
+        <p className="max-w-2xl text-[13.5px] text-ink-quiet">
           Registro cronológico de eventos de Línea 1 relevados por Monitoreo, independiente de los casos SOP abiertos.
         </p>
       </div>

@@ -19,10 +19,12 @@ export function SimpleNameModal({ open, onClose, title, fieldLabel, initialValue
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (open) {
+    if (!open) return;
+    const timer = window.setTimeout(() => {
       setValue(initialValue);
       setError(null);
-    }
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [open, initialValue]);
 
   const submit = () => {

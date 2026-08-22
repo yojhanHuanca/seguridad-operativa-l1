@@ -1,23 +1,27 @@
 import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 export function ComingSoon({
   icon: Icon,
   title,
   description,
   points,
+  hideTitle,
 }: {
   icon: LucideIcon;
   title: string;
   description: string;
   points?: string[];
+  /** El shell que envuelve la página ya muestra el título arriba; no lo repitas. */
+  hideTitle?: boolean;
 }) {
   return (
     <div>
       <div>
-        <h1 className="font-display text-[19px] font-bold tracking-[-0.01em] text-ink">{title}</h1>
-        <p className="mt-0.5 max-w-xl text-[12px] text-ink-quiet">{description}</p>
+        {!hideTitle && <h1 className="font-display text-[19px] font-bold tracking-[-0.01em] text-ink">{title}</h1>}
+        <p className={cn("max-w-xl text-[12px] text-ink-quiet", hideTitle ? "" : "mt-0.5")}>{description}</p>
       </div>
 
       <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: "easeOut" }}>

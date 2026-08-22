@@ -121,7 +121,7 @@ export function Reportes() {
   const [estadoFiltro, setEstadoFiltro] = useState("");
   const [generando, setGenerando] = useState<string | null>(null);
 
-  const lista = eventos ?? [];
+  const lista = useMemo(() => eventos ?? [], [eventos]);
   const conteo = contarEventosPorEstado(lista);
   const tiposIncidente = catalogs.byName.get("Tipo de incidente operativo")?.catalogo_detalle ?? [];
   const hayFiltros = Boolean(desde || hasta || tipoFiltro || estadoFiltro);

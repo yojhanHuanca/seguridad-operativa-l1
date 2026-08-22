@@ -30,8 +30,7 @@ export function PlanSelectionContent({ codigo, plans }: { codigo: string; plans:
             <ArrowLeft className="h-6 w-6" />
           </Link>
           <div>
-            <h1 className="text-[26px] font-bold tracking-tight text-ink">Plan de Acción</h1>
-            <p className="mt-1 text-[14px] text-ink-soft">
+            <p className="text-[14px] text-ink-soft">
               Caso: <span className="font-mono">{codigo}</span>
             </p>
           </div>

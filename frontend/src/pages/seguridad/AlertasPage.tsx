@@ -136,9 +136,7 @@ export function SoAlertasPage() {
     <SeguridadOperativaShell>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
-          <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-700">Centro de decisiones</p>
-          <h1 className="text-[22px] font-bold leading-tight tracking-tight text-ink">Alertas operativas</h1>
-          <p className="mt-1.5 max-w-2xl text-[13.5px] text-ink-quiet">
+          <p className="max-w-2xl text-[13.5px] text-ink-quiet">
             Prioriza expedientes con SLA comprometido, riesgo alto, prorrogas y acciones pendientes de Seguridad Operativa.
           </p>
         </div>

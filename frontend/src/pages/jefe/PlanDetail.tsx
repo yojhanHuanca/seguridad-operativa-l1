@@ -101,7 +101,10 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
   const [extOpen, setExtOpen] = useState(false);
 
   useEffect(() => {
-    setFinalDescription(window.localStorage.getItem(finalDescriptionDraftKey) ?? "");
+    const timer = window.setTimeout(() => {
+      setFinalDescription(window.localStorage.getItem(finalDescriptionDraftKey) ?? "");
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [finalDescriptionDraftKey]);
 
   const hasSaveableChanges = flow.puedeTrabajar && finalDescription.trim().length > 0;
@@ -143,7 +146,6 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
             </Link>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-[24px] font-bold tracking-tight text-ink">Detalle del Plan</h1>
                 <span className="rounded-full border border-line bg-surface-2 px-3 py-1 font-mono text-[13px] font-medium text-ink-soft">
                   {caso.codigo_sop}
                 </span>

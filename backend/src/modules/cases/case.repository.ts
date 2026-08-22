@@ -17,6 +17,11 @@ const LIST_INCLUDE = {
   catalogo_detalle_casos_sop_tipoTocatalogo_detalle: { select: { nombre: true } },
   catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle: { select: { nombre: true } },
   catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: { select: { id_detalle: true, codigo: true, nombre: true, orden: true } },
+  // Estos tres solo se usaban en el detalle de un caso; la exportación de Reportes
+  // (todos los casos a la vez) también los necesita, así que ya van en la lista.
+  catalogo_detalle_casos_sop_procedenciaTocatalogo_detalle: { select: { nombre: true } },
+  catalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalle: { select: { nombre: true } },
+  usuarios_casos_sop_responsable_hallazgoTousuarios: { select: { id_usuario: true, nombre: true, cargo: true } },
   areas: { select: { id_area: true, nombre_area: true } },
   anexos_caso: { select: { id_anexo: true } },
   // Sin `seguimientos`: en la lista solo hace falta el avance (que sale de
@@ -55,10 +60,7 @@ const LIST_INCLUDE = {
 
 const DETAIL_INCLUDE = {
   ...LIST_INCLUDE,
-  catalogo_detalle_casos_sop_procedenciaTocatalogo_detalle: { select: { nombre: true } },
-  catalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalle: { select: { nombre: true } },
   catalogo_detalle_casos_sop_estado_planTocatalogo_detalle: { select: { nombre: true } },
-  usuarios_casos_sop_responsable_hallazgoTousuarios: { select: { id_usuario: true, nombre: true, cargo: true } },
   usuarios_casos_sop_responsable_planTousuarios: { select: { id_usuario: true, nombre: true, cargo: true } },
   anexos_caso: true,
   investigacion_caso: { include: { usuarios: { select: { id_usuario: true, nombre: true, cargo: true } } } },

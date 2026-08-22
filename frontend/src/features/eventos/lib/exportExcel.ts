@@ -21,7 +21,7 @@ export interface ResumenExcelRow {
  * sí se ve como una hoja de cálculo de verdad al descargarlo.
  */
 export async function exportarEventosExcel(eventos: EventoListItem[], fileName: string) {
-  const workbook = crearWorkbook();
+  const workbook = await crearWorkbook();
 
   const sheet = workbook.addWorksheet("Lista de eventos");
 
@@ -48,7 +48,7 @@ export async function exportarEventosExcel(eventos: EventoListItem[], fileName: 
 }
 
 export async function exportarResumenExcel(rows: ResumenExcelRow[], fileName: string, etiquetaHeader: string) {
-  const workbook = crearWorkbook();
+  const workbook = await crearWorkbook();
   const totalEventos = rows.reduce((sum, row) => sum + row.cantidad, 0);
 
   const sheet = workbook.addWorksheet("Resumen");

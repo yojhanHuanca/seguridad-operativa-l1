@@ -63,8 +63,11 @@ export function SoCasosPage() {
   }, [query]);
 
   useEffect(() => {
-    setCurrentPage(1);
-    setExpandedId(null);
+    const timer = window.setTimeout(() => {
+      setCurrentPage(1);
+      setExpandedId(null);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [filtro.id, areaFilter, debouncedQuery, sort]);
 
   const { data: counts } = useCaseCounts(areaId);
@@ -106,9 +109,8 @@ export function SoCasosPage() {
   return (
     <SeguridadOperativaShell>
       <div className="flex items-end justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-[22px] font-bold text-ink tracking-tight">Gestión de Reportes</h1>
-          <p className="text-[13px] text-ink-quiet mt-1">
+        <div className="min-w-0">
+          <p className="max-w-2xl text-[13px] text-ink-quiet">
             Todos los reportes del sistema. Abra el expediente para gestionar el flujo completo.
           </p>
         </div>

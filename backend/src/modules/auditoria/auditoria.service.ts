@@ -60,6 +60,10 @@ export class AuditoriaService {
     return AuditoriaRepository.findTablasRegistradas();
   }
 
+  static async counts() {
+    return AuditoriaRepository.countsByAccion();
+  }
+
   /** CSV con BOM (para que Excel en Windows respete los acentos) de los registros que calzan con el filtro. */
   static async exportarCsv(query: FiltroQuery): Promise<string> {
     const registros = await AuditoriaRepository.findParaExportar(parseFiltros(query));

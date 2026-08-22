@@ -1,89 +1,393 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, ChevronLeft, ChevronRight, KeyRound, Pencil, Search, ShieldCheck, UserCog, UserPlus, Users } from "lucide-react";
+import {
+  Briefcase,
+  ChevronLeft,
+  ChevronRight,
+  Crown,
+  FileText,
+  KeyRound,
+  Pencil,
+  Radar,
+  Search,
+  ShieldCheck,
+  UserPlus,
+  Users,
+} from "lucide-react";
 import { useLocation } from "react-router-dom";
+import { toast } from "sonner";
 import { AdminShell } from "@/components/layout/AdminShell";
 import { Button } from "@/design-system/primitives/Button";
 import { Input, Select } from "@/design-system/primitives/Input";
 import { Card } from "@/components/ui/card";
-import { toast } from "sonner";
 import { useUsers } from "@/features/users/hooks/useUsers";
 import { useUserCounts } from "@/features/users/hooks/useUserCounts";
 import { useRoles } from "@/features/users/hooks/useRoles";
 import { useUpdateUser } from "@/features/users/hooks/useUserActions";
 import { UserFormModal } from "@/features/users/components/UserFormModal";
 import { apiErrorMessage } from "@/lib/api";
+import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { UserListItem } from "@/features/users/types";
+import type { Role, UserListItem } from "@/features/users/types";
 
 type PermisoKey = "es_responsable" | "puede_reabrir_casos" | "puede_rechazar_reportes";
+type PermissionFilter = "todos" | "con_permisos" | PermisoKey;
 
-const PERMISOS: { key: PermisoKey; label: string; hint: string }[] = [
-  { key: "es_responsable", label: "Es responsable (RSO)", hint: "Entra a Monitoreo y ve Eventos Operativos." },
-  { key: "puede_reabrir_casos", label: "Puede reabrir casos", hint: "Reabre un expediente ya cerrado." },
-  { key: "puede_rechazar_reportes", label: "Puede rechazar reportes", hint: "Descarta un reporte sin más trámite." },
+const POR_PAGINA = 15;
+const ACCESS_LIMIT = 500;
+
+const PERMISOS: { key: PermisoKey; label: string; shortLabel: string; hint: string }[] = [
+  { key: "es_responsable", label: "Responsable SO", shortLabel: "RSO", hint: "Acceso responsable a Monitoreo y Eventos Operativos." },
+  { key: "puede_reabrir_casos", label: "Reabrir casos", shortLabel: "Reabrir", hint: "Reapertura de expedientes cerrados." },
+  { key: "puede_rechazar_reportes", label: "Rechazar reportes", shortLabel: "Rechazar", hint: "Rechazo de reportes antes del flujo de gestión." },
 ];
 
-/** Tabla editable: un check por permiso y por usuario de Seguridad Operativa, guarda al instante. */
-function PermisosEspecialesTable() {
-  const { data: rolesList = [] } = useRoles();
-  const idRolSO = rolesList.find((r) => r.nombre_rol === "Seguridad Operativa")?.id_rol;
-  const { data: pageData, isLoading } = useUsers({ rol: idRolSO, page: 1, limit: 200 });
-  const usuarios = pageData?.items ?? [];
-  const updateUser = useUpdateUser();
+const ROLE_ORDER = ["Admin", "Seguridad Operativa", "Jefe de Área", "Reportante", "Monitorista"];
 
-  const togglePermiso = (user: UserListItem, permiso: PermisoKey, checked: boolean) => {
-    updateUser.mutate(
-      { id_usuario: user.id_usuario, [permiso]: checked },
-      {
-        onError: (error) => toast.error(apiErrorMessage(error, "No se pudo actualizar el permiso")),
-      }
-    );
-  };
+const ROL_STYLE: Record<string, { icon: typeof ShieldCheck; badge: string; dot: string; active: string }> = {
+  Admin: { icon: Crown, badge: "bg-red-50 text-red-700 border-red-100", dot: "bg-red-500", active: "border-red-200 bg-red-50/70 text-red-800" },
+  "Seguridad Operativa": {
+    icon: ShieldCheck,
+    badge: "bg-brand-50 text-brand-800 border-brand-100",
+    dot: "bg-brand-600",
+    active: "border-brand-200 bg-brand-50/80 text-brand-900",
+  },
+  "Jefe de Área": { icon: Briefcase, badge: "bg-blue-50 text-blue-700 border-blue-100", dot: "bg-blue-500", active: "border-blue-200 bg-blue-50/80 text-blue-800" },
+  Reportante: { icon: FileText, badge: "bg-slate-100 text-slate-700 border-slate-200", dot: "bg-slate-400", active: "border-slate-200 bg-slate-100 text-slate-800" },
+  Monitorista: { icon: Radar, badge: "bg-amber-50 text-amber-700 border-amber-100", dot: "bg-amber-500", active: "border-amber-200 bg-amber-50/80 text-amber-800" },
+};
 
+const ROL_STYLE_DEFAULT = {
+  icon: Users,
+  badge: "bg-surface-2 text-ink-soft border-line",
+  dot: "bg-ink-faint",
+  active: "border-line-strong bg-surface text-ink",
+};
+
+const MATRIZ_PERMISOS: { modulo: string; accesos: Record<string, string> }[] = [
+  {
+    modulo: "Dashboard",
+    accesos: {
+      Admin: "Ver todo",
+      "Seguridad Operativa": "Ver indicadores SO",
+      "Jefe de Área": "Ver planes asignados",
+      Reportante: "Ver sus reportes",
+      Monitorista: "Ver operación",
+    },
+  },
+  {
+    modulo: "Casos",
+    accesos: {
+      Admin: "Auditar",
+      "Seguridad Operativa": "Gestionar flujo",
+      "Jefe de Área": "Ver vinculados",
+      Reportante: "Crear y ver propios",
+      Monitorista: "Derivar eventos",
+    },
+  },
+  {
+    modulo: "Planes de acción",
+    accesos: {
+      Admin: "Auditar",
+      "Seguridad Operativa": "Crear y aprobar",
+      "Jefe de Área": "Ejecutar",
+      Reportante: "Sin acceso",
+      Monitorista: "Sin acceso",
+    },
+  },
+  {
+    modulo: "Auditoría",
+    accesos: {
+      Admin: "Ver y exportar",
+      "Seguridad Operativa": "Sin acceso",
+      "Jefe de Área": "Sin acceso",
+      Reportante: "Sin acceso",
+      Monitorista: "Sin acceso",
+    },
+  },
+  {
+    modulo: "Importación",
+    accesos: {
+      Admin: "Importar histórico",
+      "Seguridad Operativa": "Sin acceso",
+      "Jefe de Área": "Sin acceso",
+      Reportante: "Sin acceso",
+      Monitorista: "Sin acceso",
+    },
+  },
+  {
+    modulo: "Usuarios",
+    accesos: {
+      Admin: "Administrar",
+      "Seguridad Operativa": "Sin acceso",
+      "Jefe de Área": "Sin acceso",
+      Reportante: "Sin acceso",
+      Monitorista: "Sin acceso",
+    },
+  },
+  {
+    modulo: "Reportes",
+    accesos: {
+      Admin: "Ver y exportar",
+      "Seguridad Operativa": "Ver y exportar",
+      "Jefe de Área": "Ver área",
+      Reportante: "Ver propios",
+      Monitorista: "Ver operación",
+    },
+  },
+  {
+    modulo: "Monitoreo",
+    accesos: {
+      Admin: "Ver",
+      "Seguridad Operativa": "Solo Responsable SO",
+      "Jefe de Área": "Sin acceso",
+      Reportante: "Sin acceso",
+      Monitorista: "Gestionar",
+    },
+  },
+];
+
+function estadoActivo(estado: string | null) {
+  return (estado ?? "Activo").toLowerCase() === "activo";
+}
+
+function initials(nombre: string) {
+  return nombre
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
+
+function roleStyle(nombreRol?: string | null) {
+  return nombreRol ? ROL_STYLE[nombreRol] ?? ROL_STYLE_DEFAULT : ROL_STYLE_DEFAULT;
+}
+
+function sortedRoles(roles: Role[]) {
+  return [...roles].sort((a, b) => {
+    const ai = ROLE_ORDER.indexOf(a.nombre_rol);
+    const bi = ROLE_ORDER.indexOf(b.nombre_rol);
+    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi) || a.nombre_rol.localeCompare(b.nombre_rol);
+  });
+}
+
+function userHasSpecialPermission(user: UserListItem) {
+  return PERMISOS.some((permiso) => Boolean(user[permiso.key]));
+}
+
+function permissionLabels(user: UserListItem) {
+  return PERMISOS.filter((permiso) => Boolean(user[permiso.key]));
+}
+
+function Toggle({ checked, onChange, label, disabled }: { checked: boolean; onChange: (checked: boolean) => void; label: string; disabled?: boolean }) {
   return (
-    <Card className="mt-4 overflow-hidden p-0">
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className={cn(
+        "relative inline-flex h-[22px] w-[38px] shrink-0 items-center rounded-full transition-colors duration-200",
+        checked ? "bg-brand-700" : "bg-line-strong",
+        disabled && "cursor-not-allowed opacity-50"
+      )}
+    >
+      <span
+        className={cn(
+          "inline-block h-[16px] w-[16px] transform rounded-full bg-white shadow-sm transition-transform duration-200",
+          checked ? "translate-x-[19px]" : "translate-x-[3px]"
+        )}
+      />
+    </button>
+  );
+}
+
+function RoleBadge({ roleName }: { roleName?: string | null }) {
+  const style = roleStyle(roleName);
+  const Icon = style.icon;
+  return (
+    <span className={cn("inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10.5px] font-semibold", style.badge)}>
+      <Icon className="h-3.5 w-3.5" />
+      {roleName ?? "Sin asignar"}
+    </span>
+  );
+}
+
+function StatusBadge({ estado }: { estado: string | null }) {
+  return (
+    <span className={cn("inline-flex rounded-md px-2 py-1 text-[10.5px] font-medium", estadoActivo(estado) ? "bg-brand-50 text-brand-800" : "bg-surface-2 text-ink-quiet")}>
+      {estado ?? "Activo"}
+    </span>
+  );
+}
+
+function UserIdentity({ user }: { user: UserListItem }) {
+  return (
+    <div className="flex min-w-0 items-center gap-3">
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-100 text-[10.5px] font-semibold text-brand-800">{initials(user.nombre)}</span>
+      <div className="min-w-0">
+        <p className="truncate font-medium text-ink">{user.nombre}</p>
+        <p className="mt-0.5 truncate text-[10.5px] text-ink-faint">{user.correo}</p>
+      </div>
+    </div>
+  );
+}
+
+function AccessRoleTabs({
+  roles,
+  counts,
+  value,
+  onChange,
+}: {
+  roles: Role[];
+  counts: ReturnType<typeof useUserCounts>["data"];
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="scrollbar-none flex gap-2 overflow-x-auto rounded-xl border border-line bg-white p-1">
+      <button
+        type="button"
+        onClick={() => onChange("todos")}
+        className={cn(
+          "flex h-9 shrink-0 items-center gap-2 rounded-lg px-3 text-[12.5px] font-semibold transition-colors",
+          value === "todos" ? "bg-ink text-white" : "text-ink-soft hover:bg-surface"
+        )}
+      >
+        Todos
+        <span className={cn("rounded-full px-1.5 py-0.5 text-[10.5px]", value === "todos" ? "bg-white/15 text-white" : "bg-surface-2 text-ink-quiet")}>
+          {counts?.total ?? 0}
+        </span>
+      </button>
+      {sortedRoles(roles).map((role) => {
+        const active = value === String(role.id_rol);
+        const style = roleStyle(role.nombre_rol);
+        const count = counts?.porRol[String(role.id_rol)] ?? 0;
+        return (
+          <button
+            key={role.id_rol}
+            type="button"
+            onClick={() => onChange(String(role.id_rol))}
+            className={cn(
+              "flex h-9 shrink-0 items-center gap-2 rounded-lg border px-3 text-[12.5px] font-semibold transition-colors",
+              active ? style.active : "border-transparent text-ink-soft hover:bg-surface"
+            )}
+          >
+            <span className={cn("h-2 w-2 rounded-full", style.dot)} />
+            {role.nombre_rol}
+            <span className="rounded-full bg-white/70 px-1.5 py-0.5 text-[10.5px] text-ink-quiet">{count}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function AccessUsersTable({
+  users,
+  isLoading,
+  permissionFilter,
+  updatePending,
+  onToggle,
+  onEdit,
+}: {
+  users: UserListItem[];
+  isLoading: boolean;
+  permissionFilter: PermissionFilter;
+  updatePending: boolean;
+  onToggle: (user: UserListItem, permiso: PermisoKey, checked: boolean) => void;
+  onEdit: (user: UserListItem) => void;
+}) {
+  return (
+    <Card className="overflow-hidden p-0">
       <div className="border-b border-line px-4 py-3">
-        <p className="flex items-center gap-1.5 text-[13px] font-semibold text-ink"><KeyRound className="h-4 w-4 text-brand-700" /> Permisos especiales</p>
+        <p className="flex items-center gap-1.5 text-[13px] font-semibold text-ink"><KeyRound className="h-4 w-4 text-brand-700" /> Usuarios y permisos especiales</p>
         <p className="mt-0.5 text-[11.5px] text-ink-quiet">
-          Solo dentro de Seguridad Operativa. Marca o quita el check y se guarda al instante — no hace falta abrir "Editar usuario".
+          {isLoading ? "Cargando cuentas..." : `${users.length} ${users.length === 1 ? "cuenta encontrada" : "cuentas encontradas"}`}
+          {permissionFilter !== "todos" ? " · filtro de permisos aplicado" : ""}
         </p>
       </div>
       {isLoading ? (
-        <p className="p-8 text-center text-[13px] text-ink-quiet">Cargando usuarios de Seguridad Operativa...</p>
-      ) : usuarios.length === 0 ? (
-        <p className="p-8 text-center text-[13px] text-ink-quiet">Todavía no hay usuarios con rol Seguridad Operativa.</p>
+        <p className="p-8 text-center text-[13px] text-ink-quiet">Cargando usuarios...</p>
+      ) : users.length === 0 ? (
+        <div className="flex flex-col items-center gap-2 p-9 text-center">
+          <Users className="h-7 w-7 text-ink-faint" />
+          <p className="text-[13px] font-semibold text-ink">No se encontraron usuarios</p>
+          <p className="text-[11.5px] text-ink-quiet">Prueba con otro rol, estado o búsqueda.</p>
+        </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-[12.5px]">
+          <table className="min-w-[1120px] w-full text-left text-[12.5px]">
             <thead>
-              <tr className="border-b border-line bg-surface text-[10.5px] uppercase text-ink-quiet">
-                <th className="px-4 py-2.5 font-semibold">Usuario</th>
-                {PERMISOS.map((permiso) => (
-                  <th key={permiso.key} className="px-4 py-2.5 font-semibold" title={permiso.hint}>{permiso.label}</th>
-                ))}
+              <tr className="border-b border-line bg-surface text-[10.5px] uppercase tracking-wide text-ink-quiet">
+                <th className="px-4 py-3 font-semibold">Usuario</th>
+                <th className="px-4 py-3 font-semibold">Rol</th>
+                <th className="px-4 py-3 font-semibold">Área</th>
+                <th className="px-4 py-3 font-semibold">Estado</th>
+                <th className="px-4 py-3 font-semibold">Permisos activados</th>
+                <th className="px-4 py-3 font-semibold">Último acceso</th>
+                <th className="px-4 py-3 text-center font-semibold">RSO</th>
+                <th className="px-4 py-3 text-center font-semibold">Reabrir</th>
+                <th className="px-4 py-3 text-center font-semibold">Rechazar</th>
+                <th className="px-4 py-3 text-right font-semibold">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {usuarios.map((user) => (
-                <tr key={user.id_usuario} className="border-b border-line-soft last:border-0">
-                  <td className="px-4 py-3">
-                    <p className="font-medium text-ink">{user.nombre}</p>
-                    <p className="mt-0.5 text-[10.5px] text-ink-faint">{user.correo}</p>
-                  </td>
-                  {PERMISOS.map((permiso) => (
-                    <td key={permiso.key} className="px-4 py-3">
-                      <input
-                        type="checkbox"
-                        checked={Boolean(user[permiso.key])}
-                        onChange={(event) => togglePermiso(user, permiso.key, event.target.checked)}
-                        className="h-4 w-4 accent-brand-700"
-                        aria-label={`${permiso.label} — ${user.nombre}`}
-                      />
+              {users.map((user) => {
+                const isSO = user.roles?.nombre_rol === "Seguridad Operativa";
+                const labels = permissionLabels(user);
+                return (
+                  <tr key={user.id_usuario} className="border-b border-line-soft last:border-0 hover:bg-surface/70">
+                    <td className="px-4 py-3"><UserIdentity user={user} /></td>
+                    <td className="px-4 py-3"><RoleBadge roleName={user.roles?.nombre_rol} /></td>
+                    <td className="px-4 py-3 text-ink-soft">{user.areas?.nombre_area ?? "—"}</td>
+                    <td className="px-4 py-3"><StatusBadge estado={user.estado} /></td>
+                    <td className="px-4 py-3">
+                      {labels.length > 0 ? (
+                        <div className="flex max-w-[260px] flex-wrap gap-1.5">
+                          {labels.map((permiso) => (
+                            <span key={permiso.key} className="rounded-md bg-brand-50 px-2 py-1 text-[10.5px] font-medium text-brand-800">
+                              {permiso.shortLabel}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-ink-faint">—</span>
+                      )}
                     </td>
-                  ))}
-                </tr>
-              ))}
+                    <td className="px-4 py-3 text-[11.5px] text-ink-soft">{user.ultimo_acceso ? formatDateTime(user.ultimo_acceso) : "Sin registro"}</td>
+                    {PERMISOS.map((permiso) => (
+                      <td key={permiso.key} className="px-4 py-3">
+                        <div className="flex justify-center">
+                          <Toggle
+                            checked={Boolean(user[permiso.key])}
+                            onChange={(checked) => onToggle(user, permiso.key, checked)}
+                            label={`${permiso.label} — ${user.nombre}`}
+                            disabled={!isSO || updatePending}
+                          />
+                        </div>
+                      </td>
+                    ))}
+                    <td className="px-4 py-3">
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => onEdit(user)}
+                          className="grid h-8 w-8 place-items-center rounded-lg text-ink-quiet hover:bg-surface-2 hover:text-brand-700"
+                          aria-label={`Editar ${user.nombre}`}
+                          title="Editar usuario"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -92,27 +396,43 @@ function PermisosEspecialesTable() {
   );
 }
 
-const POR_PAGINA = 15;
-
-function estadoActivo(estado: string | null) {
-  return (estado ?? "Activo").toLowerCase() === "activo";
-}
-
-function SummaryCard({ label, value, icon: Icon, tone = "green" }: { label: string; value: number; icon: typeof Users; tone?: "green" | "blue" | "gray" }) {
-  const tones = {
-    green: "bg-brand-50 text-brand-700",
-    blue: "bg-blue-50 text-blue-700",
-    gray: "bg-surface-2 text-ink-soft",
-  };
-
+function PermissionMatrix({ roles }: { roles: Role[] }) {
+  const ordered = sortedRoles(roles).filter((role) => ROLE_ORDER.includes(role.nombre_rol));
   return (
-    <Card className="flex min-h-[92px] flex-row items-center gap-3 p-4">
-      <div className={cn("grid h-10 w-10 shrink-0 place-items-center rounded-lg", tones[tone])}>
-        <Icon className="h-5 w-5" />
+    <Card className="overflow-hidden p-0">
+      <div className="border-b border-line px-4 py-3">
+        <p className="text-[13px] font-semibold text-ink">Matriz de permisos por módulo</p>
+        <p className="mt-0.5 text-[11.5px] text-ink-quiet">Permisos efectivos por perfil principal.</p>
       </div>
-      <div>
-        <p className="text-[24px] font-bold leading-none text-ink">{value}</p>
-        <p className="mt-1.5 text-[11.5px] text-ink-quiet">{label}</p>
+      <div className="overflow-x-auto">
+        <table className="min-w-[980px] w-full text-left text-[12.5px]">
+          <thead>
+            <tr className="border-b border-line bg-surface text-[10.5px] uppercase tracking-wide text-ink-quiet">
+              <th className="w-[190px] px-4 py-3 font-semibold">Módulo</th>
+              {ordered.map((role) => (
+                <th key={role.id_rol} className="px-4 py-3 font-semibold">{role.nombre_rol}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {MATRIZ_PERMISOS.map((row) => (
+              <tr key={row.modulo} className="border-b border-line-soft last:border-0">
+                <td className="px-4 py-3 font-semibold text-ink">{row.modulo}</td>
+                {ordered.map((role) => {
+                  const value = row.accesos[role.nombre_rol] ?? "Sin acceso";
+                  const enabled = value !== "Sin acceso";
+                  return (
+                    <td key={role.id_rol} className="px-4 py-3">
+                      <span className={cn("inline-flex rounded-md px-2 py-1 text-[11px] font-medium", enabled ? "bg-brand-50 text-brand-800" : "bg-surface-2 text-ink-faint")}>
+                        {value}
+                      </span>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </Card>
   );
@@ -121,21 +441,18 @@ function SummaryCard({ label, value, icon: Icon, tone = "green" }: { label: stri
 export function AdminUsuariosPage() {
   const location = useLocation();
   const rolesView = location.pathname === "/admin/roles";
-  const { data: roles = [], isLoading: rolesLoading } = useRoles();
+  const { data: roles = [] } = useRoles();
   const { data: counts } = useUserCounts();
+  const updateUser = useUpdateUser();
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<UserListItem | null>(null);
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState(query);
   const [roleFilter, setRoleFilter] = useState("todos");
   const [statusFilter, setStatusFilter] = useState<"todos" | "activo" | "inactivo">("todos");
+  const [permissionFilter, setPermissionFilter] = useState<PermissionFilter>("todos");
   const [pagina, setPagina] = useState(1);
 
-  // La búsqueda ya no filtra en memoria: cada tecleo dispararía un pedido al
-  // servidor, así que se espera una pausa antes de mandarla — mismo criterio
-  // que la bandeja de Casos SOP. La página vuelve a 1 en el mismo callback
-  // (no en un efecto aparte que observe `debouncedQuery`): así no hay
-  // setState síncrono dentro de un efecto.
   useEffect(() => {
     const t = setTimeout(() => {
       setDebouncedQuery(query);
@@ -148,11 +465,18 @@ export function AdminUsuariosPage() {
     search: debouncedQuery.trim() || undefined,
     rol: roleFilter !== "todos" ? Number(roleFilter) : undefined,
     estado: statusFilter !== "todos" ? statusFilter : undefined,
-    page: pagina,
-    limit: POR_PAGINA,
+    page: rolesView ? 1 : pagina,
+    limit: rolesView ? ACCESS_LIMIT : POR_PAGINA,
   });
 
-  const filteredUsers = pageData?.items ?? [];
+  const pageUsers = useMemo(() => pageData?.items ?? [], [pageData]);
+  const accessUsers = useMemo(() => {
+    if (!rolesView) return pageUsers;
+    if (permissionFilter === "todos") return pageUsers;
+    if (permissionFilter === "con_permisos") return pageUsers.filter(userHasSpecialPermission);
+    return pageUsers.filter((user) => Boolean(user[permissionFilter]));
+  }, [pageUsers, permissionFilter, rolesView]);
+
   const total = pageData?.total ?? 0;
   const totalPaginas = Math.max(1, Math.ceil(total / POR_PAGINA));
   const paginaActual = Math.min(pagina, totalPaginas);
@@ -167,93 +491,163 @@ export function AdminUsuariosPage() {
     setModalOpen(true);
   };
 
+  const setRoleAndReset = (value: string) => {
+    setRoleFilter(value);
+    setPagina(1);
+  };
+
+  const setStatusAndReset = (value: "todos" | "activo" | "inactivo") => {
+    setStatusFilter(value);
+    setPagina(1);
+  };
+
+  const togglePermiso = (user: UserListItem, permiso: PermisoKey, checked: boolean) => {
+    if (user.roles?.nombre_rol !== "Seguridad Operativa") {
+      toast.warning("Los permisos especiales solo aplican a Seguridad Operativa");
+      return;
+    }
+    updateUser.mutate(
+      { id_usuario: user.id_usuario, [permiso]: checked },
+      {
+        onSuccess: () => toast.success("Permiso actualizado"),
+        onError: (error) => toast.error(apiErrorMessage(error, "No se pudo actualizar el permiso")),
+      }
+    );
+  };
+
   return (
     <AdminShell>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <p className="text-[12.5px] text-ink-quiet">
-          {rolesView ? "Consulta los perfiles disponibles y las cuentas asignadas a cada uno." : `${counts?.total ?? 0} usuarios registrados · ${counts?.activos ?? 0} activos`}
-        </p>
-        {!rolesView && (
-          <Button size="sm" onClick={abrirCrear}>
-            <UserPlus className="h-4 w-4" /> Nuevo usuario
-          </Button>
-        )}
-      </div>
-
       {rolesView ? (
         <>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <SummaryCard label="Roles configurados" value={roles.length} icon={ShieldCheck} />
-            <SummaryCard label="Usuarios con rol" value={counts?.conRol ?? 0} icon={UserCog} tone="blue" />
-            <SummaryCard label="Usuarios sin rol" value={counts?.sinRol ?? 0} icon={Users} tone="gray" />
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-[12.5px] text-ink-quiet">Control de accesos, permisos especiales y perfiles del sistema.</p>
+              <div className="mt-2 flex flex-wrap gap-2 text-[11.5px] text-ink-quiet">
+                <span className="rounded-md bg-surface px-2 py-1">{counts?.activos ?? 0} activos</span>
+                <span className="rounded-md bg-surface px-2 py-1">{counts?.porPermiso.es_responsable ?? 0} responsables SO</span>
+                <span className="rounded-md bg-surface px-2 py-1">{counts?.porPermiso.puede_reabrir_casos ?? 0} pueden reabrir</span>
+                <span className="rounded-md bg-surface px-2 py-1">{counts?.porPermiso.puede_rechazar_reportes ?? 0} pueden rechazar</span>
+              </div>
+            </div>
+            <Button size="sm" onClick={abrirCrear}>
+              <UserPlus className="h-4 w-4" /> Nuevo usuario
+            </Button>
           </div>
 
-          <Card className="mt-4 overflow-hidden p-0">
-            <div className="border-b border-line px-4 py-3">
-              <p className="text-[13px] font-semibold text-ink">Perfiles del sistema</p>
-              <p className="mt-0.5 text-[11.5px] text-ink-quiet">Los roles se asignan al crear o editar un usuario.</p>
-            </div>
-            {rolesLoading ? (
-              <p className="p-8 text-center text-[13px] text-ink-quiet">Cargando roles...</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-[12.5px]">
-                  <thead><tr className="border-b border-line bg-surface text-[10.5px] uppercase text-ink-quiet"><th className="px-4 py-2.5 font-semibold">Rol</th><th className="px-4 py-2.5 font-semibold">Usuarios asignados</th><th className="px-4 py-2.5 font-semibold">Estado</th></tr></thead>
-                  <tbody>{roles.map((role) => {
-                    const assigned = counts?.porRol[String(role.id_rol)] ?? 0;
-                    return <tr key={role.id_rol} className="border-b border-line-soft last:border-0"><td className="px-4 py-3 font-medium text-ink">{role.nombre_rol}</td><td className="px-4 py-3 text-ink-soft">{assigned} {assigned === 1 ? "usuario" : "usuarios"}</td><td className="px-4 py-3"><span className="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-brand-800"><CheckCircle2 className="h-3.5 w-3.5" /> Disponible</span></td></tr>;
-                  })}</tbody>
-                </table>
-              </div>
-            )}
-          </Card>
+          <div className="mt-5">
+            <AccessRoleTabs roles={roles} counts={counts} value={roleFilter} onChange={setRoleAndReset} />
+          </div>
 
-          <PermisosEspecialesTable />
+          <div className="mt-4 grid gap-3 rounded-2xl border border-line bg-white p-4 lg:grid-cols-[minmax(260px,1fr)_190px_230px]">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+              <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar usuario, correo o área" className="pl-9" />
+            </div>
+            <Select value={statusFilter} onChange={(event) => setStatusAndReset(event.target.value as typeof statusFilter)} aria-label="Filtrar por estado">
+              <option value="todos">Todos los estados</option>
+              <option value="activo">Activos</option>
+              <option value="inactivo">Inactivos</option>
+            </Select>
+            <Select value={permissionFilter} onChange={(event) => setPermissionFilter(event.target.value as PermissionFilter)} aria-label="Filtrar por permiso">
+              <option value="todos">Todos los permisos</option>
+              <option value="con_permisos">Con permisos especiales</option>
+              {PERMISOS.map((permiso) => (
+                <option key={permiso.key} value={permiso.key}>{permiso.label}</option>
+              ))}
+            </Select>
+          </div>
+
+          <div className="mt-4">
+            <AccessUsersTable
+              users={accessUsers}
+              isLoading={isLoading}
+              permissionFilter={permissionFilter}
+              updatePending={updateUser.isPending}
+              onToggle={togglePermiso}
+              onEdit={abrirEditar}
+            />
+          </div>
+
+          <div className="mt-4">
+            <PermissionMatrix roles={roles} />
+          </div>
         </>
       ) : (
         <>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <p className="text-[12.5px] text-ink-quiet">{counts?.total ?? 0} usuarios registrados · {counts?.activos ?? 0} activos</p>
+            <Button size="sm" onClick={abrirCrear}>
+              <UserPlus className="h-4 w-4" /> Nuevo usuario
+            </Button>
+          </div>
+
           <div className="mt-5 grid gap-3 rounded-2xl border border-line bg-white p-4 sm:grid-cols-[minmax(260px,1fr)_minmax(190px,1fr)_minmax(170px,1fr)]">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
               <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar usuario" className="pl-9" />
             </div>
-            <Select
-              value={roleFilter}
-              onChange={(event) => {
-                setRoleFilter(event.target.value);
-                setPagina(1);
-              }}
-              aria-label="Filtrar por rol"
-            >
+            <Select value={roleFilter} onChange={(event) => setRoleAndReset(event.target.value)} aria-label="Filtrar por rol">
               <option value="todos">Todos los roles</option>
               {roles.map((role) => <option key={role.id_rol} value={role.id_rol}>{role.nombre_rol}</option>)}
             </Select>
-            <Select
-              value={statusFilter}
-              onChange={(event) => {
-                setStatusFilter(event.target.value as typeof statusFilter);
-                setPagina(1);
-              }}
-              aria-label="Filtrar por estado"
-            >
-              <option value="todos">Todos los estados</option><option value="activo">Activos</option><option value="inactivo">Inactivos</option>
+            <Select value={statusFilter} onChange={(event) => setStatusAndReset(event.target.value as typeof statusFilter)} aria-label="Filtrar por estado">
+              <option value="todos">Todos los estados</option>
+              <option value="activo">Activos</option>
+              <option value="inactivo">Inactivos</option>
             </Select>
           </div>
 
           {isLoading ? (
             <Card className="mt-4 p-8 text-center text-[13px] text-ink-quiet">Cargando usuarios...</Card>
-          ) : filteredUsers.length === 0 ? (
-            <Card className="mt-4 flex flex-col items-center gap-2 border-dashed p-9 text-center"><Users className="h-7 w-7 text-ink-faint" /><p className="text-[13px] font-semibold text-ink">No se encontraron usuarios</p><p className="text-[11.5px] text-ink-quiet">Prueba con otros filtros o registra una cuenta nueva.</p></Card>
+          ) : pageUsers.length === 0 ? (
+            <Card className="mt-4 flex flex-col items-center gap-2 border-dashed p-9 text-center">
+              <Users className="h-7 w-7 text-ink-faint" />
+              <p className="text-[13px] font-semibold text-ink">No se encontraron usuarios</p>
+              <p className="text-[11.5px] text-ink-quiet">Prueba con otros filtros o registra una cuenta nueva.</p>
+            </Card>
           ) : (
             <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}>
               <Card className="mt-4 overflow-hidden p-0">
                 <div className="overflow-x-auto">
                   <table className="min-w-[1060px] w-full text-left text-[12.5px]">
-                    <thead><tr className="border-b border-line bg-surface text-[11px] text-ink-quiet"><th className="px-4 py-3 font-semibold">Código</th><th className="px-4 py-3 font-semibold">Nombre</th><th className="px-4 py-3 font-semibold">Teléfono</th><th className="px-4 py-3 font-semibold">Área</th><th className="px-4 py-3 font-semibold">Cargo</th><th className="px-4 py-3 font-semibold">Rol</th><th className="px-4 py-3 font-semibold">Estado</th><th className="px-4 py-3 text-right font-semibold">Acciones</th></tr></thead>
-                    <tbody>{filteredUsers.map((user) => {
-                      const initials = user.nombre.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase();
-                      return <tr key={user.id_usuario} className="border-b border-line-soft last:border-0 hover:bg-surface"><td className="px-4 py-3 font-mono text-[10.5px] text-ink-soft">{user.codigo_usuario}</td><td className="px-4 py-3"><div className="flex items-center gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-100 text-[10.5px] font-semibold text-brand-800">{initials}</span><div><p className="font-medium text-ink">{user.nombre}</p><p className="mt-0.5 text-[10.5px] text-ink-faint">{user.correo}</p></div></div></td><td className="px-4 py-3 text-ink-soft">{user.telefono || "—"}</td><td className="px-4 py-3 text-ink-soft">{user.areas?.nombre_area ?? "—"}</td><td className="px-4 py-3 text-ink-soft">{user.cargo || "—"}</td><td className="px-4 py-3"><span className={cn("inline-flex rounded-md px-2 py-1 text-[10.5px] font-medium", user.roles?.nombre_rol?.toLowerCase().includes("admin") ? "bg-red-50 text-red-700" : "bg-brand-50 text-brand-800")}>{user.roles?.nombre_rol ?? "Sin asignar"}</span></td><td className="px-4 py-3"><span className={cn("inline-flex items-center rounded-md px-2 py-1 text-[10.5px] font-medium", estadoActivo(user.estado) ? "bg-brand-50 text-brand-800" : "bg-surface-2 text-ink-quiet")}>{user.estado ?? "Activo"}</span></td><td className="px-4 py-3"><div className="flex justify-end gap-1"><button type="button" onClick={() => abrirEditar(user)} className="grid h-8 w-8 place-items-center rounded-lg text-ink-quiet hover:bg-surface-2 hover:text-brand-700" aria-label={`Editar ${user.nombre}`} title="Editar usuario"><Pencil className="h-3.5 w-3.5" /></button></div></td></tr>;
-                    })}</tbody>
+                    <thead>
+                      <tr className="border-b border-line bg-surface text-[11px] text-ink-quiet">
+                        <th className="px-4 py-3 font-semibold">Código</th>
+                        <th className="px-4 py-3 font-semibold">Nombre</th>
+                        <th className="px-4 py-3 font-semibold">Teléfono</th>
+                        <th className="px-4 py-3 font-semibold">Área</th>
+                        <th className="px-4 py-3 font-semibold">Cargo</th>
+                        <th className="px-4 py-3 font-semibold">Rol</th>
+                        <th className="px-4 py-3 font-semibold">Estado</th>
+                        <th className="px-4 py-3 text-right font-semibold">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pageUsers.map((user) => (
+                        <tr key={user.id_usuario} className="border-b border-line-soft last:border-0 hover:bg-surface">
+                          <td className="px-4 py-3 font-mono text-[10.5px] text-ink-soft">{user.codigo_usuario}</td>
+                          <td className="px-4 py-3"><UserIdentity user={user} /></td>
+                          <td className="px-4 py-3 text-ink-soft">{user.telefono || "—"}</td>
+                          <td className="px-4 py-3 text-ink-soft">{user.areas?.nombre_area ?? "—"}</td>
+                          <td className="px-4 py-3 text-ink-soft">{user.cargo || "—"}</td>
+                          <td className="px-4 py-3"><RoleBadge roleName={user.roles?.nombre_rol} /></td>
+                          <td className="px-4 py-3"><StatusBadge estado={user.estado} /></td>
+                          <td className="px-4 py-3">
+                            <div className="flex justify-end gap-1">
+                              <button
+                                type="button"
+                                onClick={() => abrirEditar(user)}
+                                className="grid h-8 w-8 place-items-center rounded-lg text-ink-quiet hover:bg-surface-2 hover:text-brand-700"
+                                aria-label={`Editar ${user.nombre}`}
+                                title="Editar usuario"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
                   </table>
                 </div>
               </Card>

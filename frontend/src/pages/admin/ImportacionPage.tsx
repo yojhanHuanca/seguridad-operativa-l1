@@ -255,10 +255,7 @@ export function AdminImportacionPage() {
   return (
     <AdminShell>
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="font-display text-[20px] font-bold text-ink">Importación histórica</h1>
-          <p className="mt-1 text-[12.5px] text-ink-quiet">Carga controlada de casos SOP desde CSV, XLSX o XLSM.</p>
-        </div>
+        <p className="text-[12.5px] text-ink-quiet">Carga controlada de casos SOP desde CSV, XLSX o XLSM.</p>
         <ValidationBadge preview={preview} />
       </div>
 

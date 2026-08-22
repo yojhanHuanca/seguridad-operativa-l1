@@ -9,6 +9,7 @@ export function SoPlanesAccionPage() {
         icon={ListChecks}
         title="Planes de Acción"
         description="Vista consolidada de los planes de acción de todas las áreas y su avance."
+        hideTitle
         points={[
           "Seguimiento de actividades por responsable y área",
           "Verificación de evidencias de ejecución",

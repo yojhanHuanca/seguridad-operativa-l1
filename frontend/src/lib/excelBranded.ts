@@ -1,4 +1,4 @@
-import ExcelJS from "exceljs";
+import type { Workbook, Worksheet } from "exceljs";
 import { downloadBlob } from "./download";
 
 /**
@@ -13,6 +13,15 @@ export const TITLE_FILL = { type: "pattern" as const, pattern: "solid" as const,
 export const THIN_BORDER = { style: "thin" as const, color: { argb: "FFE0E0E0" } };
 export const BRAND_BORDER = { style: "medium" as const, color: { argb: "FF0F7A3D" } };
 export const TABLE_HEADER_ROW = 6;
+
+type ExcelJSModule = typeof import("exceljs");
+
+let excelJSPromise: Promise<ExcelJSModule> | null = null;
+
+function loadExcelJS() {
+  excelJSPromise ??= import("exceljs");
+  return excelJSPromise;
+}
 
 export function columnLetter(columnNumber: number) {
   let n = columnNumber;
@@ -44,7 +53,8 @@ async function cargarLogoBase64() {
   }
 }
 
-export function crearWorkbook() {
+export async function crearWorkbook() {
+  const ExcelJS = await loadExcelJS();
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "Seguridad Operativa";
   workbook.lastModifiedBy = "Seguridad Operativa";
@@ -54,8 +64,8 @@ export function crearWorkbook() {
 }
 
 export async function aplicarEncabezadoReporte(
-  workbook: ExcelJS.Workbook,
-  sheet: ExcelJS.Worksheet,
+  workbook: Workbook,
+  sheet: Worksheet,
   {
     title,
     subtitle,
@@ -75,7 +85,7 @@ export async function aplicarEncabezadoReporte(
     timeStyle: "short",
   }).format(new Date());
 
-  sheet.views = [{ state: "frozen", ySplit: TABLE_HEADER_ROW }];
+  sheet.views = [{ state: "frozen", xSplit: 1, ySplit: TABLE_HEADER_ROW }];
   sheet.pageSetup = {
     orientation: totalColumnas > 8 ? "landscape" : "portrait",
     fitToPage: true,
@@ -136,7 +146,7 @@ export async function aplicarEncabezadoReporte(
   }
 }
 
-export function aplicarEstiloTabla(sheet: ExcelJS.Worksheet, totalColumnas: number) {
+export function aplicarEstiloTabla(sheet: Worksheet, totalColumnas: number) {
   const headerRow = sheet.getRow(TABLE_HEADER_ROW);
   headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
   headerRow.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
@@ -167,7 +177,7 @@ export function aplicarEstiloTabla(sheet: ExcelJS.Worksheet, totalColumnas: numb
   sheet.autoFilter = { from: { row: TABLE_HEADER_ROW, column: 1 }, to: { row: TABLE_HEADER_ROW, column: totalColumnas } };
 }
 
-export async function descargarWorkbook(workbook: ExcelJS.Workbook, fileName: string) {
+export async function descargarWorkbook(workbook: Workbook, fileName: string) {
   const buffer = await workbook.xlsx.writeBuffer();
   downloadBlob(
     new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }),
@@ -175,39 +185,56 @@ export async function descargarWorkbook(workbook: ExcelJS.Workbook, fileName: st
   );
 }
 
-/** Arma y descarga un .xlsx de una sola tabla con el encabezado de marca — el caso común. */
-export async function exportarTablaExcel({
-  sheetName,
-  columnas,
-  filas,
-  fileName,
-  title,
-  subtitle,
-  totalLabel,
-}: {
+interface HojaExcel {
   sheetName: string;
   columnas: string[];
   filas: Record<string, string | number>[];
-  fileName: string;
   title: string;
   subtitle: string;
   totalLabel: string;
-}) {
-  const workbook = crearWorkbook();
-  const sheet = workbook.addWorksheet(sheetName);
+}
 
-  sheet.columns = columnas.map((header) => ({
+async function agregarHoja(workbook: Workbook, hoja: HojaExcel) {
+  const sheet = workbook.addWorksheet(hoja.sheetName);
+
+  sheet.columns = hoja.columnas.map((header) => ({
     key: header,
     width: Math.max(14, Math.min(38, header.length + 4)),
   }));
 
-  await aplicarEncabezadoReporte(workbook, sheet, { title, subtitle, totalLabel, totalColumnas: columnas.length });
+  await aplicarEncabezadoReporte(workbook, sheet, {
+    title: hoja.title,
+    subtitle: hoja.subtitle,
+    totalLabel: hoja.totalLabel,
+    totalColumnas: hoja.columnas.length,
+  });
 
-  sheet.getRow(TABLE_HEADER_ROW).values = columnas;
-  for (const fila of filas) {
-    sheet.addRow(columnas.map((columna) => fila[columna] ?? ""));
+  sheet.getRow(TABLE_HEADER_ROW).values = hoja.columnas;
+  for (const fila of hoja.filas) {
+    sheet.addRow(hoja.columnas.map((columna) => fila[columna] ?? ""));
   }
 
-  aplicarEstiloTabla(sheet, columnas.length);
+  aplicarEstiloTabla(sheet, hoja.columnas.length);
+  return sheet;
+}
+
+/** Arma y descarga un .xlsx de una sola tabla con el encabezado de marca — el caso común. */
+export async function exportarTablaExcel(hoja: HojaExcel & { fileName: string }) {
+  const workbook = await crearWorkbook();
+  await agregarHoja(workbook, hoja);
+  await descargarWorkbook(workbook, hoja.fileName);
+}
+
+/**
+ * Un .xlsx con varias hojas, cada una con su propio encabezado de marca —
+ * para reportes "combinados" (p.ej. Casos SOP + Planes de acción) donde
+ * mezclar todo en una sola tabla ancha genera columnas repetidas y ruido.
+ * Cada hoja se ve completa por sí sola en vez de una tabla plana gigante.
+ */
+export async function exportarLibroExcel({ hojas, fileName }: { hojas: HojaExcel[]; fileName: string }) {
+  const workbook = await crearWorkbook();
+  for (const hoja of hojas) {
+    await agregarHoja(workbook, hoja);
+  }
   await descargarWorkbook(workbook, fileName);
 }

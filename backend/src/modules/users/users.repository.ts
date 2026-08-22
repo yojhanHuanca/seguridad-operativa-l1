@@ -1,6 +1,8 @@
 import prisma from "../../lib/prisma.js";
 import { randomUUID } from "node:crypto";
 
+const SYSTEM_AUDIT_USER_CODE = "SYS-AUDIT";
+
 const PUBLIC_SELECT = {
   id_usuario: true,
   codigo_usuario: true,
@@ -10,6 +12,7 @@ const PUBLIC_SELECT = {
   telefono: true,
   estado: true,
   fecha_ingreso: true,
+  ultimo_acceso: true,
   es_responsable: true,
   puede_reabrir_casos: true,
   puede_rechazar_reportes: true,
@@ -41,6 +44,7 @@ export class UserRepository {
      /** Directorio reducido, sin datos de contacto — ver BASIC_SELECT. */
      static async findAllBasic() {
         return prisma.usuarios.findMany({
+            where: { NOT: { codigo_usuario: SYSTEM_AUDIT_USER_CODE } },
             select: BASIC_SELECT,
             orderBy: { id_usuario: "asc" },
         });
@@ -58,7 +62,7 @@ export class UserRepository {
         page?: number;
         limit?: number;
      }) {
-        const where: Record<string, unknown> = {};
+        const where: Record<string, unknown> = { NOT: { codigo_usuario: SYSTEM_AUDIT_USER_CODE } };
 
         if (opts?.rol) where.id_rol = opts.rol;
         if (opts?.estado === "activo") where.estado = "Activo";
@@ -81,6 +85,7 @@ export class UserRepository {
             cargo: true,
             telefono: true,
             estado: true,
+            ultimo_acceso: true,
             es_responsable: true,
             puede_reabrir_casos: true,
             puede_rechazar_reportes: true,
@@ -114,15 +119,16 @@ export class UserRepository {
       * solo `COUNT`/`groupBy`, nunca trae las filas completas.
       */
      static async counts() {
+        const visibles = { NOT: { codigo_usuario: SYSTEM_AUDIT_USER_CODE } } as const;
         const [total, activos, conRol, sinRol, porRol, esResponsable, puedeReabrirCasos, puedeRechazarReportes] = await Promise.all([
-            prisma.usuarios.count(),
-            prisma.usuarios.count({ where: { estado: "Activo" } }),
-            prisma.usuarios.count({ where: { id_rol: { not: null } } }),
-            prisma.usuarios.count({ where: { id_rol: null } }),
-            prisma.usuarios.groupBy({ by: ["id_rol"], _count: { id_rol: true } }),
-            prisma.usuarios.count({ where: { es_responsable: true } }),
-            prisma.usuarios.count({ where: { puede_reabrir_casos: true } }),
-            prisma.usuarios.count({ where: { puede_rechazar_reportes: true } }),
+            prisma.usuarios.count({ where: visibles }),
+            prisma.usuarios.count({ where: { ...visibles, estado: "Activo" } }),
+            prisma.usuarios.count({ where: { ...visibles, id_rol: { not: null } } }),
+            prisma.usuarios.count({ where: { ...visibles, id_rol: null } }),
+            prisma.usuarios.groupBy({ by: ["id_rol"], where: visibles, _count: { id_rol: true } }),
+            prisma.usuarios.count({ where: { ...visibles, es_responsable: true } }),
+            prisma.usuarios.count({ where: { ...visibles, puede_reabrir_casos: true } }),
+            prisma.usuarios.count({ where: { ...visibles, puede_rechazar_reportes: true } }),
         ]);
         return {
             total,
@@ -141,9 +147,10 @@ export class UserRepository {
      }
 
      static async findById(id: number) {
-        return await prisma.usuarios.findUnique({
+        return await prisma.usuarios.findFirst({
             where: {
                 id_usuario: id,
+                NOT: { codigo_usuario: SYSTEM_AUDIT_USER_CODE },
             },
             select: PUBLIC_SELECT,
         });

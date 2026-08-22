@@ -19,6 +19,7 @@ export interface UserBasic {
 export interface UserListItem extends UserBasic {
   correo: string;
   telefono: string | null;
+  ultimo_acceso: string | null;
   puede_reabrir_casos: boolean;
   puede_rechazar_reportes: boolean;
 }

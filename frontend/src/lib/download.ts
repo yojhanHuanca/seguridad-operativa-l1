@@ -31,7 +31,7 @@ export function downloadBlob(blob: Blob, fileName: string) {
 export function downloadCsv(fileName: string, header: string[], rows: (string | number | null | undefined)[][]) {
   const escapar = (celda: string | number | null | undefined) => `"${String(celda ?? "").replace(/"/g, '""')}"`;
   const csv = [header, ...rows].map((fila) => fila.map(escapar).join(",")).join("\r\n");
-  downloadBlob(new Blob([`﻿${csv}`], { type: "text/csv;charset=utf-8;" }), fileName);
+  downloadBlob(new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" }), fileName);
 }
 
 /** Sufijo de fecha para nombres de archivo: `casos-sop-2026-08-09.csv`. */

@@ -3,6 +3,15 @@ import { ZodError } from "zod";
 import { ReportService } from "./report.service.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
+import { AuditoriaService } from "../auditoria/auditoria.service.js";
+
+function textoOrigenReporte(body: unknown): { modalidad: "anonimo" | "identificado"; origen: "reportante" | "seguridad_operativa" } {
+  const data = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+  return {
+    modalidad: data.modalidad === "anonimo" ? "anonimo" : "identificado",
+    origen: data.origen === "seguridad_operativa" ? "seguridad_operativa" : "reportante",
+  };
+}
 
 export class ReportController {
   static async getAll(req: Request, res: Response) {
@@ -44,6 +53,29 @@ export class ReportController {
 
       const id_usuario_creador = (req as AuthenticatedRequest).user?.id_usuario;
       const result = await ReportService.createReport(req.body, files, id_usuario_creador);
+      const { modalidad, origen } = textoOrigenReporte(req.body);
+      const fuente =
+        origen === "seguridad_operativa"
+          ? "panel de Seguridad Operativa"
+          : id_usuario_creador
+            ? "panel de Reportante"
+            : "portal público";
+
+      await AuditoriaService.registrar({
+        tabla: "casos_sop",
+        id_registro: result.caso.id_caso,
+        accion: "crear",
+        ...(id_usuario_creador ? { usuario: id_usuario_creador } : {}),
+        ip: req.ip,
+        user_agent: req.headers["user-agent"],
+        descripcion: `Reporte ${result.caso.codigo_sop} creado desde ${fuente} (${modalidad === "anonimo" ? "anónimo" : "identificado"}).`,
+        despues: {
+          codigo_sop: result.caso.codigo_sop,
+          origen,
+          modalidad,
+          evidencias: files.length,
+        },
+      });
 
       return res.status(201).json(
         ApiResponse.success("Reporte registrado correctamente", {

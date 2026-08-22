@@ -60,7 +60,7 @@ export function Dashboard() {
   const [borrando, setBorrando] = useState<EventoListItem | null>(null);
   const [asignando, setAsignando] = useState<EventoListItem | null>(null);
 
-  const lista = eventos ?? [];
+  const lista = useMemo(() => eventos ?? [], [eventos]);
   const conteo = contarEventosPorEstado(lista);
 
   const filtrados = useMemo(() => {

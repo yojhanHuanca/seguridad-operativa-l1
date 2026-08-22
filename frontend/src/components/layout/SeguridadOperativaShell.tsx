@@ -91,7 +91,8 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
   }, [collapsed]);
 
   useEffect(() => {
-    setMobileOpen(false);
+    const timer = window.setTimeout(() => setMobileOpen(false), 0);
+    return () => window.clearTimeout(timer);
   }, [location.pathname, location.search]);
 
   // Los contadores usan exactamente el mismo predicado que la pestaña a la que
@@ -437,6 +438,8 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
 function getPageTitle(pathname: string) {
   if (pathname === "/seguridad") return "Dashboard Ejecutivo";
   if (pathname.startsWith("/seguridad/casos")) return "Gestión de Casos";
+  if (pathname === "/seguridad/planes-accion") return "Planes de Acción";
+  if (pathname === "/seguridad/eventos") return "Eventos operativos";
   if (pathname === "/seguridad/eventos-asignados") return "Eventos asignados";
   if (pathname === "/seguridad/alertas") return "Alertas";
   if (pathname === "/seguridad/reportes" || pathname === "/seguridad/reportes/kpis") return "KPIs";
@@ -451,6 +454,8 @@ function getPageTitle(pathname: string) {
 function getBreadcrumb(pathname: string) {
   if (pathname === "/seguridad") return "Inicio";
   if (pathname.startsWith("/seguridad/casos")) return "Inicio / Casos";
+  if (pathname === "/seguridad/planes-accion") return "Inicio / Planes de Acción";
+  if (pathname === "/seguridad/eventos") return "Inicio / Eventos operativos";
   if (pathname === "/seguridad/eventos-asignados") return "Inicio / Eventos asignados";
   if (pathname === "/seguridad/alertas") return "Inicio / Alertas";
   if (pathname === "/seguridad/reportes" || pathname === "/seguridad/reportes/kpis") return "Inicio / Reportes / KPIs";

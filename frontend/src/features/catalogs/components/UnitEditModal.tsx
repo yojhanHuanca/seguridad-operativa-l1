@@ -21,10 +21,12 @@ export function UnitEditModal({ open, onClose, item, pending, onSave, onToggleAc
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (open) {
+    if (!open) return;
+    const timer = window.setTimeout(() => {
       setValue(item?.nombre ?? "");
       setError(null);
-    }
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [open, item]);
 
   const activo = item?.estado !== false;

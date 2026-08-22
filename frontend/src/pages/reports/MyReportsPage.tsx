@@ -33,7 +33,9 @@ export function MyReportsPage() {
   // El código en la URL (venir desde "Ver detalle" de otra pantalla) cuenta
   // como búsqueda inicial, igual que si el usuario la hubiera tecleado.
   useEffect(() => {
-    if (codigoParam) setQuery(codigoParam);
+    if (!codigoParam) return;
+    const timer = window.setTimeout(() => setQuery(codigoParam), 0);
+    return () => window.clearTimeout(timer);
   }, [codigoParam]);
 
   useEffect(() => {
@@ -42,7 +44,8 @@ export function MyReportsPage() {
   }, [query]);
 
   useEffect(() => {
-    setPage(1);
+    const timer = window.setTimeout(() => setPage(1), 0);
+    return () => window.clearTimeout(timer);
   }, [filter, debouncedQuery]);
 
   const { data: pageData, isLoading } = useReportsPaginated({

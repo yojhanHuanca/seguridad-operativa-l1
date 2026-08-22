@@ -86,9 +86,12 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
 
   useEffect(() => {
     if (!open) return;
-    setStepIndex(0);
-    setError(null);
-    setForm(user ? fromUser(user) : EMPTY_FORM);
+    const timer = window.setTimeout(() => {
+      setStepIndex(0);
+      setError(null);
+      setForm(user ? fromUser(user) : EMPTY_FORM);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [open, user]);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => setForm((f) => ({ ...f, [key]: value }));

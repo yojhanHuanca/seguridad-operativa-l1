@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { ChevronDown, ChevronLeft, ChevronRight, Download, History, LogIn, PlusCircle, Search, ShieldAlert, Trash2, UserCog, UserRound } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, History, LogIn, PlusCircle, Search, ShieldAlert, Trash2, UserCog, UserRound } from "lucide-react";
 import { AdminShell } from "@/components/layout/AdminShell";
 import { Button } from "@/design-system/primitives/Button";
-import { Input, Select } from "@/design-system/primitives/Input";
+import { Input } from "@/design-system/primitives/Input";
 import { Card } from "@/components/ui/card";
-import { descargarAuditoriaCsv, useAuditoria } from "@/features/auditoria/hooks/useAuditoria";
+import { useAuditoria, useAuditoriaCounts } from "@/features/auditoria/hooks/useAuditoria";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { AccionAuditoria, AuditoriaItem } from "@/features/auditoria/types";
@@ -35,6 +35,14 @@ const ACCION_TONE: Record<AccionAuditoria, string> = {
   login_fallido: "bg-orange-50 text-orange-700",
 };
 
+const ACCION_DOT: Record<AccionAuditoria, string> = {
+  crear: "bg-brand-600",
+  editar: "bg-blue-500",
+  eliminar: "bg-red-500",
+  login: "bg-ink-faint",
+  login_fallido: "bg-orange-500",
+};
+
 const TABLA_LABEL: Record<string, string> = {
   auditoria: "Auditoría",
   casos_sop: "Casos SOP",
@@ -61,6 +69,10 @@ const CAMPO_LABEL: Record<string, string> = {
   id_rol: "Rol",
   id_area: "Área",
   es_responsable: "RSO (visita Monitoreo)",
+  codigo_sop: "Código SOP",
+  origen: "Origen",
+  modalidad: "Modalidad",
+  evidencias: "Evidencias",
 };
 
 function formatValor(v: unknown): string {
@@ -86,7 +98,10 @@ function destinoRegistro(registro: AuditoriaItem): string {
 }
 
 function detalleRegistro(registro: AuditoriaItem): string {
-  return registro.descripcion?.trim() || "—";
+  const descripcion = registro.descripcion?.trim();
+  if (!descripcion) return "—";
+  if (registro.accion === "login") return "Inicio de sesión";
+  return descripcion.replace(/\s+—\s+Mozilla\/5\.0.*$/i, "");
 }
 
 /** Antes/después lado a lado — lo que de verdad importa en una auditoría "de empresa grande": qué cambió exactamente. */
@@ -116,6 +131,30 @@ function DiffCambios({ antes, despues }: { antes: Record<string, unknown>; despu
   );
 }
 
+function DatosRegistrados({ datos }: { datos: Record<string, unknown> }) {
+  const campos = Object.keys(datos);
+  return (
+    <div className="overflow-hidden rounded-lg border border-line-soft">
+      <table className="w-full text-left text-[11.5px]">
+        <thead>
+          <tr className="bg-surface text-[10px] uppercase tracking-wide text-ink-faint">
+            <th className="px-3 py-2 font-semibold">Campo</th>
+            <th className="px-3 py-2 font-semibold">Valor registrado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {campos.map((campo) => (
+            <tr key={campo} className="border-t border-line-soft">
+              <td className="px-3 py-1.5 font-medium text-ink-soft">{CAMPO_LABEL[campo] ?? campo}</td>
+              <td className="px-3 py-1.5 font-medium text-brand-700">{formatValor(datos[campo])}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function FilaAuditoria({ registro }: { registro: AuditoriaItem }) {
   const [abierto, setAbierto] = useState(false);
   const Icon = ACCION_ICON[registro.accion];
@@ -125,12 +164,12 @@ function FilaAuditoria({ registro }: { registro: AuditoriaItem }) {
   return (
     <>
       <tr
-        className={cn("border-b border-line-soft last:border-0 hover:bg-surface", tieneDetalle && "cursor-pointer")}
+        className={cn("border-b border-line-soft last:border-0 hover:bg-brand-50/25", tieneDetalle && "cursor-pointer")}
         onClick={() => tieneDetalle && setAbierto((v) => !v)}
       >
         <td className="px-4 py-4 align-top whitespace-nowrap font-mono text-[11.5px] leading-relaxed text-ink-soft">{formatDateTime(registro.fecha)}</td>
         <td className="px-4 py-3">
-          <span className={cn("inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[10.5px] font-medium", ACCION_TONE[registro.accion])}>
+          <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-semibold leading-none", ACCION_TONE[registro.accion])}>
             <Icon className="h-3.5 w-3.5" /> {ACCION_LABEL[registro.accion]}
           </span>
         </td>
@@ -144,7 +183,7 @@ function FilaAuditoria({ registro }: { registro: AuditoriaItem }) {
           </div>
         </td>
         <td className="px-4 py-3 font-semibold text-ink">{destinoRegistro(registro)}</td>
-        <td className="px-4 py-3 text-ink-soft">{detalleRegistro(registro)}</td>
+        <td className="max-w-[460px] px-4 py-3 leading-relaxed text-ink-soft">{detalleRegistro(registro)}</td>
         <td className="px-4 py-3 text-right">
           {tieneDetalle && (
             <ChevronDown className={cn("ml-auto h-4 w-4 text-ink-faint transition-transform", abierto && "rotate-180")} />
@@ -158,9 +197,12 @@ function FilaAuditoria({ registro }: { registro: AuditoriaItem }) {
               {registro.datos_previos && registro.datos_nuevos && (
                 <DiffCambios antes={registro.datos_previos} despues={registro.datos_nuevos} />
               )}
+              {!registro.datos_previos && registro.datos_nuevos && (
+                <DatosRegistrados datos={registro.datos_nuevos} />
+              )}
               <div className="flex flex-wrap gap-x-6 gap-y-1 text-[11px] text-ink-faint">
                 {registro.ip && <span>IP: <span className="font-mono text-ink-soft">{registro.ip}</span></span>}
-                {registro.user_agent && <span className="truncate">Navegador: <span className="text-ink-soft">{registro.user_agent}</span></span>}
+                {registro.user_agent && <span className="max-w-full break-all">Navegador: <span className="text-ink-soft">{registro.user_agent}</span></span>}
                 {registro.id_registro != null && <span>ID del registro: <span className="font-mono text-ink-soft">{registro.id_registro}</span></span>}
               </div>
             </div>
@@ -176,7 +218,6 @@ export function AuditoriaPanelContent() {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [pagina, setPagina] = useState(1);
-  const [exportando, setExportando] = useState(false);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -192,6 +233,7 @@ export function AuditoriaPanelContent() {
   };
 
   const { data: pageData, isLoading } = useAuditoria({ ...filtrosActivos, page: pagina, limit: POR_PAGINA });
+  const { data: accionCounts } = useAuditoriaCounts();
 
   const registros = pageData?.items ?? [];
   const total = pageData?.total ?? 0;
@@ -199,28 +241,66 @@ export function AuditoriaPanelContent() {
   const paginaActual = Math.min(pagina, totalPaginas);
   const hayFiltros = accionFiltro !== "todas" || Boolean(debouncedQuery);
 
-  async function exportar() {
-    setExportando(true);
-    try {
-      await descargarAuditoriaCsv(filtrosActivos);
-    } finally {
-      setExportando(false);
-    }
+  function limpiarFiltros() {
+    setAccionFiltro("todas");
+    setQuery("");
+    setDebouncedQuery("");
+    setPagina(1);
   }
 
   return (
     <>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="font-display text-[24px] font-bold text-ink">Auditoría del Sistema</h1>
-          <p className="mt-1 text-[13px] text-ink-quiet">{total} registros · Trazabilidad completa de acciones</p>
+      <section className="rounded-2xl border border-line bg-white p-4 shadow-sm sm:p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-faint">Trazabilidad</p>
+            <p className="mt-1 text-[18px] font-bold leading-tight text-ink">
+              {total} {total === 1 ? "registro" : "registros"}
+              {hayFiltros ? " filtrados" : " del sistema"}
+            </p>
+            <p className="mt-1 text-[12.5px] text-ink-quiet">Historial completo de acciones administrativas.</p>
+          </div>
+          {hayFiltros && (
+            <Button variant="ghost" size="sm" onClick={limpiarFiltros}>
+              Limpiar filtros
+            </Button>
+          )}
         </div>
-        <Button variant="outline" size="sm" onClick={exportar} disabled={exportando || total === 0}>
-          <Download className="h-3.5 w-3.5" /> {exportando ? "Exportando..." : "Exportar CSV"}
-        </Button>
-      </div>
 
-      <div className="mt-8 grid gap-3 rounded-2xl border border-line bg-white p-4 md:grid-cols-[minmax(260px,1fr)_250px]">
+        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+          {(Object.keys(ACCION_LABEL) as AccionAuditoria[]).map((accion) => {
+            const activo = accionFiltro === accion;
+            const cantidad = accionCounts?.[accion] ?? 0;
+            const Icon = ACCION_ICON[accion];
+            return (
+              <button
+                key={accion}
+                type="button"
+                aria-pressed={activo}
+                onClick={() => {
+                  setAccionFiltro(activo ? "todas" : accion);
+                  setPagina(1);
+                }}
+                className={cn(
+                  "group flex min-h-[76px] items-center gap-3 rounded-xl border px-3 py-3 text-left transition-colors",
+                  activo ? "border-brand-600 bg-brand-50 ring-2 ring-brand-600/10" : "border-line bg-white hover:border-brand-200 hover:bg-surface"
+                )}
+              >
+                <span className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-lg", ACCION_TONE[accion])}>
+                  <Icon className="h-4 w-4" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[20px] font-bold leading-none text-ink">{cantidad}</span>
+                  <span className="mt-1 block truncate text-[11.5px] text-ink-quiet">{ACCION_LABEL[accion]}</span>
+                </span>
+                <span className={cn("ml-auto h-2 w-2 shrink-0 rounded-full", ACCION_DOT[accion])} />
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <div className="mt-4 rounded-2xl border border-line bg-white p-4">
         <div className="relative">
           <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
           <Input
@@ -231,19 +311,6 @@ export function AuditoriaPanelContent() {
             aria-label="Buscar auditoría"
           />
         </div>
-        <Select
-          value={accionFiltro}
-          onChange={(e) => {
-            setAccionFiltro(e.target.value);
-            setPagina(1);
-          }}
-          aria-label="Filtrar por acción"
-        >
-          <option value="todas">Todas las acciones</option>
-          {(Object.keys(ACCION_LABEL) as AccionAuditoria[]).map((a) => (
-            <option key={a} value={a}>{ACCION_LABEL[a]}</option>
-          ))}
-        </Select>
       </div>
 
       {isLoading ? (
@@ -258,11 +325,11 @@ export function AuditoriaPanelContent() {
         </Card>
       ) : (
         <>
-          <Card className="mt-7 overflow-hidden rounded-2xl border border-line bg-white p-0">
+          <Card className="mt-6 overflow-hidden rounded-2xl border border-line bg-white p-0 shadow-sm">
             <div className="overflow-x-auto">
               <table className="min-w-[1040px] w-full text-left text-[13px]">
                 <thead>
-                  <tr className="border-b border-line bg-surface text-[12px] text-ink-quiet">
+                  <tr className="border-b border-line bg-surface text-[11px] uppercase tracking-wide text-ink-quiet">
                     <th className="px-4 py-4 font-semibold">Fecha/Hora</th>
                     <th className="px-4 py-3 font-semibold">Acción</th>
                     <th className="px-4 py-3 font-semibold">Actor</th>

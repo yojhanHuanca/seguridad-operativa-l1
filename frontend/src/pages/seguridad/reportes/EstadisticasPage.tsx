@@ -32,15 +32,8 @@ export function SoEstadisticasPage() {
 
   return (
     <SeguridadOperativaShell>
-      <div>
-        <h1 className="text-[22px] font-bold text-ink tracking-tight">Estadísticas</h1>
-        <p className="mt-1 text-[13px] text-ink-quiet">
-          Riesgo, distribución por área y vencimientos de los planes de acción abiertos.
-        </p>
-      </div>
-
       {/* Misma fila de 4 bloques que el mockup: Riesgo | Planes por Área | Vencimiento | Reprogramación. */}
-      <div className="mt-5 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
           <div className="mb-4 flex items-center gap-3">
             <span className="grid h-9 w-9 place-items-center rounded-lg bg-brand-50 text-brand-700">
