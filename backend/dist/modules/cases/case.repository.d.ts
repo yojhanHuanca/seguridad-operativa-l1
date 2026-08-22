@@ -76,8 +76,8 @@ export declare class CaseRepository {
                 } & {
                     estado: number | null;
                     descripcion: string | null;
-                    created_at: Date | null;
                     fecha: Date;
+                    created_at: Date | null;
                     hora: Date | null;
                     anio: number | null;
                     mes: number | null;
@@ -170,11 +170,22 @@ export declare class CaseRepository {
                 nombre: string;
                 color: string | null;
             };
+            catalogo_detalle_casos_sop_procedenciaTocatalogo_detalle: {
+                nombre: string;
+            };
+            usuarios_casos_sop_responsable_hallazgoTousuarios: {
+                id_usuario: number;
+                nombre: string;
+                cargo: string | null;
+            } | null;
             catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: {
                 nombre: string;
                 codigo: string | null;
                 orden: number | null;
                 id_detalle: number;
+            } | null;
+            catalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalle: {
+                nombre: string;
             } | null;
             catalogo_detalle_casos_sop_tipoTocatalogo_detalle: {
                 nombre: string;
@@ -185,6 +196,7 @@ export declare class CaseRepository {
         } & {
             descripcion: string;
             created_at: Date | null;
+            area_responsable: number | null;
             updated_at: Date | null;
             id_caso: number;
             codigo_sop: string;
@@ -207,7 +219,6 @@ export declare class CaseRepository {
             clasificacion: string | null;
             analisis_riesgo: number | null;
             acr: string | null;
-            area_responsable: number | null;
             responsable_plan: number | null;
             estado_plan: number | null;
             fecha_plan: Date | null;
@@ -216,12 +227,185 @@ export declare class CaseRepository {
             observaciones: string | null;
             created_by: number | null;
         })[];
-        total: number | undefined;
+        total: undefined;
+    } | {
+        data: ({
+            anexos_caso: {
+                id_anexo: number;
+            }[];
+            evento_caso: ({
+                eventos_operativos: {
+                    catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: {
+                        nombre: string;
+                    } | null;
+                    catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: {
+                        nombre: string;
+                        id_detalle: number;
+                    };
+                    catalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalle: {
+                        nombre: string;
+                    } | null;
+                } & {
+                    estado: number | null;
+                    descripcion: string | null;
+                    fecha: Date;
+                    created_at: Date | null;
+                    hora: Date | null;
+                    anio: number | null;
+                    mes: number | null;
+                    semana: number | null;
+                    dia: string | null;
+                    numero_carrera: string | null;
+                    informacion_adicional: string | null;
+                    camara_monitoreada: string | null;
+                    demora: import("@prisma/client/runtime/library").Decimal | null;
+                    id_evento: number;
+                    codigo_evento: string | null;
+                    rango_horario: number | null;
+                    tipo_incidente: number;
+                    ubicacion: number | null;
+                    tipo_via: number | null;
+                    direccion_via: number | null;
+                    lugar_incidente: number | null;
+                    modelo_mr: number | null;
+                    numero_mr: number | null;
+                    personal_involucrado: number | null;
+                    tipo_causa: number | null;
+                    posible_causa: number | null;
+                    usuario_registra: number | null;
+                    updated_at: Date | null;
+                };
+            } & {
+                usuario: number | null;
+                id: number;
+                id_evento: number;
+                id_caso: number;
+                fecha_conversion: Date | null;
+            })[];
+            planes_accion: ({
+                actividades_plan: ({
+                    usuarios: {
+                        id_usuario: number;
+                        nombre: string;
+                        cargo: string | null;
+                    } | null;
+                    catalogo_detalle: {
+                        nombre: string;
+                    } | null;
+                } & {
+                    estado: number | null;
+                    fecha_inicio: Date | null;
+                    fecha_fin: Date | null;
+                    descripcion: string;
+                    created_at: Date | null;
+                    id_plan: number;
+                    responsable: number | null;
+                    id_actividad: number;
+                    porcentaje: import("@prisma/client/runtime/library").Decimal | null;
+                })[];
+                areas: {
+                    id_area: number;
+                    nombre_area: string;
+                };
+                usuarios: {
+                    id_usuario: number;
+                    nombre: string;
+                    cargo: string | null;
+                };
+                catalogo_detalle: {
+                    nombre: string;
+                };
+            } & {
+                estado: number;
+                id_area: number;
+                descripcion: string;
+                created_at: Date | null;
+                updated_at: Date | null;
+                id_caso: number;
+                dias_abierto: number | null;
+                fecha_plan: Date;
+                fecha_reprogramada: Date | null;
+                observaciones: string | null;
+                id_plan: number;
+                codigo_plan: string;
+                responsable: number;
+                prorroga_motivo: string | null;
+                prorroga_fecha: Date | null;
+                prorroga_estado: string | null;
+                prorroga_fecha_sol: Date | null;
+            })[];
+            areas: {
+                id_area: number;
+                nombre_area: string;
+            } | null;
+            catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
+                nombre: string;
+                color: string | null;
+            };
+            catalogo_detalle_casos_sop_procedenciaTocatalogo_detalle: {
+                nombre: string;
+            };
+            usuarios_casos_sop_responsable_hallazgoTousuarios: {
+                id_usuario: number;
+                nombre: string;
+                cargo: string | null;
+            } | null;
+            catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: {
+                nombre: string;
+                codigo: string | null;
+                orden: number | null;
+                id_detalle: number;
+            } | null;
+            catalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalle: {
+                nombre: string;
+            } | null;
+            catalogo_detalle_casos_sop_tipoTocatalogo_detalle: {
+                nombre: string;
+            };
+            catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle: {
+                nombre: string;
+            };
+        } & {
+            descripcion: string;
+            created_at: Date | null;
+            area_responsable: number | null;
+            updated_at: Date | null;
+            id_caso: number;
+            codigo_sop: string;
+            titulo: string | null;
+            nombre_reportante: string | null;
+            correo_reportante: string | null;
+            telefono_reportante: string | null;
+            fecha_hallazgo: Date;
+            fecha_evento: Date | null;
+            estado_hallazgo: number;
+            dias_abierto: number | null;
+            procedencia: number;
+            tipo: number;
+            responsable_hallazgo: number | null;
+            tipo_sop: number;
+            subtipo_sop: number | null;
+            peligro: string | null;
+            consecuencia: string | null;
+            descripcion_evento: string | null;
+            clasificacion: string | null;
+            analisis_riesgo: number | null;
+            acr: string | null;
+            responsable_plan: number | null;
+            estado_plan: number | null;
+            fecha_plan: Date | null;
+            fecha_reprogramada: Date | null;
+            dias_abierto_plan: number | null;
+            observaciones: string | null;
+            created_by: number | null;
+        })[];
+        total: number;
     }>;
     /**
      * Conteos por pestaña de la bandeja de Casos SOP — solo `COUNT`, nunca trae
      * filas. Los grupos de `estado_hallazgo` por pestaña deben coincidir con
-     * los filtros de pestaña que use el frontend: si se agrega o renombra un
+     * `CASE_FILTERS`/`STAGE_BY_ESTADO` del frontend (`features/cases/lib/
+     * filters.ts` y `features/cases/domain.ts`): si se agrega o renombra un
      * estado allá, hay que actualizar esto también.
      */
     static counts(area?: number): Promise<Record<string, number>>;
@@ -275,8 +459,8 @@ export declare class CaseRepository {
             } & {
                 estado: number | null;
                 descripcion: string | null;
-                created_at: Date | null;
                 fecha: Date;
+                created_at: Date | null;
                 hora: Date | null;
                 anio: number | null;
                 mes: number | null;
@@ -454,6 +638,7 @@ export declare class CaseRepository {
     } & {
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -476,7 +661,6 @@ export declare class CaseRepository {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -492,8 +676,8 @@ export declare class CaseRepository {
      * `PlanDetail.tsx` en vez de traer toda el área y filtrar en el navegador.
      */
     static findPlansByArea(opts?: {
-        id_area?: number | undefined;
-        codigo_sop?: string | undefined;
+        id_area?: number;
+        codigo_sop?: string;
     }): Promise<({
         actividades_plan: ({
             seguimientos: ({
@@ -553,6 +737,7 @@ export declare class CaseRepository {
                 causa_raiz: string;
                 conclusiones: string;
             } | null;
+            descripcion: string;
             timeline_caso: {
                 fecha: Date | null;
                 id_evento: number;
@@ -562,7 +747,6 @@ export declare class CaseRepository {
                 actor_rol: string;
                 detalle: string | null;
             }[];
-            descripcion: string;
             id_caso: number;
             codigo_sop: string;
             titulo: string | null;
@@ -604,12 +788,44 @@ export declare class CaseRepository {
             nombre: string;
         };
     } | null>;
+    /**
+     * Contexto mínimo de un plan para decidir si la acción procede: en qué etapa
+     * está su caso y de quién es el plan. Va en una sola consulta porque las dos
+     * comprobaciones (etapa y propiedad) se hacen siempre juntas.
+     */
+    static findPlanContexto(id_plan: number): Promise<{
+        id_area: number;
+        casos_sop: {
+            codigo_sop: string;
+            catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
+                nombre: string;
+            };
+        };
+        id_caso: number;
+        id_plan: number;
+        codigo_plan: string;
+        responsable: number;
+    } | null>;
+    /** Igual que findPlanContexto, pero entrando por una actividad del plan. */
+    static findActividadContexto(id_actividad: number): Promise<{
+        id_area: number;
+        casos_sop: {
+            codigo_sop: string;
+            catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
+                nombre: string;
+            };
+        };
+        id_caso: number;
+        id_plan: number;
+        codigo_plan: string;
+        responsable: number;
+    } | null>;
     static findEstado(nombre: string): Promise<{
         nombre: string;
         estado: boolean | null;
+        descripcion: string | null;
         id_catalogo: number;
         codigo: string | null;
-        descripcion: string | null;
         created_at: Date | null;
         orden: number | null;
         id_detalle: number;
@@ -618,9 +834,9 @@ export declare class CaseRepository {
     static findEstadoPlan(nombre: string): Promise<{
         nombre: string;
         estado: boolean | null;
+        descripcion: string | null;
         id_catalogo: number;
         codigo: string | null;
-        descripcion: string | null;
         created_at: Date | null;
         orden: number | null;
         id_detalle: number;
@@ -629,9 +845,9 @@ export declare class CaseRepository {
     static ensureEstadoPlan(nombre: string): Promise<{
         nombre: string;
         estado: boolean | null;
+        descripcion: string | null;
         id_catalogo: number;
         codigo: string | null;
-        descripcion: string | null;
         created_at: Date | null;
         orden: number | null;
         id_detalle: number;
@@ -640,9 +856,9 @@ export declare class CaseRepository {
     static findEstadoActividad(nombre: string): Promise<{
         nombre: string;
         estado: boolean | null;
+        descripcion: string | null;
         id_catalogo: number;
         codigo: string | null;
-        descripcion: string | null;
         created_at: Date | null;
         orden: number | null;
         id_detalle: number;
@@ -651,6 +867,7 @@ export declare class CaseRepository {
     static approve(id_caso: number): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -673,7 +890,6 @@ export declare class CaseRepository {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -685,6 +901,7 @@ export declare class CaseRepository {
     static addObservation(id_caso: number, texto: string): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -707,7 +924,6 @@ export declare class CaseRepository {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -727,8 +943,8 @@ export declare class CaseRepository {
     static updateTipo(id_caso: number, id_tipo: number, actor?: string): Promise<{
         estado: number | null;
         descripcion: string | null;
-        created_at: Date | null;
         fecha: Date;
+        created_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -757,6 +973,7 @@ export declare class CaseRepository {
     static evaluate(id_caso: number, dto: EvaluateCaseDto): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -779,7 +996,6 @@ export declare class CaseRepository {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -791,6 +1007,7 @@ export declare class CaseRepository {
     static reject(id_caso: number, dto: RejectCaseDto): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -813,7 +1030,6 @@ export declare class CaseRepository {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -920,6 +1136,7 @@ export declare class CaseRepository {
     static acceptPlan(id_caso: number, actor: string): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -942,7 +1159,6 @@ export declare class CaseRepository {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -968,6 +1184,7 @@ export declare class CaseRepository {
     static startExecution(id_caso: number): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -990,7 +1207,6 @@ export declare class CaseRepository {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -1111,6 +1327,7 @@ export declare class CaseRepository {
     static completeExecution(id_caso: number, actor: string): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -1133,7 +1350,6 @@ export declare class CaseRepository {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -1146,6 +1362,7 @@ export declare class CaseRepository {
     static sendToVerification(id_caso: number): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -1168,7 +1385,6 @@ export declare class CaseRepository {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -1205,6 +1421,7 @@ export declare class CaseRepository {
     }, actor: string): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -1227,7 +1444,6 @@ export declare class CaseRepository {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -1240,6 +1456,7 @@ export declare class CaseRepository {
     static reviewExtension(id_caso: number, decision: "aprobada" | "rechazada", nota: string | null): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -1262,7 +1479,6 @@ export declare class CaseRepository {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -1275,6 +1491,7 @@ export declare class CaseRepository {
     static keepPending(id_caso: number, motivo?: string | null): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -1297,7 +1514,6 @@ export declare class CaseRepository {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -1310,6 +1526,7 @@ export declare class CaseRepository {
     static reopenCase(id_caso: number, motivo?: string | null, destino?: "Recepción" | "Evaluación" | "Investigación" | "Plan de Acción" | "Ejecución" | "Verificación"): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -1332,7 +1549,6 @@ export declare class CaseRepository {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -1345,6 +1561,7 @@ export declare class CaseRepository {
     static rollbackStage(id_caso: number, estadoActualNombre: string, destinoNombre: "Evaluación" | "Investigación", motivo: string): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -1367,7 +1584,6 @@ export declare class CaseRepository {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -1379,6 +1595,7 @@ export declare class CaseRepository {
     static closeCase(id_caso: number, nota?: string | null): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -1401,7 +1618,6 @@ export declare class CaseRepository {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;

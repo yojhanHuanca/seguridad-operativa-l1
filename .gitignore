@@ -16,6 +16,9 @@ frontend/dist/
 # Evidencias subidas por los usuarios: van en el volumen del servidor.
 backend/uploads/
 
+# Respaldos locales de datos usados en pruebas o limpieza.
+backups/
+
 # Artefactos de herramientas de desarrollo / logs locales
 .codex-*
 *.log

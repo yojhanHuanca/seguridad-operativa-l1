@@ -30,6 +30,7 @@ export type AuditoriaMinAggregateOutputType = {
     descripcion: string | null;
     usuario: number | null;
     ip: string | null;
+    user_agent: string | null;
     fecha: Date | null;
 };
 export type AuditoriaMaxAggregateOutputType = {
@@ -40,6 +41,7 @@ export type AuditoriaMaxAggregateOutputType = {
     descripcion: string | null;
     usuario: number | null;
     ip: string | null;
+    user_agent: string | null;
     fecha: Date | null;
 };
 export type AuditoriaCountAggregateOutputType = {
@@ -50,6 +52,9 @@ export type AuditoriaCountAggregateOutputType = {
     descripcion: number;
     usuario: number;
     ip: number;
+    user_agent: number;
+    datos_previos: number;
+    datos_nuevos: number;
     fecha: number;
     _all: number;
 };
@@ -71,6 +76,7 @@ export type AuditoriaMinAggregateInputType = {
     descripcion?: true;
     usuario?: true;
     ip?: true;
+    user_agent?: true;
     fecha?: true;
 };
 export type AuditoriaMaxAggregateInputType = {
@@ -81,6 +87,7 @@ export type AuditoriaMaxAggregateInputType = {
     descripcion?: true;
     usuario?: true;
     ip?: true;
+    user_agent?: true;
     fecha?: true;
 };
 export type AuditoriaCountAggregateInputType = {
@@ -91,6 +98,9 @@ export type AuditoriaCountAggregateInputType = {
     descripcion?: true;
     usuario?: true;
     ip?: true;
+    user_agent?: true;
+    datos_previos?: true;
+    datos_nuevos?: true;
     fecha?: true;
     _all?: true;
 };
@@ -178,6 +188,9 @@ export type AuditoriaGroupByOutputType = {
     descripcion: string | null;
     usuario: number;
     ip: string | null;
+    user_agent: string | null;
+    datos_previos: runtime.JsonValue | null;
+    datos_nuevos: runtime.JsonValue | null;
     fecha: Date | null;
     _count: AuditoriaCountAggregateOutputType | null;
     _avg: AuditoriaAvgAggregateOutputType | null;
@@ -199,6 +212,9 @@ export type auditoriaWhereInput = {
     descripcion?: Prisma.StringNullableFilter<"auditoria"> | string | null;
     usuario?: Prisma.IntFilter<"auditoria"> | number;
     ip?: Prisma.StringNullableFilter<"auditoria"> | string | null;
+    user_agent?: Prisma.StringNullableFilter<"auditoria"> | string | null;
+    datos_previos?: Prisma.JsonNullableFilter<"auditoria">;
+    datos_nuevos?: Prisma.JsonNullableFilter<"auditoria">;
     fecha?: Prisma.DateTimeNullableFilter<"auditoria"> | Date | string | null;
     usuarios?: Prisma.XOR<Prisma.UsuariosScalarRelationFilter, Prisma.usuariosWhereInput>;
 };
@@ -210,6 +226,9 @@ export type auditoriaOrderByWithRelationInput = {
     descripcion?: Prisma.SortOrderInput | Prisma.SortOrder;
     usuario?: Prisma.SortOrder;
     ip?: Prisma.SortOrderInput | Prisma.SortOrder;
+    user_agent?: Prisma.SortOrderInput | Prisma.SortOrder;
+    datos_previos?: Prisma.SortOrderInput | Prisma.SortOrder;
+    datos_nuevos?: Prisma.SortOrderInput | Prisma.SortOrder;
     fecha?: Prisma.SortOrderInput | Prisma.SortOrder;
     usuarios?: Prisma.usuariosOrderByWithRelationInput;
 };
@@ -224,6 +243,9 @@ export type auditoriaWhereUniqueInput = Prisma.AtLeast<{
     descripcion?: Prisma.StringNullableFilter<"auditoria"> | string | null;
     usuario?: Prisma.IntFilter<"auditoria"> | number;
     ip?: Prisma.StringNullableFilter<"auditoria"> | string | null;
+    user_agent?: Prisma.StringNullableFilter<"auditoria"> | string | null;
+    datos_previos?: Prisma.JsonNullableFilter<"auditoria">;
+    datos_nuevos?: Prisma.JsonNullableFilter<"auditoria">;
     fecha?: Prisma.DateTimeNullableFilter<"auditoria"> | Date | string | null;
     usuarios?: Prisma.XOR<Prisma.UsuariosScalarRelationFilter, Prisma.usuariosWhereInput>;
 }, "id_auditoria">;
@@ -235,6 +257,9 @@ export type auditoriaOrderByWithAggregationInput = {
     descripcion?: Prisma.SortOrderInput | Prisma.SortOrder;
     usuario?: Prisma.SortOrder;
     ip?: Prisma.SortOrderInput | Prisma.SortOrder;
+    user_agent?: Prisma.SortOrderInput | Prisma.SortOrder;
+    datos_previos?: Prisma.SortOrderInput | Prisma.SortOrder;
+    datos_nuevos?: Prisma.SortOrderInput | Prisma.SortOrder;
     fecha?: Prisma.SortOrderInput | Prisma.SortOrder;
     _count?: Prisma.auditoriaCountOrderByAggregateInput;
     _avg?: Prisma.auditoriaAvgOrderByAggregateInput;
@@ -253,6 +278,9 @@ export type auditoriaScalarWhereWithAggregatesInput = {
     descripcion?: Prisma.StringNullableWithAggregatesFilter<"auditoria"> | string | null;
     usuario?: Prisma.IntWithAggregatesFilter<"auditoria"> | number;
     ip?: Prisma.StringNullableWithAggregatesFilter<"auditoria"> | string | null;
+    user_agent?: Prisma.StringNullableWithAggregatesFilter<"auditoria"> | string | null;
+    datos_previos?: Prisma.JsonNullableWithAggregatesFilter<"auditoria">;
+    datos_nuevos?: Prisma.JsonNullableWithAggregatesFilter<"auditoria">;
     fecha?: Prisma.DateTimeNullableWithAggregatesFilter<"auditoria"> | Date | string | null;
 };
 export type auditoriaCreateInput = {
@@ -261,6 +289,9 @@ export type auditoriaCreateInput = {
     accion: string;
     descripcion?: string | null;
     ip?: string | null;
+    user_agent?: string | null;
+    datos_previos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+    datos_nuevos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     fecha?: Date | string | null;
     usuarios: Prisma.usuariosCreateNestedOneWithoutAuditoriaInput;
 };
@@ -272,6 +303,9 @@ export type auditoriaUncheckedCreateInput = {
     descripcion?: string | null;
     usuario: number;
     ip?: string | null;
+    user_agent?: string | null;
+    datos_previos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+    datos_nuevos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     fecha?: Date | string | null;
 };
 export type auditoriaUpdateInput = {
@@ -280,6 +314,9 @@ export type auditoriaUpdateInput = {
     accion?: Prisma.StringFieldUpdateOperationsInput | string;
     descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    user_agent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    datos_previos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+    datos_nuevos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     fecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     usuarios?: Prisma.usuariosUpdateOneRequiredWithoutAuditoriaNestedInput;
 };
@@ -291,6 +328,9 @@ export type auditoriaUncheckedUpdateInput = {
     descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     usuario?: Prisma.IntFieldUpdateOperationsInput | number;
     ip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    user_agent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    datos_previos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+    datos_nuevos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     fecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
 export type auditoriaCreateManyInput = {
@@ -301,6 +341,9 @@ export type auditoriaCreateManyInput = {
     descripcion?: string | null;
     usuario: number;
     ip?: string | null;
+    user_agent?: string | null;
+    datos_previos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+    datos_nuevos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     fecha?: Date | string | null;
 };
 export type auditoriaUpdateManyMutationInput = {
@@ -309,6 +352,9 @@ export type auditoriaUpdateManyMutationInput = {
     accion?: Prisma.StringFieldUpdateOperationsInput | string;
     descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    user_agent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    datos_previos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+    datos_nuevos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     fecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
 export type auditoriaUncheckedUpdateManyInput = {
@@ -319,6 +365,9 @@ export type auditoriaUncheckedUpdateManyInput = {
     descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     usuario?: Prisma.IntFieldUpdateOperationsInput | number;
     ip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    user_agent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    datos_previos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+    datos_nuevos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     fecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
 export type auditoriaCountOrderByAggregateInput = {
@@ -329,6 +378,9 @@ export type auditoriaCountOrderByAggregateInput = {
     descripcion?: Prisma.SortOrder;
     usuario?: Prisma.SortOrder;
     ip?: Prisma.SortOrder;
+    user_agent?: Prisma.SortOrder;
+    datos_previos?: Prisma.SortOrder;
+    datos_nuevos?: Prisma.SortOrder;
     fecha?: Prisma.SortOrder;
 };
 export type auditoriaAvgOrderByAggregateInput = {
@@ -344,6 +396,7 @@ export type auditoriaMaxOrderByAggregateInput = {
     descripcion?: Prisma.SortOrder;
     usuario?: Prisma.SortOrder;
     ip?: Prisma.SortOrder;
+    user_agent?: Prisma.SortOrder;
     fecha?: Prisma.SortOrder;
 };
 export type auditoriaMinOrderByAggregateInput = {
@@ -354,6 +407,7 @@ export type auditoriaMinOrderByAggregateInput = {
     descripcion?: Prisma.SortOrder;
     usuario?: Prisma.SortOrder;
     ip?: Prisma.SortOrder;
+    user_agent?: Prisma.SortOrder;
     fecha?: Prisma.SortOrder;
 };
 export type auditoriaSumOrderByAggregateInput = {
@@ -413,6 +467,9 @@ export type auditoriaCreateWithoutUsuariosInput = {
     accion: string;
     descripcion?: string | null;
     ip?: string | null;
+    user_agent?: string | null;
+    datos_previos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+    datos_nuevos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     fecha?: Date | string | null;
 };
 export type auditoriaUncheckedCreateWithoutUsuariosInput = {
@@ -422,6 +479,9 @@ export type auditoriaUncheckedCreateWithoutUsuariosInput = {
     accion: string;
     descripcion?: string | null;
     ip?: string | null;
+    user_agent?: string | null;
+    datos_previos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+    datos_nuevos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     fecha?: Date | string | null;
 };
 export type auditoriaCreateOrConnectWithoutUsuariosInput = {
@@ -456,6 +516,9 @@ export type auditoriaScalarWhereInput = {
     descripcion?: Prisma.StringNullableFilter<"auditoria"> | string | null;
     usuario?: Prisma.IntFilter<"auditoria"> | number;
     ip?: Prisma.StringNullableFilter<"auditoria"> | string | null;
+    user_agent?: Prisma.StringNullableFilter<"auditoria"> | string | null;
+    datos_previos?: Prisma.JsonNullableFilter<"auditoria">;
+    datos_nuevos?: Prisma.JsonNullableFilter<"auditoria">;
     fecha?: Prisma.DateTimeNullableFilter<"auditoria"> | Date | string | null;
 };
 export type auditoriaCreateManyUsuariosInput = {
@@ -465,6 +528,9 @@ export type auditoriaCreateManyUsuariosInput = {
     accion: string;
     descripcion?: string | null;
     ip?: string | null;
+    user_agent?: string | null;
+    datos_previos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+    datos_nuevos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     fecha?: Date | string | null;
 };
 export type auditoriaUpdateWithoutUsuariosInput = {
@@ -473,6 +539,9 @@ export type auditoriaUpdateWithoutUsuariosInput = {
     accion?: Prisma.StringFieldUpdateOperationsInput | string;
     descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    user_agent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    datos_previos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+    datos_nuevos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     fecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
 export type auditoriaUncheckedUpdateWithoutUsuariosInput = {
@@ -482,6 +551,9 @@ export type auditoriaUncheckedUpdateWithoutUsuariosInput = {
     accion?: Prisma.StringFieldUpdateOperationsInput | string;
     descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    user_agent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    datos_previos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+    datos_nuevos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     fecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
 export type auditoriaUncheckedUpdateManyWithoutUsuariosInput = {
@@ -491,6 +563,9 @@ export type auditoriaUncheckedUpdateManyWithoutUsuariosInput = {
     accion?: Prisma.StringFieldUpdateOperationsInput | string;
     descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    user_agent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    datos_previos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+    datos_nuevos?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     fecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
 export type auditoriaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -501,6 +576,9 @@ export type auditoriaSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
     descripcion?: boolean;
     usuario?: boolean;
     ip?: boolean;
+    user_agent?: boolean;
+    datos_previos?: boolean;
+    datos_nuevos?: boolean;
     fecha?: boolean;
     usuarios?: boolean | Prisma.usuariosDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["auditoria"]>;
@@ -512,6 +590,9 @@ export type auditoriaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
     descripcion?: boolean;
     usuario?: boolean;
     ip?: boolean;
+    user_agent?: boolean;
+    datos_previos?: boolean;
+    datos_nuevos?: boolean;
     fecha?: boolean;
     usuarios?: boolean | Prisma.usuariosDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["auditoria"]>;
@@ -523,6 +604,9 @@ export type auditoriaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
     descripcion?: boolean;
     usuario?: boolean;
     ip?: boolean;
+    user_agent?: boolean;
+    datos_previos?: boolean;
+    datos_nuevos?: boolean;
     fecha?: boolean;
     usuarios?: boolean | Prisma.usuariosDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["auditoria"]>;
@@ -534,9 +618,12 @@ export type auditoriaSelectScalar = {
     descripcion?: boolean;
     usuario?: boolean;
     ip?: boolean;
+    user_agent?: boolean;
+    datos_previos?: boolean;
+    datos_nuevos?: boolean;
     fecha?: boolean;
 };
-export type auditoriaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id_auditoria" | "tabla_afectada" | "id_registro" | "accion" | "descripcion" | "usuario" | "ip" | "fecha", ExtArgs["result"]["auditoria"]>;
+export type auditoriaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id_auditoria" | "tabla_afectada" | "id_registro" | "accion" | "descripcion" | "usuario" | "ip" | "user_agent" | "datos_previos" | "datos_nuevos" | "fecha", ExtArgs["result"]["auditoria"]>;
 export type auditoriaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     usuarios?: boolean | Prisma.usuariosDefaultArgs<ExtArgs>;
 };
@@ -559,6 +646,9 @@ export type $auditoriaPayload<ExtArgs extends runtime.Types.Extensions.InternalA
         descripcion: string | null;
         usuario: number;
         ip: string | null;
+        user_agent: string | null;
+        datos_previos: runtime.JsonValue | null;
+        datos_nuevos: runtime.JsonValue | null;
         fecha: Date | null;
     }, ExtArgs["result"]["auditoria"]>;
     composites: {};
@@ -922,6 +1012,9 @@ export interface auditoriaFieldRefs {
     readonly descripcion: Prisma.FieldRef<"auditoria", 'String'>;
     readonly usuario: Prisma.FieldRef<"auditoria", 'Int'>;
     readonly ip: Prisma.FieldRef<"auditoria", 'String'>;
+    readonly user_agent: Prisma.FieldRef<"auditoria", 'String'>;
+    readonly datos_previos: Prisma.FieldRef<"auditoria", 'Json'>;
+    readonly datos_nuevos: Prisma.FieldRef<"auditoria", 'Json'>;
     readonly fecha: Prisma.FieldRef<"auditoria", 'DateTime'>;
 }
 /**

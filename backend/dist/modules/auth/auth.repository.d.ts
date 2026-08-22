@@ -21,9 +21,29 @@ export declare class AuthRepository {
         foto_url: string | null;
         ultimo_acceso: Date | null;
         es_responsable: boolean;
+        puede_reabrir_casos: boolean;
+        puede_rechazar_reportes: boolean;
         id_area: number | null;
         id_rol: number | null;
     }) | null>;
+    static updateUltimoAcceso(id_usuario: number): Promise<{
+        id_usuario: number;
+        codigo_usuario: string;
+        correo: string;
+        nombre: string;
+        cargo: string | null;
+        password_hash: string | null;
+        telefono: string | null;
+        estado: string | null;
+        fecha_ingreso: Date | null;
+        foto_url: string | null;
+        ultimo_acceso: Date | null;
+        es_responsable: boolean;
+        puede_reabrir_casos: boolean;
+        puede_rechazar_reportes: boolean;
+        id_area: number | null;
+        id_rol: number | null;
+    }>;
     static healthCheck(): Promise<boolean>;
     static crearSesion(usuario: number, direccion_ip?: string, navegador?: string): Promise<{
         estado: string | null;

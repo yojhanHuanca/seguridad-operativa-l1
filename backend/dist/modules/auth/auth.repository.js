@@ -11,6 +11,9 @@ export class AuthRepository {
             },
         });
     }
+    static async updateUltimoAcceso(id_usuario) {
+        return prisma.usuarios.update({ where: { id_usuario }, data: { ultimo_acceso: new Date() } });
+    }
     static async healthCheck() {
         await prisma.$queryRaw `SELECT 1`;
         return true;

@@ -1,7 +1,6 @@
 import { z } from "zod";
 import type { UploadedFile } from "./report.types.js";
-import type { AuthTokenPayload } from "../../middlewares/auth.middleware.js";
-type Actor = AuthTokenPayload;
+import { type Actor } from "../../utils/actor.js";
 export declare const createReportSchema: z.ZodObject<{
     id_tipo: z.ZodCoercedNumber<unknown>;
     id_lugar: z.ZodCoercedNumber<unknown>;
@@ -25,6 +24,7 @@ export declare class ReportService {
         caso: {
             descripcion: string;
             created_at: Date | null;
+            area_responsable: number | null;
             updated_at: Date | null;
             id_caso: number;
             codigo_sop: string;
@@ -47,7 +47,6 @@ export declare class ReportService {
             clasificacion: string | null;
             analisis_riesgo: number | null;
             acr: string | null;
-            area_responsable: number | null;
             responsable_plan: number | null;
             estado_plan: number | null;
             fecha_plan: Date | null;
@@ -59,8 +58,8 @@ export declare class ReportService {
         evento: {
             estado: number | null;
             descripcion: string | null;
-            created_at: Date | null;
             fecha: Date;
+            created_at: Date | null;
             hora: Date | null;
             anio: number | null;
             mes: number | null;
@@ -112,8 +111,8 @@ export declare class ReportService {
                 } & {
                     estado: number | null;
                     descripcion: string | null;
-                    created_at: Date | null;
                     fecha: Date;
+                    created_at: Date | null;
                     hora: Date | null;
                     anio: number | null;
                     mes: number | null;
@@ -170,6 +169,7 @@ export declare class ReportService {
         } & {
             descripcion: string;
             created_at: Date | null;
+            area_responsable: number | null;
             updated_at: Date | null;
             id_caso: number;
             codigo_sop: string;
@@ -192,7 +192,6 @@ export declare class ReportService {
             clasificacion: string | null;
             analisis_riesgo: number | null;
             acr: string | null;
-            area_responsable: number | null;
             responsable_plan: number | null;
             estado_plan: number | null;
             fecha_plan: Date | null;
@@ -203,7 +202,7 @@ export declare class ReportService {
         })[];
         total: number | undefined;
     }>;
-    static getByCodigo(codigo_sop: string): Promise<{
+    static getByCodigo(codigo_sop: string, actor?: Actor): Promise<{
         anexos_caso: {
             id_anexo: number;
         }[];
@@ -218,8 +217,8 @@ export declare class ReportService {
             } & {
                 estado: number | null;
                 descripcion: string | null;
-                created_at: Date | null;
                 fecha: Date;
+                created_at: Date | null;
                 hora: Date | null;
                 anio: number | null;
                 mes: number | null;
@@ -276,6 +275,7 @@ export declare class ReportService {
     } & {
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -298,7 +298,6 @@ export declare class ReportService {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -308,5 +307,4 @@ export declare class ReportService {
         created_by: number | null;
     }>;
 }
-export {};
 //# sourceMappingURL=report.service.d.ts.map

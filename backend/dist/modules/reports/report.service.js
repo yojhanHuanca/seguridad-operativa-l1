@@ -1,9 +1,6 @@
 import { z } from "zod";
 import { ReportRepository } from "./report.repository.js";
-/** Solo el rol "Reportante" ve nada más que lo suyo; ver comentario en listReports. */
-function esReportante(actor) {
-    return (actor?.rol_nombre ?? "").trim().toLowerCase() === "reportante";
-}
+import { esReportante } from "../../utils/actor.js";
 const idPositivo = z.coerce.number().int().positive();
 export const createReportSchema = z
     .object({
@@ -69,10 +66,14 @@ export class ReportService {
             ...(paginar ? { page, limit } : {}),
         });
     }
-    static async getByCodigo(codigo_sop) {
+    static async getByCodigo(codigo_sop, actor) {
         const caso = await ReportRepository.findByCodigo(codigo_sop);
         if (!caso)
             throw new Error(`El caso ${codigo_sop} no existe`);
+        // Mismo criterio que el listado: un reportante no puede abrir el caso de otro.
+        if (esReportante(actor) && caso.created_by !== actor.id_usuario) {
+            throw new Error(`El caso ${codigo_sop} no existe`);
+        }
         return caso;
     }
 }

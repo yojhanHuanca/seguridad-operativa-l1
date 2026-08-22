@@ -58,6 +58,8 @@ export declare class ProfileRepository {
         foto_url: string | null;
         ultimo_acceso: Date | null;
         es_responsable: boolean;
+        puede_reabrir_casos: boolean;
+        puede_rechazar_reportes: boolean;
         id_area: number | null;
         id_rol: number | null;
     }>;

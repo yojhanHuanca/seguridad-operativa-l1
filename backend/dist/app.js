@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-import path from "node:path";
 import prisma from "./lib/prisma.js";
 import routes from "./routes/index.js";
 import { notFoundMiddleware } from "./middlewares/notFound.middleware.js";
@@ -37,7 +36,8 @@ app.get("/api/health", async (_req, res) => {
         });
     }
 });
-app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
+// Los archivos subidos NO se sirven como estáticos públicos: se entregan por
+// /api/archivos, que exige sesión y aplica la visibilidad del expediente.
 app.use("/api", routes);
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

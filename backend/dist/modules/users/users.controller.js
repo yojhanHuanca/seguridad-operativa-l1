@@ -26,6 +26,15 @@ export class UsersController {
             return res.status(500).json(ApiResponse.error("Error al obtener los conteos", error));
         }
     }
+    static async getBasicos(_req, res) {
+        try {
+            const users = await UsersService.getBasicUsers();
+            return res.json(ApiResponse.success("Usuarios obtenidos correctamente", users));
+        }
+        catch (error) {
+            return res.status(500).json(ApiResponse.error("Error al obtener los usuarios", error));
+        }
+    }
     static async getById(req, res) {
         try {
             const user = await UsersService.getUserById(req.params.id);
@@ -44,7 +53,7 @@ export class UsersController {
     }
     static async create(req, res) {
         try {
-            const user = await UsersService.createUser(req.body);
+            const user = await UsersService.createUser(req.body, req.user, req.ip);
             return res.status(201).json(ApiResponse.success("Usuario creado correctamente", user));
         }
         catch (error) {
@@ -56,7 +65,7 @@ export class UsersController {
     }
     static async update(req, res) {
         try {
-            const user = await UsersService.updateUser(req.params.id, req.body);
+            const user = await UsersService.updateUser(req.params.id, req.body, req.user, req.ip);
             return res.json(ApiResponse.success("Usuario actualizado correctamente", user));
         }
         catch (error) {

@@ -3,6 +3,7 @@ import { EventoRepository } from "./evento.repository.js";
 import { ESTADOS_EVENTO, asignarEventoSchema, createEventoSchema, updateEventoSchema } from "./evento.types.js";
 import { UserRepository } from "../users/users.repository.js";
 import { NotificationRepository } from "../notifications/notification.repository.js";
+import { esAdmin } from "../../utils/actor.js";
 /** Cada campo opcional que sí venga tiene que apuntar al catálogo que le corresponde. */
 const CATALOGOS_POR_CAMPO = {
     id_tipo_incidente: "Tipo de incidente operativo",
@@ -69,8 +70,14 @@ export class EventoService {
         return EventoRepository.remove(id);
     }
     /** Bandeja de eventos asignados a una persona de Seguridad Operativa. */
-    static async getAsignados(id_usuario) {
-        return EventoRepository.findByAsignado(id_usuario);
+    /**
+     * Bandeja de eventos asignados. El id de la ruta solo lo respeta el Admin;
+     * cualquier otro rol recibe la suya, aunque pida la de otra persona — antes
+     * el id venía del cliente sin comprobar nada.
+     */
+    static async getAsignados(id_usuario, actor) {
+        const objetivo = esAdmin(actor) ? id_usuario : actor?.id_usuario ?? id_usuario;
+        return EventoRepository.findByAsignado(objetivo);
     }
     /**
      * Asigna el evento a una persona de Seguridad Operativa: le llega una

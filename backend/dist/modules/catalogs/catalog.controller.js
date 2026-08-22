@@ -10,5 +10,55 @@ export class CatalogController {
             return res.status(500).json(ApiResponse.error("Error al obtener los catálogos", error));
         }
     }
+    static async getGroupForAdmin(req, res) {
+        try {
+            const id_catalogo = Number(req.params.id);
+            const group = await CatalogService.getGroupForAdmin(id_catalogo);
+            return res.json(ApiResponse.success("Catálogo obtenido correctamente", group));
+        }
+        catch (error) {
+            return res.status(404).json(ApiResponse.error(error instanceof Error ? error.message : "Catálogo no encontrado"));
+        }
+    }
+    static async createItem(req, res) {
+        try {
+            const id_catalogo = Number(req.params.id);
+            const item = await CatalogService.createItem(id_catalogo, req.body?.nombre ?? "");
+            return res.status(201).json(ApiResponse.success("Valor creado correctamente", item));
+        }
+        catch (error) {
+            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al crear el valor"));
+        }
+    }
+    static async updateItem(req, res) {
+        try {
+            const id_detalle = Number(req.params.idDetalle);
+            const item = await CatalogService.updateItem(id_detalle, req.body?.nombre ?? "");
+            return res.json(ApiResponse.success("Valor actualizado correctamente", item));
+        }
+        catch (error) {
+            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al actualizar el valor"));
+        }
+    }
+    static async removeItem(req, res) {
+        try {
+            const id_detalle = Number(req.params.idDetalle);
+            const item = await CatalogService.setItemEstado(id_detalle, false);
+            return res.json(ApiResponse.success("Valor desactivado correctamente", item));
+        }
+        catch (error) {
+            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al desactivar el valor"));
+        }
+    }
+    static async restoreItem(req, res) {
+        try {
+            const id_detalle = Number(req.params.idDetalle);
+            const item = await CatalogService.setItemEstado(id_detalle, true);
+            return res.json(ApiResponse.success("Valor reactivado correctamente", item));
+        }
+        catch (error) {
+            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al reactivar el valor"));
+        }
+    }
 }
 //# sourceMappingURL=catalog.controller.js.map

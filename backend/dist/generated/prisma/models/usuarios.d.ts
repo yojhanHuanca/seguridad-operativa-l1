@@ -35,6 +35,8 @@ export type UsuariosMinAggregateOutputType = {
     foto_url: string | null;
     ultimo_acceso: Date | null;
     es_responsable: boolean | null;
+    puede_reabrir_casos: boolean | null;
+    puede_rechazar_reportes: boolean | null;
     id_area: number | null;
     id_rol: number | null;
 };
@@ -51,6 +53,8 @@ export type UsuariosMaxAggregateOutputType = {
     foto_url: string | null;
     ultimo_acceso: Date | null;
     es_responsable: boolean | null;
+    puede_reabrir_casos: boolean | null;
+    puede_rechazar_reportes: boolean | null;
     id_area: number | null;
     id_rol: number | null;
 };
@@ -67,6 +71,8 @@ export type UsuariosCountAggregateOutputType = {
     foto_url: number;
     ultimo_acceso: number;
     es_responsable: number;
+    puede_reabrir_casos: number;
+    puede_rechazar_reportes: number;
     id_area: number;
     id_rol: number;
     _all: number;
@@ -94,6 +100,8 @@ export type UsuariosMinAggregateInputType = {
     foto_url?: true;
     ultimo_acceso?: true;
     es_responsable?: true;
+    puede_reabrir_casos?: true;
+    puede_rechazar_reportes?: true;
     id_area?: true;
     id_rol?: true;
 };
@@ -110,6 +118,8 @@ export type UsuariosMaxAggregateInputType = {
     foto_url?: true;
     ultimo_acceso?: true;
     es_responsable?: true;
+    puede_reabrir_casos?: true;
+    puede_rechazar_reportes?: true;
     id_area?: true;
     id_rol?: true;
 };
@@ -126,6 +136,8 @@ export type UsuariosCountAggregateInputType = {
     foto_url?: true;
     ultimo_acceso?: true;
     es_responsable?: true;
+    puede_reabrir_casos?: true;
+    puede_rechazar_reportes?: true;
     id_area?: true;
     id_rol?: true;
     _all?: true;
@@ -219,6 +231,8 @@ export type UsuariosGroupByOutputType = {
     foto_url: string | null;
     ultimo_acceso: Date | null;
     es_responsable: boolean;
+    puede_reabrir_casos: boolean;
+    puede_rechazar_reportes: boolean;
     id_area: number | null;
     id_rol: number | null;
     _count: UsuariosCountAggregateOutputType | null;
@@ -246,6 +260,8 @@ export type usuariosWhereInput = {
     foto_url?: Prisma.StringNullableFilter<"usuarios"> | string | null;
     ultimo_acceso?: Prisma.DateTimeNullableFilter<"usuarios"> | Date | string | null;
     es_responsable?: Prisma.BoolFilter<"usuarios"> | boolean;
+    puede_reabrir_casos?: Prisma.BoolFilter<"usuarios"> | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFilter<"usuarios"> | boolean;
     id_area?: Prisma.IntNullableFilter<"usuarios"> | number | null;
     id_rol?: Prisma.IntNullableFilter<"usuarios"> | number | null;
     actividades_plan?: Prisma.Actividades_planListRelationFilter;
@@ -285,6 +301,8 @@ export type usuariosOrderByWithRelationInput = {
     foto_url?: Prisma.SortOrderInput | Prisma.SortOrder;
     ultimo_acceso?: Prisma.SortOrderInput | Prisma.SortOrder;
     es_responsable?: Prisma.SortOrder;
+    puede_reabrir_casos?: Prisma.SortOrder;
+    puede_rechazar_reportes?: Prisma.SortOrder;
     id_area?: Prisma.SortOrderInput | Prisma.SortOrder;
     id_rol?: Prisma.SortOrderInput | Prisma.SortOrder;
     actividades_plan?: Prisma.actividades_planOrderByRelationAggregateInput;
@@ -327,6 +345,8 @@ export type usuariosWhereUniqueInput = Prisma.AtLeast<{
     foto_url?: Prisma.StringNullableFilter<"usuarios"> | string | null;
     ultimo_acceso?: Prisma.DateTimeNullableFilter<"usuarios"> | Date | string | null;
     es_responsable?: Prisma.BoolFilter<"usuarios"> | boolean;
+    puede_reabrir_casos?: Prisma.BoolFilter<"usuarios"> | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFilter<"usuarios"> | boolean;
     id_area?: Prisma.IntNullableFilter<"usuarios"> | number | null;
     id_rol?: Prisma.IntNullableFilter<"usuarios"> | number | null;
     actividades_plan?: Prisma.Actividades_planListRelationFilter;
@@ -366,6 +386,8 @@ export type usuariosOrderByWithAggregationInput = {
     foto_url?: Prisma.SortOrderInput | Prisma.SortOrder;
     ultimo_acceso?: Prisma.SortOrderInput | Prisma.SortOrder;
     es_responsable?: Prisma.SortOrder;
+    puede_reabrir_casos?: Prisma.SortOrder;
+    puede_rechazar_reportes?: Prisma.SortOrder;
     id_area?: Prisma.SortOrderInput | Prisma.SortOrder;
     id_rol?: Prisma.SortOrderInput | Prisma.SortOrder;
     _count?: Prisma.usuariosCountOrderByAggregateInput;
@@ -390,6 +412,8 @@ export type usuariosScalarWhereWithAggregatesInput = {
     foto_url?: Prisma.StringNullableWithAggregatesFilter<"usuarios"> | string | null;
     ultimo_acceso?: Prisma.DateTimeNullableWithAggregatesFilter<"usuarios"> | Date | string | null;
     es_responsable?: Prisma.BoolWithAggregatesFilter<"usuarios"> | boolean;
+    puede_reabrir_casos?: Prisma.BoolWithAggregatesFilter<"usuarios"> | boolean;
+    puede_rechazar_reportes?: Prisma.BoolWithAggregatesFilter<"usuarios"> | boolean;
     id_area?: Prisma.IntNullableWithAggregatesFilter<"usuarios"> | number | null;
     id_rol?: Prisma.IntNullableWithAggregatesFilter<"usuarios"> | number | null;
 };
@@ -405,6 +429,8 @@ export type usuariosCreateInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -442,6 +468,8 @@ export type usuariosUncheckedCreateInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -478,6 +506,8 @@ export type usuariosUpdateInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -515,6 +545,8 @@ export type usuariosUncheckedUpdateInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -552,6 +584,8 @@ export type usuariosCreateManyInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
 };
@@ -567,6 +601,8 @@ export type usuariosUpdateManyMutationInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 };
 export type usuariosUncheckedUpdateManyInput = {
     id_usuario?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -581,6 +617,8 @@ export type usuariosUncheckedUpdateManyInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 };
@@ -613,6 +651,8 @@ export type usuariosCountOrderByAggregateInput = {
     foto_url?: Prisma.SortOrder;
     ultimo_acceso?: Prisma.SortOrder;
     es_responsable?: Prisma.SortOrder;
+    puede_reabrir_casos?: Prisma.SortOrder;
+    puede_rechazar_reportes?: Prisma.SortOrder;
     id_area?: Prisma.SortOrder;
     id_rol?: Prisma.SortOrder;
 };
@@ -634,6 +674,8 @@ export type usuariosMaxOrderByAggregateInput = {
     foto_url?: Prisma.SortOrder;
     ultimo_acceso?: Prisma.SortOrder;
     es_responsable?: Prisma.SortOrder;
+    puede_reabrir_casos?: Prisma.SortOrder;
+    puede_rechazar_reportes?: Prisma.SortOrder;
     id_area?: Prisma.SortOrder;
     id_rol?: Prisma.SortOrder;
 };
@@ -650,6 +692,8 @@ export type usuariosMinOrderByAggregateInput = {
     foto_url?: Prisma.SortOrder;
     ultimo_acceso?: Prisma.SortOrder;
     es_responsable?: Prisma.SortOrder;
+    puede_reabrir_casos?: Prisma.SortOrder;
+    puede_rechazar_reportes?: Prisma.SortOrder;
     id_area?: Prisma.SortOrder;
     id_rol?: Prisma.SortOrder;
 };
@@ -1030,6 +1074,8 @@ export type usuariosCreateWithoutActividades_planInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
     bitacora?: Prisma.bitacoraCreateNestedManyWithoutUsuariosInput;
@@ -1066,6 +1112,8 @@ export type usuariosUncheckedCreateWithoutActividades_planInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     anexos_caso?: Prisma.anexos_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1114,6 +1162,8 @@ export type usuariosUpdateWithoutActividades_planInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
     bitacora?: Prisma.bitacoraUpdateManyWithoutUsuariosNestedInput;
@@ -1150,6 +1200,8 @@ export type usuariosUncheckedUpdateWithoutActividades_planInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     anexos_caso?: Prisma.anexos_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -1185,6 +1237,8 @@ export type usuariosCreateWithoutAnexos_casoInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
     bitacora?: Prisma.bitacoraCreateNestedManyWithoutUsuariosInput;
@@ -1221,6 +1275,8 @@ export type usuariosUncheckedCreateWithoutAnexos_casoInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1269,6 +1325,8 @@ export type usuariosUpdateWithoutAnexos_casoInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
     bitacora?: Prisma.bitacoraUpdateManyWithoutUsuariosNestedInput;
@@ -1305,6 +1363,8 @@ export type usuariosUncheckedUpdateWithoutAnexos_casoInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -1340,6 +1400,8 @@ export type usuariosCreateWithoutAreasInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -1376,6 +1438,8 @@ export type usuariosUncheckedCreateWithoutAreasInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1436,6 +1500,8 @@ export type usuariosScalarWhereInput = {
     foto_url?: Prisma.StringNullableFilter<"usuarios"> | string | null;
     ultimo_acceso?: Prisma.DateTimeNullableFilter<"usuarios"> | Date | string | null;
     es_responsable?: Prisma.BoolFilter<"usuarios"> | boolean;
+    puede_reabrir_casos?: Prisma.BoolFilter<"usuarios"> | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFilter<"usuarios"> | boolean;
     id_area?: Prisma.IntNullableFilter<"usuarios"> | number | null;
     id_rol?: Prisma.IntNullableFilter<"usuarios"> | number | null;
 };
@@ -1451,6 +1517,8 @@ export type usuariosCreateWithoutAuditoriaInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     bitacora?: Prisma.bitacoraCreateNestedManyWithoutUsuariosInput;
@@ -1487,6 +1555,8 @@ export type usuariosUncheckedCreateWithoutAuditoriaInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1535,6 +1605,8 @@ export type usuariosUpdateWithoutAuditoriaInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     bitacora?: Prisma.bitacoraUpdateManyWithoutUsuariosNestedInput;
@@ -1571,6 +1643,8 @@ export type usuariosUncheckedUpdateWithoutAuditoriaInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -1606,6 +1680,8 @@ export type usuariosCreateWithoutBitacoraInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -1642,6 +1718,8 @@ export type usuariosUncheckedCreateWithoutBitacoraInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1690,6 +1768,8 @@ export type usuariosUpdateWithoutBitacoraInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -1726,6 +1806,8 @@ export type usuariosUncheckedUpdateWithoutBitacoraInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -1761,6 +1843,8 @@ export type usuariosCreateWithoutCasos_sop_casos_sop_created_byTousuariosInput =
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -1797,6 +1881,8 @@ export type usuariosUncheckedCreateWithoutCasos_sop_casos_sop_created_byTousuari
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1836,6 +1922,8 @@ export type usuariosCreateWithoutCasos_sop_casos_sop_responsable_hallazgoTousuar
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -1872,6 +1960,8 @@ export type usuariosUncheckedCreateWithoutCasos_sop_casos_sop_responsable_hallaz
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1911,6 +2001,8 @@ export type usuariosCreateWithoutCasos_sop_casos_sop_responsable_planTousuariosI
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -1947,6 +2039,8 @@ export type usuariosUncheckedCreateWithoutCasos_sop_casos_sop_responsable_planTo
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -1995,6 +2089,8 @@ export type usuariosUpdateWithoutCasos_sop_casos_sop_created_byTousuariosInput =
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -2031,6 +2127,8 @@ export type usuariosUncheckedUpdateWithoutCasos_sop_casos_sop_created_byTousuari
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2075,6 +2173,8 @@ export type usuariosUpdateWithoutCasos_sop_casos_sop_responsable_hallazgoTousuar
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -2111,6 +2211,8 @@ export type usuariosUncheckedUpdateWithoutCasos_sop_casos_sop_responsable_hallaz
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2155,6 +2257,8 @@ export type usuariosUpdateWithoutCasos_sop_casos_sop_responsable_planTousuariosI
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -2191,6 +2295,8 @@ export type usuariosUncheckedUpdateWithoutCasos_sop_casos_sop_responsable_planTo
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2226,6 +2332,8 @@ export type usuariosCreateWithoutEvento_casoInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -2262,6 +2370,8 @@ export type usuariosUncheckedCreateWithoutEvento_casoInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -2310,6 +2420,8 @@ export type usuariosUpdateWithoutEvento_casoInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -2346,6 +2458,8 @@ export type usuariosUncheckedUpdateWithoutEvento_casoInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2381,6 +2495,8 @@ export type usuariosCreateWithoutEventos_operativosInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -2417,6 +2533,8 @@ export type usuariosUncheckedCreateWithoutEventos_operativosInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -2465,6 +2583,8 @@ export type usuariosUpdateWithoutEventos_operativosInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -2501,6 +2621,8 @@ export type usuariosUncheckedUpdateWithoutEventos_operativosInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2536,6 +2658,8 @@ export type usuariosCreateWithoutEventos_monitoreo_eventos_monitoreo_usuario_reg
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -2572,6 +2696,8 @@ export type usuariosUncheckedCreateWithoutEventos_monitoreo_eventos_monitoreo_us
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -2611,6 +2737,8 @@ export type usuariosCreateWithoutEventos_monitoreo_eventos_monitoreo_asignado_aT
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -2647,6 +2775,8 @@ export type usuariosUncheckedCreateWithoutEventos_monitoreo_eventos_monitoreo_as
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -2695,6 +2825,8 @@ export type usuariosUpdateWithoutEventos_monitoreo_eventos_monitoreo_usuario_reg
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -2731,6 +2863,8 @@ export type usuariosUncheckedUpdateWithoutEventos_monitoreo_eventos_monitoreo_us
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2775,6 +2909,8 @@ export type usuariosUpdateWithoutEventos_monitoreo_eventos_monitoreo_asignado_aT
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -2811,6 +2947,8 @@ export type usuariosUncheckedUpdateWithoutEventos_monitoreo_eventos_monitoreo_as
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -2846,6 +2984,8 @@ export type usuariosCreateWithoutEvidencias_eventoInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -2882,6 +3022,8 @@ export type usuariosUncheckedCreateWithoutEvidencias_eventoInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -2930,6 +3072,8 @@ export type usuariosUpdateWithoutEvidencias_eventoInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -2966,6 +3110,8 @@ export type usuariosUncheckedUpdateWithoutEvidencias_eventoInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -3001,6 +3147,8 @@ export type usuariosCreateWithoutIncidenciasInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -3037,6 +3185,8 @@ export type usuariosUncheckedCreateWithoutIncidenciasInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -3085,6 +3235,8 @@ export type usuariosUpdateWithoutIncidenciasInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -3121,6 +3273,8 @@ export type usuariosUncheckedUpdateWithoutIncidenciasInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -3156,6 +3310,8 @@ export type usuariosCreateWithoutInvestigacion_casoInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -3192,6 +3348,8 @@ export type usuariosUncheckedCreateWithoutInvestigacion_casoInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -3240,6 +3398,8 @@ export type usuariosUpdateWithoutInvestigacion_casoInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -3276,6 +3436,8 @@ export type usuariosUncheckedUpdateWithoutInvestigacion_casoInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -3311,6 +3473,8 @@ export type usuariosCreateWithoutInvestigacionesInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -3347,6 +3511,8 @@ export type usuariosUncheckedCreateWithoutInvestigacionesInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -3395,6 +3561,8 @@ export type usuariosUpdateWithoutInvestigacionesInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -3431,6 +3599,8 @@ export type usuariosUncheckedUpdateWithoutInvestigacionesInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -3466,6 +3636,8 @@ export type usuariosCreateWithoutLogs_sistemaInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -3502,6 +3674,8 @@ export type usuariosUncheckedCreateWithoutLogs_sistemaInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -3550,6 +3724,8 @@ export type usuariosUpdateWithoutLogs_sistemaInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -3586,6 +3762,8 @@ export type usuariosUncheckedUpdateWithoutLogs_sistemaInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -3621,6 +3799,8 @@ export type usuariosCreateWithoutNotificacionesInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -3657,6 +3837,8 @@ export type usuariosUncheckedCreateWithoutNotificacionesInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -3705,6 +3887,8 @@ export type usuariosUpdateWithoutNotificacionesInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -3741,6 +3925,8 @@ export type usuariosUncheckedUpdateWithoutNotificacionesInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -3776,6 +3962,8 @@ export type usuariosCreateWithoutPlanes_accionInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -3812,6 +4000,8 @@ export type usuariosUncheckedCreateWithoutPlanes_accionInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -3860,6 +4050,8 @@ export type usuariosUpdateWithoutPlanes_accionInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -3896,6 +4088,8 @@ export type usuariosUncheckedUpdateWithoutPlanes_accionInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -3931,6 +4125,8 @@ export type usuariosCreateWithoutReporte_estadisticoInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -3967,6 +4163,8 @@ export type usuariosUncheckedCreateWithoutReporte_estadisticoInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -4015,6 +4213,8 @@ export type usuariosUpdateWithoutReporte_estadisticoInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -4051,6 +4251,8 @@ export type usuariosUncheckedUpdateWithoutReporte_estadisticoInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -4086,6 +4288,8 @@ export type usuariosCreateWithoutRolesInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -4122,6 +4326,8 @@ export type usuariosUncheckedCreateWithoutRolesInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -4178,6 +4384,8 @@ export type usuariosCreateWithoutSeguimientosInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -4214,6 +4422,8 @@ export type usuariosUncheckedCreateWithoutSeguimientosInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -4262,6 +4472,8 @@ export type usuariosUpdateWithoutSeguimientosInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -4298,6 +4510,8 @@ export type usuariosUncheckedUpdateWithoutSeguimientosInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -4333,6 +4547,8 @@ export type usuariosCreateWithoutSesionesInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     actividades_plan?: Prisma.actividades_planCreateNestedManyWithoutUsuariosInput;
     anexos_caso?: Prisma.anexos_casoCreateNestedManyWithoutUsuariosInput;
     auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput;
@@ -4369,6 +4585,8 @@ export type usuariosUncheckedCreateWithoutSesionesInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
     id_rol?: number | null;
     actividades_plan?: Prisma.actividades_planUncheckedCreateNestedManyWithoutUsuariosInput;
@@ -4417,6 +4635,8 @@ export type usuariosUpdateWithoutSesionesInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -4453,6 +4673,8 @@ export type usuariosUncheckedUpdateWithoutSesionesInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -4489,6 +4711,8 @@ export type usuariosCreateManyAreasInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_rol?: number | null;
 };
 export type usuariosUpdateWithoutAreasInput = {
@@ -4503,6 +4727,8 @@ export type usuariosUpdateWithoutAreasInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -4539,6 +4765,8 @@ export type usuariosUncheckedUpdateWithoutAreasInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -4575,6 +4803,8 @@ export type usuariosUncheckedUpdateManyWithoutAreasInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_rol?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 };
 export type usuariosCreateManyRolesInput = {
@@ -4590,6 +4820,8 @@ export type usuariosCreateManyRolesInput = {
     foto_url?: string | null;
     ultimo_acceso?: Date | string | null;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: number | null;
 };
 export type usuariosUpdateWithoutRolesInput = {
@@ -4604,6 +4836,8 @@ export type usuariosUpdateWithoutRolesInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     actividades_plan?: Prisma.actividades_planUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUpdateManyWithoutUsuariosNestedInput;
     auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput;
@@ -4640,6 +4874,8 @@ export type usuariosUncheckedUpdateWithoutRolesInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     actividades_plan?: Prisma.actividades_planUncheckedUpdateManyWithoutUsuariosNestedInput;
     anexos_caso?: Prisma.anexos_casoUncheckedUpdateManyWithoutUsuariosNestedInput;
@@ -4676,6 +4912,8 @@ export type usuariosUncheckedUpdateManyWithoutRolesInput = {
     foto_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     ultimo_acceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     es_responsable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_reabrir_casos?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    puede_rechazar_reportes?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     id_area?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 };
 /**
@@ -4875,6 +5113,8 @@ export type usuariosSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
     foto_url?: boolean;
     ultimo_acceso?: boolean;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: boolean;
     id_rol?: boolean;
     actividades_plan?: boolean | Prisma.usuarios$actividades_planArgs<ExtArgs>;
@@ -4915,6 +5155,8 @@ export type usuariosSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
     foto_url?: boolean;
     ultimo_acceso?: boolean;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: boolean;
     id_rol?: boolean;
     areas?: boolean | Prisma.usuarios$areasArgs<ExtArgs>;
@@ -4933,6 +5175,8 @@ export type usuariosSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
     foto_url?: boolean;
     ultimo_acceso?: boolean;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: boolean;
     id_rol?: boolean;
     areas?: boolean | Prisma.usuarios$areasArgs<ExtArgs>;
@@ -4951,10 +5195,12 @@ export type usuariosSelectScalar = {
     foto_url?: boolean;
     ultimo_acceso?: boolean;
     es_responsable?: boolean;
+    puede_reabrir_casos?: boolean;
+    puede_rechazar_reportes?: boolean;
     id_area?: boolean;
     id_rol?: boolean;
 };
-export type usuariosOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id_usuario" | "codigo_usuario" | "nombre" | "cargo" | "correo" | "password_hash" | "telefono" | "estado" | "fecha_ingreso" | "foto_url" | "ultimo_acceso" | "es_responsable" | "id_area" | "id_rol", ExtArgs["result"]["usuarios"]>;
+export type usuariosOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id_usuario" | "codigo_usuario" | "nombre" | "cargo" | "correo" | "password_hash" | "telefono" | "estado" | "fecha_ingreso" | "foto_url" | "ultimo_acceso" | "es_responsable" | "puede_reabrir_casos" | "puede_rechazar_reportes" | "id_area" | "id_rol", ExtArgs["result"]["usuarios"]>;
 export type usuariosInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     actividades_plan?: boolean | Prisma.usuarios$actividades_planArgs<ExtArgs>;
     anexos_caso?: boolean | Prisma.usuarios$anexos_casoArgs<ExtArgs>;
@@ -5029,6 +5275,8 @@ export type $usuariosPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
         foto_url: string | null;
         ultimo_acceso: Date | null;
         es_responsable: boolean;
+        puede_reabrir_casos: boolean;
+        puede_rechazar_reportes: boolean;
         id_area: number | null;
         id_rol: number | null;
     }, ExtArgs["result"]["usuarios"]>;
@@ -5420,6 +5668,8 @@ export interface usuariosFieldRefs {
     readonly foto_url: Prisma.FieldRef<"usuarios", 'String'>;
     readonly ultimo_acceso: Prisma.FieldRef<"usuarios", 'DateTime'>;
     readonly es_responsable: Prisma.FieldRef<"usuarios", 'Boolean'>;
+    readonly puede_reabrir_casos: Prisma.FieldRef<"usuarios", 'Boolean'>;
+    readonly puede_rechazar_reportes: Prisma.FieldRef<"usuarios", 'Boolean'>;
     readonly id_area: Prisma.FieldRef<"usuarios", 'Int'>;
     readonly id_rol: Prisma.FieldRef<"usuarios", 'Int'>;
 }

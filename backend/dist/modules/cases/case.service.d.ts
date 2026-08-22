@@ -1,4 +1,8 @@
 import type { UploadedFile } from "./case.types.js";
+import { type Actor } from "../../utils/actor.js";
+/** El plan existe, pero es de otra área: 403, no 400. */
+export declare class PlanAjenoError extends Error {
+}
 export declare class CaseService {
     static list(query: {
         estado?: string;
@@ -7,7 +11,7 @@ export declare class CaseService {
         sort?: string;
         page?: string;
         limit?: string;
-    }): Promise<{
+    }, actor?: Actor): Promise<{
         data: ({
             anexos_caso: {
                 id_anexo: number;
@@ -27,8 +31,8 @@ export declare class CaseService {
                 } & {
                     estado: number | null;
                     descripcion: string | null;
-                    created_at: Date | null;
                     fecha: Date;
+                    created_at: Date | null;
                     hora: Date | null;
                     anio: number | null;
                     mes: number | null;
@@ -121,11 +125,22 @@ export declare class CaseService {
                 nombre: string;
                 color: string | null;
             };
+            catalogo_detalle_casos_sop_procedenciaTocatalogo_detalle: {
+                nombre: string;
+            };
+            usuarios_casos_sop_responsable_hallazgoTousuarios: {
+                id_usuario: number;
+                nombre: string;
+                cargo: string | null;
+            } | null;
             catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: {
                 nombre: string;
                 codigo: string | null;
                 orden: number | null;
                 id_detalle: number;
+            } | null;
+            catalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalle: {
+                nombre: string;
             } | null;
             catalogo_detalle_casos_sop_tipoTocatalogo_detalle: {
                 nombre: string;
@@ -136,6 +151,7 @@ export declare class CaseService {
         } & {
             descripcion: string;
             created_at: Date | null;
+            area_responsable: number | null;
             updated_at: Date | null;
             id_caso: number;
             codigo_sop: string;
@@ -158,7 +174,6 @@ export declare class CaseService {
             clasificacion: string | null;
             analisis_riesgo: number | null;
             acr: string | null;
-            area_responsable: number | null;
             responsable_plan: number | null;
             estado_plan: number | null;
             fecha_plan: Date | null;
@@ -167,15 +182,187 @@ export declare class CaseService {
             observaciones: string | null;
             created_by: number | null;
         })[];
-        total: number | undefined;
+        total: undefined;
+    } | {
+        data: ({
+            anexos_caso: {
+                id_anexo: number;
+            }[];
+            evento_caso: ({
+                eventos_operativos: {
+                    catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: {
+                        nombre: string;
+                    } | null;
+                    catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: {
+                        nombre: string;
+                        id_detalle: number;
+                    };
+                    catalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalle: {
+                        nombre: string;
+                    } | null;
+                } & {
+                    estado: number | null;
+                    descripcion: string | null;
+                    fecha: Date;
+                    created_at: Date | null;
+                    hora: Date | null;
+                    anio: number | null;
+                    mes: number | null;
+                    semana: number | null;
+                    dia: string | null;
+                    numero_carrera: string | null;
+                    informacion_adicional: string | null;
+                    camara_monitoreada: string | null;
+                    demora: import("@prisma/client/runtime/library").Decimal | null;
+                    id_evento: number;
+                    codigo_evento: string | null;
+                    rango_horario: number | null;
+                    tipo_incidente: number;
+                    ubicacion: number | null;
+                    tipo_via: number | null;
+                    direccion_via: number | null;
+                    lugar_incidente: number | null;
+                    modelo_mr: number | null;
+                    numero_mr: number | null;
+                    personal_involucrado: number | null;
+                    tipo_causa: number | null;
+                    posible_causa: number | null;
+                    usuario_registra: number | null;
+                    updated_at: Date | null;
+                };
+            } & {
+                usuario: number | null;
+                id: number;
+                id_evento: number;
+                id_caso: number;
+                fecha_conversion: Date | null;
+            })[];
+            planes_accion: ({
+                actividades_plan: ({
+                    usuarios: {
+                        id_usuario: number;
+                        nombre: string;
+                        cargo: string | null;
+                    } | null;
+                    catalogo_detalle: {
+                        nombre: string;
+                    } | null;
+                } & {
+                    estado: number | null;
+                    fecha_inicio: Date | null;
+                    fecha_fin: Date | null;
+                    descripcion: string;
+                    created_at: Date | null;
+                    id_plan: number;
+                    responsable: number | null;
+                    id_actividad: number;
+                    porcentaje: import("@prisma/client/runtime/library").Decimal | null;
+                })[];
+                areas: {
+                    id_area: number;
+                    nombre_area: string;
+                };
+                usuarios: {
+                    id_usuario: number;
+                    nombre: string;
+                    cargo: string | null;
+                };
+                catalogo_detalle: {
+                    nombre: string;
+                };
+            } & {
+                estado: number;
+                id_area: number;
+                descripcion: string;
+                created_at: Date | null;
+                updated_at: Date | null;
+                id_caso: number;
+                dias_abierto: number | null;
+                fecha_plan: Date;
+                fecha_reprogramada: Date | null;
+                observaciones: string | null;
+                id_plan: number;
+                codigo_plan: string;
+                responsable: number;
+                prorroga_motivo: string | null;
+                prorroga_fecha: Date | null;
+                prorroga_estado: string | null;
+                prorroga_fecha_sol: Date | null;
+            })[];
+            areas: {
+                id_area: number;
+                nombre_area: string;
+            } | null;
+            catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
+                nombre: string;
+                color: string | null;
+            };
+            catalogo_detalle_casos_sop_procedenciaTocatalogo_detalle: {
+                nombre: string;
+            };
+            usuarios_casos_sop_responsable_hallazgoTousuarios: {
+                id_usuario: number;
+                nombre: string;
+                cargo: string | null;
+            } | null;
+            catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: {
+                nombre: string;
+                codigo: string | null;
+                orden: number | null;
+                id_detalle: number;
+            } | null;
+            catalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalle: {
+                nombre: string;
+            } | null;
+            catalogo_detalle_casos_sop_tipoTocatalogo_detalle: {
+                nombre: string;
+            };
+            catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle: {
+                nombre: string;
+            };
+        } & {
+            descripcion: string;
+            created_at: Date | null;
+            area_responsable: number | null;
+            updated_at: Date | null;
+            id_caso: number;
+            codigo_sop: string;
+            titulo: string | null;
+            nombre_reportante: string | null;
+            correo_reportante: string | null;
+            telefono_reportante: string | null;
+            fecha_hallazgo: Date;
+            fecha_evento: Date | null;
+            estado_hallazgo: number;
+            dias_abierto: number | null;
+            procedencia: number;
+            tipo: number;
+            responsable_hallazgo: number | null;
+            tipo_sop: number;
+            subtipo_sop: number | null;
+            peligro: string | null;
+            consecuencia: string | null;
+            descripcion_evento: string | null;
+            clasificacion: string | null;
+            analisis_riesgo: number | null;
+            acr: string | null;
+            responsable_plan: number | null;
+            estado_plan: number | null;
+            fecha_plan: Date | null;
+            fecha_reprogramada: Date | null;
+            dias_abierto_plan: number | null;
+            observaciones: string | null;
+            created_by: number | null;
+        })[];
+        total: number;
     }>;
     static counts(query: {
         area?: string;
-    }): Promise<Record<string, number>>;
+    }, actor?: Actor): Promise<Record<string, number>>;
     static listPlans(query: {
         area?: string;
         codigo?: string;
-    }): Promise<({
+    }, actor?: Actor): Promise<({
         actividades_plan: ({
             seguimientos: ({
                 usuarios: {
@@ -234,6 +421,7 @@ export declare class CaseService {
                 causa_raiz: string;
                 conclusiones: string;
             } | null;
+            descripcion: string;
             timeline_caso: {
                 fecha: Date | null;
                 id_evento: number;
@@ -243,7 +431,6 @@ export declare class CaseService {
                 actor_rol: string;
                 detalle: string | null;
             }[];
-            descripcion: string;
             id_caso: number;
             codigo_sop: string;
             titulo: string | null;
@@ -328,8 +515,8 @@ export declare class CaseService {
             } & {
                 estado: number | null;
                 descripcion: string | null;
-                created_at: Date | null;
                 fecha: Date;
+                created_at: Date | null;
                 hora: Date | null;
                 anio: number | null;
                 mes: number | null;
@@ -507,6 +694,7 @@ export declare class CaseService {
     } & {
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -529,7 +717,6 @@ export declare class CaseService {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -541,6 +728,7 @@ export declare class CaseService {
     static approve(codigo: string): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -563,7 +751,6 @@ export declare class CaseService {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -575,6 +762,7 @@ export declare class CaseService {
     static addObservation(codigo: string, rawBody: unknown): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -597,7 +785,6 @@ export declare class CaseService {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -609,6 +796,7 @@ export declare class CaseService {
     static evaluate(codigo: string, rawBody: unknown): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -631,7 +819,6 @@ export declare class CaseService {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -646,11 +833,11 @@ export declare class CaseService {
      * que el reportante lo marcó mal. Solo cambia ese campo, no reabre ni
      * mueve de etapa el caso.
      */
-    static updateTipo(codigo: string, rawBody: unknown, actor?: string): Promise<{
+    static updateTipo(codigo: string, rawBody: unknown, actor?: Actor): Promise<{
         estado: number | null;
         descripcion: string | null;
-        created_at: Date | null;
         fecha: Date;
+        created_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -679,6 +866,7 @@ export declare class CaseService {
     static reject(codigo: string, rawBody: unknown): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -701,7 +889,6 @@ export declare class CaseService {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -801,6 +988,7 @@ export declare class CaseService {
     static closeCase(codigo: string, rawBody: unknown): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -823,7 +1011,6 @@ export declare class CaseService {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -836,6 +1023,7 @@ export declare class CaseService {
     static startExecution(codigo: string): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -858,7 +1046,6 @@ export declare class CaseService {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -867,9 +1054,10 @@ export declare class CaseService {
         observaciones: string | null;
         created_by: number | null;
     }>;
-    static acceptPlan(codigo: string, rawBody: unknown): Promise<{
+    static acceptPlan(codigo: string, _rawBody: unknown, actor?: Actor): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -892,7 +1080,6 @@ export declare class CaseService {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -901,7 +1088,7 @@ export declare class CaseService {
         observaciones: string | null;
         created_by: number | null;
     }>;
-    static acceptPlanById(idPlan: string, rawBody: unknown): Promise<{
+    static acceptPlanById(idPlan: string, _rawBody: unknown, actor?: Actor): Promise<{
         estado: number;
         id_area: number;
         descripcion: string;
@@ -920,7 +1107,7 @@ export declare class CaseService {
         prorroga_estado: string | null;
         prorroga_fecha_sol: Date | null;
     }>;
-    static completeExecutionByPlan(idPlan: string, rawBody: unknown): Promise<{
+    static completeExecutionByPlan(idPlan: string, rawBody: unknown, actor?: Actor): Promise<{
         estado: number;
         id_area: number;
         descripcion: string;
@@ -958,7 +1145,7 @@ export declare class CaseService {
         prorroga_estado: string | null;
         prorroga_fecha_sol: Date | null;
     }>;
-    static requestExtensionByPlan(idPlan: string, rawBody: unknown): Promise<{
+    static requestExtensionByPlan(idPlan: string, rawBody: unknown, actor?: Actor): Promise<{
         estado: number;
         id_area: number;
         descripcion: string;
@@ -996,9 +1183,10 @@ export declare class CaseService {
         prorroga_estado: string | null;
         prorroga_fecha_sol: Date | null;
     }>;
-    static completeExecution(codigo: string, rawBody: unknown): Promise<{
+    static completeExecution(codigo: string, _rawBody: unknown, actor?: Actor): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -1021,7 +1209,6 @@ export declare class CaseService {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -1033,6 +1220,7 @@ export declare class CaseService {
     static sendToVerification(codigo: string): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -1055,7 +1243,6 @@ export declare class CaseService {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -1067,6 +1254,7 @@ export declare class CaseService {
     static keepPending(codigo: string, rawBody: unknown): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -1089,7 +1277,6 @@ export declare class CaseService {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -1101,6 +1288,7 @@ export declare class CaseService {
     static reopenCase(codigo: string, rawBody: unknown): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -1123,7 +1311,6 @@ export declare class CaseService {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -1135,6 +1322,7 @@ export declare class CaseService {
     static rollbackStage(codigo: string, rawBody: unknown): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -1157,7 +1345,6 @@ export declare class CaseService {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -1166,7 +1353,7 @@ export declare class CaseService {
         observaciones: string | null;
         created_by: number | null;
     }>;
-    static updateActivity(idActividad: string, rawBody: unknown): Promise<{
+    static updateActivity(idActividad: string, rawBody: unknown, actor?: Actor): Promise<{
         planes_accion: {
             catalogo_detalle: {
                 nombre: string;
@@ -1186,9 +1373,10 @@ export declare class CaseService {
         id_actividad: number;
         porcentaje: import("@prisma/client/runtime/library").Decimal | null;
     }>;
-    static requestExtension(codigo: string, rawBody: unknown): Promise<{
+    static requestExtension(codigo: string, rawBody: unknown, actor?: Actor): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -1211,7 +1399,6 @@ export declare class CaseService {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -1223,6 +1410,7 @@ export declare class CaseService {
     static reviewExtension(codigo: string, rawBody: unknown): Promise<{
         descripcion: string;
         created_at: Date | null;
+        area_responsable: number | null;
         updated_at: Date | null;
         id_caso: number;
         codigo_sop: string;
@@ -1245,7 +1433,6 @@ export declare class CaseService {
         clasificacion: string | null;
         analisis_riesgo: number | null;
         acr: string | null;
-        area_responsable: number | null;
         responsable_plan: number | null;
         estado_plan: number | null;
         fecha_plan: Date | null;
@@ -1264,7 +1451,7 @@ export declare class CaseService {
         actor_rol: string;
         detalle: string | null;
     }[]>;
-    static addPlanComment(idPlan: string, rawBody: unknown): Promise<{
+    static addPlanComment(idPlan: string, rawBody: unknown, actor?: Actor): Promise<{
         fecha: Date | null;
         id_evento: number;
         id_caso: number;
@@ -1275,7 +1462,7 @@ export declare class CaseService {
         detalle: string | null;
     }[]>;
     /** El jefe quita una evidencia equivocada, antes de enviar el cierre a SO. */
-    static removePlanEvidence(idPlan: string, idAnexo: string, rawBody: unknown): Promise<{
+    static removePlanEvidence(idPlan: string, idAnexo: string, _rawBody: unknown, actor?: Actor): Promise<{
         id_anexo: number;
     }>;
     static addEvidence(codigo: string, files: UploadedFile[]): Promise<{
@@ -1289,7 +1476,7 @@ export declare class CaseService {
         usuario_subida: number | null;
     }[]>;
     /** Actualización adicional del jefe sobre un plan ya cerrado por el área. */
-    static addPlanUpdate(idPlan: string, rawBody: unknown, files: UploadedFile[]): Promise<{
+    static addPlanUpdate(idPlan: string, rawBody: unknown, files: UploadedFile[], actor?: Actor): Promise<{
         id_seguimiento: number;
         numero: number;
         restantes: number;
@@ -1299,7 +1486,7 @@ export declare class CaseService {
             ruta_archivo: string | null;
         }[];
     }>;
-    static addEvidenceByPlan(idPlan: string, rawBody: unknown, files: UploadedFile[]): Promise<{
+    static addEvidenceByPlan(idPlan: string, _rawBody: unknown, files: UploadedFile[], actor?: Actor): Promise<{
         id_caso: number;
         id_anexo: number;
         nombre_archivo: string | null;

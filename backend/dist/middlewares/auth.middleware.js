@@ -49,4 +49,37 @@ export const requireRoles = (...roles) => (req, res, next) => {
     }
     next();
 };
+/**
+ * Deja pasar a los roles listados en `roles` sin condición, o a los listados
+ * en `responsableRoles` solo si además tienen el flag `es_responsable` (ej.
+ * el RSO de Seguridad Operativa "visitando" el panel de Monitoreo). Admin
+ * siempre pasa.
+ */
+export const requireRolesOrResponsable = (roles, responsableRoles) => (req, res, next) => {
+    const rolNombre = req.user?.rol_nombre?.toLowerCase();
+    if (!rolNombre) {
+        return res.status(403).json({ success: false, message: "No tienes permisos para realizar esta acción" });
+    }
+    if (rolNombre === "admin")
+        return next();
+    if (roles.some((role) => role.toLowerCase() === rolNombre))
+        return next();
+    if (req.user?.es_responsable && responsableRoles.some((role) => role.toLowerCase() === rolNombre))
+        return next();
+    return res.status(403).json({ success: false, message: "No tienes permisos para realizar esta acción" });
+};
+/**
+ * Como `requireRoles`, pero además exige un permiso puntual del usuario (ej.
+ * `puede_reabrir_casos`) — no todo el rol lo tiene, solo a quien el Admin se
+ * lo marcó en su ficha. Admin siempre pasa, sin necesitar el flag.
+ */
+export const requireRolesAndPermission = (roles, permission) => (req, res, next) => {
+    const rolNombre = req.user?.rol_nombre?.toLowerCase();
+    if (!rolNombre || !roles.some((role) => role.toLowerCase() === rolNombre)) {
+        return res.status(403).json({ success: false, message: "No tienes permisos para realizar esta acción" });
+    }
+    if (rolNombre === "admin" || req.user?.[permission])
+        return next();
+    return res.status(403).json({ success: false, message: "No tienes el permiso para realizar esta acción" });
+};
 //# sourceMappingURL=auth.middleware.js.map

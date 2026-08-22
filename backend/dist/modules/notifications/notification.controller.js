@@ -9,11 +9,6 @@ function param(req, name) {
     }
     return value;
 }
-/** El `usuario` de query es opcional y el proyecto usa exactOptionalPropertyTypes. */
-function usuarioDeQuery(req) {
-    const q = req.query.usuario;
-    return typeof q === "string" && q.trim() !== "" ? { usuario: q } : {};
-}
 function fallo(res, error, mensaje) {
     if (error instanceof ZodError) {
         return res.status(400).json(ApiResponse.error("Datos inválidos", error.issues));
@@ -23,10 +18,7 @@ function fallo(res, error, mensaje) {
 export class NotificationController {
     static async list(req, res) {
         try {
-            const data = await NotificationService.list({
-                ...usuarioDeQuery(req),
-                ...(req.query.soloNoLeidas === "true" ? { soloNoLeidas: "true" } : {}),
-            });
+            const data = await NotificationService.list(req.query.soloNoLeidas === "true" ? { soloNoLeidas: "true" } : {}, req.user);
             return res.json(ApiResponse.success("Notificaciones obtenidas correctamente", data));
         }
         catch (error) {
@@ -35,7 +27,7 @@ export class NotificationController {
     }
     static async markRead(req, res) {
         try {
-            await NotificationService.markRead(param(req, "id"), usuarioDeQuery(req));
+            await NotificationService.markRead(param(req, "id"), req.user);
             return res.json(ApiResponse.success("Notificación marcada como leída"));
         }
         catch (error) {
@@ -44,7 +36,7 @@ export class NotificationController {
     }
     static async markAllRead(req, res) {
         try {
-            const r = await NotificationService.markAllRead(usuarioDeQuery(req));
+            const r = await NotificationService.markAllRead(req.user);
             return res.json(ApiResponse.success("Notificaciones marcadas como leídas", { actualizadas: r.count }));
         }
         catch (error) {

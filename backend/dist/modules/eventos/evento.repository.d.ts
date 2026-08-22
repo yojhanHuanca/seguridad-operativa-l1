@@ -8,9 +8,9 @@ export declare class EventoRepository {
     } & {
         nombre: string;
         estado: boolean | null;
+        descripcion: string | null;
         id_catalogo: number;
         codigo: string | null;
-        descripcion: string | null;
         created_at: Date | null;
         orden: number | null;
         id_detalle: number;
@@ -80,8 +80,8 @@ export declare class EventoRepository {
         } & {
             estado: string;
             descripcion: string | null;
-            created_at: Date | null;
             fecha: Date;
+            created_at: Date | null;
             hora: Date | null;
             anio: number | null;
             mes: number | null;
@@ -167,8 +167,8 @@ export declare class EventoRepository {
     } & {
         estado: string;
         descripcion: string | null;
-        created_at: Date | null;
         fecha: Date;
+        created_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -246,8 +246,8 @@ export declare class EventoRepository {
     } & {
         estado: string;
         descripcion: string | null;
-        created_at: Date | null;
         fecha: Date;
+        created_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -278,8 +278,8 @@ export declare class EventoRepository {
     static asignar(id_evento: number, id_usuario: number): Promise<{
         estado: string;
         descripcion: string | null;
-        created_at: Date | null;
         fecha: Date;
+        created_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -310,8 +310,8 @@ export declare class EventoRepository {
     static create(dto: CreateEventoDto, actor?: number): Promise<{
         estado: string;
         descripcion: string | null;
-        created_at: Date | null;
         fecha: Date;
+        created_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -342,8 +342,8 @@ export declare class EventoRepository {
     static update(id_evento: number, dto: UpdateEventoDto): Promise<{
         estado: string;
         descripcion: string | null;
-        created_at: Date | null;
         fecha: Date;
+        created_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -374,8 +374,8 @@ export declare class EventoRepository {
     static remove(id_evento: number): Promise<{
         estado: string;
         descripcion: string | null;
-        created_at: Date | null;
         fecha: Date;
+        created_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;

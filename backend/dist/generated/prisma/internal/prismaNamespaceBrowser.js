@@ -117,6 +117,9 @@ export const AuditoriaScalarFieldEnum = {
     descripcion: 'descripcion',
     usuario: 'usuario',
     ip: 'ip',
+    user_agent: 'user_agent',
+    datos_previos: 'datos_previos',
+    datos_nuevos: 'datos_nuevos',
     fecha: 'fecha'
 };
 export const BitacoraScalarFieldEnum = {
@@ -462,6 +465,8 @@ export const UsuariosScalarFieldEnum = {
     foto_url: 'foto_url',
     ultimo_acceso: 'ultimo_acceso',
     es_responsable: 'es_responsable',
+    puede_reabrir_casos: 'puede_reabrir_casos',
+    puede_rechazar_reportes: 'puede_rechazar_reportes',
     id_area: 'id_area',
     id_rol: 'id_rol'
 };

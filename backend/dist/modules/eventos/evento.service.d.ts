@@ -1,3 +1,4 @@
+import { type Actor } from "../../utils/actor.js";
 export declare class EventoService {
     static getAllEventos(query?: {
         estado?: string;
@@ -56,8 +57,8 @@ export declare class EventoService {
         } & {
             estado: string;
             descripcion: string | null;
-            created_at: Date | null;
             fecha: Date;
+            created_at: Date | null;
             hora: Date | null;
             anio: number | null;
             mes: number | null;
@@ -142,8 +143,8 @@ export declare class EventoService {
     } & {
         estado: string;
         descripcion: string | null;
-        created_at: Date | null;
         fecha: Date;
+        created_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -174,8 +175,8 @@ export declare class EventoService {
     static createEvento(rawBody: unknown, actor?: number): Promise<{
         estado: string;
         descripcion: string | null;
-        created_at: Date | null;
         fecha: Date;
+        created_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -206,8 +207,8 @@ export declare class EventoService {
     static updateEvento(id: number, rawBody: unknown): Promise<{
         estado: string;
         descripcion: string | null;
-        created_at: Date | null;
         fecha: Date;
+        created_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -238,8 +239,8 @@ export declare class EventoService {
     static deleteEvento(id: number): Promise<{
         estado: string;
         descripcion: string | null;
-        created_at: Date | null;
         fecha: Date;
+        created_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -268,7 +269,12 @@ export declare class EventoService {
         updated_at: Date | null;
     }>;
     /** Bandeja de eventos asignados a una persona de Seguridad Operativa. */
-    static getAsignados(id_usuario: number): Promise<({
+    /**
+     * Bandeja de eventos asignados. El id de la ruta solo lo respeta el Admin;
+     * cualquier otro rol recibe la suya, aunque pida la de otra persona — antes
+     * el id venía del cliente sin comprobar nada.
+     */
+    static getAsignados(id_usuario: number, actor?: Actor): Promise<({
         casos_sop: {
             codigo_sop: string;
         } | null;
@@ -317,8 +323,8 @@ export declare class EventoService {
     } & {
         estado: string;
         descripcion: string | null;
-        created_at: Date | null;
         fecha: Date;
+        created_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;

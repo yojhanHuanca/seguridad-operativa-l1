@@ -2964,6 +2964,9 @@ export declare const AuditoriaScalarFieldEnum: {
     readonly descripcion: "descripcion";
     readonly usuario: "usuario";
     readonly ip: "ip";
+    readonly user_agent: "user_agent";
+    readonly datos_previos: "datos_previos";
+    readonly datos_nuevos: "datos_nuevos";
     readonly fecha: "fecha";
 };
 export type AuditoriaScalarFieldEnum = (typeof AuditoriaScalarFieldEnum)[keyof typeof AuditoriaScalarFieldEnum];
@@ -3340,6 +3343,8 @@ export declare const UsuariosScalarFieldEnum: {
     readonly foto_url: "foto_url";
     readonly ultimo_acceso: "ultimo_acceso";
     readonly es_responsable: "es_responsable";
+    readonly puede_reabrir_casos: "puede_reabrir_casos";
+    readonly puede_rechazar_reportes: "puede_rechazar_reportes";
     readonly id_area: "id_area";
     readonly id_rol: "id_rol";
 };

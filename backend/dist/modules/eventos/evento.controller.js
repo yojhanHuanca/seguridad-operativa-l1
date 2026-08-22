@@ -33,8 +33,7 @@ export class EventoController {
     }
     static async create(req, res) {
         try {
-            // TODO(auth): tomar el actor de la sesión cuando exista login real.
-            const evento = await EventoService.createEvento(req.body);
+            const evento = await EventoService.createEvento(req.body, req.user?.id_usuario);
             return res.status(201).json(ApiResponse.success("Evento registrado correctamente", evento));
         }
         catch (error) {
@@ -52,7 +51,7 @@ export class EventoController {
     }
     static async getAsignados(req, res) {
         try {
-            const eventos = await EventoService.getAsignados(Number(req.params.id_usuario));
+            const eventos = await EventoService.getAsignados(Number(req.params.id_usuario), req.user);
             return res.json(ApiResponse.success("Eventos asignados obtenidos correctamente", eventos));
         }
         catch (error) {
