@@ -1,17 +1,96 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, ChevronLeft, ChevronRight, Pencil, Search, ShieldCheck, UserCog, UserPlus, Users } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, KeyRound, Pencil, Search, ShieldCheck, UserCog, UserPlus, Users } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { AdminShell } from "@/components/layout/AdminShell";
 import { Button } from "@/design-system/primitives/Button";
 import { Input, Select } from "@/design-system/primitives/Input";
 import { Card } from "@/components/ui/card";
+import { toast } from "sonner";
 import { useUsers } from "@/features/users/hooks/useUsers";
 import { useUserCounts } from "@/features/users/hooks/useUserCounts";
 import { useRoles } from "@/features/users/hooks/useRoles";
+import { useUpdateUser } from "@/features/users/hooks/useUserActions";
 import { UserFormModal } from "@/features/users/components/UserFormModal";
+import { apiErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { UserListItem } from "@/features/users/types";
+
+type PermisoKey = "es_responsable" | "puede_reabrir_casos" | "puede_rechazar_reportes";
+
+const PERMISOS: { key: PermisoKey; label: string; hint: string }[] = [
+  { key: "es_responsable", label: "Es responsable (RSO)", hint: "Entra a Monitoreo y ve Eventos Operativos." },
+  { key: "puede_reabrir_casos", label: "Puede reabrir casos", hint: "Reabre un expediente ya cerrado." },
+  { key: "puede_rechazar_reportes", label: "Puede rechazar reportes", hint: "Descarta un reporte sin más trámite." },
+];
+
+/** Tabla editable: un check por permiso y por usuario de Seguridad Operativa, guarda al instante. */
+function PermisosEspecialesTable() {
+  const { data: rolesList = [] } = useRoles();
+  const idRolSO = rolesList.find((r) => r.nombre_rol === "Seguridad Operativa")?.id_rol;
+  const { data: pageData, isLoading } = useUsers({ rol: idRolSO, page: 1, limit: 200 });
+  const usuarios = pageData?.items ?? [];
+  const updateUser = useUpdateUser();
+
+  const togglePermiso = (user: UserListItem, permiso: PermisoKey, checked: boolean) => {
+    updateUser.mutate(
+      { id_usuario: user.id_usuario, [permiso]: checked },
+      {
+        onError: (error) => toast.error(apiErrorMessage(error, "No se pudo actualizar el permiso")),
+      }
+    );
+  };
+
+  return (
+    <Card className="mt-4 overflow-hidden p-0">
+      <div className="border-b border-line px-4 py-3">
+        <p className="flex items-center gap-1.5 text-[13px] font-semibold text-ink"><KeyRound className="h-4 w-4 text-brand-700" /> Permisos especiales</p>
+        <p className="mt-0.5 text-[11.5px] text-ink-quiet">
+          Solo dentro de Seguridad Operativa. Marca o quita el check y se guarda al instante — no hace falta abrir "Editar usuario".
+        </p>
+      </div>
+      {isLoading ? (
+        <p className="p-8 text-center text-[13px] text-ink-quiet">Cargando usuarios de Seguridad Operativa...</p>
+      ) : usuarios.length === 0 ? (
+        <p className="p-8 text-center text-[13px] text-ink-quiet">Todavía no hay usuarios con rol Seguridad Operativa.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-[12.5px]">
+            <thead>
+              <tr className="border-b border-line bg-surface text-[10.5px] uppercase text-ink-quiet">
+                <th className="px-4 py-2.5 font-semibold">Usuario</th>
+                {PERMISOS.map((permiso) => (
+                  <th key={permiso.key} className="px-4 py-2.5 font-semibold" title={permiso.hint}>{permiso.label}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {usuarios.map((user) => (
+                <tr key={user.id_usuario} className="border-b border-line-soft last:border-0">
+                  <td className="px-4 py-3">
+                    <p className="font-medium text-ink">{user.nombre}</p>
+                    <p className="mt-0.5 text-[10.5px] text-ink-faint">{user.correo}</p>
+                  </td>
+                  {PERMISOS.map((permiso) => (
+                    <td key={permiso.key} className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(user[permiso.key])}
+                        onChange={(event) => togglePermiso(user, permiso.key, event.target.checked)}
+                        className="h-4 w-4 accent-brand-700"
+                        aria-label={`${permiso.label} — ${user.nombre}`}
+                      />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </Card>
+  );
+}
 
 const POR_PAGINA = 15;
 
@@ -128,6 +207,8 @@ export function AdminUsuariosPage() {
               </div>
             )}
           </Card>
+
+          <PermisosEspecialesTable />
         </>
       ) : (
         <>

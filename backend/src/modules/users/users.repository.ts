@@ -82,6 +82,8 @@ export class UserRepository {
             telefono: true,
             estado: true,
             es_responsable: true,
+            puede_reabrir_casos: true,
+            puede_rechazar_reportes: true,
             id_area: true,
             id_rol: true,
             roles: { select: { nombre_rol: true } },
@@ -112,12 +114,15 @@ export class UserRepository {
       * solo `COUNT`/`groupBy`, nunca trae las filas completas.
       */
      static async counts() {
-        const [total, activos, conRol, sinRol, porRol] = await Promise.all([
+        const [total, activos, conRol, sinRol, porRol, esResponsable, puedeReabrirCasos, puedeRechazarReportes] = await Promise.all([
             prisma.usuarios.count(),
             prisma.usuarios.count({ where: { estado: "Activo" } }),
             prisma.usuarios.count({ where: { id_rol: { not: null } } }),
             prisma.usuarios.count({ where: { id_rol: null } }),
             prisma.usuarios.groupBy({ by: ["id_rol"], _count: { id_rol: true } }),
+            prisma.usuarios.count({ where: { es_responsable: true } }),
+            prisma.usuarios.count({ where: { puede_reabrir_casos: true } }),
+            prisma.usuarios.count({ where: { puede_rechazar_reportes: true } }),
         ]);
         return {
             total,
@@ -127,6 +132,11 @@ export class UserRepository {
             porRol: Object.fromEntries(
                 porRol.filter((r) => r.id_rol != null).map((r) => [String(r.id_rol), r._count.id_rol])
             ) as Record<string, number>,
+            porPermiso: {
+                es_responsable: esResponsable,
+                puede_reabrir_casos: puedeReabrirCasos,
+                puede_rechazar_reportes: puedeRechazarReportes,
+            },
         };
      }
 
