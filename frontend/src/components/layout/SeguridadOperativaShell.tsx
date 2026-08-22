@@ -372,13 +372,13 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
       {mobileOpen && (
         <div data-print="hide" className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileOpen(false)} aria-hidden />
-          <aside className="absolute left-0 top-0 flex h-full w-[296px] flex-col bg-white shadow-xl">
+          <aside className="absolute left-0 top-0 flex h-full w-[min(296px,calc(100vw-32px))] flex-col bg-white shadow-xl">
             {sidebarContent(() => setMobileOpen(false))}
           </aside>
         </div>
       )}
 
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 overflow-x-hidden">
         <header data-print="hide" className="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur-xl">
           <div className="flex min-h-[78px] items-center gap-3 px-4 py-3 sm:px-6">
             <button
@@ -390,14 +390,14 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
               <Menu className="h-4 w-4" />
             </button>
 
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-[11.5px] font-medium text-ink-quiet">
                 SIGMA L1 <span className="px-1.5 text-ink-faint">›</span> {getBreadcrumb(location.pathname)}
               </p>
               <p className="mt-0.5 truncate font-display text-[19px] font-bold tracking-tight text-ink">{currentPageTitle}</p>
             </div>
 
-            <div className="ml-auto flex items-center gap-2.5">
+            <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2.5">
               {user?.es_responsable && (
                 <Link
                   to="/monitoreo"
@@ -427,7 +427,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main className="w-full max-w-none px-4 py-5 sm:px-6 sm:py-6 lg:px-8">{children}</main>
+        <main className="min-w-0 w-full max-w-none overflow-x-hidden px-4 py-5 sm:px-6 sm:py-6 lg:px-8">{children}</main>
       </div>
       </div>
     </>

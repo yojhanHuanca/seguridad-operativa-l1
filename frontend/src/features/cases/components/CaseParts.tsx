@@ -49,8 +49,8 @@ export function WorkflowStepper({
 }) {
   const stepIdx = stageStepIndex(stage, vuelveA);
   return (
-    <Card className="mt-5 p-4">
-      <div className="flex items-center gap-1 overflow-x-auto scrollbar-none">
+    <Card className="mt-5 max-w-full overflow-hidden p-3 sm:p-4">
+      <div className="scrollbar-none flex max-w-full items-center gap-1 overflow-x-auto">
         {STAGE_STEP.map((s, i) => {
           const done = i < stepIdx;
           const active = i === stepIdx;

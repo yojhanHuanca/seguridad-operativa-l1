@@ -43,6 +43,9 @@ import type { CaseDetail } from "@/features/cases/types";
 import { parseActivityDescription } from "@/features/cases/lib/activityMeta";
 import { shortPlanCode } from "@/features/cases/lib/planLabels";
 
+const mobileHeaderButtonClass =
+  "h-auto min-h-8 w-full min-w-0 whitespace-normal px-2 py-1.5 text-center leading-tight sm:h-8 sm:w-auto sm:whitespace-nowrap sm:px-3 sm:py-0";
+
 // Portado de pages/seguridad/CaseFile.tsx: cabecera + stepper + panel
 // izquierdo (Información general / Evento operativo) + panel central por etapa,
 // con los modales de Evidencias y Línea de tiempo.
@@ -146,13 +149,13 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
 
   return (
     <SeguridadOperativaShell>
-      <div data-plan-export-root={exportPlanActive ? "active" : "idle"} data-expediente-export-root={exportFullActive ? "active" : "idle"}>
+      <div className="min-w-0 max-w-full" data-plan-export-root={exportPlanActive ? "active" : "idle"} data-expediente-export-root={exportFullActive ? "active" : "idle"}>
       {puedeExportarPlan && exportPlanActive && <PlanActionPrintDocument caso={caso} />}
       {exportFullActive && <ExpedienteCompletoPrintDocument caso={caso} />}
       <div data-print-plan-screen>
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="min-w-0">
+      <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 sm:flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-mono text-[18px] font-bold text-brand-700">{caso.codigo_sop}</span>
             <span className="text-ink-faint">·</span>
@@ -168,31 +171,31 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
               </Pill>
             )}
           </div>
-          <h1 className="mt-2 text-[22px] font-bold text-ink tracking-tight leading-tight max-w-3xl">{titulo}</h1>
+          <h1 className="mt-2 max-w-3xl break-words text-[20px] font-bold leading-tight tracking-tight text-ink sm:text-[22px]">{titulo}</h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
           {sla !== "done" && sla !== "ok" && sla !== "sin_sla" && (
-            <Pill tone={sla === "overdue" ? "critical" : "warning"} dot>
+            <Pill tone={sla === "overdue" ? "critical" : "warning"} dot className="self-start sm:self-auto">
               <Timer className="h-3 w-3" /> SLA {sla === "overdue" ? `vencido ${Math.abs(dias)}d` : `${dias}d`}
             </Pill>
           )}
-          <span data-print="hide" className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setShowEvidence(true)}>
+          <span data-print="hide" className="grid w-full min-w-0 grid-cols-2 gap-2 min-[440px]:grid-cols-3 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:justify-end">
+          <Button variant="outline" size="sm" className={mobileHeaderButtonClass} onClick={() => setShowEvidence(true)}>
             <ImageIcon className="h-4 w-4" /> Evidencias ({caso.anexos_caso.length})
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setShowTimeline(true)}>
+          <Button variant="outline" size="sm" className={mobileHeaderButtonClass} onClick={() => setShowTimeline(true)}>
             <Clock className="h-4 w-4" /> Línea de tiempo
           </Button>
           {puedeExportarPlan && (
-            <Button variant="outline" size="sm" onClick={exportarPlanAccion}>
+            <Button variant="outline" size="sm" className={mobileHeaderButtonClass} onClick={exportarPlanAccion}>
               <Download className="h-4 w-4" /> Exportar Plan de Acción
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={exportarExpedienteCompleto}>
+          <Button variant="outline" size="sm" className={mobileHeaderButtonClass} onClick={exportarExpedienteCompleto}>
             <Download className="h-4 w-4" /> Exportar Expediente Completo
           </Button>
-          <Link to="/seguridad/casos">
-            <Button variant="ghost" size="sm">
+          <Link to="/seguridad/casos" className="w-full sm:w-auto">
+            <Button variant="ghost" size="sm" className={mobileHeaderButtonClass}>
               <ArrowLeft className="h-4 w-4" /> Casos
             </Button>
           </Link>

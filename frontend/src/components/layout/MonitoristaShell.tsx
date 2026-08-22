@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { SessionExitButton } from "@/features/auth/SessionExitButton";
 import { AdminPanelSwitcher } from "@/features/auth/AdminPanelSwitcher";
 import { AdminViewingBanner } from "@/features/auth/AdminViewingBanner";
+import { useAuth } from "@/features/auth/auth";
 import { Logo } from "@/components/brand/Logo";
 
 interface NavItem {
@@ -100,6 +101,12 @@ function NavLink({ item, collapsed, active, onNavigate }: { item: NavItem; colla
 
 function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
   const location = useLocation();
+  const { user } = useAuth();
+  // Antes decía "Monitorista" fijo, sin importar quién entró — un SO
+  // visitando este panel (RSO) veía un nombre que no era el suyo. La banda
+  // de AdminViewingBanner ya avisa "estás visitando"; acá va la persona real.
+  const nombre = user?.nombre?.trim() || "Monitorista";
+  const inicial = nombre.charAt(0).toUpperCase() || "M";
 
   return (
     <>
@@ -140,9 +147,9 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
         <div className="shrink-0 border-t border-line-soft p-3">
           <SessionExitButton withLabel className="mb-2 w-full justify-start" />
           <Link to="/monitoreo/perfil" onClick={onNavigate} className="flex items-center gap-3 rounded-2xl bg-surface px-3 py-3 transition-colors hover:bg-surface-2">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-700 text-[13px] font-bold text-white">M</div>
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-700 text-[13px] font-bold text-white">{inicial}</div>
             <div className="min-w-0 leading-tight">
-              <p className="truncate text-[13px] font-semibold text-ink">Monitorista</p>
+              <p className="truncate text-[13px] font-semibold text-ink">{nombre}</p>
               <p className="mt-0.5 truncate text-[11.5px] text-ink-quiet">Línea 1 · Metro de Lima</p>
             </div>
           </Link>
