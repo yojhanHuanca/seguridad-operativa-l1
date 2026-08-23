@@ -4,9 +4,10 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { Logo } from "@/components/brand/Logo";
 import { apiErrorMessage } from "@/lib/api";
 import { homeForRole, useAuth } from "@/features/auth/auth";
+import { GoogleSignInButton } from "@/features/auth/GoogleSignInButton";
 
 export function LoginPage() {
-  const { login, user, token } = useAuth();
+  const { login, loginWithGoogle, user, token } = useAuth();
   const navigate = useNavigate();
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
@@ -25,6 +26,19 @@ export function LoginPage() {
       navigate(homeForRole(authenticatedUser.rol), { replace: true });
     } catch (loginError) {
       setError(apiErrorMessage(loginError, "No se pudo iniciar sesión. Verifica tus credenciales."));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitWithGoogle = async (credential: string) => {
+    setError("");
+    setLoading(true);
+    try {
+      const authenticatedUser = await loginWithGoogle(credential);
+      navigate(homeForRole(authenticatedUser.rol), { replace: true });
+    } catch (loginError) {
+      setError(apiErrorMessage(loginError, "No se pudo iniciar sesión con Google."));
     } finally {
       setLoading(false);
     }
@@ -71,6 +85,8 @@ export function LoginPage() {
             {error && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-[12px] text-red-700">{error}</div>}
             <button type="submit" disabled={loading} className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-brand-700 text-[13.5px] font-semibold text-white shadow-sm transition hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-60">{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <LockKeyhole className="h-4 w-4" />}{loading ? "Verificando acceso..." : "Iniciar sesión"}</button>
           </form>
+
+          <GoogleSignInButton onCredential={submitWithGoogle} disabled={loading} />
 
           <div className="mt-8 border-t border-line-soft pt-5 text-[11.5px] leading-5 text-ink-faint"><p>Acceso exclusivo para personal autorizado.</p><p>Las sesiones y actividades pueden ser registradas por seguridad.</p></div>
         </div>

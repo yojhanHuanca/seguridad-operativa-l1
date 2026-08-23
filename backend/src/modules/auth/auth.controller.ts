@@ -41,6 +41,39 @@ export class AuthController {
 
   }
 
+  static async loginGoogle(req: Request, res: Response) {
+      try {
+        const { credential } = req.body;
+
+        if (!credential) {
+            return res.status(400).json(
+                ApiResponse.error("Falta el token de Google")
+            );
+        }
+
+        const result = await AuthService.loginWithGoogle(credential, req.ip, req.headers["user-agent"]);
+
+        return res.status(200).json(
+            ApiResponse.success(
+                "Inicio de sesión exitoso",
+                result
+            )
+        );
+
+      } catch (error) {
+
+         return res.status(401).json(
+           ApiResponse.error(
+             error instanceof Error
+               ? error.message
+               : "No se pudo iniciar sesión con Google",
+             error
+           )
+         );
+      }
+
+  }
+
   static async logout(req: Request, res: Response) {
     try {
       await AuthService.logout((req as AuthenticatedRequest).user?.id_sesion);

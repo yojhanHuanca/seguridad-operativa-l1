@@ -7,5 +7,7 @@ export const env = {
 
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "8h",
 
+    /** Client ID de Google Cloud Console (tipo "Web application") para "Iniciar sesión con Google". */
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || "",
 
 };

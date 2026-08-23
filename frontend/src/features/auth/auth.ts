@@ -19,6 +19,7 @@ export interface AuthValue {
   user: AuthUser | null;
   token: string | null;
   login: (correo: string, password: string) => Promise<AuthUser>;
+  loginWithGoogle: (credential: string) => Promise<AuthUser>;
   logout: () => Promise<void>;
 }
 

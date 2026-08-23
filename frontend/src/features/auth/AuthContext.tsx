@@ -32,6 +32,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(response.data.data.usuario);
       return response.data.data.usuario;
     },
+    loginWithGoogle: async (credential) => {
+      const response = await api.post<ApiEnvelope<LoginResult>>("/auth/google", { credential });
+      if (!response.data.data) throw new Error("La respuesta del servidor no contiene una sesión válida");
+      localStorage.setItem(TOKEN_KEY, response.data.data.token);
+      localStorage.setItem(USER_KEY, JSON.stringify(response.data.data.usuario));
+      setToken(response.data.data.token);
+      setUser(response.data.data.usuario);
+      return response.data.data.usuario;
+    },
     logout: async () => {
       // Avisa al servidor para invalidar la sesión (cierra la fila en
       // `sesiones`); si la llamada falla (sin red, token ya vencido) se
