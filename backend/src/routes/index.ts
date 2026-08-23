@@ -14,6 +14,8 @@ import archivosRoutes from "../modules/archivos/archivo.routes.js";
 import dashboardRoutes from "../modules/dashboard/dashboard.routes.js";
 import auditoriaRoutes from "../modules/auditoria/auditoria.routes.js";
 import importacionRoutes from "../modules/importacion/importacion.routes.js";
+import configuracionRoutes from "../modules/configuracion/configuracion.routes.js";
+import { ConfiguracionController } from "../modules/configuracion/configuracion.controller.js";
 import { AuthController } from "../modules/auth/auth.controller.js";
 import { verifyToken } from "../middlewares/auth.middleware.js";
 import { CatalogController } from "../modules/catalogs/catalog.controller.js";
@@ -41,6 +43,7 @@ router.post("/reports", uploadEvidencia.array("evidencia", 10), ReportController
 // El código de caso (ej. SOP-15-2026) hace de "llave" de seguimiento: quien
 // reportó sin cuenta lo usa para consultar su estado después, sin loguearse.
 router.get("/reports/consulta/:codigo", ReportController.getByCodigo);
+router.get("/configuracion/publica", ConfiguracionController.publica);
 
 router.use(verifyToken);
 router.use("/users", usersRoutes);
@@ -57,6 +60,7 @@ router.use("/archivos", archivosRoutes);
 router.use("/dashboard", dashboardRoutes);
 router.use("/auditoria", auditoriaRoutes);
 router.use("/importacion", importacionRoutes);
+router.use("/configuracion", configuracionRoutes);
 router.get("/", AuthController.home);
 
 

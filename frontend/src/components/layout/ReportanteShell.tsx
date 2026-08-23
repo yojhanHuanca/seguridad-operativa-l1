@@ -10,6 +10,7 @@ import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/auth";
 import { useReports } from "@/features/reports/hooks/useReports";
+import { nombreSistema, useConfiguracionPublica } from "@/features/configuracion/hooks/useConfiguracion";
 
 const NAV: { to: string; label: string }[] = [
   { to: "/reportes", label: "Inicio" },
@@ -35,6 +36,8 @@ export function ReportanteShell({ children }: { children: ReactNode }) {
   const { token } = useAuth();
   const estaAutenticado = Boolean(token);
   const { data: reports } = useReports({ enabled: estaAutenticado });
+  const { data: identidad } = useConfiguracionPublica();
+  const systemName = nombreSistema(identidad);
   const solicitudesPendientes = reports?.reduce(
     (total, report) => total + (report.solicitudes_informacion?.some((solicitud) => !solicitud.respondida) ? 1 : 0),
     0
@@ -54,7 +57,7 @@ export function ReportanteShell({ children }: { children: ReactNode }) {
         <div className="mx-auto flex h-[88px] max-w-[1200px] items-center justify-between gap-4 px-4 sm:px-6">
           <div className="flex items-center gap-8">
             <Link to={estaAutenticado ? "/reportes" : "/"}>
-              <Logo size={66} />
+              <Logo size={66} wordmark={systemName} />
             </Link>
             <nav className="hidden items-center gap-1 md:flex">
               {nav.map((item) => (
@@ -157,7 +160,7 @@ export function ReportanteShell({ children }: { children: ReactNode }) {
 
       <footer className="border-t border-line bg-white">
         <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-3 px-4 py-6 text-[12px] text-ink-quiet sm:px-6">
-          <p>Sistema de Gestión de Seguridad Operativa — Línea 1 del Metro de Lima</p>
+          <p>{systemName} — Seguridad Operativa · Línea 1 del Metro de Lima</p>
         </div>
       </footer>
       </div>

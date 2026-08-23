@@ -25,6 +25,7 @@ import { Modal } from "@/design-system/primitives/Modal";
 import { Pill, StagePill } from "@/design-system/primitives/Pill";
 import { WorkflowStepper, InfoRow, InfoCard } from "@/features/cases/components/CaseParts";
 import { useCase } from "@/features/cases/hooks/useCase";
+import { nombreSistema, useConfiguracion } from "@/features/configuracion/hooks/useConfiguracion";
 import { stageFromEstado } from "@/features/cases/domain";
 import { panelForEstado, puede, siguientePaso, ACTOR_ROL_LABEL } from "@/features/cases/lib/workflow";
 import { criterioAceptabilidad, fechaEvaluacion, slaDueDate, slaEstado, diasRestantes } from "@/features/cases/lib/sla";
@@ -45,6 +46,14 @@ import { shortPlanCode } from "@/features/cases/lib/planLabels";
 
 const mobileHeaderButtonClass =
   "h-auto min-h-8 w-full min-w-0 whitespace-normal px-2 py-1.5 text-center leading-tight sm:h-8 sm:w-auto sm:whitespace-nowrap sm:px-3 sm:py-0";
+
+function sumarDiasISO(desdeISO: string | null, dias: number): string | null {
+  if (!desdeISO) return null;
+  const limite = new Date(desdeISO);
+  if (Number.isNaN(limite.getTime())) return null;
+  limite.setDate(limite.getDate() + Math.max(1, dias));
+  return limite.toISOString();
+}
 
 // Portado de pages/seguridad/CaseFile.tsx: cabecera + stepper + panel
 // izquierdo (Información general / Evento operativo) + panel central por etapa,
@@ -83,6 +92,8 @@ export function CaseDetailPage() {
 }
 
 function CaseFileContent({ caso }: { caso: CaseDetail }) {
+  const { data: configuracion } = useConfiguracion();
+  const systemName = nombreSistema(configuracion);
   const [showEvidence, setShowEvidence] = useState(false);
   const [showTimeline, setShowTimeline] = useState(false);
   const [exportPlanActive, setExportPlanActive] = useState(false);
@@ -105,7 +116,9 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
   // que es el mismo criterio que usa la bandeja.
   const evaluadoEl = fechaEvaluacion(caso.timeline_caso);
   const slaDesde = evaluadoEl ?? caso.fecha_hallazgo;
-  const slaDue = slaDueDate(slaDesde, riesgo?.nombre, riesgo?.codigo);
+  const investigacionDue =
+    stage === "investigacion" ? sumarDiasISO(slaDesde, configuracion?.plazos.diasMaxInvestigacion ?? 15) : null;
+  const slaDue = investigacionDue ?? slaDueDate(slaDesde, riesgo?.nombre, riesgo?.codigo);
   const sla = slaEstado(slaDue, stage);
   const dias = slaDue ? diasRestantes(slaDue) : 0;
 
@@ -150,8 +163,8 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
   return (
     <SeguridadOperativaShell>
       <div className="min-w-0 max-w-full" data-plan-export-root={exportPlanActive ? "active" : "idle"} data-expediente-export-root={exportFullActive ? "active" : "idle"}>
-      {puedeExportarPlan && exportPlanActive && <PlanActionPrintDocument caso={caso} />}
-      {exportFullActive && <ExpedienteCompletoPrintDocument caso={caso} />}
+      {puedeExportarPlan && exportPlanActive && <PlanActionPrintDocument caso={caso} systemName={systemName} />}
+      {exportFullActive && <ExpedienteCompletoPrintDocument caso={caso} systemName={systemName} />}
       <div data-print-plan-screen>
       {/* Header */}
       <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -399,7 +412,7 @@ function buildPlanRows(caso: CaseDetail): PlanExportRow[] {
   });
 }
 
-function PlanActionPrintDocument({ caso }: { caso: CaseDetail }) {
+function PlanActionPrintDocument({ caso, systemName }: { caso: CaseDetail; systemName: string }) {
   const evento = caso.evento_caso[0]?.eventos_operativos;
   const riesgo = caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle;
   const fechaLimite = latestPlanLimit(caso);
@@ -415,7 +428,7 @@ function PlanActionPrintDocument({ caso }: { caso: CaseDetail }) {
       <header className="flex items-center gap-4">
         <Logo size={48} withWordmark={false} />
         <div>
-          <h1 className="text-[28px] font-bold leading-tight text-ink">Plan de Acción — SIGMA L1</h1>
+          <h1 className="text-[28px] font-bold leading-tight text-ink">Plan de Acción — {systemName}</h1>
           <p className="text-[14px] text-ink-quiet">Línea 1 del Metro de Lima · Seguridad Operativa</p>
         </div>
       </header>
@@ -482,7 +495,7 @@ function PlanActionPrintDocument({ caso }: { caso: CaseDetail }) {
       </section>
 
       <footer className="mt-8 border-t border-line pt-4 text-[12px] text-ink-quiet">
-        Documento generado por SIGMA L1 · {formatDateTime(new Date())}
+        Documento generado por {systemName} · {formatDateTime(new Date())}
       </footer>
     </section>
   );
@@ -494,7 +507,7 @@ function PlanActionPrintDocument({ caso }: { caso: CaseDetail }) {
  * — todo lo que se hizo desde que se creó — más los mismos planes de acción.
  * Es un botón aparte, no un reemplazo del anterior.
  */
-function ExpedienteCompletoPrintDocument({ caso }: { caso: CaseDetail }) {
+function ExpedienteCompletoPrintDocument({ caso, systemName }: { caso: CaseDetail; systemName: string }) {
   const evento = caso.evento_caso[0]?.eventos_operativos;
   const riesgo = caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle;
   const estado = caso.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre;
@@ -509,7 +522,7 @@ function ExpedienteCompletoPrintDocument({ caso }: { caso: CaseDetail }) {
       <header className="flex items-center gap-4">
         <Logo size={48} withWordmark={false} />
         <div>
-          <h1 className="text-[28px] font-bold leading-tight text-ink">Expediente Completo — SIGMA L1</h1>
+          <h1 className="text-[28px] font-bold leading-tight text-ink">Expediente Completo — {systemName}</h1>
           <p className="text-[14px] text-ink-quiet">Línea 1 del Metro de Lima · Seguridad Operativa</p>
         </div>
       </header>
@@ -628,7 +641,7 @@ function ExpedienteCompletoPrintDocument({ caso }: { caso: CaseDetail }) {
       </section>
 
       <footer className="mt-8 border-t border-line pt-4 text-[12px] text-ink-quiet">
-        Documento generado por SIGMA L1 · {formatDateTime(new Date())}
+        Documento generado por {systemName} · {formatDateTime(new Date())}
       </footer>
     </section>
   );

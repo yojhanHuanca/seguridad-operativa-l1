@@ -659,6 +659,7 @@ model usuarios {
   investigaciones                                    investigaciones[]
   logs_sistema                                       logs_sistema[]
   notificaciones                                     notificaciones[]
+  password_resets                                    password_resets[]
   planes_accion                                      planes_accion[]
   reporte_estadistico                                reporte_estadistico[]
   seguimientos                                       seguimientos[]
@@ -670,4 +671,19 @@ model usuarios {
   @@index([codigo_usuario], map: "idx_usuario_codigo")
   @@index([correo], map: "idx_usuario_correo")
   @@index([id_rol], map: "idx_usuario_rol")
+}
+
+/// Tokens de un solo uso para "Olvidé mi contraseña" — se guarda el hash del
+/// token (nunca el token en claro) y expira solo; no se reutiliza el mismo
+/// token dos veces aunque no haya expirado.
+model password_resets {
+  id_reset   Int      @id @default(autoincrement())
+  usuario    Int
+  token_hash String   @unique @db.VarChar(64)
+  expires_at DateTime @db.Timestamp(6)
+  used_at    DateTime? @db.Timestamp(6)
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  usuarios   usuarios @relation(fields: [usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_password_reset_usuario")
+
+  @@index([usuario], map: "idx_password_reset_usuario")
 }

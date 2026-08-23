@@ -1,5 +1,6 @@
 import prisma from "../../lib/prisma.js";
 import { NotificationRepository } from "../notifications/notification.repository.js";
+import { ConfiguracionService } from "../configuracion/configuracion.service.js";
 import type { CreateReportDto, UploadedFile } from "./report.types.js";
 
 const DIAS: string[] = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
@@ -163,14 +164,7 @@ export class ReportRepository {
           if (!tipoReporte) throw new Error("El tipo de reporte seleccionado no existe");
           if (!lugar) throw new Error("El lugar seleccionado no existe");
 
-          // Código secuencial por año, mismo formato que el caso de ejemplo "SOP 01-2024".
-          const year = fecha.getUTCFullYear();
-          const inicioAnio = new Date(Date.UTC(year, 0, 1));
-          const finAnio = new Date(Date.UTC(year + 1, 0, 1));
-          const totalAnio = await tx.casos_sop.count({
-            where: { fecha_hallazgo: { gte: inicioAnio, lt: finAnio } },
-          });
-          const codigo_sop = `SOP ${String(totalAnio + 1).padStart(2, "0")}-${year}`;
+          const codigo_sop = await ConfiguracionService.nextCodigoExpediente(tx, fecha);
 
           const esIdentificado = dto.modalidad === "identificado";
           // Registrado por el analista desde el panel de SO: el caso nace con

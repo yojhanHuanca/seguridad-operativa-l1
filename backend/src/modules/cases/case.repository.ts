@@ -1,5 +1,6 @@
 import prisma from "../../lib/prisma.js";
 import { NotificationRepository } from "../notifications/notification.repository.js";
+import { ConfiguracionService } from "../configuracion/configuracion.service.js";
 import type {
   CaseListFilters,
   CreatePlanDto,
@@ -120,6 +121,8 @@ const ACTOR_SO = "Seguridad Operativa";
 
 /** Día calendario de una columna @db.Date, que siempre llega en medianoche UTC. */
 const diaISO = (d: Date) => d.toISOString().slice(0, 10);
+const MS_DIA = 86_400_000;
+const sumarDias = (d: Date, dias: number) => new Date(d.getTime() + dias * MS_DIA);
 
 export class CaseRepository {
   /** Registra un evento en la bitácora del expediente. */
@@ -748,8 +751,7 @@ export class CaseRepository {
       intento++;
       try {
         return await prisma.$transaction(async (tx) => {
-          const totalPlanes = await tx.planes_accion.count({ where: { id_caso } });
-          const codigo_plan = `${codigo_sop}-PLA-${String(totalPlanes + 1).padStart(2, "0")}`;
+          const codigo_plan = await ConfiguracionService.nextCodigoPlan(tx, codigo_sop);
 
           const plan = await tx.planes_accion.create({
             data: {
@@ -815,12 +817,12 @@ export class CaseRepository {
     ]);
 
     return prisma.$transaction(async (tx) => {
-      const totalPlanes = await tx.planes_accion.count({ where: { id_caso } });
+      const codigosPlan = await ConfiguracionService.nextCodigosPlan(tx, codigo_sop, dtos.length);
       const creados = [];
 
       for (const [i, dto] of dtos.entries()) {
-        const numero = totalPlanes + i + 1;
-        const codigo_plan = `${codigo_sop}-PLA-${String(numero).padStart(2, "0")}`;
+        const codigo_plan = codigosPlan[i];
+        if (!codigo_plan) throw new Error("No se pudo generar el código del plan");
 
         const plan = await tx.planes_accion.create({
           data: {
@@ -1295,9 +1297,26 @@ export class CaseRepository {
   static async requestExtensionByPlan(id_plan: number, dto: { nueva_fecha: string; justificacion: string }, actor: string) {
     const plan = await prisma.planes_accion.findUnique({
       where: { id_plan },
-      select: { id_plan: true, id_caso: true, codigo_plan: true },
+      select: { id_plan: true, id_caso: true, codigo_plan: true, fecha_plan: true, fecha_reprogramada: true },
     });
     if (!plan) throw new Error(`El plan ${id_plan} no existe`);
+
+    const configuracion = await ConfiguracionService.get();
+    const fechaVigente = plan.fecha_reprogramada ?? plan.fecha_plan;
+    const fechaPedida = new Date(`${dto.nueva_fecha}T00:00:00.000Z`);
+    const fechaMaxima = sumarDias(fechaVigente, configuracion.plazos.diasSolicitarProrroga);
+
+    if (Number.isNaN(fechaPedida.getTime())) {
+      throw new Error("La nueva fecha de prórroga no es válida");
+    }
+    if (fechaPedida.getTime() <= fechaVigente.getTime()) {
+      throw new Error(`La nueva fecha debe ser posterior al plazo vigente (${diaISO(fechaVigente)})`);
+    }
+    if (fechaPedida.getTime() > fechaMaxima.getTime()) {
+      throw new Error(
+        `La prórroga no puede superar ${configuracion.plazos.diasSolicitarProrroga} día(s) adicionales. Fecha máxima: ${diaISO(fechaMaxima)}`
+      );
+    }
 
     const estado = await CaseRepository.findEstado("Prórroga Solicitada");
     return prisma.$transaction(async (tx) => {
@@ -1305,7 +1324,7 @@ export class CaseRepository {
         where: { id_plan },
         data: {
           prorroga_motivo: dto.justificacion,
-          prorroga_fecha: new Date(dto.nueva_fecha),
+          prorroga_fecha: fechaPedida,
           prorroga_estado: "pendiente",
           prorroga_fecha_sol: new Date(),
           updated_at: new Date(),

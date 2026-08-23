@@ -31,6 +31,7 @@ import { formatDate, formatDateTime } from "@/lib/format";
 import { exportarTablaExcel } from "@/lib/excelBranded";
 import { cn } from "@/lib/utils";
 import type { CaseListItem, PlanAccion } from "@/features/cases/types";
+import { nombreSistema, useConfiguracion } from "@/features/configuracion/hooks/useConfiguracion";
 
 type ExportScope = "casos" | "planes" | "combinado";
 
@@ -70,6 +71,8 @@ export function ReportExportPage() {
 
   const { data: rawCases, isLoading } = useCases({});
   const { data: areas } = useAreas();
+  const { data: configuracion } = useConfiguracion();
+  const systemName = nombreSistema(configuracion);
 
   const cases = useMemo<ExportCase[]>(
     () =>
@@ -201,7 +204,7 @@ export function ReportExportPage() {
         filas: exportRows,
         fileName: `${fileName}.xlsx`,
         title: `Exportación · ${meta.label}`,
-        subtitle: `Línea 1 · Metro de Lima · ${activeFilter.tabLabel ?? activeFilter.label}`,
+        subtitle: `${systemName} · Línea 1 · Metro de Lima · ${activeFilter.tabLabel ?? activeFilter.label}`,
         totalLabel: `${filtered.length} reporte${filtered.length === 1 ? "" : "s"} · ${exportRows.length} ${meta.noun}${exportRows.length === 1 ? "" : "s"}`,
       });
     } finally {
@@ -220,6 +223,7 @@ export function ReportExportPage() {
             stats={stats}
             totalCases={filtered.length}
             generatedAt={new Date()}
+            systemName={systemName}
             filterLabel={activeFilter.tabLabel ?? activeFilter.label}
             criteria={
               activeCriteria.length
@@ -620,6 +624,7 @@ function ReportExportPrintDocument({
   stats,
   totalCases,
   generatedAt,
+  systemName,
   filterLabel,
   criteria,
 }: {
@@ -629,6 +634,7 @@ function ReportExportPrintDocument({
   stats: { total: number; conPlanes: number; cerrados: number; prorrogas: number };
   totalCases: number;
   generatedAt: Date;
+  systemName: string;
   filterLabel: string;
   criteria: Array<{ label: string; value: string }>;
 }) {
@@ -639,7 +645,7 @@ function ReportExportPrintDocument({
         <div className="flex items-center gap-4">
           <Logo size={52} withWordmark={false} />
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-800">SIGMA L1 · Seguridad Operativa</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-800">{systemName} · Seguridad Operativa</p>
             <h1 className="mt-1 text-[25px] font-bold leading-tight text-ink">Exportación de Reportes SOP</h1>
             <p className="mt-0.5 text-[12.5px] text-ink-quiet">Línea 1 del Metro de Lima · Documento de control interno</p>
           </div>
@@ -716,7 +722,7 @@ function ReportExportPrintDocument({
       )}
 
       <footer className="mt-8 border-t border-line pt-3 text-[11px] text-ink-quiet">
-        Documento generado por SIGMA L1 · Seguridad Operativa · {formatDateTime(generatedAt)}
+        Documento generado por {systemName} · Seguridad Operativa · {formatDateTime(generatedAt)}
       </footer>
     </section>
   );

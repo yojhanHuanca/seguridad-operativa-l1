@@ -19,6 +19,7 @@ import { Logo } from "@/components/brand/Logo";
 import { cn } from "@/lib/utils";
 import { SessionExitButton } from "@/features/auth/SessionExitButton";
 import { AdminPanelSwitcher } from "@/features/auth/AdminPanelSwitcher";
+import { nombreSistema, useConfiguracion } from "@/features/configuracion/hooks/useConfiguracion";
 
 interface NavItem {
   to: string;
@@ -48,7 +49,7 @@ const TITLES: Record<string, string> = {
   "/admin/configuracion": "Configuración",
 };
 
-function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
+function SidebarContent({ collapsed, onNavigate, systemName }: { collapsed: boolean; onNavigate?: () => void; systemName: string }) {
   const location = useLocation();
 
   return (
@@ -63,9 +64,7 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
           <Logo size={collapsed ? 32 : 66} withWordmark={false} />
           {!collapsed && (
             <div className="min-w-0 leading-tight">
-              <p className="font-display text-[17px] font-bold tracking-tight text-ink">
-                SIGMA<span className="text-brand-600"> L1</span>
-              </p>
+              <p className="truncate font-display text-[17px] font-bold tracking-tight text-ink">{systemName}</p>
               <p className="mt-0.5 max-w-[130px] text-[11.5px] font-medium leading-[1.2] text-ink-quiet">
                 Administración · Metro de Lima
               </p>
@@ -134,6 +133,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSE_KEY) === "1");
   const [mobileOpen, setMobileOpen] = useState(false);
   const title = TITLES[location.pathname] ?? "Administrador";
+  const { data: configuracion } = useConfiguracion();
+  const systemName = nombreSistema(configuracion);
 
   useEffect(() => {
     localStorage.setItem(COLLAPSE_KEY, collapsed ? "1" : "0");
@@ -148,7 +149,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           collapsed ? "w-[64px]" : "w-[296px]"
         )}
       >
-        <SidebarContent collapsed={collapsed} />
+        <SidebarContent collapsed={collapsed} systemName={systemName} />
         <button
           type="button"
           onClick={() => setCollapsed((c) => !c)}
@@ -164,7 +165,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileOpen(false)} aria-hidden />
           <aside className="absolute left-0 top-0 flex h-full w-[296px] flex-col bg-white shadow-xl">
-            <SidebarContent collapsed={false} onNavigate={() => setMobileOpen(false)} />
+            <SidebarContent collapsed={false} systemName={systemName} onNavigate={() => setMobileOpen(false)} />
           </aside>
         </div>
       )}
@@ -182,7 +183,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </button>
             <div className="min-w-0">
               <p className="text-[11.5px] font-medium text-ink-quiet">
-                SIGMA L1 <span className="px-1.5 text-ink-faint">›</span> Administrador
+                {systemName} <span className="px-1.5 text-ink-faint">›</span> Administrador
               </p>
               <p className="mt-0.5 truncate font-display text-[19px] font-bold tracking-tight text-ink">{title}</p>
             </div>

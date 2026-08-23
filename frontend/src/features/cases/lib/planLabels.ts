@@ -2,11 +2,12 @@ export function shortPlanCode(codigo?: string | null): string {
   const raw = codigo?.trim();
   if (!raw) return "PLA";
 
-  const match = raw.match(/PLA[-\s]*(\d+)/i);
+  const match = raw.match(/(?:^|[-\s])([A-Z0-9]{2,12})[-\s]*(\d+)$/i);
   if (!match) return raw;
 
-  const number = Number(match[1]);
-  return Number.isFinite(number) && number > 0 ? `PLA-${String(number).padStart(2, "0")}` : raw;
+  const prefix = match[1].toUpperCase();
+  const number = Number(match[2]);
+  return Number.isFinite(number) && number > 0 ? `${prefix}-${String(number).padStart(2, "0")}` : raw;
 }
 
 /**
@@ -17,15 +18,16 @@ export function shortPlanCode(codigo?: string | null): string {
  * una lista sí puede moverse.
  */
 export function numeroDePlan(codigo?: string | null): number | null {
-  const match = codigo?.trim().match(/PLA[-\s]*(\d+)/i);
+  const match = codigo?.trim().match(/(?:^|[-\s])([A-Z0-9]{2,12})[-\s]*(\d+)$/i);
   if (!match) return null;
-  const numero = Number(match[1]);
+  const numero = Number(match[2]);
   return Number.isFinite(numero) && numero > 0 ? numero : null;
 }
 
 export function compactPlanCodes(value?: string | null): string {
-  return (value ?? "").replace(/\bSOP[-\s]*\d+[-\s]*\d{4}[-\s]*PLA[-\s]*(\d+)\b/gi, (_match, number) => {
+  return (value ?? "").replace(/\b[A-Z0-9]{2,12}[-\s]*\d+[-\s]*\d{4}[-\s]*([A-Z0-9]{2,12})[-\s]*(\d+)\b/gi, (_match, prefix, number) => {
     const numeric = Number(number);
-    return Number.isFinite(numeric) && numeric > 0 ? `PLA-${String(numeric).padStart(2, "0")}` : `PLA-${number}`;
+    const normalizedPrefix = String(prefix).toUpperCase();
+    return Number.isFinite(numeric) && numeric > 0 ? `${normalizedPrefix}-${String(numeric).padStart(2, "0")}` : `${normalizedPrefix}-${number}`;
   });
 }

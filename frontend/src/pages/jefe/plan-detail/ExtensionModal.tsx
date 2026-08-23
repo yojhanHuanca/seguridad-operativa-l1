@@ -5,20 +5,34 @@ import { Button } from "@/design-system/primitives/Button";
 import { Modal } from "@/design-system/primitives/Modal";
 import { Field, Input, Textarea } from "@/design-system/primitives/Input";
 import { shortPlanCode } from "@/features/cases/lib/planLabels";
+import { useConfiguracion } from "@/features/configuracion/hooks/useConfiguracion";
 import { useRequestPlanExtension } from "@/features/plans/hooks/usePlans";
 import { apiErrorMessage } from "@/lib/api";
+import { formatDate } from "@/lib/format";
 import type { PlanItem } from "@/features/plans/types";
 import { ACTOR } from "./constants";
 
-function defaultExtensionDate() {
-  const date = new Date();
-  date.setDate(date.getDate() + 7);
+function soloFecha(value?: string | null) {
+  return value ? value.slice(0, 10) : new Date().toISOString().slice(0, 10);
+}
+
+function addDays(value: string, days: number) {
+  const date = new Date(`${value}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + Math.max(1, days));
   return date.toISOString().slice(0, 10);
 }
 
 export function ExtensionModal({ plan, open, onClose }: { plan: PlanItem; open: boolean; onClose: () => void }) {
   const requestExt = useRequestPlanExtension();
-  const [nuevaFecha, setNuevaFecha] = useState(defaultExtensionDate);
+  const { data: configuracion } = useConfiguracion();
+  const diasProrroga = configuracion?.plazos.diasSolicitarProrroga ?? 7;
+  const plazoVigente = soloFecha(plan.fecha_reprogramada ?? plan.fecha_plan);
+  const fechaMinima = addDays(plazoVigente, 1);
+  const fechaMaxima = addDays(plazoVigente, diasProrroga);
+  const sugerida = fechaMaxima;
+  const draftKey = `${plan.id_plan}:${plazoVigente}:${diasProrroga}`;
+  const [draftFecha, setDraftFecha] = useState<{ key: string; value: string }>(() => ({ key: draftKey, value: sugerida }));
+  const nuevaFecha = draftFecha.key === draftKey ? draftFecha.value : sugerida;
   const [justificacion, setJustificacion] = useState("");
 
   return (
@@ -42,6 +56,7 @@ export function ExtensionModal({ plan, open, onClose }: { plan: PlanItem; open: 
                     toast.success("Ampliación solicitada, pendiente de decisión de SO");
                     onClose();
                     setJustificacion("");
+                    setDraftFecha({ key: draftKey, value: sugerida });
                   },
                   onError: (e) => toast.error(apiErrorMessage(e, "No se pudo solicitar la ampliación")),
                 }
@@ -53,8 +68,18 @@ export function ExtensionModal({ plan, open, onClose }: { plan: PlanItem; open: 
         </>
       }
     >
-      <Field label="Nueva fecha propuesta" required>
-        <Input type="date" value={nuevaFecha} onChange={(e) => setNuevaFecha(e.target.value)} />
+      <Field
+        label="Nueva fecha propuesta"
+        required
+        hint={`Máximo permitido: ${formatDate(fechaMaxima)} (${diasProrroga} día(s) adicionales al plazo vigente).`}
+      >
+        <Input
+          type="date"
+          min={fechaMinima}
+          max={fechaMaxima}
+          value={nuevaFecha}
+          onChange={(e) => setDraftFecha({ key: draftKey, value: e.target.value })}
+        />
       </Field>
       <Field label="Justificación" required className="mt-4">
         <Textarea

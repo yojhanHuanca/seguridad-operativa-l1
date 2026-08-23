@@ -41,6 +41,7 @@ import { CASE_FILTERS, countByFilter, filterHref, type CaseFilterId } from "@/fe
 import { useCurrentSoUser } from "@/features/users/hooks/useCurrentSoUser";
 import { useNotifications } from "@/features/notifications/hooks/useNotifications";
 import { useEventosAsignados } from "@/features/eventos/hooks/useEventos";
+import { nombreSistema, useConfiguracion } from "@/features/configuracion/hooks/useConfiguracion";
 
 interface NavLink {
   to: string;
@@ -85,6 +86,8 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: rawCases } = useCases({});
   const { data: notifications } = useNotifications();
+  const { data: configuracion } = useConfiguracion();
+  const systemName = nombreSistema(configuracion);
 
   useEffect(() => {
     localStorage.setItem(COLLAPSE_KEY, collapsed ? "1" : "0");
@@ -256,9 +259,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
           <Logo size={collapsed ? 32 : 66} withWordmark={false} />
           {!collapsed && (
             <div className="min-w-0 leading-tight">
-              <p className="font-display text-[17px] font-bold tracking-tight text-ink">
-                SIGMA<span className="text-brand-600"> L1</span>
-              </p>
+              <p className="truncate font-display text-[17px] font-bold tracking-tight text-ink">{systemName}</p>
               <p className="mt-0.5 max-w-[130px] text-[11.5px] font-medium leading-[1.2] text-ink-quiet">
                 Seguridad Operativa · Metro de Lima
               </p>
@@ -393,7 +394,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
 
             <div className="min-w-0 flex-1">
               <p className="text-[11.5px] font-medium text-ink-quiet">
-                SIGMA L1 <span className="px-1.5 text-ink-faint">›</span> {getBreadcrumb(location.pathname)}
+                {systemName} <span className="px-1.5 text-ink-faint">›</span> {getBreadcrumb(location.pathname)}
               </p>
               <p className="mt-0.5 truncate font-display text-[19px] font-bold tracking-tight text-ink">{currentPageTitle}</p>
             </div>

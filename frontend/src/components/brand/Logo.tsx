@@ -13,10 +13,19 @@ interface LogoProps {
   size?: number;
   className?: string;
   withWordmark?: boolean;
+  wordmark?: string;
+  subtitle?: string;
   tone?: "light" | "dark";
 }
 
-export function Logo({ size = 36, className, withWordmark = true, tone = "dark" }: LogoProps) {
+export function Logo({
+  size = 36,
+  className,
+  withWordmark = true,
+  wordmark = "SIGMA L1",
+  subtitle = "Seguridad Operativa · Metro de Lima",
+  tone = "dark",
+}: LogoProps) {
   const width = Math.round(size * ASPECTO);
 
   return (
@@ -32,10 +41,10 @@ export function Logo({ size = 36, className, withWordmark = true, tone = "dark" 
       {withWordmark && (
         <div className="leading-tight">
           <p className={cn("font-display text-[15px] font-bold tracking-[-0.01em]", tone === "light" ? "text-white" : "text-ink")}>
-            SIGMA<span className="text-brand-600"> L1</span>
+            {wordmark}
           </p>
           <p className={cn("text-[10px] font-medium tracking-wide", tone === "light" ? "text-white/70" : "text-ink-quiet")}>
-            Seguridad Operativa · Metro de Lima
+            {subtitle}
           </p>
         </div>
       )}

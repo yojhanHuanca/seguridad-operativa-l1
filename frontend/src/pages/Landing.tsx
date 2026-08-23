@@ -17,6 +17,7 @@ import {
 import { Logo } from "@/components/brand/Logo";
 import { staggerContainer, riseItem, EASE_OUT } from "@/design-system/motion/variants";
 import { cn } from "@/lib/utils";
+import { nombreSistema, useConfiguracionPublica } from "@/features/configuracion/hooks/useConfiguracion";
 
 /**
  * Landing pública institucional de SIGMA L1. El acceso a los módulos se
@@ -118,7 +119,7 @@ function useScrolled(threshold = 24) {
   return scrolled;
 }
 
-function Navbar() {
+function Navbar({ systemName }: { systemName: string }) {
   const scrolled = useScrolled();
   const [open, setOpen] = useState(false);
 
@@ -128,7 +129,7 @@ function Navbar() {
         <Link to="/" className="flex items-center gap-2.5">
           <Logo size={40} withWordmark={false} />
           <span className={cn("font-display text-[16px] font-bold tracking-tight transition-colors", scrolled ? "text-ink" : "text-white")}>
-            SIGMA<span className="text-brand-500"> L1</span>
+            {systemName}
           </span>
         </Link>
 
@@ -174,7 +175,7 @@ function Navbar() {
   );
 }
 
-function Hero() {
+function Hero({ systemName }: { systemName: string }) {
   return (
     <section className="relative flex min-h-[100svh] items-end overflow-hidden bg-ink">
       <img src="/tren-linea1.png" alt="Tren de Línea 1 del Metro de Lima llegando a estación" className="absolute inset-0 h-full w-full object-cover" />
@@ -191,7 +192,7 @@ function Hero() {
           Línea 1 · Metro de Lima
         </motion.p>
         <motion.h1 variants={riseItem} className="max-w-3xl font-display text-[48px] font-bold leading-none text-white sm:text-[72px]">
-          SIGMA <span className="text-brand-300">L1</span>
+          {systemName}
         </motion.h1>
         <motion.p variants={riseItem} className="mt-5 max-w-xl text-[18px] font-semibold leading-relaxed text-white sm:text-[22px]">
           Seguridad operativa, en tiempo real.
@@ -277,7 +278,7 @@ function PortalesSection() {
   );
 }
 
-function WorkflowSection() {
+function WorkflowSection({ systemName }: { systemName: string }) {
   return (
     <section className="bg-surface py-24">
       <div className="mx-auto max-w-[1240px] px-4 sm:px-6">
@@ -285,7 +286,7 @@ function WorkflowSection() {
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.4 }} variants={staggerContainer}>
             <motion.p variants={riseItem} className="text-[12px] font-semibold uppercase text-brand-700">Trazabilidad operativa</motion.p>
             <motion.h2 variants={riseItem} className="mt-2 font-display text-[28px] font-bold leading-tight text-ink sm:text-[34px]">Cada evento conserva su historia completa.</motion.h2>
-            <motion.p variants={riseItem} className="mt-4 text-[13.5px] leading-6 text-ink-quiet">SIGMA L1 conecta a trabajadores, monitoristas, Seguridad Operativa y responsables de área dentro de un mismo proceso verificable.</motion.p>
+            <motion.p variants={riseItem} className="mt-4 text-[13.5px] leading-6 text-ink-quiet">{systemName} conecta a trabajadores, monitoristas, Seguridad Operativa y responsables de área dentro de un mismo proceso verificable.</motion.p>
           </motion.div>
           <motion.ol initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={staggerContainer} className="grid gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2">
             {FLUJO.map((step) => (
@@ -351,7 +352,7 @@ function VideoSection() {
   );
 }
 
-function Footer() {
+function Footer({ systemName }: { systemName: string }) {
   return (
     <footer className="bg-brand-950 text-white/70">
       <div className="mx-auto max-w-[1240px] px-4 py-14 sm:px-6">
@@ -359,7 +360,7 @@ function Footer() {
           <div>
             <Logo size={40} withWordmark={false} tone="light" />
             <p className="mt-4 max-w-[240px] text-[12.5px] leading-relaxed text-white/60">
-              Sistema Integrado de Gestión de Monitoreo y Auditoría — Seguridad Operativa de la
+              {systemName} — Seguridad Operativa de la
               Línea 1 del Metro de Lima.
             </p>
           </div>
@@ -407,7 +408,7 @@ function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-[12px] text-white/40 sm:flex-row">
-          <p>© {new Date().getFullYear()} SIGMA L1 · Línea 1 del Metro de Lima</p>
+          <p>© {new Date().getFullYear()} {systemName} · Línea 1 del Metro de Lima</p>
           <p>Proyecto interno de Seguridad Operativa</p>
         </div>
       </div>
@@ -416,16 +417,19 @@ function Footer() {
 }
 
 export function Landing() {
+  const { data: identidad } = useConfiguracionPublica();
+  const systemName = nombreSistema(identidad);
+
   return (
     <div className="min-h-screen bg-white">
-      <Navbar />
-      <Hero />
+      <Navbar systemName={systemName} />
+      <Hero systemName={systemName} />
       <StatsBand />
       <PortalesSection />
-      <WorkflowSection />
+      <WorkflowSection systemName={systemName} />
       <VideoSection />
       <AccessBand />
-      <Footer />
+      <Footer systemName={systemName} />
     </div>
   );
 }

@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from "react";
 import { Eye, EyeOff, Loader2, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { Logo } from "@/components/brand/Logo";
 import { apiErrorMessage } from "@/lib/api";
 import { homeForRole, useAuth } from "@/features/auth/auth";
 import { GoogleSignInButton } from "@/features/auth/GoogleSignInButton";
+import { nombreSistema, useConfiguracionPublica } from "@/features/configuracion/hooks/useConfiguracion";
 
 export function LoginPage() {
   const { login, loginWithGoogle, user, token } = useAuth();
@@ -14,6 +15,8 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { data: identidad } = useConfiguracionPublica();
+  const systemName = nombreSistema(identidad);
 
   if (user && token) return <Navigate to={homeForRole(user.rol)} replace />;
 
@@ -69,7 +72,7 @@ export function LoginPage() {
         <div className="w-full max-w-[420px]">
           <div className="mb-10 lg:hidden"><Logo size={48} withWordmark={false} /></div>
           <div className="grid h-11 w-11 place-items-center rounded-lg bg-brand-50 text-brand-700"><ShieldCheck className="h-5 w-5" /></div>
-          <p className="mt-6 text-[11px] font-semibold uppercase text-brand-700">SIGMA L1</p>
+          <p className="mt-6 text-[11px] font-semibold uppercase text-brand-700">{systemName}</p>
           <h2 className="mt-2 font-display text-[30px] font-bold text-ink">Acceso al sistema</h2>
           <p className="mt-2 text-[13px] leading-6 text-ink-quiet">Ingresa con las credenciales asignadas por el administrador.</p>
 
@@ -82,6 +85,11 @@ export function LoginPage() {
               <span className="mb-2 block text-[12px] font-semibold text-ink-soft">Contraseña</span>
               <span className="relative block"><LockKeyhole className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" /><input type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} required minLength={6} autoComplete="current-password" placeholder="Ingresa tu contraseña" className="h-12 w-full rounded-lg border border-line-strong bg-white pl-10 pr-11 text-[13.5px] text-ink outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15" /><button type="button" onClick={() => setShowPassword((visible) => !visible)} className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-md text-ink-faint hover:bg-surface hover:text-ink" aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button></span>
             </label>
+            <div className="text-right">
+              <Link to="/forgot-password" className="text-[12px] font-semibold text-brand-700 hover:text-brand-800 hover:underline">
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
             {error && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-[12px] text-red-700">{error}</div>}
             <button type="submit" disabled={loading} className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-brand-700 text-[13.5px] font-semibold text-white shadow-sm transition hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-60">{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <LockKeyhole className="h-4 w-4" />}{loading ? "Verificando acceso..." : "Iniciar sesión"}</button>
           </form>

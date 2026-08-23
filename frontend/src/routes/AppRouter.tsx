@@ -8,6 +8,8 @@ function lazyNamed(loader: () => Promise<Record<string, unknown>>, exportName: s
 
 const Landing = lazyNamed(() => import("@/pages/Landing"), "Landing");
 const LoginPage = lazyNamed(() => import("@/pages/Login"), "LoginPage");
+const ForgotPasswordPage = lazyNamed(() => import("@/pages/ForgotPassword"), "ForgotPasswordPage");
+const ResetPasswordPage = lazyNamed(() => import("@/pages/ResetPassword"), "ResetPasswordPage");
 const ReportanteHomePage = lazyNamed(() => import("@/pages/reports/ReportanteHomePage"), "ReportanteHomePage");
 const NewReportPage = lazyNamed(() => import("@/pages/reports/NewReportPage"), "NewReportPage");
 const ConsultarReportePage = lazyNamed(() => import("@/pages/reports/ConsultarReportePage"), "ConsultarReportePage");
@@ -41,7 +43,7 @@ const AdminUsuariosPage = lazyNamed(() => import("@/pages/admin/UsuariosPage"), 
 const AdminAreasPage = lazyNamed(() => import("@/pages/admin/AreasPage"), "AdminAreasPage");
 const AdminEstacionesPage = lazyNamed(() => import("@/pages/admin/EstacionesPage"), "AdminEstacionesPage");
 const AdminMaterialRodantePage = lazyNamed(() => import("@/pages/admin/MaterialRodantePage"), "AdminMaterialRodantePage");
-const AdminConfiguracionPage = lazyNamed(() => import("@/pages/admin/PlaceholderPages"), "AdminConfiguracionPage");
+const AdminConfiguracionPage = lazyNamed(() => import("@/pages/admin/ConfiguracionPage"), "AdminConfiguracionPage");
 const AdminAuditoriaPage = lazyNamed(() => import("@/pages/AuditoriaPage"), "AdminAuditoriaPage");
 const AdminPerfilPage = lazyNamed(() => import("@/pages/admin/PerfilPage"), "AdminPerfilPage");
 const AdminImportacionPage = lazyNamed(() => import("@/pages/admin/ImportacionPage"), "AdminImportacionPage");
@@ -62,6 +64,8 @@ export function AppRouter() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/inicio" element={<Navigate to="/" replace />} />
           <Route path="/reportes" element={<ProtectedRoute roles={["Reportante"]}><ReportanteHomePage /></ProtectedRoute>} />
           {/* Pública, sin sesión: quien reporta llega desde un QR/URL, sin cuenta. */}

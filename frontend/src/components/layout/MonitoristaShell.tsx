@@ -17,6 +17,7 @@ import { AdminPanelSwitcher } from "@/features/auth/AdminPanelSwitcher";
 import { AdminViewingBanner } from "@/features/auth/AdminViewingBanner";
 import { useAuth } from "@/features/auth/auth";
 import { Logo } from "@/components/brand/Logo";
+import { nombreSistema, useConfiguracion } from "@/features/configuracion/hooks/useConfiguracion";
 
 interface NavItem {
   to: string;
@@ -165,6 +166,8 @@ export function MonitoristaShell({ children }: { children: ReactNode }) {
   const [mobileOpenPath, setMobileOpenPath] = useState<string | null>(null);
   const mobileOpen = mobileOpenPath === location.pathname;
   const meta = metaFor(location.pathname);
+  const { data: configuracion } = useConfiguracion();
+  const systemName = nombreSistema(configuracion);
 
   useEffect(() => {
     localStorage.setItem(COLLAPSE_KEY, collapsed ? "1" : "0");
@@ -216,7 +219,7 @@ export function MonitoristaShell({ children }: { children: ReactNode }) {
 
             <div className="min-w-0">
               <p className="text-[11.5px] font-medium text-ink-quiet">
-                SIGMA L1 <span className="px-1.5 text-ink-faint">›</span> {meta.crumb}
+                {systemName} <span className="px-1.5 text-ink-faint">›</span> {meta.crumb}
               </p>
               <p className="mt-0.5 truncate font-display text-[19px] font-bold tracking-tight text-ink">{meta.title}</p>
             </div>

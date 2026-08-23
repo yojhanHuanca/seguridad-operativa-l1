@@ -87,7 +87,7 @@ const activityUpdateSchema = z.object({
 });
 
 const extensionSchema = z.object({
-  nueva_fecha: z.string().min(1, "Indique la nueva fecha"),
+  nueva_fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use el formato AAAA-MM-DD"),
   justificacion: z.string().trim().min(5, "Explique la justificación").max(1000),
   actor: z.string().trim().max(150).optional().default(""),
 });

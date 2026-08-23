@@ -1,9 +1,18 @@
 import { OAuth2Client } from "google-auth-library";
+import { randomBytes, createHash } from "node:crypto";
 import { AuthRepository } from "./auth.repository.js";
+import { UserRepository } from "../users/users.repository.js";
 import { BcryptHelper } from "../../utils/bcrypt.js";
 import { JwtHelper } from "../../utils/jwt.js";
 import { AuditoriaService } from "../auditoria/auditoria.service.js";
+import { enviarCorreoRecuperacion } from "../../utils/mailer.js";
 import { env } from "../../config/env.js";
+
+const RESET_TOKEN_TTL_MINUTOS = 30;
+
+function hashToken(token: string) {
+  return createHash("sha256").update(token).digest("hex");
+}
 
 type UsuarioConRelaciones = NonNullable<Awaited<ReturnType<typeof AuthRepository.findByEmail>>>;
 
@@ -178,8 +187,48 @@ export class AuthService {
         return AuthService.issueSession(user, `Inicio de sesión con Google${navegador ? ` — ${navegador}` : ""}`, direccion_ip, navegador);
     }
 
+    /**
+     * Siempre responde "listo" al llamador, exista o no ese correo — si
+     * dijéramos "ese correo no existe" alguien podría usarlo para enumerar
+     * qué correos son cuentas reales del sistema. El correo solo sale si el
+     * usuario existe y está activo.
+     */
+    static async forgotPassword(correo: string) {
+        const user = await AuthRepository.findByEmail(correo);
+        if (!user || (user.estado ?? "").toLowerCase() !== "activo") return;
 
+        await AuthRepository.invalidarPasswordResetsPendientes(user.id_usuario);
 
+        const token = randomBytes(32).toString("hex");
+        const expires_at = new Date(Date.now() + RESET_TOKEN_TTL_MINUTOS * 60_000);
+        await AuthRepository.crearPasswordReset(user.id_usuario, hashToken(token), expires_at);
+
+        const resetUrl = `${env.FRONTEND_URL.replace(/\/$/, "")}/reset-password?token=${token}`;
+        await enviarCorreoRecuperacion(user.correo, user.nombre, resetUrl);
+    }
+
+    static async resetPassword(token: string, nuevaPassword: string, direccion_ip?: string, navegador?: string) {
+        const reset = await AuthRepository.findPasswordResetVigente(hashToken(token));
+        if (!reset) {
+            throw new Error("Este link ya no es válido. Pide uno nuevo.");
+        }
+
+        const password_hash = await BcryptHelper.hash(nuevaPassword);
+        await AuthRepository.marcarPasswordResetUsado(reset.id_reset);
+        await AuthRepository.cerrarTodasLasSesiones(reset.usuario);
+
+        await UserRepository.update(reset.usuario, { password_hash });
+
+        await AuditoriaService.registrar({
+            tabla: "usuarios",
+            id_registro: reset.usuario,
+            accion: "editar",
+            descripcion: `Contraseña restablecida vía "Olvidé mi contraseña"${navegador ? ` — ${navegador}` : ""}`,
+            usuario: reset.usuario,
+            ip: direccion_ip,
+            user_agent: navegador,
+        });
+    }
 
 
 

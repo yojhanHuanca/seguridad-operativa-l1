@@ -9,6 +9,7 @@ import { StageSection } from "@/features/cases/components/CaseParts";
 import { useAreas } from "@/features/reports/hooks/useAreas";
 import { useUsersBasicos } from "@/features/users/hooks/useUsersBasicos";
 import { useCreatePlans, useStartExecution, useUpdatePlan, type PlanActivityInput } from "@/features/cases/hooks/useCaseActions";
+import { useConfiguracion } from "@/features/configuracion/hooks/useConfiguracion";
 import { encodeActivityDescription, parseActivityDescription } from "@/features/cases/lib/activityMeta";
 import { shortPlanCode } from "@/features/cases/lib/planLabels";
 import { planTomadoPorArea, puedeModificarPlan } from "@/features/cases/lib/workflow";
@@ -17,11 +18,13 @@ import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { StageRollbackButton } from "./StageRollbackButton";
 import type { CaseDetail } from "@/features/cases/types";
+import type { ConfiguracionGeneral } from "@/features/configuracion/types";
 import type { UserBasic } from "@/features/users/types";
 import type { RiskLevel } from "@/features/cases/domain";
 
 // Portado de pages/seguridad/CaseFile.tsx → PlanStage / PlanForm / PlanDisplay.
 const TIPOS_ACCION = ["Correctiva", "Preventiva", "Mitigación", "Mejora continua"];
+const DEFAULT_PLAN_DAYS = 7;
 
 interface PlanFormActivityInput extends PlanActivityInput {
   id_actividad?: number;
@@ -40,12 +43,18 @@ function InvBlock({ label, value, tone }: { label: string; value: string; tone?:
   );
 }
 
-function blankActividad(idArea = ""): PlanFormActivityInput {
+function fechaEnDias(dias: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + Math.max(1, dias));
+  return date.toISOString().slice(0, 10);
+}
+
+function blankActividad(idArea = "", plazoDias = DEFAULT_PLAN_DAYS): PlanFormActivityInput {
   return {
     descripcion: "",
     responsable: null,
     fecha_inicio: new Date().toISOString().slice(0, 10),
-    fecha_fin: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10),
+    fecha_fin: fechaEnDias(plazoDias),
     tipo_accion: TIPOS_ACCION[0],
     id_area: idArea,
   };
@@ -131,6 +140,7 @@ export function PlanCard({ caso }: { caso: CaseDetail }) {
   const [formOpen, setFormOpen] = useState(!plan);
   // null = crear uno nuevo; id = modificar ese plan precargándolo.
   const [editingId, setEditingId] = useState<number | null>(null);
+  const { data: configuracion, isLoading: configuracionLoading } = useConfiguracion();
 
   const inv = caso.investigacion_caso;
   const riesgo = caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle;
@@ -208,10 +218,13 @@ export function PlanCard({ caso }: { caso: CaseDetail }) {
             </Button>
           </div>
         </>
+      ) : configuracionLoading && !configuracion ? (
+        <div className="rounded-xl border border-line bg-white p-4 text-[13px] text-ink-quiet">Cargando parámetros de configuración...</div>
       ) : (
         <PlanForm
           caso={caso}
           plan={editing}
+          configuracion={configuracion}
           onSubmitted={() => {
             setFormOpen(false);
             setEditingId(null);
@@ -387,12 +400,14 @@ function PlanDisplay({ caso, onEdit }: { caso: CaseDetail; onEdit: (idPlan: numb
 function PlanForm({
   caso,
   plan,
+  configuracion,
   onSubmitted,
   onCancel,
 }: {
   caso: CaseDetail;
   /** Si viene, el formulario modifica ese plan precargado en vez de crear uno. */
   plan?: CaseDetail["planes_accion"][number];
+  configuracion?: ConfiguracionGeneral;
   onSubmitted: () => void;
   onCancel?: () => void;
 }) {
@@ -404,6 +419,9 @@ function PlanForm({
   const createPlans = useCreatePlans(caso.codigo_sop);
   const updatePlan = useUpdatePlan(caso.codigo_sop);
   const esEdicion = !!plan;
+  const plazoRespuesta = configuracion?.plazos.diasResponderPlanes ?? DEFAULT_PLAN_DAYS;
+  const prefijoPlan = configuracion?.numeracion.prefijoPlanes || "PLA";
+  const secuenciaPlan = configuracion?.numeracion.secuenciaPlanes ?? caso.planes_accion.length;
 
   const hoy = new Date().toISOString().slice(0, 10);
   const soloFecha = (v?: string | null) => (v ? v.slice(0, 10) : "");
@@ -423,7 +441,7 @@ function PlanForm({
             id_area: parsed.meta.idArea ? String(parsed.meta.idArea) : defaultArea,
           };
         })
-      : [blankActividad(defaultArea)]
+      : [blankActividad(defaultArea, plazoRespuesta)]
   );
 
   // El plan se revisa antes de salir: una vez enviado, el jefe del área lo ve
@@ -455,7 +473,7 @@ function PlanForm({
   const codigoPlanPrevisto = (i: number) =>
     plan
       ? shortPlanCode(plan.codigo_plan)
-      : `PLA-${String(caso.planes_accion.length + i + 1).padStart(2, "0")}`;
+      : `${prefijoPlan}-${String(secuenciaPlan + i + 1).padStart(2, "0")}`;
 
   const updateActividad = (i: number, patch: Partial<PlanFormActivityInput>) =>
     setActividades((prev) => prev.map((a, idx) => (idx === i ? { ...a, ...patch } : a)));
@@ -617,7 +635,7 @@ function PlanForm({
           variant="outline"
           size="sm"
           className="mt-4"
-          onClick={() => setActividades((prev) => [...prev, blankActividad(defaultArea)])}
+          onClick={() => setActividades((prev) => [...prev, blankActividad(defaultArea, plazoRespuesta)])}
         >
           <Plus className="h-4 w-4" /> Agregar plan de acción
         </Button>

@@ -22,6 +22,7 @@ import { SessionExitButton } from "@/features/auth/SessionExitButton";
 import { AdminPanelSwitcher } from "@/features/auth/AdminPanelSwitcher";
 import { AdminViewingBanner } from "@/features/auth/AdminViewingBanner";
 import { useAuth } from "@/features/auth/auth";
+import { nombreSistema, useConfiguracion } from "@/features/configuracion/hooks/useConfiguracion";
 
 interface NavItem {
   to: string;
@@ -143,6 +144,8 @@ export function JefeShell({ children }: { children: ReactNode }) {
   const [mobileOpenPath, setMobileOpenPath] = useState<string | null>(null);
   const mobileOpen = mobileOpenPath === location.pathname;
   const meta = metaFor(location.pathname);
+  const { data: configuracion } = useConfiguracion();
+  const systemName = nombreSistema(configuracion);
 
   useEffect(() => {
     localStorage.setItem(COLLAPSE_KEY, collapsed ? "1" : "0");
@@ -194,7 +197,7 @@ export function JefeShell({ children }: { children: ReactNode }) {
 
               <div className="min-w-0">
                 <p className="text-[11.5px] font-medium text-ink-quiet">
-                  SIGMA L1 <span className="px-1.5 text-ink-faint">›</span> {meta.crumb}
+                  {systemName} <span className="px-1.5 text-ink-faint">›</span> {meta.crumb}
                 </p>
                 <p className="mt-0.5 truncate font-display text-[19px] font-bold tracking-tight text-ink">{meta.title}</p>
               </div>
@@ -215,7 +218,7 @@ export function JefeShell({ children }: { children: ReactNode }) {
 
           <footer className="border-t border-line bg-white">
             <div className="mx-auto flex max-w-[1720px] flex-wrap items-center justify-between gap-3 px-4 py-5 text-[12px] text-ink-quiet sm:px-6">
-              <p>SIGMA L1 · Portal del Jefe de Área — Línea 1 del Metro de Lima</p>
+              <p>{systemName} · Portal del Jefe de Área — Línea 1 del Metro de Lima</p>
             </div>
           </footer>
         </div>
