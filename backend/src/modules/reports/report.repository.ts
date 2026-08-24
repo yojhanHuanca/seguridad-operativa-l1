@@ -34,6 +34,42 @@ const LIST_INCLUDE = {
   },
 } as const;
 
+const PUBLIC_REPORT_SELECT = {
+  id_caso: true,
+  codigo_sop: true,
+  titulo: true,
+  descripcion: true,
+  fecha_hallazgo: true,
+  fecha_evento: true,
+  created_at: true,
+  catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { select: { nombre: true, color: true } },
+  catalogo_detalle_casos_sop_tipoTocatalogo_detalle: { select: { nombre: true } },
+  catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle: { select: { nombre: true } },
+  areas: { select: { nombre_area: true } },
+  anexos_caso: { select: { id_anexo: true } },
+  solicitudes_informacion: {
+    orderBy: { fecha_solicitud: "desc" as const },
+    select: {
+      id_solicitud: true,
+      mensaje: true,
+      respuesta: true,
+      respondida: true,
+      fecha_solicitud: true,
+      fecha_respuesta: true,
+    },
+  },
+  evento_caso: {
+    select: {
+      eventos_operativos: {
+        select: {
+          catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: { select: { nombre: true } },
+          catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: { select: { nombre: true } },
+        },
+      },
+    },
+  },
+} as const;
+
 export class ReportRepository {
   static async findAll() {
     return prisma.casos_sop.findMany({
@@ -93,6 +129,13 @@ export class ReportRepository {
     return prisma.casos_sop.findUnique({
       where: { codigo_sop },
       include: LIST_INCLUDE,
+    });
+  }
+
+  static async findPublicByCodigo(codigo_sop: string) {
+    return prisma.casos_sop.findUnique({
+      where: { codigo_sop },
+      select: PUBLIC_REPORT_SELECT,
     });
   }
 

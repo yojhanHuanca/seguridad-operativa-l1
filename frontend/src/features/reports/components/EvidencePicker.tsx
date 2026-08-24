@@ -6,7 +6,10 @@ import { cn } from "@/lib/utils";
 
 const MAX_SIZE_MB = 25;
 const MAX_FILES = 10;
-const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "video/mp4", "video/quicktime", "application/pdf"];
+const ACCEPTED_IMAGES = ["image/jpeg", "image/png", "image/webp"];
+const ACCEPTED_VIDEOS = ["video/mp4", "video/quicktime"];
+const ACCEPTED_DOCUMENTS = ["application/pdf"];
+const ACCEPTED = [...ACCEPTED_IMAGES, ...ACCEPTED_VIDEOS, ...ACCEPTED_DOCUMENTS];
 
 function iconFor(type: string) {
   if (type.startsWith("video/")) return Video;
@@ -40,7 +43,19 @@ export function EvidencePicker({
   const addFiles = (list: FileList | null) => {
     if (!list) return;
     const next: File[] = [...files];
+    const disponibles = Math.max(MAX_FILES - files.length, 0);
+
+    if (disponibles === 0) {
+      toast.error(`Solo puedes adjuntar hasta ${MAX_FILES} archivos.`);
+      return;
+    }
+
+    let omitidosPorLimite = 0;
     for (const file of Array.from(list)) {
+      if (next.length >= MAX_FILES) {
+        omitidosPorLimite++;
+        continue;
+      }
       if (!ACCEPTED.includes(file.type)) {
         toast.error(`Tipo de archivo no permitido: ${file.name}`);
         continue;
@@ -49,9 +64,16 @@ export function EvidencePicker({
         toast.error(`${file.name} supera los ${MAX_SIZE_MB} MB permitidos`);
         continue;
       }
+      if (next.some((item) => item.name === file.name && item.size === file.size && item.lastModified === file.lastModified)) {
+        toast.error(`${file.name} ya fue adjuntado`);
+        continue;
+      }
       next.push(file);
     }
-    setFiles(next.slice(0, MAX_FILES));
+    if (omitidosPorLimite > 0) {
+      toast.error(`Se omitieron ${omitidosPorLimite} archivo(s) porque el máximo es ${MAX_FILES}.`);
+    }
+    setFiles(next);
   };
 
   const removeFile = (index: number) => setFiles(files.filter((_, i) => i !== index));
@@ -83,30 +105,41 @@ export function EvidencePicker({
           <Camera className="h-5 w-5" />
         </div>
         <p className="mt-3 text-sm font-medium text-ink">Arrastra archivos o adjunta desde tu equipo</p>
-        <p className="mt-1 text-xs text-ink-quiet">JPG, PNG, WEBP, MP4 o PDF · opcional</p>
+        <p className="mt-1 text-xs text-ink-quiet">
+          JPG, PNG, WEBP, MP4, MOV o PDF · máximo {MAX_FILES} archivos de {MAX_SIZE_MB} MB
+        </p>
         <input
           ref={photoInputRef}
           type="file"
           multiple
-          accept="image/*"
+          accept={ACCEPTED_IMAGES.join(",")}
           className="hidden"
-          onChange={(e) => addFiles(e.target.files)}
+          onChange={(e) => {
+            addFiles(e.target.files);
+            e.currentTarget.value = "";
+          }}
         />
         <input
           ref={videoInputRef}
           type="file"
           multiple
-          accept="video/*"
+          accept={ACCEPTED_VIDEOS.join(",")}
           className="hidden"
-          onChange={(e) => addFiles(e.target.files)}
+          onChange={(e) => {
+            addFiles(e.target.files);
+            e.currentTarget.value = "";
+          }}
         />
         <input
           ref={documentInputRef}
           type="file"
           multiple
-          accept="application/pdf"
+          accept={ACCEPTED_DOCUMENTS.join(",")}
           className="hidden"
-          onChange={(e) => addFiles(e.target.files)}
+          onChange={(e) => {
+            addFiles(e.target.files);
+            e.currentTarget.value = "";
+          }}
         />
         <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
           <Button type="button" variant="outline" size="sm" onClick={() => photoInputRef.current?.click()}>
@@ -123,6 +156,9 @@ export function EvidencePicker({
 
       {files.length > 0 && (
         <div className="mt-3.5 space-y-2">
+          <p className="text-right text-[11.5px] text-ink-quiet">
+            {files.length}/{MAX_FILES} archivos adjuntos
+          </p>
           {files.map((file, i) => {
             const Icon = iconFor(file.type);
             return (

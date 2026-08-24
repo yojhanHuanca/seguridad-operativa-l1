@@ -75,6 +75,35 @@ export const verifyToken = async (
     next();
 };
 
+/**
+ * Autenticación opcional para endpoints públicos que pueden beneficiarse de
+ * una sesión válida, pero no deben exigirla. Si no hay token, sigue como
+ * usuario público; si hay token inválido, también sigue público para no romper
+ * el QR por sesiones vencidas guardadas en el navegador.
+ */
+export const optionalVerifyToken = async (
+    req: AuthenticatedRequest,
+    _res: Response,
+    next: NextFunction
+) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return next();
+
+    const token = authHeader.replace("Bearer ", "");
+    try {
+        const decoded = jwt.verify(token, env.JWT_SECRET) as AuthTokenPayload;
+        if (decoded.id_sesion) {
+            const activa = await AuthRepository.sesionActiva(decoded.id_sesion);
+            if (!activa) return next();
+        }
+        req.user = decoded;
+    } catch {
+        // El endpoint sigue siendo público; un token vencido no debe bloquear
+        // el registro desde QR ni la consulta pública.
+    }
+    next();
+};
+
 export const requireRoles = (...roles: string[]) => (
     req: AuthenticatedRequest,
     res: Response,

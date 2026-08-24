@@ -183,7 +183,7 @@ export function NuevoReporteModal({
       open={open}
       onClose={cerrar}
       title="Registrar nuevo reporte"
-      subtitle="El caso se crea con su código SOP y entra a la bandeja en Recepción."
+      subtitle="El caso se crea con su código SOP y pasa directo a Evaluación."
       size="lg"
       footer={
         <>

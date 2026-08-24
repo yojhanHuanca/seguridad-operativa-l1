@@ -15,13 +15,22 @@ const incidenciaSchema = z.object({
     .max(500, "Máximo 500 caracteres"),
 });
 
+const telefonoSchema = z
+  .string()
+  .trim()
+  .max(20, "Máximo 20 caracteres")
+  .optional()
+  .refine((value) => !value || /^[0-9+\s()-]{6,20}$/.test(value), {
+    message: "Ingresa un teléfono válido",
+  });
+
 // Mismos campos que el wizard ya desplegado (sigma-l1-metromet.vercel.app).
 export const reportFormSchema = incidenciaSchema
   .extend({
     modalidad: z.enum(["anonimo", "identificado"]),
-    nombre_reportante: z.string().max(150).optional(),
+    nombre_reportante: z.string().trim().max(150).optional(),
     correo_reportante: z.string().email("Ingresa un correo válido").max(150).optional().or(z.literal("")),
-    telefono_reportante: z.string().max(20).optional(),
+    telefono_reportante: telefonoSchema,
   })
   .refine((data) => data.modalidad !== "identificado" || !!data.nombre_reportante?.trim(), {
     message: "El nombre completo es obligatorio para un reporte identificado",

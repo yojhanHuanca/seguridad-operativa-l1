@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, ChevronLeft, ChevronRight, Loader2, Send } from "lucide-react";
+import { Camera, Check, ChevronLeft, ChevronRight, FileSearch, Loader2, LockKeyhole, Send, ShieldCheck, TicketCheck } from "lucide-react";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ReportanteShell } from "@/components/layout/ReportanteShell";
@@ -30,6 +30,7 @@ const STEP_LABELS: Record<ReportStep, string> = {
 
 export function NewReportPage() {
   const navigate = useNavigate();
+  const [introVisible, setIntroVisible] = useState(true);
   const [stepIndex, setStepIndex] = useState(0);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [files, setFiles] = useState<File[]>([]);
@@ -70,7 +71,7 @@ export function NewReportPage() {
           // Sin cuenta, "Mis reportes" no existe: el código es la única forma
           // de hacer seguimiento después, por eso va a la consulta pública
           // con el código ya cargado, no a una pantalla que le pediría loguearse.
-          if (token) {
+          if (token && values.modalidad === "identificado") {
             navigate("/reportes/mis-reportes?nuevo=" + encodeURIComponent(result.codigo_sop));
           } else {
             guardarReporteLocal(result.codigo_sop);
@@ -85,6 +86,66 @@ export function NewReportPage() {
   });
 
   const loadingCatalogs = catalogs.isLoading;
+
+  if (introVisible) {
+    return (
+      <ReportanteShell>
+        <section className="relative min-h-[calc(100svh-190px)] overflow-hidden rounded-[18px] bg-ink text-white shadow-[var(--shadow-card)]">
+          <img
+            src="/tren-linea1.png"
+            alt="Tren de Línea 1 del Metro de Lima"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/75 to-ink/25" />
+          <div className="absolute inset-0 bg-gradient-to-r from-brand-950/90 via-brand-950/45 to-transparent" />
+
+          <div className="relative flex min-h-[calc(100svh-190px)] flex-col justify-end px-5 py-7 sm:px-8 sm:py-9 lg:max-w-[680px]">
+            <div className="mb-auto inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[12px] font-medium text-white/85 backdrop-blur">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              Portal de Seguridad Operativa
+            </div>
+
+            <div className="max-w-[560px]">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-brand-100">Reporte ciudadano y operativo</p>
+              <h1 className="mt-3 text-[38px] font-bold leading-[1.02] tracking-normal text-white sm:text-[50px]">
+                Reporta una condición de seguridad
+              </h1>
+              <div className="mt-5 h-1 w-24 rounded-full bg-brand-400" />
+              <p className="mt-5 max-w-[440px] text-[16px] leading-relaxed text-white/82">
+                Tu reporte ayuda a prevenir incidentes en la operación. Puedes enviarlo de forma anónima o identificada.
+              </p>
+
+              <div className="mt-7 grid gap-3 sm:max-w-[460px]">
+                <Button type="button" size="lg" onClick={() => setIntroVisible(false)} className="h-12 justify-center text-[15px]">
+                  <Send className="h-4 w-4" />
+                  Iniciar reporte
+                </Button>
+                <Link to="/reportes/consulta">
+                  <Button type="button" variant="outline" size="lg" className="h-12 w-full justify-center border-white/70 bg-white/5 text-white hover:bg-white/12">
+                    <FileSearch className="h-4 w-4" />
+                    Consultar reporte
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="mt-7 grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-white/15 bg-white/15 sm:max-w-[560px]">
+                {[
+                  { icon: LockKeyhole, label: "Anónimo o identificado" },
+                  { icon: TicketCheck, label: "Código de seguimiento" },
+                  { icon: Camera, label: "Foto, video o PDF" },
+                ].map((item) => (
+                  <div key={item.label} className="bg-ink/35 px-2.5 py-3 text-center backdrop-blur">
+                    <item.icon className="mx-auto h-5 w-5 text-brand-200" />
+                    <p className="mt-2 text-[11.5px] font-medium leading-snug text-white/86">{item.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      </ReportanteShell>
+    );
+  }
 
   return (
     <ReportanteShell>
