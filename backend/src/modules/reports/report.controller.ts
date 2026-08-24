@@ -51,13 +51,13 @@ export class ReportController {
         size: f.size,
       }));
 
-      const id_usuario_creador = (req as AuthenticatedRequest).user?.id_usuario;
-      const result = await ReportService.createReport(req.body, files, id_usuario_creador);
+      const actor = (req as AuthenticatedRequest).user;
+      const result = await ReportService.createReport(req.body, files, actor);
       const { modalidad, origen } = textoOrigenReporte(req.body);
       const fuente =
         origen === "seguridad_operativa"
-          ? "panel de Seguridad Operativa"
-          : id_usuario_creador
+            ? "panel de Seguridad Operativa"
+          : actor?.id_usuario
             ? "panel de Reportante"
             : "portal público";
 
@@ -65,7 +65,7 @@ export class ReportController {
         tabla: "casos_sop",
         id_registro: result.caso.id_caso,
         accion: "crear",
-        ...(id_usuario_creador ? { usuario: id_usuario_creador } : {}),
+        ...(actor?.id_usuario ? { usuario: actor.id_usuario } : {}),
         ip: req.ip,
         user_agent: req.headers["user-agent"],
         descripcion: `Reporte ${result.caso.codigo_sop} creado desde ${fuente} (${modalidad === "anonimo" ? "anónimo" : "identificado"}).`,

@@ -17,10 +17,11 @@ import importacionRoutes from "../modules/importacion/importacion.routes.js";
 import configuracionRoutes from "../modules/configuracion/configuracion.routes.js";
 import { ConfiguracionController } from "../modules/configuracion/configuracion.controller.js";
 import { AuthController } from "../modules/auth/auth.controller.js";
-import { verifyToken } from "../middlewares/auth.middleware.js";
+import { optionalVerifyToken, verifyToken } from "../middlewares/auth.middleware.js";
 import { CatalogController } from "../modules/catalogs/catalog.controller.js";
 import { ReportController } from "../modules/reports/report.controller.js";
 import { uploadEvidencia } from "../middlewares/upload.middleware.js";
+import { publicReportRateLimit } from "../middlewares/loginRateLimit.middleware.js";
 
 const router = Router();
 
@@ -39,7 +40,7 @@ router.use("/auth", authRoutes);
 // reporte y los catálogos que llenan sus selects (tipo, ubicación, etc.) —
 // todo lo demás de /reports y /catalogs sigue exigiendo sesión más abajo.
 router.get("/catalogs", CatalogController.getAll);
-router.post("/reports", uploadEvidencia.array("evidencia", 10), ReportController.create);
+router.post("/reports", publicReportRateLimit, optionalVerifyToken, uploadEvidencia.array("evidencia", 10), ReportController.create);
 // El código real del caso hace de "llave" de seguimiento: quien reportó sin
 // cuenta lo usa para consultar su estado después, sin loguearse.
 router.get("/reports/consulta/:codigo", ReportController.getByCodigo);
