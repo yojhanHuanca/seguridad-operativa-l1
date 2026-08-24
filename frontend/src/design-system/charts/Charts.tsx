@@ -66,11 +66,16 @@ function valueFromRecord(record: Record<string, unknown>, key: string): string {
  * quien pidió menos movimiento. La duración se acerca a la de las variantes de
  * framer-motion para que el dibujado del gráfico y la entrada de la tarjeta que
  * lo contiene no vayan a ritmos distintos.
+ *
+ * `enabled: false` la apaga del todo. Lo usa el documento de impresión: al
+ * llamar a `window.print()` el navegador congela el requestAnimationFrame, así
+ * que la animación queda clavada en el frame 0 — barras de alto 0 y anillos sin
+ * segmentos — y el PDF sale con los ejes dibujados pero sin ningún dato.
  */
-function useSeriesAnimation() {
+function useSeriesAnimation(enabled = true) {
   const reduce = useReducedMotion();
   return {
-    isAnimationActive: !reduce,
+    isAnimationActive: enabled && !reduce,
     animationDuration: 640,
     animationEasing: "ease-out" as const,
   };
@@ -126,6 +131,9 @@ export function TrendBarChart({
   activeName,
   onItemClick,
   showLabels = false,
+  animated = true,
+  allTicks = false,
+  xTickFontSize = 11,
 }: {
   data: { label: string; value: number; color?: string }[];
   dataKey?: string;
@@ -136,8 +144,12 @@ export function TrendBarChart({
   activeName?: string | null;
   onItemClick?: ChartItemClick;
   showLabels?: boolean;
+  animated?: boolean;
+  /** Dibuja una etiqueta por cada punto. Por defecto recharts saltea las que no le entran a lo ancho — en el PDF eso hacía desaparecer la mitad de los meses. */
+  allTicks?: boolean;
+  xTickFontSize?: number;
 }) {
-  const anim = useSeriesAnimation();
+  const anim = useSeriesAnimation(animated);
   // Cada punto puede traer su propio `color` (p. ej. Cerrado en verde, En
   // Proceso en amarillo); si ninguno lo trae, todas las barras usan `color`.
   const hasPerBarColor = data.some((d) => d.color);
@@ -146,7 +158,14 @@ export function TrendBarChart({
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap={18}>
         <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.surface} vertical={false} />
-        <XAxis dataKey={xKey} tick={{ fill: CHART_COLORS.inkFaint, fontSize: 11 }} tickLine={false} axisLine={false} dy={6} />
+        <XAxis
+          dataKey={xKey}
+          tick={{ fill: CHART_COLORS.inkFaint, fontSize: xTickFontSize }}
+          tickLine={false}
+          axisLine={false}
+          dy={6}
+          interval={allTicks ? 0 : "preserveEnd"}
+        />
         <YAxis tick={{ fill: CHART_COLORS.inkFaint, fontSize: 11 }} tickLine={false} axisLine={false} width={36} allowDecimals={false} />
         <Tooltip
           contentStyle={tooltipStyle}
@@ -209,6 +228,7 @@ export function DonutChart({
   outerRadius = 90,
   activeName,
   onItemClick,
+  animated = true,
 }: {
   data: { name: string; value: number; color: string }[];
   height?: number;
@@ -216,8 +236,9 @@ export function DonutChart({
   outerRadius?: number;
   activeName?: string | null;
   onItemClick?: ChartItemClick;
+  animated?: boolean;
 }) {
-  const anim = useSeriesAnimation();
+  const anim = useSeriesAnimation(animated);
   return (
     <ResponsiveContainer width="100%" height={height}>
       <PieChart>
@@ -257,14 +278,16 @@ export function HBarsChart({
   activeName,
   onItemClick,
   showLabels = false,
+  animated = true,
 }: {
   data: { name: string; value: number; color?: string }[];
   height?: number;
   activeName?: string | null;
   onItemClick?: ChartItemClick;
   showLabels?: boolean;
+  animated?: boolean;
 }) {
-  const anim = useSeriesAnimation();
+  const anim = useSeriesAnimation(animated);
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} layout="vertical" margin={{ top: 4, right: 12, left: 8, bottom: 4 }} barCategoryGap={10}>

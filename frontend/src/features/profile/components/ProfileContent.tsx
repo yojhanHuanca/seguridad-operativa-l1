@@ -76,7 +76,7 @@ const ROLE_PROFILES: Record<string, RoleProfileConfig> = {
     actions: [
       { label: "Casos SOP", to: "/seguridad/casos", icon: ClipboardList },
       { label: "Alertas", to: "/seguridad/alertas", icon: Sparkles },
-      { label: "Indicadores", to: "/seguridad/reportes/estadisticas", icon: Gauge },
+      { label: "Indicadores", to: "/seguridad/reportes/kpis", icon: Gauge },
       { label: "Exportación", to: "/seguridad/reportes/exportar", icon: FileText },
     ],
   },

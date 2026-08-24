@@ -7,7 +7,7 @@ export type CaseCounts = Record<CaseFilterId, number>;
 const VACIO: CaseCounts = {
   todos: 0,
   nuevos: 0,
-  pendientes: 0,
+  vencidos: 0,
   investigacion: 0,
   proceso: 0,
   prorrogas: 0,

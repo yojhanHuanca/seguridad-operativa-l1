@@ -1,4 +1,5 @@
 import prisma from "../../lib/prisma.js";
+import { planDeadline, planVencido, type PlanDeadlineSource } from "../../lib/planDeadline.js";
 import { NotificationRepository } from "../notifications/notification.repository.js";
 import { ConfiguracionService } from "../configuracion/configuracion.service.js";
 import type {
@@ -123,23 +124,9 @@ const ACTOR_SO = "Seguridad Operativa";
 const diaISO = (d: Date) => d.toISOString().slice(0, 10);
 const MS_DIA = 86_400_000;
 const sumarDias = (d: Date, dias: number) => new Date(d.getTime() + dias * MS_DIA);
-type PlanDeadlineSource = {
-  fecha_plan: Date;
-  fecha_reprogramada: Date | null;
-  actividades_plan?: Array<{ fecha_fin: Date | null }>;
-};
 
-const planDeadline = (plan: PlanDeadlineSource): Date => {
-  if (plan.fecha_reprogramada) return plan.fecha_reprogramada;
-
-  const activityEnd = (plan.actividades_plan ?? []).reduce<Date | null>((latest, activity) => {
-    if (!activity.fecha_fin) return latest;
-    if (!latest || activity.fecha_fin.getTime() > latest.getTime()) return activity.fecha_fin;
-    return latest;
-  }, null);
-
-  return activityEnd ?? plan.fecha_plan;
-};
+/** Estados de `estado_hallazgo` en los que un caso puede tener un plan con plazo vigente. */
+const VENCIDO_ESTADOS = ["Plan de Acción", "Ejecución", "Prórroga Solicitada", "Verificación"];
 
 export class CaseRepository {
   /** Registra un evento en la bitácora del expediente. */
@@ -282,10 +269,44 @@ export class CaseRepository {
     });
   }
 
+  /**
+   * Casos con al menos un plan de acción activo (no cerrado/rechazado/
+   * finalizado) cuyo plazo vigente ya pasó. No es un `estado_hallazgo`
+   * literal como el resto de filtros — hay que traer los planes y calcular
+   * el plazo en JS (misma regla que `planDeadline`/`planVencido` del
+   * frontend), así que se resuelve en dos pasos en vez de un solo `where`.
+   */
+  private static async vencidoCaseIds(area?: number): Promise<number[]> {
+    const where: Record<string, unknown> = {
+      catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { nombre: { in: VENCIDO_ESTADOS } },
+    };
+    if (area) where.area_responsable = area;
+
+    const casos = await prisma.casos_sop.findMany({
+      where,
+      select: {
+        id_caso: true,
+        planes_accion: {
+          select: {
+            fecha_plan: true,
+            fecha_reprogramada: true,
+            catalogo_detalle: { select: { nombre: true } },
+            actividades_plan: { select: { fecha_fin: true } },
+          },
+        },
+      },
+    });
+
+    const ahora = new Date();
+    return casos.filter((c) => c.planes_accion.some((p) => planVencido(p, ahora))).map((c) => c.id_caso);
+  }
+
   static async findAll(filtros: CaseListFilters) {
     const where: Record<string, unknown> = {};
 
-    if (filtros.estados?.length) {
+    if (filtros.vencidos) {
+      where.id_caso = { in: await CaseRepository.vencidoCaseIds(filtros.area) };
+    } else if (filtros.estados?.length) {
       where.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle = { nombre: { in: filtros.estados } };
     }
     if (filtros.area) where.area_responsable = filtros.area;
@@ -337,7 +358,6 @@ export class CaseRepository {
     const baseWhere: Record<string, unknown> = area ? { area_responsable: area } : {};
     const grupos: Record<string, string[]> = {
       nuevos: ["Recepción", "Evaluación", "En Proceso"],
-      pendientes: ["Pendiente de Información"],
       investigacion: ["Investigación"],
       proceso: ["Plan de Acción", "Ejecución", "Prórroga Solicitada"],
       prorrogas: ["Prórroga Solicitada"],
@@ -346,8 +366,9 @@ export class CaseRepository {
     };
     const entradas = Object.entries(grupos);
 
-    const [todos, ...resto] = await Promise.all([
+    const [todos, vencidosIds, ...resto] = await Promise.all([
       prisma.casos_sop.count({ where: baseWhere }),
+      CaseRepository.vencidoCaseIds(area),
       ...entradas.map(([, estados]) =>
         prisma.casos_sop.count({
           where: { ...baseWhere, catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { nombre: { in: estados } } },
@@ -355,7 +376,7 @@ export class CaseRepository {
       ),
     ]);
 
-    const out: Record<string, number> = { todos };
+    const out: Record<string, number> = { todos, vencidos: vencidosIds.length };
     entradas.forEach(([clave], i) => {
       out[clave] = resto[i] ?? 0;
     });

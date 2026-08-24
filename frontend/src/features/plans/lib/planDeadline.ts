@@ -1,7 +1,13 @@
+import { daysUntil } from "@/lib/format";
+
 export interface PlanDeadlineSource {
   fecha_plan: string;
   fecha_reprogramada?: string | null;
   actividades_plan?: Array<{ fecha_fin?: string | null }> | null;
+}
+
+export interface PlanEstadoSource {
+  catalogo_detalle: { nombre: string };
 }
 
 function validTime(value: string | null | undefined): number {
@@ -26,4 +32,14 @@ export function planDeadline(plan: PlanDeadlineSource): string {
     .sort((a, b) => validTime(b) - validTime(a))[0];
 
   return activityEnd ?? plan.fecha_plan;
+}
+
+/** Un plan cerrado, rechazado o finalizado ya no tiene plazo vigente que vencer. */
+export function isPlanActivo(plan: PlanEstadoSource): boolean {
+  const estado = plan.catalogo_detalle.nombre.toLowerCase();
+  return !estado.includes("cerrad") && !estado.includes("rechaz") && !estado.includes("finaliz");
+}
+
+export function isPlanVencido(plan: PlanDeadlineSource & PlanEstadoSource): boolean {
+  return isPlanActivo(plan) && daysUntil(planDeadline(plan)) < 0;
 }

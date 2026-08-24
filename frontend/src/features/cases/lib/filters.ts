@@ -7,16 +7,20 @@
 // tres botones caían silenciosamente en "Todos". Teniendo un solo array, los
 // ids ya no pueden desincronizarse.
 import type { Stage } from "../domain";
+import { isPlanVencido, type PlanDeadlineSource, type PlanEstadoSource } from "@/features/plans/lib/planDeadline";
 
 export type CaseFilterId =
   | "todos"
   | "nuevos"
-  | "pendientes"
+  | "vencidos"
   | "investigacion"
   | "proceso"
   | "prorrogas"
   | "verificacion"
   | "cerrados";
+
+/** Forma mínima de un plan de acción que necesita el filtro "vencidos". */
+export interface FiltrablePlan extends PlanDeadlineSource, PlanEstadoSource {}
 
 /**
  * Forma mínima que necesita un filtro. `CaseRow` la cumple estructuralmente,
@@ -25,7 +29,11 @@ export type CaseFilterId =
 export interface FiltrableCase {
   stage: Stage;
   prorrogaSolicitada: boolean;
+  planes: FiltrablePlan[];
 }
+
+/** Etapas en las que un caso puede tener un plan de acción con plazo vigente. */
+const VENCIDO_STAGES = new Set<Stage>(["plan_accion", "ejecucion", "verificacion"]);
 
 export interface CaseFilter {
   id: CaseFilterId;
@@ -57,9 +65,9 @@ export const CASE_FILTERS: CaseFilter[] = [
     tab: false,
   },
   {
-    id: "pendientes",
-    label: "Pendiente de información",
-    match: (c) => c.stage === "pendiente_info",
+    id: "vencidos",
+    label: "Planes de acción vencidos",
+    match: (c) => VENCIDO_STAGES.has(c.stage) && c.planes.some(isPlanVencido),
     sidebar: true,
     tab: false,
   },

@@ -30,6 +30,7 @@ import { planDeadline } from "@/features/plans/lib/planDeadline";
 import { EVENT_LABELS } from "@/features/cases/domain";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { exportarTablaExcel } from "@/lib/excelBranded";
+import { exportarCombinadoExcel } from "@/features/reports/lib/exportCombinadoExcel";
 import { cn } from "@/lib/utils";
 import type { CaseListItem, PlanAccion } from "@/features/cases/types";
 import { nombreSistema, useConfiguracion } from "@/features/configuracion/hooks/useConfiguracion";
@@ -196,9 +197,16 @@ export function ReportExportPage() {
 
   const downloadExcel = async () => {
     if (exportRows.length === 0) return;
-    const meta = SCOPE_META[scope];
     setExportingExcel(true);
     try {
+      if (scope === "combinado") {
+        // "Casos + Planes" usa la plantilla del cliente: una hoja con el
+        // caso combinado verticalmente cuando tiene varios planes, en vez
+        // de la tabla plana genérica que usan los otros dos alcances.
+        await exportarCombinadoExcel(filtered.map((item) => item.source), `${fileName}.xlsx`);
+        return;
+      }
+      const meta = SCOPE_META[scope];
       await exportarTablaExcel({
         sheetName: meta.sheetName,
         columnas: Object.keys(exportRows[0] ?? {}),

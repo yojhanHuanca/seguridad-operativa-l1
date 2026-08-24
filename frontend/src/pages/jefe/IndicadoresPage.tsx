@@ -9,6 +9,7 @@ import {
   ChevronRight,
   ClipboardList,
   FileBarChart2,
+  Printer,
   RefreshCcw,
 } from "lucide-react";
 import { JefeShell } from "@/components/layout/JefeShell";
@@ -16,6 +17,9 @@ import { Button } from "@/design-system/primitives/Button";
 import { Card } from "@/design-system/primitives/Card";
 import { SkeletonChart, SkeletonDonut } from "@/design-system/primitives/Skeleton";
 import { CHART_COLORS, DonutChart, HBarsChart, TrendBarChart } from "@/design-system/charts/Charts";
+import { nombreSistema, useConfiguracion } from "@/features/configuracion/hooks/useConfiguracion";
+import { IndicadoresPrintDocument, LegendList } from "@/features/indicadores/components/IndicadoresPrintDocument";
+import { useIndicadoresPrint } from "@/features/indicadores/hooks/useIndicadoresPrint";
 import { useJefeAreaFilter } from "@/features/plans/hooks/useJefeAreaFilter";
 import { usePlans } from "@/features/plans/hooks/usePlans";
 import type { PlanItem } from "@/features/plans/types";
@@ -23,7 +27,7 @@ import { planDeadline } from "@/features/plans/lib/planDeadline";
 import { isClosed, isInVerification } from "@/features/plans/lib/planStatus";
 import { isRiskLevel, RISK_CATEGORY_LABELS, riskCategory, STAGE_STATUS, stageFromEstado, type RiskCategory } from "@/features/cases/domain";
 import { cn } from "@/lib/utils";
-import { daysUntil, formatDate } from "@/lib/format";
+import { daysUntil } from "@/lib/format";
 
 const ALL = "all";
 const MONTH_SHORT = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
@@ -48,31 +52,18 @@ interface PlanReport {
   riesgoCodigo: string | null;
 }
 
-interface DetailRow {
-  id: string;
-  codigo: string;
-  fechaEvento: string;
-  descripcion: string;
-  planCodigo: string;
-  responsable: string;
-  estadoPlan: string;
-  descripcionPlan: string;
-}
-
 interface MonthTrendItem {
   label: string;
   value: number;
   key: string;
 }
 
-function pct(value: number, total: number): string {
-  if (!total) return "0%";
-  return `${Math.round((value / total) * 1000) / 10}%`;
-}
-
 export function JefeIndicadoresPage() {
   const areaFiltro = useJefeAreaFilter();
   const { data: rawPlans, isLoading } = usePlans(areaFiltro);
+  const { data: configuracion } = useConfiguracion();
+  const systemName = nombreSistema(configuracion);
+  const { printActive, printReport } = useIndicadoresPrint(`Indicadores ${systemName} - Jefe de Area`);
   const [selectedYear, setSelectedYear] = useState<string>(ALL);
   const [selectedMonth, setSelectedMonth] = useState<string>(ALL);
   const [selection, setSelection] = useState<DashboardSelection | null>(null);
@@ -92,8 +83,6 @@ export function JefeIndicadoresPage() {
   const porArea = useMemo(() => plansByArea(filteredPlans), [filteredPlans]);
   const vencimiento = useMemo(() => dueChart(filteredPlans), [filteredPlans]);
   const reprogramacion = useMemo(() => rescheduleChart(filteredPlans), [filteredPlans]);
-  const detailRows = useMemo(() => buildDetailRows(filteredPlans, selection), [filteredPlans, selection]);
-
   const periodLabel = selectedMonth !== ALL ? monthSelectLabel(selectedMonth) : selectedYear !== ALL ? `el año ${selectedYear}` : "todo el historial";
   const reportesSubtitle =
     selectedMonth !== ALL || selectedYear !== ALL ? `Reportes vinculados a tus planes en ${periodLabel}` : "Reportes vinculados a tus planes";
@@ -130,6 +119,37 @@ export function JefeIndicadoresPage() {
 
   return (
     <JefeShell>
+      <div data-report-export-root={printActive ? "active" : "idle"}>
+        {printActive && (
+          <IndicadoresPrintDocument
+            systemName={systemName}
+            panelLabel="Jefatura de Área"
+            titulo="Indicadores | Jefe de Área"
+            generatedAt={new Date()}
+            periodLabel={periodLabel}
+            totalReportes={reports.length}
+            reportesSubtitle={reportesSubtitle}
+            porTipo={porTipo}
+            // El gráfico de estado usa `label` acá y `name` en el documento
+            // compartido, que es el que espera recharts para el eje.
+            cerradoVsProceso={cerradoVsProceso.map((item) => ({ name: item.label, value: item.value, color: item.color }))}
+            planesSubtitle={planesSubtitle}
+            planes={planTotals}
+            tendencia={tendencia}
+            tendenciaSubtitle={tendenciaSubtitle}
+            riesgoSubtitle={riesgoSubtitle}
+            riesgo={riesgo}
+            riesgoTotal={riesgoTotal}
+            planesAreaSubtitle={planesAreaSubtitle}
+            porArea={porArea}
+            vencimientoSubtitle={vencimientoSubtitle}
+            vencimiento={vencimiento}
+            reprogramacionSubtitle={reprogramacionSubtitle}
+            reprogramacion={reprogramacion}
+          />
+        )}
+
+        <div data-report-export-screen>
       <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <h2 className="text-[18px] font-bold leading-tight text-ink">Indicadores | Jefe de Área</h2>
@@ -140,6 +160,9 @@ export function JefeIndicadoresPage() {
         <div className="flex flex-wrap items-end gap-3">
           <MonthFilter label="Mes - Año" value={selectedMonth} onChange={handleMonthChange} />
           <YearFilter label="Año" value={selectedYear} onChange={handleYearChange} />
+          <Button variant="outline" size="sm" onClick={printReport}>
+            <Printer className="h-4 w-4" /> Descargar PDF
+          </Button>
         </div>
       </div>
 
@@ -339,65 +362,8 @@ export function JefeIndicadoresPage() {
           )}
         </Card>
       </div>
-
-      <Card padded={false} className="mt-5 overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-3 p-5 pb-3">
-          <div>
-            <h2 className="text-[15px] font-semibold leading-tight text-ink">Detalle de Reportes y Planes de Acción</h2>
-            <p className="mt-0.5 text-[12.5px] text-ink-quiet">
-              {detailRows.length} registros
-              {selection ? ` · ${selection.source}: ${selection.label}` : ""}
-            </p>
-          </div>
-          {selection && (
-            <Button type="button" variant="outline" size="sm" onClick={clearSelection}>
-              Limpiar selección
-            </Button>
-          )}
         </div>
-        <div className="max-h-[520px] overflow-auto">
-          <table className="min-w-[980px] w-full text-left">
-            <thead className="sticky top-0 bg-white">
-              <tr className="border-b border-line bg-surface/60">
-                <th className="w-[130px] px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Nuevo Código</th>
-                <th className="w-[120px] px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Fecha de evento</th>
-                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Descripción</th>
-                <th className="w-[140px] px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Plan de Acción</th>
-                <th className="w-[170px] px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Responsable Plan de Acción</th>
-                <th className="w-[150px] px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Estado Plan de Acción</th>
-                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Descripción de Plan de Acción</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-line-soft">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={7} className="px-4 py-6 text-center text-[13px] text-ink-quiet">
-                    Cargando...
-                  </td>
-                </tr>
-              ) : detailRows.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-4 py-6 text-center text-[13px] text-ink-quiet">
-                    Sin registros
-                  </td>
-                </tr>
-              ) : (
-                detailRows.map((row) => (
-                  <tr key={row.id} className="transition-colors hover:bg-surface/40">
-                    <td className="whitespace-nowrap px-4 py-3 font-mono text-[13px] font-semibold text-brand-700">{row.codigo}</td>
-                    <td className="whitespace-nowrap px-4 py-3 text-[12.5px] text-ink-soft">{formatDate(row.fechaEvento)}</td>
-                    <td className="max-w-[280px] truncate px-4 py-3 text-[12.5px] text-ink-soft">{row.descripcion}</td>
-                    <td className="whitespace-nowrap px-4 py-3 font-mono text-[12.5px] text-ink">{row.planCodigo}</td>
-                    <td className="whitespace-nowrap px-4 py-3 text-[12.5px] text-ink-soft">{row.responsable}</td>
-                    <td className="whitespace-nowrap px-4 py-3 text-[12.5px] text-ink-soft">{row.estadoPlan}</td>
-                    <td className="max-w-[280px] truncate px-4 py-3 text-[12.5px] text-ink-soft">{row.descripcionPlan}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+      </div>
     </JefeShell>
   );
 }
@@ -501,20 +467,6 @@ function YearFilter({ label, value, onChange }: { label: string; value: string; 
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function LegendList({ data, total, active, onSelect }: { data: { name: string; value: number; color: string }[]; total: number; active: string | null; onSelect: (label: string) => void }) {
-  return (
-    <div className="mt-3 space-y-1.5">
-      {data.map((item) => (
-        <button key={item.name} type="button" onClick={() => onSelect(item.name)} className={cn("flex w-full min-w-0 items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-[11.5px] text-ink-soft transition-colors hover:bg-brand-50/60", active === item.name && "bg-brand-50")}>
-          <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: item.color }} />
-          <span className="truncate">{item.name}</span>
-          <span className="ml-auto tabular-nums text-ink-faint">{item.value} ({pct(item.value, total)})</span>
-        </button>
-      ))}
     </div>
   );
 }
@@ -655,61 +607,12 @@ function monthlyTrend(plans: PlanItem[], selectedYear: string, selectedMonth: st
   return out;
 }
 
-function buildDetailRows(plans: PlanItem[], selection: DashboardSelection | null): DetailRow[] {
-  return plans
-    .filter((plan) => planMatchesSelection(plan, selection))
-    .map((plan) => ({
-      id: `${plan.casos_sop.codigo_sop}-${plan.id_plan}`,
-      codigo: plan.casos_sop.codigo_sop,
-      fechaEvento: indicatorDate(plan),
-      descripcion: plan.casos_sop.descripcion,
-      planCodigo: plan.codigo_plan,
-      responsable: plan.usuarios.nombre,
-      estadoPlan: plan.catalogo_detalle.nombre,
-      descripcionPlan: plan.descripcion,
-    }))
-    .sort((a, b) => +new Date(b.fechaEvento) - +new Date(a.fechaEvento));
-}
-
-function planMatchesSelection(plan: PlanItem, selection: DashboardSelection | null): boolean {
-  if (!selection) return true;
-  if (selection.kind === "reportType") return reportType(plan) === selection.value;
-  if (selection.kind === "reportStatus") return reportStatusLabel(reportFromPlan(plan)) === selection.value;
-  if (selection.kind === "month") return monthKey(indicatorDate(plan)) === selection.value;
-  if (selection.kind === "planStatus") return planStatusLabel(plan) === selection.value;
-  if (selection.kind === "risk") return riskLabel(reportFromPlan(plan)) === selection.value;
-  if (selection.kind === "planArea") return planStatusLabel(plan) !== "Cerrado" && plan.areas.nombre_area === selection.value;
-  if (selection.kind === "due") return dueBucket(plan) === selection.value;
-  if (selection.kind === "reschedule") return rescheduleBucket(plan) === selection.value;
-  return true;
-}
-
-function reportFromPlan(plan: PlanItem): PlanReport {
-  return {
-    id: plan.casos_sop.id_caso,
-    codigo: plan.casos_sop.codigo_sop,
-    descripcion: plan.casos_sop.descripcion,
-    fecha: indicatorDate(plan),
-    tipo: reportType(plan),
-    estado: plan.casos_sop.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre,
-    riesgoCodigo: plan.casos_sop.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle?.codigo ?? null,
-  };
-}
-
-function reportType(plan: PlanItem): string {
-  return plan.casos_sop.catalogo_detalle_casos_sop_tipoTocatalogo_detalle?.nombre ?? "Sin tipo";
-}
 
 function reportStatusLabel(report: PlanReport): "Cerrado" | "En Proceso" | null {
   const status = STAGE_STATUS[stageFromEstado(report.estado)];
   if (status === "cerrado") return "Cerrado";
   if (status === "abierto") return "En Proceso";
   return null;
-}
-
-function riskLabel(report: PlanReport): string | null {
-  if (reportStatusLabel(report) !== "En Proceso" || !isRiskLevel(report.riesgoCodigo)) return null;
-  return RISK_CATEGORY_LABELS[riskCategory(report.riesgoCodigo)];
 }
 
 function planStatusLabel(plan: PlanItem): "Cerrado" | "En Proceso" | "En Validación" {

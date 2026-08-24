@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, Download, FolderKanban, Plus, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ClipboardList, CalendarDays, UserCircle, CheckCircle2 } from "lucide-react";
+import { Search, FolderKanban, Plus, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ClipboardList, CalendarDays, UserCircle, CheckCircle2 } from "lucide-react";
 import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
 import { Card } from "@/design-system/primitives/Card";
 import { Button } from "@/design-system/primitives/Button";
@@ -14,13 +14,10 @@ import { toCaseRow, type CaseRow } from "@/features/cases/adapter";
 import { CASE_FILTERS, resolveFilter } from "@/features/cases/lib/filters";
 import { ESTADOS_POR_FILTRO } from "@/features/cases/lib/filterEstados";
 import { shortPlanCode } from "@/features/cases/lib/planLabels";
-import { planDeadline } from "@/features/plans/lib/planDeadline";
+import { isPlanActivo, planDeadline } from "@/features/plans/lib/planDeadline";
 import { EVENT_LABELS, TYPE_TONE } from "@/features/cases/domain";
 import { daysUntil, formatDate } from "@/lib/format";
-import { downloadCsv, sufijoFecha } from "@/lib/download";
-import { api, type ApiEnvelope } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { CaseListItem } from "@/features/cases/types";
 
 /**
  * Acción rápida por etapa. Todas llevan al expediente —es donde se ejecuta el
@@ -39,33 +36,12 @@ const QUICK_ACTION: Partial<Record<CaseRow["stage"], string>> = {
 const PAGE_SIZE = 8;
 const TAB_FILTER_IDS = ["todos", "prorrogas", "investigacion", "verificacion"] as const;
 const SORT_A_BACKEND = { recent: "recientes", priority: "prioridad" } as const;
-const PLAN_DEADLINE_STAGES = new Set<CaseRow["stage"]>(["plan_accion", "ejecucion", "verificacion"]);
 
-type StatusBadge = { tone: "critical" | "warning"; label: string };
-
-function planTienePlazoActivo(plan: CaseRow["planes"][number]) {
-  const estado = plan.catalogo_detalle.nombre.toLowerCase();
-  return !estado.includes("cerrad") && !estado.includes("rechaz") && !estado.includes("finaliz");
-}
-
-function planMasUrgente(caso: CaseRow) {
+/** El plan activo más atrasado del caso, o `undefined` si ninguno está vencido. */
+function planMasVencido(caso: CaseRow) {
   return caso.planes
-    .filter(planTienePlazoActivo)
+    .filter((plan) => isPlanActivo(plan) && daysUntil(planDeadline(plan)) < 0)
     .sort((a, b) => daysUntil(planDeadline(a)) - daysUntil(planDeadline(b)))[0];
-}
-
-function estadoOperativoBadge(caso: CaseRow): StatusBadge | null {
-  if (PLAN_DEADLINE_STAGES.has(caso.stage) && caso.planes.length > 0) {
-    const plan = planMasUrgente(caso);
-    if (!plan) return null;
-
-    const dias = daysUntil(planDeadline(plan));
-    if (dias < 0) return { tone: "critical", label: `Plan vencido ${Math.abs(dias)}d` };
-    if (dias <= 7) return { tone: "warning", label: `Plan vence ${dias}d` };
-    return null;
-  }
-
-  return null;
 }
 
 export function SoCasosPage() {
@@ -78,7 +54,6 @@ export function SoCasosPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [nuevoOpen, setNuevoOpen] = useState(false);
-  const [exportando, setExportando] = useState(false);
 
   const { data: areas } = useAreas();
   const areaId = useMemo(() => areas?.find((a) => a.nombre_area === areaFilter)?.id_area, [areas, areaFilter]);
@@ -100,8 +75,11 @@ export function SoCasosPage() {
 
   const { data: counts } = useCaseCounts(areaId);
 
+  const esFiltroVencidos = filtro.id === "vencidos";
+
   const { data: pageData, isLoading } = useCasesPaginated({
     estado: ESTADOS_POR_FILTRO[filtro.id],
+    vencidos: esFiltroVencidos,
     area: areaId,
     search: debouncedQuery.trim() || undefined,
     sort: SORT_A_BACKEND[sort],
@@ -145,27 +123,6 @@ export function SoCasosPage() {
         <div className="flex items-center gap-2">
           <Button size="sm" onClick={() => setNuevoOpen(true)}>
             <Plus className="h-4 w-4" /> Nuevo Reporte
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={exportando}
-            onClick={async () => {
-              setExportando(true);
-              try {
-                const rows = await fetchAllForExport({
-                  estado: ESTADOS_POR_FILTRO[filtro.id],
-                  area: areaId,
-                  search: debouncedQuery.trim() || undefined,
-                  sort: SORT_A_BACKEND[sort],
-                });
-                exportCsv(rows.map(toCaseRow));
-              } finally {
-                setExportando(false);
-              }
-            }}
-          >
-            <Download className="h-4 w-4" /> {exportando ? "Exportando…" : "Exportar lista"}
           </Button>
         </div>
       </div>
@@ -244,9 +201,9 @@ export function SoCasosPage() {
             </thead>
             <tbody className="divide-y divide-line-soft">
               {cases.map((c) => {
-                const statusBadge = estadoOperativoBadge(c);
                 const hasPlan = c.planes.length > 0;
                 const isExpanded = expandedId === c.id;
+                const planVencido = esFiltroVencidos ? planMasVencido(c) : undefined;
                 return (
                   <Fragment key={c.id}>
                     <tr className="group hover:bg-surface/40 transition-colors">
@@ -280,7 +237,9 @@ export function SoCasosPage() {
                           {c.prorrogaSolicitada && (
                             <span className="text-[10.5px] font-medium text-warning-ink">Prórroga solicitada</span>
                           )}
-                          {statusBadge && <Pill tone={statusBadge.tone}>{statusBadge.label}</Pill>}
+                          {planVencido && (
+                            <Pill tone="critical">Plan vencido {Math.abs(daysUntil(planDeadline(planVencido)))}d</Pill>
+                          )}
                         </div>
                       </td>
                       <td className="px-4 py-3.5">
@@ -447,40 +406,3 @@ function FilterSelect({
   );
 }
 
-/**
- * "Exportar lista" siempre exportó TODO lo que matchea el filtro actual, no
- * solo la página visible — así que acá sí se pide sin `page`/`limit` (mismo
- * endpoint, mismos filtros), a propósito y solo cuando el usuario lo pide.
- */
-async function fetchAllForExport(params: {
-  estado?: string[];
-  area?: number;
-  search?: string;
-  sort?: "recientes" | "prioridad" | "sla";
-}): Promise<CaseListItem[]> {
-  const { data } = await api.get<ApiEnvelope<CaseListItem[]>>("/cases", {
-    params: {
-      estado: params.estado?.length ? params.estado.join(",") : undefined,
-      area: params.area,
-      search: params.search,
-      sort: params.sort,
-    },
-  });
-  return data.data ?? [];
-}
-
-function exportCsv(rows: CaseRow[]) {
-  const header = ["Código", "Tipo", "Título", "Reportante", "Estación", "Área", "Riesgo", "Estado", "Fecha"];
-  const body = rows.map((c) => [
-    c.id,
-    EVENT_LABELS[c.type],
-    c.title,
-    c.reporter,
-    c.station,
-    c.area ?? "",
-    c.risk ? `${c.risk} — ${c.riskCategoria ?? ""}` : "Sin evaluar",
-    c.estado,
-    formatDate(c.createdAt),
-  ]);
-  downloadCsv(`casos-sop-${sufijoFecha()}.csv`, header, body);
-}

@@ -245,8 +245,12 @@ async function assertPlanPropio(plan: { id_area: number | null; responsable: num
 }
 
 export class CaseService {
-  static async list(query: { estado?: string; area?: string; search?: string; sort?: string; page?: string; limit?: string }, actor?: Actor) {
-    const estados = query.estado ? query.estado.split(",").filter(Boolean) : undefined;
+  static async list(
+    query: { estado?: string; vencidos?: string; area?: string; search?: string; sort?: string; page?: string; limit?: string },
+    actor?: Actor
+  ) {
+    const vencidos = query.vencidos === "1";
+    const estados = !vencidos && query.estado ? query.estado.split(",").filter(Boolean) : undefined;
     const area = await areaEfectiva(query.area, actor);
     const sort = query.sort === "prioridad" || query.sort === "sla" ? query.sort : "recientes";
     const filters = { sort } satisfies { sort: "recientes" | "prioridad" | "sla" };
@@ -257,7 +261,7 @@ export class CaseService {
     const paginar = Number.isInteger(page) && page > 0 && Number.isInteger(limit) && limit > 0;
     const fullFilters = {
       ...filters,
-      ...(estados?.length ? { estados } : {}),
+      ...(vencidos ? { vencidos: true } : estados?.length ? { estados } : {}),
       ...(area != null ? { area } : {}),
       ...(query.search ? { search: query.search } : {}),
       ...(paginar ? { page, limit } : {}),

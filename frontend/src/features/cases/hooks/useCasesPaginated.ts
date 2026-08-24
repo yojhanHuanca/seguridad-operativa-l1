@@ -11,6 +11,8 @@ import type { CaseListItem } from "../types";
  */
 export interface CasesPaginatedParams {
   estado?: string[];
+  /** Casos con un plan de acción activo vencido; reemplaza a `estado` cuando viene. */
+  vencidos?: boolean;
   area?: number;
   search?: string;
   sort?: "recientes" | "prioridad" | "sla";
@@ -26,7 +28,8 @@ export interface CasesPage {
 async function fetchCasesPaginated(params: CasesPaginatedParams): Promise<CasesPage> {
   const { data } = await api.get<ApiEnvelope<CaseListItem[]>>("/cases", {
     params: {
-      estado: params.estado?.length ? params.estado.join(",") : undefined,
+      estado: params.vencidos ? undefined : params.estado?.length ? params.estado.join(",") : undefined,
+      vencidos: params.vencidos ? 1 : undefined,
       area: params.area,
       search: params.search || undefined,
       sort: params.sort,

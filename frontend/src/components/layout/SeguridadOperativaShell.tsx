@@ -11,7 +11,6 @@ import {
   ChevronsLeft,
   ChevronsRight,
   ClipboardCheck,
-  Clock,
   Download,
   ExternalLink,
   FilePlus2,
@@ -20,7 +19,6 @@ import {
   Home,
   LayoutDashboard,
   Menu,
-  PieChart,
   Radar,
   Rocket,
   ShieldAlert,
@@ -71,7 +69,7 @@ const PILL_ID = "so-sidebar-active-pill";
 const FILTER_NAV: Record<CaseFilterId, { icon: LucideIcon; badge: boolean }> = {
   todos: { icon: Folder, badge: false },
   nuevos: { icon: FilePlus2, badge: true },
-  pendientes: { icon: Clock, badge: true },
+  vencidos: { icon: AlertTriangle, badge: true },
   investigacion: { icon: Activity, badge: true },
   proceso: { icon: Rocket, badge: true },
   prorrogas: { icon: Timer, badge: true },
@@ -111,7 +109,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
   // cuenta casos que esperan una decisión (estado), el de Notificaciones
   // cuenta avisos sin leer (eventos). Antes ambos badges mostraban este mismo
   // número y hacían pensar que las dos secciones tenían el mismo contenido.
-  const pendingDecisions = counts.nuevos + counts.pendientes + counts.prorrogas + counts.verificacion;
+  const pendingDecisions = counts.nuevos + counts.vencidos + counts.prorrogas + counts.verificacion;
   const unreadNotifications = notifications?.no_leidas ?? 0;
   const currentSoUser = useCurrentSoUser();
   const { nombre: userName, cargo: userRole, iniciales: userInitials, user: soUser } = currentSoUser;
@@ -167,7 +165,6 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
       defaultOpen: true,
       links: [
         { to: "/seguridad/reportes/kpis", label: "KPIs", icon: Gauge, match: (p) => p === "/seguridad/reportes" || p === "/seguridad/reportes/kpis" },
-        { to: "/seguridad/reportes/estadisticas", label: "Estadísticas", icon: PieChart, match: (p) => p === "/seguridad/reportes/estadisticas" },
         { to: "/seguridad/reportes/exportar", label: "Exportar", icon: Download, match: (p) => p === "/seguridad/reportes/exportar" },
       ],
     },
@@ -444,7 +441,6 @@ function getPageTitle(pathname: string) {
   if (pathname === "/seguridad/eventos-asignados") return "Eventos asignados";
   if (pathname === "/seguridad/alertas") return "Alertas";
   if (pathname === "/seguridad/reportes" || pathname === "/seguridad/reportes/kpis") return "KPIs";
-  if (pathname === "/seguridad/reportes/estadisticas") return "Estadísticas";
   if (pathname === "/seguridad/reportes/exportar") return "Exportar Reportes";
   if (pathname === "/seguridad/usuarios") return "Administración de Usuarios";
   if (pathname === "/seguridad/notificaciones") return "Notificaciones";
@@ -460,7 +456,6 @@ function getBreadcrumb(pathname: string) {
   if (pathname === "/seguridad/eventos-asignados") return "Inicio / Eventos asignados";
   if (pathname === "/seguridad/alertas") return "Inicio / Alertas";
   if (pathname === "/seguridad/reportes" || pathname === "/seguridad/reportes/kpis") return "Inicio / Reportes / KPIs";
-  if (pathname === "/seguridad/reportes/estadisticas") return "Inicio / Reportes / Estadísticas";
   if (pathname === "/seguridad/reportes/exportar") return "Inicio / Reportes / Exportar";
   if (pathname === "/seguridad/usuarios") return "Inicio / Usuarios";
   if (pathname === "/seguridad/notificaciones") return "Inicio / Notificaciones";

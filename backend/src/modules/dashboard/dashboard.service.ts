@@ -1,4 +1,5 @@
 import prisma from "../../lib/prisma.js";
+import { planDeadline } from "../../lib/planDeadline.js";
 import type { ChartSlice, IndicadoresResponse } from "./dashboard.types.js";
 
 /**
@@ -75,24 +76,6 @@ function diasHasta(fecha: Date): number {
   const objetivo = new Date(fecha);
   objetivo.setHours(0, 0, 0, 0);
   return Math.round((objetivo.getTime() - hoy.getTime()) / 86_400_000);
-}
-
-type PlanDeadlineSource = {
-  fecha_plan: Date;
-  fecha_reprogramada: Date | null;
-  actividades_plan?: Array<{ fecha_fin: Date | null }>;
-};
-
-function planDeadline(plan: PlanDeadlineSource): Date {
-  if (plan.fecha_reprogramada) return plan.fecha_reprogramada;
-
-  const activityEnd = (plan.actividades_plan ?? []).reduce<Date | null>((latest, activity) => {
-    if (!activity.fecha_fin) return latest;
-    if (!latest || activity.fecha_fin.getTime() > latest.getTime()) return activity.fecha_fin;
-    return latest;
-  }, null);
-
-  return activityEnd ?? plan.fecha_plan;
 }
 
 /**

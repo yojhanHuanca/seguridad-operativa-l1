@@ -157,6 +157,7 @@ export function JefeShell({ children }: { children: ReactNode }) {
       <div className="min-h-screen bg-surface md:flex">
         {/* Desktop sidebar */}
         <aside
+          data-print="hide"
           className={cn(
             "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-line bg-white transition-[width] duration-200 md:flex",
             collapsed ? "w-[64px]" : "w-[280px]"
@@ -175,7 +176,7 @@ export function JefeShell({ children }: { children: ReactNode }) {
 
         {/* Mobile drawer */}
         {mobileOpen && (
-          <div className="fixed inset-0 z-40 md:hidden">
+          <div data-print="hide" className="fixed inset-0 z-40 md:hidden">
             <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileOpenPath(null)} aria-hidden />
             <aside className="absolute left-0 top-0 flex h-full w-[280px] flex-col bg-white shadow-xl">
               <SidebarContent collapsed={false} area={firstArea} onNavigate={() => setMobileOpenPath(null)} />
@@ -184,7 +185,7 @@ export function JefeShell({ children }: { children: ReactNode }) {
         )}
 
         <div className="min-w-0 flex-1">
-          <header className="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur-xl">
+          <header data-print="hide" className="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur-xl">
             <div className="flex min-h-[78px] items-center gap-3 px-4 py-3 sm:px-6">
               <button
                 type="button"

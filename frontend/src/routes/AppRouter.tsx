@@ -17,7 +17,6 @@ const SoCasosPage = lazyNamed(() => import("@/pages/seguridad/CasosPage"), "SoCa
 const CaseDetailPage = lazyNamed(() => import("@/pages/seguridad/CaseDetailPage"), "CaseDetailPage");
 const ReportExportPage = lazyNamed(() => import("@/pages/seguridad/ReportExportPage"), "ReportExportPage");
 const SoKpisPage = lazyNamed(() => import("@/pages/seguridad/reportes/KpisPage"), "SoKpisPage");
-const SoEstadisticasPage = lazyNamed(() => import("@/pages/seguridad/reportes/EstadisticasPage"), "SoEstadisticasPage");
 const SoNotificacionesPage = lazyNamed(() => import("@/pages/seguridad/NotificacionesPage"), "SoNotificacionesPage");
 const EventosAsignadosPage = lazyNamed(() => import("@/pages/seguridad/EventosAsignadosPage"), "EventosAsignadosPage");
 const SoAlertasPage = lazyNamed(() => import("@/pages/seguridad/AlertasPage"), "SoAlertasPage");
@@ -81,7 +80,6 @@ export function AppRouter() {
           <Route path="/seguridad/eventos" element={<ProtectedRoute roles={["Seguridad Operativa"]} requireResponsable><SoEventosPage /></ProtectedRoute>} />
           <Route path="/seguridad/reportes" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoKpisPage /></ProtectedRoute>} />
           <Route path="/seguridad/reportes/kpis" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoKpisPage /></ProtectedRoute>} />
-          <Route path="/seguridad/reportes/estadisticas" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoEstadisticasPage /></ProtectedRoute>} />
           <Route path="/seguridad/reportes/exportar" element={<ProtectedRoute roles={["Seguridad Operativa"]}><ReportExportPage /></ProtectedRoute>} />
           <Route path="/seguridad/notificaciones" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoNotificacionesPage /></ProtectedRoute>} />
           <Route path="/seguridad/eventos-asignados" element={<ProtectedRoute roles={["Seguridad Operativa"]}><EventosAsignadosPage /></ProtectedRoute>} />

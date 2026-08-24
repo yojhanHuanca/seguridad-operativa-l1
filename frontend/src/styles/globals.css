@@ -311,15 +311,72 @@ body {
   display: none;
 }
 
+/* El documento de KPIs sí tiene que medirse con `display:none`: los gráficos
+   (Recharts) calculan su ancho con ResizeObserver al montarse, y con
+   `display:none` miden 0px y quedan en blanco — el `@media print` los revela
+   recién al imprimir, demasiado tarde para que vuelvan a medirse. Se saca de
+   flujo con posición fija en vez de ocultarlo, así conserva un ancho real
+   desde que se monta y los gráficos sí dibujan. */
+[data-report-export="kpis"] {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: -10000px;
+  width: 1050px;
+}
+
 @media print {
   @page {
     size: A4;
     margin: 14mm 12mm;
   }
 
+  /* El PDF de Indicadores junta 7 gráficos: en vertical quedan apretados en
+     tres filas. Con esta página nombrada (asignada abajo vía `page:` al
+     documento de KpisPage) esa sola impresión sale en horizontal — el resto
+     de exportaciones (expediente, reportes) sigue en A4 vertical normal. */
+  @page kpis-landscape {
+    size: A4 landscape;
+    margin: 10mm 12mm;
+  }
+
+  /* El nombre de página va en la raíz, no en el documento exportado. Cambiar de
+     nombre de página fuerza un salto: al aplicarlo solo a la sección, el
+     navegador cortaba al entrar y otra vez al salir, y esa segunda hoja salía
+     en blanco. Nombrando la raíz no hay transición en ningún lado. */
+  html[data-print-mode="kpis"] {
+    page: kpis-landscape;
+  }
+
   html,
   body {
     background: #fff !important;
+    height: auto !important;
+  }
+
+  /* `min-h-screen` / `h-screen` son 100vh, y al imprimir el navegador resuelve
+     vh contra el viewport de la pantalla, no contra la hoja: en un monitor alto
+     el shell reservaba ~1080px y el PDF terminaba con una hoja extra en blanco. */
+  .min-h-screen,
+  .h-screen {
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  /* Nada después del documento: evita que un margen final empuje una hoja más. */
+  [data-report-export] {
+    margin-bottom: 0 !important;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  /* Sin esto el navegador imprime en "modo ahorro" y descarta los rellenos de
+     los gráficos: las barras y los anillos salen vacíos aunque el SVG esté
+     bien dibujado. */
+  [data-report-export],
+  [data-report-export] * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   /* Navegación, acciones y overlays no pertenecen al documento impreso. */
@@ -343,6 +400,14 @@ body {
     display: block !important;
     font-size: 10.5px;
     line-height: 1.35;
+  }
+
+  /* El de KPIs vive en posición fija fuera de pantalla (arriba) para que sus
+     gráficos midan bien; acá se lo devuelve al flujo normal de la hoja. */
+  [data-report-export-root="active"] [data-report-export="kpis"] {
+    position: static;
+    left: auto;
+    width: auto;
   }
 
   [data-expediente-export-root="active"] [data-print-plan-screen] {
