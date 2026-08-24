@@ -3,6 +3,7 @@
 // portados del prototipo. Aísla la traducción en un solo lugar: las pantallas
 // portadas no saben nada de Prisma ni de nombres de relaciones.
 import { stageFromEstado, tipoEventoFromNombre, type RiskLevel, type Stage, type TipoSOP } from "./domain";
+import { tituloCaso } from "./lib/caseTitle";
 import { criterioAceptabilidad } from "./lib/sla";
 import type { CaseListItem, PlanAccion } from "./types";
 
@@ -33,17 +34,6 @@ export interface CaseRow {
   planes: PlanAccion[];
 }
 
-/**
- * El prototipo siempre muestra un título; nuestros casos lo tienen opcional
- * (el wizard del reportante no lo pide). Se deriva uno legible en vez de
- * dejar la celda vacía.
- */
-function deriveTitle(c: CaseListItem, tipoLabel: string, station: string): string {
-  if (c.titulo?.trim()) return c.titulo;
-  if (station) return `${tipoLabel} en ${station}`;
-  return c.descripcion;
-}
-
 export function toCaseRow(c: CaseListItem): CaseRow {
   const estadoNombre = c.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre;
   const evento = c.evento_caso[0]?.eventos_operativos;
@@ -60,7 +50,7 @@ export function toCaseRow(c: CaseListItem): CaseRow {
     stage: stageFromEstado(estadoNombre),
     estado: estadoNombre,
     type,
-    title: deriveTitle(c, tipoNombre ?? "Caso", station),
+    title: tituloCaso(c, tipoNombre ?? "Caso", station),
     location: evento?.catalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalle?.nombre ?? "",
     reporter: c.nombre_reportante?.trim() || "Reporte Anónimo",
     station,

@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Check, X, AlertCircle, Inbox, FileSearch, Microscope, ClipboardList, Rocket, Activity, CheckCircle2 } from "lucide-react";
 import { Card } from "@/design-system/primitives/Card";
 import { cn } from "@/lib/utils";
@@ -95,13 +95,40 @@ export function WorkflowStepper({
   );
 }
 
+/**
+ * A partir de acá el valor se muestra plegado. Los casos importados del
+ * histórico traen descripciones de varios párrafos, y en esta columna angosta
+ * se convertían en un muro de texto que estiraba la tarjeta hasta dejar el
+ * resto de la pantalla vacío.
+ */
+const LARGO_PLEGABLE = 320;
+
 export function InfoRow({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
+  const plegable = value.length > LARGO_PLEGABLE;
+  const [abierto, setAbierto] = useState(false);
+
   return (
     <div className="flex items-start gap-2.5">
       <span className="text-ink-faint mt-0.5">{icon}</span>
       <div className="flex-1 min-w-0">
         <p className="text-[11px] text-ink-faint">{label}</p>
-        <p className="text-[12.5px] text-ink font-medium leading-snug mt-0.5 break-words">{value}</p>
+        <p
+          className={cn(
+            "text-[12.5px] text-ink font-medium leading-snug mt-0.5 break-words whitespace-pre-line",
+            plegable && !abierto && "line-clamp-5"
+          )}
+        >
+          {value}
+        </p>
+        {plegable && (
+          <button
+            type="button"
+            onClick={() => setAbierto((actual) => !actual)}
+            className="mt-1 text-[11.5px] font-semibold text-brand-700 transition-colors hover:text-brand-800"
+          >
+            {abierto ? "Ver menos" : "Ver más"}
+          </button>
+        )}
       </div>
     </div>
   );

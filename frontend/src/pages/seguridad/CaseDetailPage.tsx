@@ -27,6 +27,7 @@ import { WorkflowStepper, InfoRow, InfoCard } from "@/features/cases/components/
 import { useCase } from "@/features/cases/hooks/useCase";
 import { nombreSistema, useConfiguracion } from "@/features/configuracion/hooks/useConfiguracion";
 import { stageFromEstado } from "@/features/cases/domain";
+import { tituloCaso } from "@/features/cases/lib/caseTitle";
 import { panelForEstado, puede, siguientePaso, ACTOR_ROL_LABEL } from "@/features/cases/lib/workflow";
 import { criterioAceptabilidad } from "@/features/cases/lib/sla";
 import { humanEvidenceDetail } from "@/features/cases/lib/planEvidence";
@@ -106,7 +107,7 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
   const vuelveA = solicitudAbierta?.estado_previo ? stageFromEstado(solicitudAbierta.estado_previo) : null;
 
   const evento = caso.evento_caso[0]?.eventos_operativos;
-  const titulo = caso.titulo?.trim() || caso.descripcion;
+  const titulo = tituloCaso(caso);
   const ayuda = siguientePaso(estado);
   const motivoRechazo = caso.timeline_caso.find((t) => t.kind === "rechazado")?.detalle ?? caso.observaciones;
   const puedeExportarPlan = caso.planes_accion.length > 0;
