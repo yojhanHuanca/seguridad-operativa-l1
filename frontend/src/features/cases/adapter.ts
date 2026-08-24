@@ -14,6 +14,7 @@ export interface CaseRow {
   /** Nombre crudo del estado; distingue pausas que `stage` colapsa. */
   estado: string;
   type: TipoSOP;
+  /** Vacío en los casos importados del histórico, que no tienen título. */
   title: string;
   /** Segunda línea bajo el título: lugar específico dentro de la estación. */
   location: string;
@@ -50,7 +51,7 @@ export function toCaseRow(c: CaseListItem): CaseRow {
     stage: stageFromEstado(estadoNombre),
     estado: estadoNombre,
     type,
-    title: tituloCaso(c, tipoNombre ?? "Caso", station),
+    title: tituloCaso(c, tipoNombre ?? "Caso", station) ?? "",
     location: evento?.catalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalle?.nombre ?? "",
     reporter: c.nombre_reportante?.trim() || "Reporte Anónimo",
     station,

@@ -132,7 +132,8 @@ interface ParsedCase {
   row: number;
   codigo: string;
   tipo: string;
-  titulo: string;
+  /** Opcional: la planilla histórica no trae columna "Título". */
+  titulo: string | null;
   reportante: string | null;
   estacion: string;
   area: string | null;
@@ -159,7 +160,8 @@ interface PreparedCase {
   row: number;
   codigo: string;
   tipo: string;
-  titulo: string;
+  /** Opcional: la planilla histórica no trae columna "Título". */
+  titulo: string | null;
   reportante: string | null;
   estacion: string;
   area: string | null;
@@ -343,8 +345,12 @@ function buildParsedCases(payload: ImportacionPayload, issues: ImportacionIssue[
     const tipo = getCell(row, CASE_ALIASES.tipo);
     const tituloRaw = getCell(row, CASE_ALIASES.titulo);
     const descripcionRaw = getCell(row, CASE_ALIASES.descripcion);
-    // Sin columna "Título" dedicada, se deriva de la Descripción (formato real de la BD histórica).
-    const titulo = tituloRaw || descripcionRaw.slice(0, 200);
+    // Sin columna "Título" el caso queda sin título, y la pantalla deriva uno
+    // legible de la descripción. Antes se guardaban acá los primeros 200
+    // caracteres de la descripción, que es el largo de la columna: eso dejaba
+    // en la base un título cortado a mitad de palabra, que después se mostraba
+    // como encabezado del expediente.
+    const titulo = tituloRaw || null;
     const estacion = getCell(row, CASE_ALIASES.estacion);
     const estado = getCell(row, CASE_ALIASES.estado);
     const fechaRaw = getCell(row, CASE_ALIASES.fecha);
@@ -352,11 +358,13 @@ function buildParsedCases(payload: ImportacionPayload, issues: ImportacionIssue[
     const reportante = getCell(row, CASE_ALIASES.reportante) || null;
     const area = getCell(row, CASE_ALIASES.area) || null;
     const riesgo = getCell(row, CASE_ALIASES.riesgo) || null;
-    const descripcion = descripcionRaw || titulo;
+    const descripcion = descripcionRaw || titulo || "";
 
     if (!codigo) addIssue(issues, requiredIssue(rowNumber, "Código", codigo));
     if (!tipo) addIssue(issues, requiredIssue(rowNumber, "Tipo", tipo));
-    if (!titulo) addIssue(issues, requiredIssue(rowNumber, "Título", titulo));
+    // El título pasó a ser opcional; la descripción es la que no puede faltar,
+    // porque es de donde sale el encabezado del caso.
+    if (!descripcion) addIssue(issues, requiredIssue(rowNumber, "Descripción", descripcion));
     if (!estado) addIssue(issues, requiredIssue(rowNumber, "Estado", estado));
     if (!fechaRaw) {
       addIssue(issues, requiredIssue(rowNumber, "Fecha", fechaRaw));
@@ -370,7 +378,7 @@ function buildParsedCases(payload: ImportacionPayload, issues: ImportacionIssue[
       });
     }
     if (codigo.length > 30) addIssue(issues, maxLengthIssue(rowNumber, "Código", codigo, 30));
-    if (titulo.length > 200) addIssue(issues, maxLengthIssue(rowNumber, "Título", titulo, 200));
+    if (titulo && titulo.length > 200) addIssue(issues, maxLengthIssue(rowNumber, "Título", titulo, 200));
     if (reportante && reportante.length > 150) addIssue(issues, maxLengthIssue(rowNumber, "Reportante", reportante, 150));
 
     const normalizedCode = codigo ? normalizeText(codigo) : "";
@@ -649,7 +657,7 @@ function buildPreparedCases(parsed: ParsedCase[], ctx: BuildContext, issues: Imp
   const defaultTipoCaso = resolveRequiredDefault(ctx, "Tipo", DEFAULTS.tipoCaso, issues);
 
   for (const item of parsed) {
-    if (!item.codigo || !item.tipo || !item.titulo || !item.estado || !item.fecha) continue;
+    if (!item.codigo || !item.tipo || !item.descripcion || !item.estado || !item.fecha) continue;
 
     if (ctx.existingCodes.has(normalizeText(item.codigo))) {
       addIssue(issues, {
@@ -689,7 +697,7 @@ function buildPreparedCases(parsed: ParsedCase[], ctx: BuildContext, issues: Imp
       riesgo: item.riesgo && !EMPTY_RISK_VALUES.has(normalizeText(item.riesgo)) ? item.riesgo : null,
       estado: item.estado,
       fecha: item.fecha,
-      descripcion: item.descripcion || item.titulo,
+      descripcion: item.descripcion,
       ids: {
         tipoReporte: tipoReporte.id_detalle,
         estadoHallazgo: estadoHallazgo.id_detalle,
@@ -709,7 +717,8 @@ function buildPreparedCases(parsed: ParsedCase[], ctx: BuildContext, issues: Imp
   return prepared;
 }
 
-function resolveUbicacionDesdeTitulo(ctx: BuildContext, titulo: string): CatalogDetail | null {
+function resolveUbicacionDesdeTitulo(ctx: BuildContext, titulo: string | null): CatalogDetail | null {
+  if (!titulo) return null;
   const tail = titulo.split("·").pop()?.trim();
   if (!tail || normalizeText(tail) === normalizeText(titulo)) return null;
   return (

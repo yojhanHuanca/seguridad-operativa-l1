@@ -164,7 +164,12 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
               </Pill>
             )}
           </div>
-          <h1 className="mt-2 max-w-3xl break-words text-[20px] font-bold leading-tight tracking-tight text-ink sm:text-[22px]">{titulo}</h1>
+          {/* Los casos importados del histórico no tienen título: el código y
+              el estado ya identifican el expediente, y el texto se lee en la
+              descripción. Mejor sin encabezado que con uno inventado. */}
+          {titulo && (
+            <h1 className="mt-2 max-w-3xl break-words text-[20px] font-bold leading-tight tracking-tight text-ink sm:text-[22px]">{titulo}</h1>
+          )}
         </div>
         <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
           <span data-print="hide" className="grid w-full min-w-0 grid-cols-2 gap-2 min-[440px]:grid-cols-3 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:justify-end">
