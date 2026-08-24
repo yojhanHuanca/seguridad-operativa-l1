@@ -1,5 +1,6 @@
 import prisma from "../../lib/prisma.js";
 import { NotificationRepository } from "../notifications/notification.repository.js";
+import { ConfiguracionService } from "../configuracion/configuracion.service.js";
 const DIAS = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
 const LIST_INCLUDE = {
     catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { select: { nombre: true, color: true } },
@@ -29,11 +30,61 @@ const LIST_INCLUDE = {
         },
     },
 };
+const PUBLIC_REPORT_SELECT = {
+    id_caso: true,
+    codigo_sop: true,
+    titulo: true,
+    descripcion: true,
+    fecha_hallazgo: true,
+    fecha_evento: true,
+    created_at: true,
+    catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { select: { nombre: true, color: true } },
+    catalogo_detalle_casos_sop_tipoTocatalogo_detalle: { select: { nombre: true } },
+    catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle: { select: { nombre: true } },
+    areas: { select: { nombre_area: true } },
+    anexos_caso: { select: { id_anexo: true } },
+    solicitudes_informacion: {
+        orderBy: { fecha_solicitud: "desc" },
+        select: {
+            id_solicitud: true,
+            mensaje: true,
+            respuesta: true,
+            respondida: true,
+            fecha_solicitud: true,
+            fecha_respuesta: true,
+        },
+    },
+    evento_caso: {
+        select: {
+            eventos_operativos: {
+                select: {
+                    catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: { select: { nombre: true } },
+                    catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: { select: { nombre: true } },
+                },
+            },
+        },
+    },
+};
+/**
+ * Los datos de contacto de quien reportó no salen en ningún listado: nada de
+ * la interfaz los consume desde acá (el expediente de Seguridad Operativa los
+ * muestra por /cases, que sí está limitado a quien gestiona el caso), y venían
+ * de arrastre porque `include` devuelve todas las columnas de la tabla.
+ *
+ * `created_by` no se toca: el servicio lo necesita para comprobar que un
+ * reportante solo abra sus propios reportes.
+ */
+const CONTACTO_REPORTANTE_OCULTO = {
+    nombre_reportante: true,
+    correo_reportante: true,
+    telefono_reportante: true,
+};
 export class ReportRepository {
     static async findAll() {
         return prisma.casos_sop.findMany({
             orderBy: { created_at: "desc" },
             include: LIST_INCLUDE,
+            omit: CONTACTO_REPORTANTE_OCULTO,
         });
     }
     /**
@@ -67,11 +118,18 @@ export class ReportRepository {
         }
         const orderBy = { created_at: "desc" };
         if (!opts?.page || !opts?.limit) {
-            const data = await prisma.casos_sop.findMany({ where, orderBy, include: LIST_INCLUDE });
+            const data = await prisma.casos_sop.findMany({ where, orderBy, include: LIST_INCLUDE, omit: CONTACTO_REPORTANTE_OCULTO });
             return { data, total: undefined };
         }
         const [data, total] = await Promise.all([
-            prisma.casos_sop.findMany({ where, orderBy, include: LIST_INCLUDE, skip: (opts.page - 1) * opts.limit, take: opts.limit }),
+            prisma.casos_sop.findMany({
+                where,
+                orderBy,
+                include: LIST_INCLUDE,
+                omit: CONTACTO_REPORTANTE_OCULTO,
+                skip: (opts.page - 1) * opts.limit,
+                take: opts.limit,
+            }),
             prisma.casos_sop.count({ where }),
         ]);
         return { data, total };
@@ -80,6 +138,13 @@ export class ReportRepository {
         return prisma.casos_sop.findUnique({
             where: { codigo_sop },
             include: LIST_INCLUDE,
+            omit: CONTACTO_REPORTANTE_OCULTO,
+        });
+    }
+    static async findPublicByCodigo(codigo_sop) {
+        return prisma.casos_sop.findUnique({
+            where: { codigo_sop },
+            select: PUBLIC_REPORT_SELECT,
         });
     }
     static async findCatalogoDetalle(catalogoNombre, valorNombre) {
@@ -148,14 +213,7 @@ export class ReportRepository {
                         throw new Error("El tipo de reporte seleccionado no existe");
                     if (!lugar)
                         throw new Error("El lugar seleccionado no existe");
-                    // Código secuencial por año, mismo formato que el caso de ejemplo "SOP 01-2024".
-                    const year = fecha.getUTCFullYear();
-                    const inicioAnio = new Date(Date.UTC(year, 0, 1));
-                    const finAnio = new Date(Date.UTC(year + 1, 0, 1));
-                    const totalAnio = await tx.casos_sop.count({
-                        where: { fecha_hallazgo: { gte: inicioAnio, lt: finAnio } },
-                    });
-                    const codigo_sop = `SOP ${String(totalAnio + 1).padStart(2, "0")}-${year}`;
+                    const codigo_sop = await ConfiguracionService.nextCodigoExpediente(tx, fecha);
                     const esIdentificado = dto.modalidad === "identificado";
                     // Registrado por el analista desde el panel de SO: el caso nace con
                     // su firma en la bitácora en vez de la del reportante de campo, y

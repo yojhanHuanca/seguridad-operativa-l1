@@ -14,9 +14,10 @@ export declare class ReportRepository {
                 };
             } & {
                 estado: number | null;
+                created_at: Date | null;
                 descripcion: string | null;
                 fecha: Date;
-                created_at: Date | null;
+                updated_at: Date | null;
                 hora: Date | null;
                 anio: number | null;
                 mes: number | null;
@@ -40,13 +41,12 @@ export declare class ReportRepository {
                 tipo_causa: number | null;
                 posible_causa: number | null;
                 usuario_registra: number | null;
-                updated_at: Date | null;
             };
         } & {
             usuario: number | null;
+            id_caso: number;
             id: number;
             id_evento: number;
-            id_caso: number;
             fecha_conversion: Date | null;
         })[];
         areas: {
@@ -71,20 +71,20 @@ export declare class ReportRepository {
             nombre: string;
         };
     } & {
-        descripcion: string;
         created_at: Date | null;
-        area_responsable: number | null;
-        updated_at: Date | null;
+        descripcion: string;
         id_caso: number;
+        fecha_plan: Date | null;
+        fecha_reprogramada: Date | null;
+        dias_abierto: number | null;
+        observaciones: string | null;
+        updated_at: Date | null;
+        area_responsable: number | null;
         codigo_sop: string;
         titulo: string | null;
-        nombre_reportante: string | null;
-        correo_reportante: string | null;
-        telefono_reportante: string | null;
         fecha_hallazgo: Date;
         fecha_evento: Date | null;
         estado_hallazgo: number;
-        dias_abierto: number | null;
         procedencia: number;
         tipo: number;
         responsable_hallazgo: number | null;
@@ -98,10 +98,7 @@ export declare class ReportRepository {
         acr: string | null;
         responsable_plan: number | null;
         estado_plan: number | null;
-        fecha_plan: Date | null;
-        fecha_reprogramada: Date | null;
         dias_abierto_plan: number | null;
-        observaciones: string | null;
         created_by: number | null;
     })[]>;
     /**
@@ -134,9 +131,10 @@ export declare class ReportRepository {
                     };
                 } & {
                     estado: number | null;
+                    created_at: Date | null;
                     descripcion: string | null;
                     fecha: Date;
-                    created_at: Date | null;
+                    updated_at: Date | null;
                     hora: Date | null;
                     anio: number | null;
                     mes: number | null;
@@ -160,13 +158,12 @@ export declare class ReportRepository {
                     tipo_causa: number | null;
                     posible_causa: number | null;
                     usuario_registra: number | null;
-                    updated_at: Date | null;
                 };
             } & {
                 usuario: number | null;
+                id_caso: number;
                 id: number;
                 id_evento: number;
-                id_caso: number;
                 fecha_conversion: Date | null;
             })[];
             areas: {
@@ -191,20 +188,20 @@ export declare class ReportRepository {
                 nombre: string;
             };
         } & {
-            descripcion: string;
             created_at: Date | null;
-            area_responsable: number | null;
-            updated_at: Date | null;
+            descripcion: string;
             id_caso: number;
+            fecha_plan: Date | null;
+            fecha_reprogramada: Date | null;
+            dias_abierto: number | null;
+            observaciones: string | null;
+            updated_at: Date | null;
+            area_responsable: number | null;
             codigo_sop: string;
             titulo: string | null;
-            nombre_reportante: string | null;
-            correo_reportante: string | null;
-            telefono_reportante: string | null;
             fecha_hallazgo: Date;
             fecha_evento: Date | null;
             estado_hallazgo: number;
-            dias_abierto: number | null;
             procedencia: number;
             tipo: number;
             responsable_hallazgo: number | null;
@@ -218,10 +215,7 @@ export declare class ReportRepository {
             acr: string | null;
             responsable_plan: number | null;
             estado_plan: number | null;
-            fecha_plan: Date | null;
-            fecha_reprogramada: Date | null;
             dias_abierto_plan: number | null;
-            observaciones: string | null;
             created_by: number | null;
         })[];
         total: undefined;
@@ -240,9 +234,10 @@ export declare class ReportRepository {
                     };
                 } & {
                     estado: number | null;
+                    created_at: Date | null;
                     descripcion: string | null;
                     fecha: Date;
-                    created_at: Date | null;
+                    updated_at: Date | null;
                     hora: Date | null;
                     anio: number | null;
                     mes: number | null;
@@ -266,13 +261,12 @@ export declare class ReportRepository {
                     tipo_causa: number | null;
                     posible_causa: number | null;
                     usuario_registra: number | null;
-                    updated_at: Date | null;
                 };
             } & {
                 usuario: number | null;
+                id_caso: number;
                 id: number;
                 id_evento: number;
-                id_caso: number;
                 fecha_conversion: Date | null;
             })[];
             areas: {
@@ -297,20 +291,20 @@ export declare class ReportRepository {
                 nombre: string;
             };
         } & {
-            descripcion: string;
             created_at: Date | null;
-            area_responsable: number | null;
-            updated_at: Date | null;
+            descripcion: string;
             id_caso: number;
+            fecha_plan: Date | null;
+            fecha_reprogramada: Date | null;
+            dias_abierto: number | null;
+            observaciones: string | null;
+            updated_at: Date | null;
+            area_responsable: number | null;
             codigo_sop: string;
             titulo: string | null;
-            nombre_reportante: string | null;
-            correo_reportante: string | null;
-            telefono_reportante: string | null;
             fecha_hallazgo: Date;
             fecha_evento: Date | null;
             estado_hallazgo: number;
-            dias_abierto: number | null;
             procedencia: number;
             tipo: number;
             responsable_hallazgo: number | null;
@@ -324,10 +318,7 @@ export declare class ReportRepository {
             acr: string | null;
             responsable_plan: number | null;
             estado_plan: number | null;
-            fecha_plan: Date | null;
-            fecha_reprogramada: Date | null;
             dias_abierto_plan: number | null;
-            observaciones: string | null;
             created_by: number | null;
         })[];
         total: number;
@@ -346,9 +337,10 @@ export declare class ReportRepository {
                 };
             } & {
                 estado: number | null;
+                created_at: Date | null;
                 descripcion: string | null;
                 fecha: Date;
-                created_at: Date | null;
+                updated_at: Date | null;
                 hora: Date | null;
                 anio: number | null;
                 mes: number | null;
@@ -372,13 +364,12 @@ export declare class ReportRepository {
                 tipo_causa: number | null;
                 posible_causa: number | null;
                 usuario_registra: number | null;
-                updated_at: Date | null;
             };
         } & {
             usuario: number | null;
+            id_caso: number;
             id: number;
             id_evento: number;
-            id_caso: number;
             fecha_conversion: Date | null;
         })[];
         areas: {
@@ -403,20 +394,20 @@ export declare class ReportRepository {
             nombre: string;
         };
     } & {
-        descripcion: string;
         created_at: Date | null;
-        area_responsable: number | null;
-        updated_at: Date | null;
+        descripcion: string;
         id_caso: number;
+        fecha_plan: Date | null;
+        fecha_reprogramada: Date | null;
+        dias_abierto: number | null;
+        observaciones: string | null;
+        updated_at: Date | null;
+        area_responsable: number | null;
         codigo_sop: string;
         titulo: string | null;
-        nombre_reportante: string | null;
-        correo_reportante: string | null;
-        telefono_reportante: string | null;
         fecha_hallazgo: Date;
         fecha_evento: Date | null;
         estado_hallazgo: number;
-        dias_abierto: number | null;
         procedencia: number;
         tipo: number;
         responsable_hallazgo: number | null;
@@ -430,19 +421,59 @@ export declare class ReportRepository {
         acr: string | null;
         responsable_plan: number | null;
         estado_plan: number | null;
-        fecha_plan: Date | null;
-        fecha_reprogramada: Date | null;
         dias_abierto_plan: number | null;
-        observaciones: string | null;
         created_by: number | null;
     }) | null>;
+    static findPublicByCodigo(codigo_sop: string): Promise<{
+        anexos_caso: {
+            id_anexo: number;
+        }[];
+        evento_caso: {
+            eventos_operativos: {
+                catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: {
+                    nombre: string;
+                } | null;
+                catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: {
+                    nombre: string;
+                };
+            };
+        }[];
+        areas: {
+            nombre_area: string;
+        } | null;
+        created_at: Date | null;
+        solicitudes_informacion: {
+            mensaje: string;
+            id_solicitud: number;
+            respuesta: string | null;
+            respondida: boolean;
+            fecha_solicitud: Date | null;
+            fecha_respuesta: Date | null;
+        }[];
+        descripcion: string;
+        id_caso: number;
+        codigo_sop: string;
+        titulo: string | null;
+        fecha_hallazgo: Date;
+        fecha_evento: Date | null;
+        catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
+            nombre: string;
+            color: string | null;
+        };
+        catalogo_detalle_casos_sop_tipoTocatalogo_detalle: {
+            nombre: string;
+        };
+        catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle: {
+            nombre: string;
+        };
+    } | null>;
     static findCatalogoDetalle(catalogoNombre: string, valorNombre: string): Promise<{
         nombre: string;
         estado: boolean | null;
-        descripcion: string | null;
-        id_catalogo: number;
-        codigo: string | null;
         created_at: Date | null;
+        descripcion: string | null;
+        codigo: string | null;
+        id_catalogo: number;
         orden: number | null;
         id_detalle: number;
         color: string | null;
@@ -454,21 +485,25 @@ export declare class ReportRepository {
     } & {
         nombre: string;
         estado: boolean | null;
-        descripcion: string | null;
-        id_catalogo: number;
-        codigo: string | null;
         created_at: Date | null;
+        descripcion: string | null;
+        codigo: string | null;
+        id_catalogo: number;
         orden: number | null;
         id_detalle: number;
         color: string | null;
     }) | null>;
     static createFullReport(dto: CreateReportDto, archivos: UploadedFile[], id_usuario_creador?: number): Promise<{
         caso: {
-            descripcion: string;
             created_at: Date | null;
-            area_responsable: number | null;
-            updated_at: Date | null;
+            descripcion: string;
             id_caso: number;
+            fecha_plan: Date | null;
+            fecha_reprogramada: Date | null;
+            dias_abierto: number | null;
+            observaciones: string | null;
+            updated_at: Date | null;
+            area_responsable: number | null;
             codigo_sop: string;
             titulo: string | null;
             nombre_reportante: string | null;
@@ -477,7 +512,6 @@ export declare class ReportRepository {
             fecha_hallazgo: Date;
             fecha_evento: Date | null;
             estado_hallazgo: number;
-            dias_abierto: number | null;
             procedencia: number;
             tipo: number;
             responsable_hallazgo: number | null;
@@ -491,17 +525,15 @@ export declare class ReportRepository {
             acr: string | null;
             responsable_plan: number | null;
             estado_plan: number | null;
-            fecha_plan: Date | null;
-            fecha_reprogramada: Date | null;
             dias_abierto_plan: number | null;
-            observaciones: string | null;
             created_by: number | null;
         };
         evento: {
             estado: number | null;
+            created_at: Date | null;
             descripcion: string | null;
             fecha: Date;
-            created_at: Date | null;
+            updated_at: Date | null;
             hora: Date | null;
             anio: number | null;
             mes: number | null;
@@ -525,7 +557,6 @@ export declare class ReportRepository {
             tipo_causa: number | null;
             posible_causa: number | null;
             usuario_registra: number | null;
-            updated_at: Date | null;
         };
     }>;
 }

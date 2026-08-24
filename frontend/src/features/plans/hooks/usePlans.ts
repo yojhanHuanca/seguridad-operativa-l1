@@ -36,6 +36,7 @@ function usePlanMutation<TInput>(fn: (input: TInput) => Promise<unknown>) {
     mutationFn: fn,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["planes"] });
+      queryClient.invalidateQueries({ queryKey: ["planes-caso"] });
       queryClient.invalidateQueries({ queryKey: ["cases"] });
       queryClient.invalidateQueries({ queryKey: ["case"] });
     },

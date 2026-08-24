@@ -6,5 +6,11 @@ export class RoleRepository {
             orderBy: { id_rol: "asc" },
         });
     }
+    static async findById(id) {
+        return prisma.roles.findUnique({
+            where: { id_rol: id },
+            select: { id_rol: true, nombre_rol: true },
+        });
+    }
 }
 //# sourceMappingURL=role.repository.js.map

@@ -102,7 +102,8 @@ export const ModelName = {
     sesiones: 'sesiones',
     solicitudes_informacion: 'solicitudes_informacion',
     solicitudes_prorroga: 'solicitudes_prorroga',
-    usuarios: 'usuarios'
+    usuarios: 'usuarios',
+    password_resets: 'password_resets'
 };
 /**
  * Enums
@@ -498,6 +499,14 @@ export const UsuariosScalarFieldEnum = {
     puede_rechazar_reportes: 'puede_rechazar_reportes',
     id_area: 'id_area',
     id_rol: 'id_rol'
+};
+export const Password_resetsScalarFieldEnum = {
+    id_reset: 'id_reset',
+    usuario: 'usuario',
+    token_hash: 'token_hash',
+    expires_at: 'expires_at',
+    used_at: 'used_at',
+    created_at: 'created_at'
 };
 export const SortOrder = {
     asc: 'asc',

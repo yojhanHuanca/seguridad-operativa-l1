@@ -278,9 +278,27 @@ export class CaseService {
     });
   }
 
-  static async getByCodigo(codigo: string) {
+  /**
+   * Expediente completo. Un Jefe de Área solo abre los casos que le competen:
+   * los de su área o aquellos donde tiene un plan asignado — el mismo criterio
+   * que `assertPlanPropio` y que su bandeja, para que lo que ve listado sea
+   * exactamente lo que puede abrir.
+   *
+   * A quien no le corresponde se le responde "no existe" en vez de "no tienes
+   * permiso": tampoco se le confirma que ese código exista.
+   */
+  static async getByCodigo(codigo: string, actor?: Actor) {
     const caso = await CaseRepository.findByCodigo(codigo);
     if (!caso) throw new Error(`El caso ${codigo} no existe`);
+    if (!esJefeDeArea(actor)) return caso;
+
+    const areaActor = await areaDelActor(actor);
+    const esDeSuArea = areaActor != null && caso.area_responsable === areaActor;
+    const tienePlanPropio = caso.planes_accion.some(
+      (plan) => plan.responsable === actor!.id_usuario || (areaActor != null && plan.id_area === areaActor)
+    );
+    if (!esDeSuArea && !tienePlanPropio) throw new Error(`El caso ${codigo} no existe`);
+
     return caso;
   }
 

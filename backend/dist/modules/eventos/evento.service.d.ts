@@ -56,9 +56,10 @@ export declare class EventoService {
             } | null;
         } & {
             estado: string;
+            created_at: Date | null;
             descripcion: string | null;
             fecha: Date;
-            created_at: Date | null;
+            updated_at: Date | null;
             hora: Date | null;
             anio: number | null;
             mes: number | null;
@@ -84,7 +85,6 @@ export declare class EventoService {
             usuario_registra: number | null;
             asignado_a: number | null;
             id_caso_creado: number | null;
-            updated_at: Date | null;
         })[];
         total: number | undefined;
     }>;
@@ -142,9 +142,10 @@ export declare class EventoService {
         } | null;
     } & {
         estado: string;
+        created_at: Date | null;
         descripcion: string | null;
         fecha: Date;
-        created_at: Date | null;
+        updated_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -170,13 +171,13 @@ export declare class EventoService {
         usuario_registra: number | null;
         asignado_a: number | null;
         id_caso_creado: number | null;
-        updated_at: Date | null;
     }>;
     static createEvento(rawBody: unknown, actor?: number): Promise<{
         estado: string;
+        created_at: Date | null;
         descripcion: string | null;
         fecha: Date;
-        created_at: Date | null;
+        updated_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -202,13 +203,13 @@ export declare class EventoService {
         usuario_registra: number | null;
         asignado_a: number | null;
         id_caso_creado: number | null;
-        updated_at: Date | null;
     }>;
     static updateEvento(id: number, rawBody: unknown): Promise<{
         estado: string;
+        created_at: Date | null;
         descripcion: string | null;
         fecha: Date;
-        created_at: Date | null;
+        updated_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -234,13 +235,13 @@ export declare class EventoService {
         usuario_registra: number | null;
         asignado_a: number | null;
         id_caso_creado: number | null;
-        updated_at: Date | null;
     }>;
     static deleteEvento(id: number): Promise<{
         estado: string;
+        created_at: Date | null;
         descripcion: string | null;
         fecha: Date;
-        created_at: Date | null;
+        updated_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -266,7 +267,6 @@ export declare class EventoService {
         usuario_registra: number | null;
         asignado_a: number | null;
         id_caso_creado: number | null;
-        updated_at: Date | null;
     }>;
     /** Bandeja de eventos asignados a una persona de Seguridad Operativa. */
     /**
@@ -322,9 +322,10 @@ export declare class EventoService {
         } | null;
     } & {
         estado: string;
+        created_at: Date | null;
         descripcion: string | null;
         fecha: Date;
-        created_at: Date | null;
+        updated_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -350,7 +351,6 @@ export declare class EventoService {
         usuario_registra: number | null;
         asignado_a: number | null;
         id_caso_creado: number | null;
-        updated_at: Date | null;
     })[]>;
     /**
      * Asigna el evento a una persona de Seguridad Operativa: le llega una

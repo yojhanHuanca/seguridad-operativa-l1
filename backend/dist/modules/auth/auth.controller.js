@@ -16,6 +16,52 @@ export class AuthController {
                 : "Credenciales inválidas", error));
         }
     }
+    static async loginGoogle(req, res) {
+        try {
+            const { credential } = req.body;
+            if (!credential) {
+                return res.status(400).json(ApiResponse.error("Falta el token de Google"));
+            }
+            const result = await AuthService.loginWithGoogle(credential, req.ip, req.headers["user-agent"]);
+            return res.status(200).json(ApiResponse.success("Inicio de sesión exitoso", result));
+        }
+        catch (error) {
+            return res.status(401).json(ApiResponse.error(error instanceof Error
+                ? error.message
+                : "No se pudo iniciar sesión con Google", error));
+        }
+    }
+    static async forgotPassword(req, res) {
+        try {
+            const { correo } = req.body;
+            if (!correo) {
+                return res.status(400).json(ApiResponse.error("El correo es requerido"));
+            }
+            await AuthService.forgotPassword(correo);
+        }
+        catch {
+            // Intencional: no se propaga el error real (ej. Resend caído) para no
+            // filtrar información — el frontend siempre ve el mismo mensaje.
+        }
+        // Misma respuesta exista o no ese correo, y aunque el envío falle por dentro.
+        return res.status(200).json(ApiResponse.success("Si el correo está registrado, te llegará un link para restablecer tu contraseña."));
+    }
+    static async resetPassword(req, res) {
+        try {
+            const { token, password } = req.body;
+            if (!token || !password) {
+                return res.status(400).json(ApiResponse.error("Faltan datos"));
+            }
+            if (String(password).length < 6) {
+                return res.status(400).json(ApiResponse.error("La contraseña debe tener al menos 6 caracteres"));
+            }
+            await AuthService.resetPassword(token, password, req.ip, req.headers["user-agent"]);
+            return res.status(200).json(ApiResponse.success("Contraseña actualizada. Ya puedes iniciar sesión."));
+        }
+        catch (error) {
+            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "No se pudo restablecer la contraseña", error));
+        }
+    }
     static async logout(req, res) {
         try {
             await AuthService.logout(req.user?.id_sesion);

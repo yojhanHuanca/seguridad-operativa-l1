@@ -2,6 +2,20 @@ import { z } from "zod";
 import { ReportRepository } from "./report.repository.js";
 import { esReportante } from "../../utils/actor.js";
 const idPositivo = z.coerce.number().int().positive();
+const telefonoSchema = z
+    .string()
+    .trim()
+    .max(20, "El teléfono no puede superar los 20 caracteres")
+    .optional()
+    .nullable()
+    .refine((value) => !value || /^[0-9+\s()-]{6,20}$/.test(value), {
+    message: "Ingrese un teléfono válido",
+});
+const normalizarRol = (rol) => (rol ?? "").trim().toLowerCase();
+const puedeRegistrarComoSO = (actor) => {
+    const rol = normalizarRol(actor?.rol_nombre);
+    return rol === "seguridad operativa" || rol === "admin";
+};
 export const createReportSchema = z
     .object({
     id_tipo: idPositivo,
@@ -15,7 +29,7 @@ export const createReportSchema = z
     modalidad: z.enum(["anonimo", "identificado"]),
     nombre_reportante: z.string().trim().max(150).optional().nullable(),
     correo_reportante: z.string().trim().email("Ingrese un correo válido").max(150).optional().nullable().or(z.literal("")),
-    telefono_reportante: z.string().trim().max(20).optional().nullable(),
+    telefono_reportante: telefonoSchema,
     origen: z.enum(["reportante", "seguridad_operativa"]).default("reportante"),
     /** Si el hallazgo se creó desde "Eventos asignados" de Monitoreo, el evento que le dio origen. */
     id_evento_monitoreo: idPositivo.optional(),
@@ -34,8 +48,15 @@ async function assertCatalogo(id_detalle, catalogoEsperado) {
     }
 }
 export class ReportService {
-    static async createReport(rawBody, files, id_usuario_creador) {
+    static async createReport(rawBody, files, actor) {
         const dto = createReportSchema.parse(rawBody);
+        const id_usuario_creador = actor?.id_usuario;
+        if (dto.origen === "seguridad_operativa" && !puedeRegistrarComoSO(actor)) {
+            throw new Error("Debes iniciar sesión como Seguridad Operativa para registrar un reporte desde ese panel");
+        }
+        if (dto.id_evento_monitoreo != null && dto.origen !== "seguridad_operativa") {
+            throw new Error("Un evento de monitoreo solo puede vincularse desde el panel de Seguridad Operativa");
+        }
         await assertCatalogo(dto.id_tipo, "Tipo de Reporte");
         await assertCatalogo(dto.id_lugar, "Lugar de Incidente");
         if (dto.id_lugar_especifico)
@@ -67,6 +88,12 @@ export class ReportService {
         });
     }
     static async getByCodigo(codigo_sop, actor) {
+        if (!actor) {
+            const casoPublico = await ReportRepository.findPublicByCodigo(codigo_sop);
+            if (!casoPublico)
+                throw new Error(`El caso ${codigo_sop} no existe`);
+            return casoPublico;
+        }
         const caso = await ReportRepository.findByCodigo(codigo_sop);
         if (!caso)
             throw new Error(`El caso ${codigo_sop} no existe`);

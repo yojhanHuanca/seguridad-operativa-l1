@@ -4,12 +4,15 @@ import { motion } from "framer-motion";
 import {
   ActivitySquare,
   ArrowRight,
+  Building2,
   FileText,
   MapPin,
   Menu,
   PlayCircle,
+  Route,
   Settings,
   ShieldCheck,
+  TrainFront,
   Users,
   X as XIcon,
   type LucideIcon,
@@ -88,10 +91,10 @@ const NAVEGACION_PUBLICA = [
 ];
 
 const ESTADISTICAS = [
-  { value: "26", label: "Estaciones" },
-  { value: "11", label: "Distritos conectados" },
-  { value: "34.6 km", label: "Extensión del recorrido" },
-  { value: "2", label: "Terminales operativos" },
+  { value: "26", label: "Estaciones", icon: MapPin },
+  { value: "11", label: "Distritos conectados", icon: Building2 },
+  { value: "34.6 km", label: "Extensión del recorrido", icon: Route },
+  { value: "2", label: "Terminales operativos", icon: TrainFront },
 ];
 
 const FLUJO = [
@@ -124,10 +127,10 @@ function Navbar({ systemName }: { systemName: string }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className={cn("fixed inset-x-0 top-0 z-40 transition-colors duration-300", scrolled ? "bg-white/95 shadow-sm backdrop-blur-xl" : "bg-transparent")}>
+    <header className={cn("fixed inset-x-0 top-0 z-40 transition-colors duration-300", scrolled ? "bg-white/55 shadow-sm backdrop-blur-xl" : "bg-transparent")}>
       <div className="mx-auto flex h-[76px] max-w-[1240px] items-center justify-between px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2.5">
-          <Logo size={40} withWordmark={false} />
+          <Logo size={48} withWordmark={false} />
           <span className={cn("font-display text-[16px] font-bold tracking-tight transition-colors", scrolled ? "text-ink" : "text-white")}>
             {systemName}
           </span>
@@ -175,10 +178,46 @@ function Navbar({ systemName }: { systemName: string }) {
   );
 }
 
+/**
+ * Fotos reales de Línea 1 (Wikimedia Commons, licencias libres — ver
+ * atribución en el footer). No hay video institucional de calidad disponible
+ * para usar como fondo, así que el efecto de movimiento se logra con un
+ * carrusel Ken Burns: zoom lento + disolución cruzada entre fotos reales.
+ */
+const HERO_PHOTOS = [
+  { src: "/l1-tren-2.jpg", alt: "Tren de Línea 1 llegando a la estación San Borja Sur" },
+  { src: "/l1-estacion-1.jpg", alt: "Estación Villa El Salvador de Línea 1 con tren estacionado" },
+  { src: "/l1-estacion-noche.jpg", alt: "Tren de Línea 1 entrando a la estación Miguel Grau" },
+  { src: "/l1-tren-1.jpg", alt: "Tren de Línea 1 del Metro de Lima" },
+];
+
+function HeroBackground() {
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setIndex((i) => (i + 1) % HERO_PHOTOS.length), 6500);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <div className="absolute inset-0 overflow-hidden">
+      {HERO_PHOTOS.map((photo, i) => (
+        <motion.img
+          key={photo.src}
+          src={photo.src}
+          alt={photo.alt}
+          initial={false}
+          animate={i === index ? { opacity: 1, scale: 1.12 } : { opacity: 0, scale: 1.04 }}
+          transition={i === index ? { opacity: { duration: 1.4 }, scale: { duration: 6.5, ease: "linear" } } : { opacity: { duration: 1.4 } }}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ))}
+    </div>
+  );
+}
+
 function Hero({ systemName }: { systemName: string }) {
   return (
     <section className="relative flex min-h-[100svh] items-end overflow-hidden bg-ink">
-      <img src="/tren-linea1.png" alt="Tren de Línea 1 del Metro de Lima llegando a estación" className="absolute inset-0 h-full w-full object-cover" />
+      <HeroBackground />
       <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/25" />
       <div className="absolute inset-0 bg-gradient-to-r from-brand-950/85 via-brand-950/25 to-transparent" />
 
@@ -232,14 +271,19 @@ function StatsBand() {
           whileInView="visible"
           viewport={{ once: true, amount: 0.5 }}
           variants={staggerContainer}
-          className="grid grid-cols-2 gap-3 rounded-2xl border border-line bg-white p-4 shadow-[var(--shadow-plate)] sm:grid-cols-4 sm:p-6"
+          className="grid grid-cols-2 gap-3 rounded-2xl border border-line bg-white p-5 shadow-[var(--shadow-plate)] sm:grid-cols-4 sm:p-7"
         >
           {ESTADISTICAS.map((stat) => (
-            <motion.div key={stat.label} variants={riseItem} className="px-2 py-2 text-center sm:border-l sm:border-line-soft sm:first:border-l-0">
-              <p className="font-display text-[30px] font-bold tabular-nums text-brand-700 sm:text-[36px]">
-                {stat.value}
-              </p>
-              <p className="mt-1 text-[11.5px] font-medium text-ink-quiet">{stat.label}</p>
+            <motion.div key={stat.label} variants={riseItem} className="flex items-center gap-3.5 px-2 py-2 sm:border-l sm:border-line-soft sm:first:border-l-0 sm:pl-6">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
+                <stat.icon className="h-5.5 w-5.5" />
+              </span>
+              <div>
+                <p className="font-display text-[26px] font-bold leading-none tabular-nums text-ink sm:text-[32px]">
+                  {stat.value}
+                </p>
+                <p className="mt-1.5 text-[13px] font-medium text-ink-quiet">{stat.label}</p>
+              </div>
             </motion.div>
           ))}
         </motion.div>
@@ -248,32 +292,77 @@ function StatsBand() {
   );
 }
 
+function PortalCard({ portal, i, className }: { portal: Portal; i: number; className?: string }) {
+  return (
+    <motion.div variants={riseItem} className={cn("group relative overflow-hidden rounded-2xl border border-line bg-white p-7 transition-all hover:-translate-y-1 hover:border-brand-200 hover:shadow-[var(--shadow-plate)]", className)}>
+      <Link to={portal.publico ? "/reportes/nuevo" : "/login"} className="flex h-full flex-col">
+        <div className="flex items-start justify-between">
+          <div className="grid h-12 w-12 place-items-center rounded-xl bg-brand-50 text-brand-700 transition-colors group-hover:bg-brand-700 group-hover:text-white">
+            <portal.icon className="h-6 w-6" />
+          </div>
+          <span className="font-mono text-[12px] font-semibold text-ink-faint">0{i + 1}</span>
+        </div>
+        <h3 className="mt-5 text-[18px] font-semibold text-ink">{portal.label}</h3>
+        <p className="mt-2 flex-1 text-[13.5px] leading-relaxed text-ink-quiet">{portal.description}</p>
+        <span className="mt-5 inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-wide text-brand-700">
+          {portal.publico ? "Sin cuenta" : "Módulo integrado"}
+          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+        </span>
+      </Link>
+    </motion.div>
+  );
+}
+
 function PortalesSection() {
+  const [destacado, ...resto] = PORTALES;
   return (
     <section id="plataforma" className="mx-auto max-w-[1240px] scroll-mt-20 px-4 py-24 sm:px-6">
-      <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} variants={staggerContainer} className="mb-10 max-w-xl">
-        <motion.p variants={riseItem} className="text-[12px] font-semibold uppercase tracking-[0.14em] text-brand-700">Plataforma integrada</motion.p>
-        <motion.h2 variants={riseItem} className="mt-2 text-balance font-display text-[28px] font-bold tracking-tight text-ink sm:text-[34px]">
+      <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} variants={staggerContainer} className="mb-12 max-w-2xl">
+        <motion.p variants={riseItem} className="text-[13px] font-semibold uppercase tracking-[0.14em] text-brand-700">Plataforma integrada</motion.p>
+        <motion.h2 variants={riseItem} className="mt-3 text-balance font-display text-[32px] font-bold tracking-tight text-ink sm:text-[38px]">
           Una operación conectada de inicio a cierre
         </motion.h2>
+        <motion.p variants={riseItem} className="mt-3 text-[15px] leading-relaxed text-ink-quiet">
+          Cinco espacios de trabajo, un mismo expediente. Cada rol entra directo a lo suyo, sin duplicar información entre áreas.
+        </motion.p>
       </motion.div>
 
-      <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={staggerContainer} className="grid border-y border-line sm:grid-cols-2 lg:grid-cols-3">
-        {PORTALES.map((portal) => (
-          <motion.div key={portal.label} variants={riseItem} className="group min-h-[220px] border-b border-line p-6 sm:border-r lg:p-7">
-              <Link to={portal.publico ? "/reportes/nuevo" : "/login"} className="flex h-full flex-col">
-                <div className="grid h-11 w-11 place-items-center rounded-lg bg-brand-50 text-brand-700 transition-colors group-hover:bg-brand-700 group-hover:text-white">
-                  <portal.icon className="h-6 w-6" />
-                </div>
-                <h3 className="mt-4 text-[16px] font-semibold text-ink">{portal.label}</h3>
-                <p className="mt-1.5 flex-1 text-[13px] leading-relaxed text-ink-quiet">{portal.description}</p>
-                <span className="mt-4 inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase text-brand-700">
-                  {portal.publico ? "Sin cuenta" : "Módulo integrado"} <ShieldCheck className="h-3.5 w-3.5" />
-                </span>
-              </Link>
-          </motion.div>
-        ))}
+      <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={staggerContainer} className="grid gap-4 lg:grid-cols-3">
+        <PortalCard portal={destacado} i={0} className="lg:col-span-1 lg:row-span-2 lg:min-h-[420px] bg-gradient-to-br from-brand-50 to-white" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:col-span-2">
+          {resto.map((portal, i) => (
+            <PortalCard key={portal.label} portal={portal} i={i + 1} className="min-h-[200px]" />
+          ))}
+        </div>
       </motion.div>
+    </section>
+  );
+}
+
+function ImpactSection({ systemName }: { systemName: string }) {
+  return (
+    <section className="bg-ink">
+      <div className="mx-auto grid max-w-[1240px] lg:grid-cols-2">
+        <div className="relative min-h-[340px] overflow-hidden lg:min-h-[520px]">
+          <img src="/l1-estacion-noche.jpg" alt="Tren de Línea 1 entrando a la estación Miguel Grau, de noche" className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent lg:bg-gradient-to-r" />
+        </div>
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.4 }}
+          variants={staggerContainer}
+          className="flex flex-col justify-center px-4 py-16 sm:px-6 lg:px-14 lg:py-0"
+        >
+          <motion.p variants={riseItem} className="text-[13px] font-semibold uppercase tracking-[0.14em] text-brand-400">Por qué existe {systemName}</motion.p>
+          <motion.p variants={riseItem} className="mt-4 max-w-lg text-balance font-display text-[26px] font-semibold leading-snug text-white sm:text-[30px]">
+            Cada tren que llega a la estación lleva miles de pasajeros. La seguridad operativa no puede depender de la memoria de una sola persona.
+          </motion.p>
+          <motion.p variants={riseItem} className="mt-5 max-w-md text-[14px] leading-relaxed text-white/60">
+            {systemName} reemplaza los reportes sueltos y las hojas de cálculo por un expediente único: quién reportó, quién evaluó, qué se hizo y cuándo se cerró.
+          </motion.p>
+        </motion.div>
+      </div>
     </section>
   );
 }
@@ -282,37 +371,46 @@ function WorkflowSection({ systemName }: { systemName: string }) {
   return (
     <section className="bg-surface py-24">
       <div className="mx-auto max-w-[1240px] px-4 sm:px-6">
-        <div className="grid gap-10 lg:grid-cols-[0.8fr_1.7fr] lg:gap-16">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.4 }} variants={staggerContainer}>
-            <motion.p variants={riseItem} className="text-[12px] font-semibold uppercase text-brand-700">Trazabilidad operativa</motion.p>
-            <motion.h2 variants={riseItem} className="mt-2 font-display text-[28px] font-bold leading-tight text-ink sm:text-[34px]">Cada evento conserva su historia completa.</motion.h2>
-            <motion.p variants={riseItem} className="mt-4 text-[13.5px] leading-6 text-ink-quiet">{systemName} conecta a trabajadores, monitoristas, Seguridad Operativa y responsables de área dentro de un mismo proceso verificable.</motion.p>
-          </motion.div>
-          <motion.ol initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={staggerContainer} className="grid gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2">
-            {FLUJO.map((step) => (
-              <motion.li key={step.number} variants={riseItem} className="min-h-[150px] bg-white p-5">
-                <span className="font-mono text-[11px] font-semibold text-brand-700">{step.number}</span>
-                <h3 className="mt-4 text-[16px] font-semibold text-ink">{step.title}</h3>
-                <p className="mt-2 text-[12.5px] leading-5 text-ink-quiet">{step.description}</p>
-              </motion.li>
-            ))}
-          </motion.ol>
-        </div>
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.4 }} variants={staggerContainer} className="mb-14 max-w-xl">
+          <motion.p variants={riseItem} className="text-[13px] font-semibold uppercase text-brand-700">Trazabilidad operativa</motion.p>
+          <motion.h2 variants={riseItem} className="mt-3 font-display text-[30px] font-bold leading-tight text-ink sm:text-[36px]">Cada evento conserva su historia completa.</motion.h2>
+          <motion.p variants={riseItem} className="mt-4 text-[14.5px] leading-7 text-ink-quiet">{systemName} conecta a trabajadores, monitoristas, Seguridad Operativa y responsables de área dentro de un mismo proceso verificable.</motion.p>
+        </motion.div>
+
+        <motion.ol initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={staggerContainer} className="relative grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="absolute left-0 right-0 top-6 hidden h-px bg-line lg:block" aria-hidden />
+          {FLUJO.map((step) => (
+            <motion.li key={step.number} variants={riseItem} className="relative">
+              <span className="relative z-10 grid h-12 w-12 place-items-center rounded-full border-2 border-brand-700 bg-white font-mono text-[13px] font-bold text-brand-700">
+                {step.number}
+              </span>
+              <h3 className="mt-5 text-[18px] font-semibold text-ink">{step.title}</h3>
+              <p className="mt-2 text-[13.5px] leading-6 text-ink-quiet">{step.description}</p>
+            </motion.li>
+          ))}
+        </motion.ol>
       </div>
     </section>
   );
 }
 
+const ROLES_ACCESO = ["Trabajador", "Seguridad Operativa", "Jefe de Área", "Monitorista"];
+
 function AccessBand() {
   return (
-    <section className="bg-brand-700 py-14 text-white">
-      <div className="mx-auto flex max-w-[1240px] flex-col justify-between gap-6 px-4 sm:px-6 md:flex-row md:items-center">
+    <section className="bg-brand-700 py-16 text-white">
+      <div className="mx-auto flex max-w-[1240px] flex-col justify-between gap-8 px-4 sm:px-6 md:flex-row md:items-center">
         <div>
-          <p className="text-[11px] font-semibold uppercase text-white/65">Acceso protegido</p>
-          <h2 className="mt-2 font-display text-[25px] font-bold">Continúa en tu espacio de trabajo.</h2>
-          <p className="mt-2 text-[13px] text-white/70">El sistema abrirá automáticamente el panel correspondiente a tu rol.</p>
+          <p className="text-[12px] font-semibold uppercase tracking-wide text-white/65">Acceso protegido</p>
+          <h2 className="mt-3 font-display text-[28px] font-bold leading-tight sm:text-[32px]">Continúa en tu espacio de trabajo.</h2>
+          <p className="mt-3 max-w-lg text-[14.5px] leading-relaxed text-white/70">El sistema abrirá automáticamente el panel correspondiente a tu rol, sin pasos adicionales.</p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {ROLES_ACCESO.map((rol) => (
+              <span key={rol} className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[12px] font-medium text-white/85">{rol}</span>
+            ))}
+          </div>
         </div>
-        <Link to="/login" className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-white px-5 text-[13px] font-semibold text-brand-800 transition-colors hover:bg-brand-50">Iniciar sesión <ArrowRight className="h-4 w-4" /></Link>
+        <Link to="/login" className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-lg bg-white px-6 text-[14px] font-semibold text-brand-800 transition-colors hover:bg-brand-50">Iniciar sesión <ArrowRight className="h-4 w-4" /></Link>
       </div>
     </section>
   );
@@ -358,39 +456,39 @@ function Footer({ systemName }: { systemName: string }) {
       <div className="mx-auto max-w-[1240px] px-4 py-14 sm:px-6">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <Logo size={40} withWordmark={false} tone="light" />
-            <p className="mt-4 max-w-[240px] text-[12.5px] leading-relaxed text-white/60">
+            <Logo size={44} withWordmark={false} tone="light" />
+            <p className="mt-5 max-w-[260px] text-[13.5px] leading-relaxed text-white/60">
               {systemName} — Seguridad Operativa de la
               Línea 1 del Metro de Lima.
             </p>
           </div>
 
           <div>
-            <p className="text-[11.5px] font-semibold uppercase tracking-wide text-white/40">Portales</p>
-            <ul className="mt-3 space-y-2">
+            <p className="text-[12.5px] font-semibold uppercase tracking-wide text-white/40">Portales</p>
+            <ul className="mt-4 space-y-2.5">
               {PORTALES.map((portal) => (
                 <li key={portal.label}>
-                  <Link to={portal.publico ? "/reportes/nuevo" : "/login"} className="text-[13px] text-white/70 hover:text-white">{portal.label}</Link>
+                  <Link to={portal.publico ? "/reportes/nuevo" : "/login"} className="text-[14px] text-white/70 hover:text-white">{portal.label}</Link>
                 </li>
               ))}
             </ul>
           </div>
 
           <div>
-            <p className="text-[11.5px] font-semibold uppercase tracking-wide text-white/40">Línea 1 · Metro de Lima</p>
-            <ul className="mt-3 space-y-2">
+            <p className="text-[12.5px] font-semibold uppercase tracking-wide text-white/40">Línea 1 · Metro de Lima</p>
+            <ul className="mt-4 space-y-2.5">
               <li>
-                <a href={OFICIAL.web} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[13px] text-white/70 hover:text-white">
+                <a href={OFICIAL.web} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[14px] text-white/70 hover:text-white">
                   <MapPin className="h-3.5 w-3.5" /> Sitio oficial
                 </a>
               </li>
-              <li className="text-[13px] text-white/50">lineauno.pe</li>
+              <li className="text-[13.5px] text-white/50">lineauno.pe</li>
             </ul>
           </div>
 
           <div>
-            <p className="text-[11.5px] font-semibold uppercase tracking-wide text-white/40">Síguenos</p>
-            <div className="mt-3 flex items-center gap-2">
+            <p className="text-[12.5px] font-semibold uppercase tracking-wide text-white/40">Síguenos</p>
+            <div className="mt-4 flex items-center gap-2">
               {SOCIALES.map((social) => (
                 <a
                   key={social.label}
@@ -411,6 +509,9 @@ function Footer({ systemName }: { systemName: string }) {
           <p>© {new Date().getFullYear()} {systemName} · Línea 1 del Metro de Lima</p>
           <p>Proyecto interno de Seguridad Operativa</p>
         </div>
+        <p className="mt-4 text-center text-[10.5px] leading-relaxed text-white/25 sm:text-left">
+          Fotos: Cesar Miranda y Elelch (CC BY-SA 3.0), Txolo (CC BY-SA 4.0) — Wikimedia Commons.
+        </p>
       </div>
     </footer>
   );
@@ -426,6 +527,7 @@ export function Landing() {
       <Hero systemName={systemName} />
       <StatsBand />
       <PortalesSection />
+      <ImpactSection systemName={systemName} />
       <WorkflowSection systemName={systemName} />
       <VideoSection />
       <AccessBand />

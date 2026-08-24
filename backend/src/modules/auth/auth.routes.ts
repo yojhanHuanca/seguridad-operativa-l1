@@ -1,13 +1,17 @@
 import { Router } from "express";
 import { AuthController } from "./auth.controller.js";
 import { verifyToken } from "../../middlewares/auth.middleware.js";
-import { loginRateLimit } from "../../middlewares/loginRateLimit.middleware.js";
+import {
+  loginRateLimit,
+  passwordResetPorCorreoRateLimit,
+  passwordResetPorIpRateLimit,
+} from "../../middlewares/loginRateLimit.middleware.js";
 
 const router = Router();
 
 router.post("/login", loginRateLimit, AuthController.login);
 router.post("/google", loginRateLimit, AuthController.loginGoogle);
-router.post("/forgot-password", loginRateLimit, AuthController.forgotPassword);
+router.post("/forgot-password", passwordResetPorIpRateLimit, passwordResetPorCorreoRateLimit, AuthController.forgotPassword);
 router.post("/reset-password", loginRateLimit, AuthController.resetPassword);
 router.post("/logout", verifyToken, AuthController.logout);
 router.get("/home", AuthController.home);

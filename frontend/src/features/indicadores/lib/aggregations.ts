@@ -1,5 +1,6 @@
 import { CHART_COLORS } from "@/design-system/charts/Charts";
 import { STAGE_STATUS, isRiskLevel, riskCategory, stageFromEstado, RISK_CATEGORY_LABELS, type RiskCategory } from "@/features/cases/domain";
+import { planDeadline } from "@/features/plans/lib/planDeadline";
 import { daysUntil } from "@/lib/format";
 import type { CaseListItem, PlanAccion } from "@/features/cases/types";
 
@@ -53,10 +54,9 @@ export function reportesCerradoVsProceso(cases: CaseListItem[]): ChartSlice[] {
   let cerrado = 0;
   let enProceso = 0;
   cases.forEach((c) => {
-    const stage = stageFromEstado(c.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre);
-    const status = STAGE_STATUS[stage];
-    if (status === "cerrado") cerrado++;
-    else if (status === "abierto") enProceso++;
+    const status = estadoReporteIndicador(c);
+    if (status === "Cerrado") cerrado++;
+    else if (status === "En Proceso") enProceso++;
   });
   return [
     { name: "Cerrado", value: cerrado, color: CHART_COLORS.brand },
@@ -80,15 +80,58 @@ function planBucket(plan: PlanAccion, caso: CaseListItem): PlanBucket {
   return "enProceso";
 }
 
+export function estadoReporteIndicador(caso: CaseListItem): "Cerrado" | "En Proceso" | null {
+  const stage = stageFromEstado(caso.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre);
+  const status = STAGE_STATUS[stage];
+  if (status === "cerrado") return "Cerrado";
+  if (status === "abierto") return "En Proceso";
+  return null;
+}
+
+export function estadoPlanIndicador(plan: PlanAccion, caso: CaseListItem): "Cerrado" | "En Proceso" | "En Validación" {
+  const bucket = planBucket(plan, caso);
+  if (bucket === "cerrado") return "Cerrado";
+  if (bucket === "enValidacion") return "En Validación";
+  return "En Proceso";
+}
+
+export function riesgoActivoIndicador(caso: CaseListItem): string | null {
+  const stage = stageFromEstado(caso.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre);
+  if (STAGE_STATUS[stage] !== "abierto") return null;
+  const codigo = caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle?.codigo;
+  if (!isRiskLevel(codigo)) return null;
+  return RISK_CATEGORY_LABELS[riskCategory(codigo)];
+}
+
+export function vencimientoPlanAbiertoBucket(plan: PlanAccion, caso: CaseListItem): string | null {
+  if (planBucket(plan, caso) === "cerrado") return null;
+  const dias = daysUntil(planDeadline(plan));
+  if (dias >= 0 && dias <= 30) return "Vence 0-30 días";
+  if (dias > 30 && dias <= 90) return "Vence 1-3 meses";
+  if (dias < 0 && dias >= -30) return "Vencido 0-30 días";
+  if (dias < -30 && dias >= -90) return "Vencido 30-90 días";
+  if (dias < -90) return "Vencido 90-160 días";
+  return null;
+}
+
+export function reprogramacionPlanAbiertoBucket(plan: PlanAccion, caso: CaseListItem): string | null {
+  if (planBucket(plan, caso) === "cerrado" || !plan.fecha_reprogramada) return null;
+  const meses = (new Date(plan.fecha_reprogramada).getTime() - new Date(plan.fecha_plan).getTime()) / (30 * 86400000);
+  if (meses >= 1 && meses < 3) return "1 hasta 3 meses";
+  if (meses >= 3 && meses < 6) return "3 hasta 6 meses";
+  if (meses >= 6 && meses <= 12) return "6 hasta 12 meses";
+  return null;
+}
+
 export function totalPlanes(cases: CaseListItem[]): { total: number; abiertos: number; donut: ChartSlice[] } {
   let cerrado = 0;
   let enValidacion = 0;
   let enProceso = 0;
   cases.forEach((caso) =>
     caso.planes_accion.forEach((plan) => {
-      const bucket = planBucket(plan, caso);
-      if (bucket === "cerrado") cerrado++;
-      else if (bucket === "enValidacion") enValidacion++;
+      const bucket = estadoPlanIndicador(plan, caso);
+      if (bucket === "Cerrado") cerrado++;
+      else if (bucket === "En Validación") enValidacion++;
       else enProceso++;
     })
   );
@@ -177,13 +220,12 @@ export function vencimientoPlanesAbiertos(cases: CaseListItem[]): ChartSlice[] {
 
   cases.forEach((caso) =>
     caso.planes_accion.forEach((plan) => {
-      if (planBucket(plan, caso) === "cerrado") return;
-      const dias = daysUntil(plan.fecha_reprogramada ?? plan.fecha_plan);
-      if (dias >= 0 && dias <= 30) vence0_30++;
-      else if (dias > 30 && dias <= 90) vence1_3m++;
-      else if (dias < 0 && dias >= -30) vencido0_30++;
-      else if (dias < -30 && dias >= -90) vencido30_90++;
-      else if (dias < -90) vencido90_160++;
+      const bucket = vencimientoPlanAbiertoBucket(plan, caso);
+      if (bucket === "Vence 0-30 días") vence0_30++;
+      else if (bucket === "Vence 1-3 meses") vence1_3m++;
+      else if (bucket === "Vencido 0-30 días") vencido0_30++;
+      else if (bucket === "Vencido 30-90 días") vencido30_90++;
+      else if (bucket === "Vencido 90-160 días") vencido90_160++;
     })
   );
 
@@ -204,12 +246,10 @@ export function reprogramacionPlanesAbiertos(cases: CaseListItem[]): ChartSlice[
 
   cases.forEach((caso) =>
     caso.planes_accion.forEach((plan) => {
-      if (planBucket(plan, caso) === "cerrado") return;
-      if (!plan.fecha_reprogramada) return;
-      const meses = (new Date(plan.fecha_reprogramada).getTime() - new Date(plan.fecha_plan).getTime()) / (30 * 86400000);
-      if (meses >= 1 && meses < 3) m1_3++;
-      else if (meses >= 3 && meses < 6) m3_6++;
-      else if (meses >= 6 && meses <= 12) m6_12++;
+      const bucket = reprogramacionPlanAbiertoBucket(plan, caso);
+      if (bucket === "1 hasta 3 meses") m1_3++;
+      else if (bucket === "3 hasta 6 meses") m3_6++;
+      else if (bucket === "6 hasta 12 meses") m6_12++;
     })
   );
 

@@ -70,11 +70,27 @@ const PUBLIC_REPORT_SELECT = {
   },
 } as const;
 
+/**
+ * Los datos de contacto de quien reportó no salen en ningún listado: nada de
+ * la interfaz los consume desde acá (el expediente de Seguridad Operativa los
+ * muestra por /cases, que sí está limitado a quien gestiona el caso), y venían
+ * de arrastre porque `include` devuelve todas las columnas de la tabla.
+ *
+ * `created_by` no se toca: el servicio lo necesita para comprobar que un
+ * reportante solo abra sus propios reportes.
+ */
+const CONTACTO_REPORTANTE_OCULTO = {
+  nombre_reportante: true,
+  correo_reportante: true,
+  telefono_reportante: true,
+} as const;
+
 export class ReportRepository {
   static async findAll() {
     return prisma.casos_sop.findMany({
       orderBy: { created_at: "desc" },
       include: LIST_INCLUDE,
+      omit: CONTACTO_REPORTANTE_OCULTO,
     });
   }
 
@@ -114,12 +130,19 @@ export class ReportRepository {
     const orderBy = { created_at: "desc" as const };
 
     if (!opts?.page || !opts?.limit) {
-      const data = await prisma.casos_sop.findMany({ where, orderBy, include: LIST_INCLUDE });
+      const data = await prisma.casos_sop.findMany({ where, orderBy, include: LIST_INCLUDE, omit: CONTACTO_REPORTANTE_OCULTO });
       return { data, total: undefined };
     }
 
     const [data, total] = await Promise.all([
-      prisma.casos_sop.findMany({ where, orderBy, include: LIST_INCLUDE, skip: (opts.page - 1) * opts.limit, take: opts.limit }),
+      prisma.casos_sop.findMany({
+        where,
+        orderBy,
+        include: LIST_INCLUDE,
+        omit: CONTACTO_REPORTANTE_OCULTO,
+        skip: (opts.page - 1) * opts.limit,
+        take: opts.limit,
+      }),
       prisma.casos_sop.count({ where }),
     ]);
     return { data, total };
@@ -129,6 +152,7 @@ export class ReportRepository {
     return prisma.casos_sop.findUnique({
       where: { codigo_sop },
       include: LIST_INCLUDE,
+      omit: CONTACTO_REPORTANTE_OCULTO,
     });
   }
 

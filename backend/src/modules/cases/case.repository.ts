@@ -123,6 +123,23 @@ const ACTOR_SO = "Seguridad Operativa";
 const diaISO = (d: Date) => d.toISOString().slice(0, 10);
 const MS_DIA = 86_400_000;
 const sumarDias = (d: Date, dias: number) => new Date(d.getTime() + dias * MS_DIA);
+type PlanDeadlineSource = {
+  fecha_plan: Date;
+  fecha_reprogramada: Date | null;
+  actividades_plan?: Array<{ fecha_fin: Date | null }>;
+};
+
+const planDeadline = (plan: PlanDeadlineSource): Date => {
+  if (plan.fecha_reprogramada) return plan.fecha_reprogramada;
+
+  const activityEnd = (plan.actividades_plan ?? []).reduce<Date | null>((latest, activity) => {
+    if (!activity.fecha_fin) return latest;
+    if (!latest || activity.fecha_fin.getTime() > latest.getTime()) return activity.fecha_fin;
+    return latest;
+  }, null);
+
+  return activityEnd ?? plan.fecha_plan;
+};
 
 export class CaseRepository {
   /** Registra un evento en la bitácora del expediente. */
@@ -385,6 +402,8 @@ export class CaseRepository {
             titulo: true,
             descripcion: true,
             fecha_hallazgo: true,
+            fecha_evento: true,
+            catalogo_detalle_casos_sop_tipoTocatalogo_detalle: { select: { nombre: true } },
             catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { select: { nombre: true } },
             catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: { select: { codigo: true, nombre: true } },
             // `observaciones` es opcional en el formulario de SO, pero el jefe
@@ -1297,12 +1316,19 @@ export class CaseRepository {
   static async requestExtensionByPlan(id_plan: number, dto: { nueva_fecha: string; justificacion: string }, actor: string) {
     const plan = await prisma.planes_accion.findUnique({
       where: { id_plan },
-      select: { id_plan: true, id_caso: true, codigo_plan: true, fecha_plan: true, fecha_reprogramada: true },
+      select: {
+        id_plan: true,
+        id_caso: true,
+        codigo_plan: true,
+        fecha_plan: true,
+        fecha_reprogramada: true,
+        actividades_plan: { select: { fecha_fin: true } },
+      },
     });
     if (!plan) throw new Error(`El plan ${id_plan} no existe`);
 
     const configuracion = await ConfiguracionService.get();
-    const fechaVigente = plan.fecha_reprogramada ?? plan.fecha_plan;
+    const fechaVigente = planDeadline(plan);
     const fechaPedida = new Date(`${dto.nueva_fecha}T00:00:00.000Z`);
     const fechaMaxima = sumarDias(fechaVigente, configuracion.plazos.diasSolicitarProrroga);
 
@@ -1370,6 +1396,7 @@ export class CaseRepository {
         responsable: true,
         fecha_plan: true,
         fecha_reprogramada: true,
+        actividades_plan: { select: { fecha_fin: true } },
         prorroga_fecha: true,
         prorroga_estado: true,
       },
@@ -1380,7 +1407,7 @@ export class CaseRepository {
     }
 
     // Las columnas son @db.Date: se comparan y guardan como medianoche UTC.
-    const fechaVigente = plan.fecha_reprogramada ?? plan.fecha_plan;
+    const fechaVigente = planDeadline(plan);
     const fechaFinal =
       decision === "aprobada"
         ? fecha_aprobada

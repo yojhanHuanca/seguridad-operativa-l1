@@ -76,6 +76,7 @@ export declare const ModelName: {
     readonly solicitudes_informacion: "solicitudes_informacion";
     readonly solicitudes_prorroga: "solicitudes_prorroga";
     readonly usuarios: "usuarios";
+    readonly password_resets: "password_resets";
 };
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
 export declare const TransactionIsolationLevel: {
@@ -506,6 +507,15 @@ export declare const UsuariosScalarFieldEnum: {
     readonly id_rol: "id_rol";
 };
 export type UsuariosScalarFieldEnum = (typeof UsuariosScalarFieldEnum)[keyof typeof UsuariosScalarFieldEnum];
+export declare const Password_resetsScalarFieldEnum: {
+    readonly id_reset: "id_reset";
+    readonly usuario: "usuario";
+    readonly token_hash: "token_hash";
+    readonly expires_at: "expires_at";
+    readonly used_at: "used_at";
+    readonly created_at: "created_at";
+};
+export type Password_resetsScalarFieldEnum = (typeof Password_resetsScalarFieldEnum)[keyof typeof Password_resetsScalarFieldEnum];
 export declare const SortOrder: {
     readonly asc: "asc";
     readonly desc: "desc";

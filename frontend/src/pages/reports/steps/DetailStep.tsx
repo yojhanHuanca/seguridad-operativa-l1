@@ -23,7 +23,7 @@ export function DetailStep({ form }: { form: UseFormReturn<ReportFormValues> }) 
         <Textarea
           rows={6}
           maxLength={500}
-          placeholder="Describe brevemente lo que observaste y el riesgo que podría generar (ej. resbalón, incendio, parada de servicio)."
+          placeholder="Describe brevemente lo que observaste y el riesgo que podría generar."
           className="transition-colors"
           {...register("descripcion")}
         />

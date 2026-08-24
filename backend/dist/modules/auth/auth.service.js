@@ -1,8 +1,69 @@
+import { OAuth2Client } from "google-auth-library";
+import { randomBytes, createHash } from "node:crypto";
 import { AuthRepository } from "./auth.repository.js";
+import { UserRepository } from "../users/users.repository.js";
 import { BcryptHelper } from "../../utils/bcrypt.js";
 import { JwtHelper } from "../../utils/jwt.js";
 import { AuditoriaService } from "../auditoria/auditoria.service.js";
+import { enviarCorreoRecuperacion } from "../../utils/mailer.js";
+import { env } from "../../config/env.js";
+const RESET_TOKEN_TTL_MINUTOS = 30;
+function hashToken(token) {
+    return createHash("sha256").update(token).digest("hex");
+}
+const googleClient = env.GOOGLE_CLIENT_ID ? new OAuth2Client(env.GOOGLE_CLIENT_ID) : null;
 export class AuthService {
+    /**
+     * Última parte compartida por `login` y `loginWithGoogle`: una vez que ya
+     * sabemos que el usuario es real, está activo y tiene rol, ambos caminos
+     * abren la misma sesión, emiten el mismo JWT y devuelven la misma forma
+     * de respuesta — solo cambia cómo se verificó la identidad.
+     */
+    static async issueSession(user, descripcionLogin, direccion_ip, navegador) {
+        const sesion = await AuthRepository.crearSesion(user.id_usuario, direccion_ip, navegador);
+        await AuditoriaService.registrar({
+            tabla: "sesiones",
+            id_registro: sesion.id_sesion,
+            accion: "login",
+            descripcion: descripcionLogin,
+            usuario: user.id_usuario,
+            ip: direccion_ip,
+            user_agent: navegador,
+        });
+        const token = JwtHelper.generateToken({
+            id_usuario: user.id_usuario,
+            correo: user.correo,
+            rol: user.id_rol,
+            rol_nombre: user.roles.nombre_rol,
+            es_responsable: user.es_responsable,
+            puede_reabrir_casos: user.puede_reabrir_casos,
+            puede_rechazar_reportes: user.puede_rechazar_reportes,
+            id_area: user.id_area,
+            nombre: user.nombre,
+            id_sesion: sesion.id_sesion,
+        });
+        // Se guarda el acceso anterior antes de sobrescribirlo: así "último
+        // acceso" en el perfil muestra la sesión previa, no la que recién empieza.
+        const ultimoAccesoPrevio = user.ultimo_acceso;
+        await AuthRepository.updateUltimoAcceso(user.id_usuario);
+        return {
+            token,
+            usuario: {
+                id_usuario: user.id_usuario,
+                codigo_usuario: user.codigo_usuario,
+                nombre: user.nombre,
+                correo: user.correo,
+                estado: user.estado,
+                rol: user.roles?.nombre_rol,
+                area: user.areas?.nombre_area,
+                id_area: user.id_area,
+                ultimo_acceso: ultimoAccesoPrevio,
+                es_responsable: user.es_responsable,
+                puede_reabrir_casos: user.puede_reabrir_casos,
+                puede_rechazar_reportes: user.puede_rechazar_reportes,
+            },
+        };
+    }
     static async login(correo, password, direccion_ip, navegador) {
         // Buscar usuarios
         const user = await AuthRepository.findByEmail(correo);
@@ -48,50 +109,86 @@ export class AuthService {
         }
         // Una fila en `sesiones` por login: es lo que permite invalidar el
         // token al cerrar sesión (ver `verifyToken` y `AuthService.logout`).
-        const sesion = await AuthRepository.crearSesion(user.id_usuario, direccion_ip, navegador);
+        return AuthService.issueSession(user, `Inicio de sesión${navegador ? ` — ${navegador}` : ""}`, direccion_ip, navegador);
+    }
+    /**
+     * "Iniciar sesión con Google" — NO crea cuentas nuevas. Solo confirma la
+     * identidad del correo (Google ya lo verificó) y, si ese correo ya existe
+     * como usuario dado de alta por un Admin, abre sesión igual que el login
+     * normal. Si no existe, se rechaza: las altas siguen siendo solo del Admin.
+     */
+    static async loginWithGoogle(idToken, direccion_ip, navegador) {
+        if (!googleClient) {
+            throw new Error("El login con Google no está configurado en el servidor");
+        }
+        let correo;
+        try {
+            const ticket = await googleClient.verifyIdToken({ idToken, audience: env.GOOGLE_CLIENT_ID });
+            const payload = ticket.getPayload();
+            if (!payload?.email || !payload.email_verified) {
+                throw new Error("La cuenta de Google no tiene un correo verificado");
+            }
+            correo = payload.email;
+        }
+        catch {
+            throw new Error("No se pudo verificar la cuenta de Google");
+        }
+        const user = await AuthRepository.findByEmail(correo);
+        if (!user) {
+            throw new Error(`El correo ${correo} no está registrado en el sistema. Pide a un administrador que cree tu cuenta.`);
+        }
+        if ((user.estado ?? "").toLowerCase() !== "activo") {
+            await AuditoriaService.registrar({
+                tabla: "usuarios",
+                id_registro: user.id_usuario,
+                accion: "login_fallido",
+                descripcion: `Intento de acceso con Google a una cuenta ${user.estado ?? "inactiva"}`,
+                usuario: user.id_usuario,
+                ip: direccion_ip,
+                user_agent: navegador,
+            });
+            throw new Error("La cuenta se encuentra inactiva. Contacta al administrador.");
+        }
+        if (user.id_rol == null) {
+            throw new Error("El usuario no tiene rol asignado");
+        }
+        return AuthService.issueSession(user, `Inicio de sesión con Google${navegador ? ` — ${navegador}` : ""}`, direccion_ip, navegador);
+    }
+    /**
+     * Siempre responde "listo" al llamador, exista o no ese correo — si
+     * dijéramos "ese correo no existe" alguien podría usarlo para enumerar
+     * qué correos son cuentas reales del sistema. El correo solo sale si el
+     * usuario existe y está activo.
+     */
+    static async forgotPassword(correo) {
+        const user = await AuthRepository.findByEmail(correo);
+        if (!user || (user.estado ?? "").toLowerCase() !== "activo")
+            return;
+        await AuthRepository.invalidarPasswordResetsPendientes(user.id_usuario);
+        const token = randomBytes(32).toString("hex");
+        const expires_at = new Date(Date.now() + RESET_TOKEN_TTL_MINUTOS * 60_000);
+        await AuthRepository.crearPasswordReset(user.id_usuario, hashToken(token), expires_at);
+        const resetUrl = `${env.FRONTEND_URL.replace(/\/$/, "")}/reset-password?token=${token}`;
+        await enviarCorreoRecuperacion(user.correo, user.nombre, resetUrl);
+    }
+    static async resetPassword(token, nuevaPassword, direccion_ip, navegador) {
+        const reset = await AuthRepository.findPasswordResetVigente(hashToken(token));
+        if (!reset) {
+            throw new Error("Este link ya no es válido. Pide uno nuevo.");
+        }
+        const password_hash = await BcryptHelper.hash(nuevaPassword);
+        await AuthRepository.marcarPasswordResetUsado(reset.id_reset);
+        await AuthRepository.cerrarTodasLasSesiones(reset.usuario);
+        await UserRepository.update(reset.usuario, { password_hash });
         await AuditoriaService.registrar({
-            tabla: "sesiones",
-            id_registro: sesion.id_sesion,
-            accion: "login",
-            descripcion: `Inicio de sesión${navegador ? ` — ${navegador}` : ""}`,
-            usuario: user.id_usuario,
+            tabla: "usuarios",
+            id_registro: reset.usuario,
+            accion: "editar",
+            descripcion: `Contraseña restablecida vía "Olvidé mi contraseña"${navegador ? ` — ${navegador}` : ""}`,
+            usuario: reset.usuario,
             ip: direccion_ip,
             user_agent: navegador,
         });
-        // Generar token JWT
-        const token = JwtHelper.generateToken({
-            id_usuario: user.id_usuario,
-            correo: user.correo,
-            rol: user.id_rol,
-            rol_nombre: user.roles.nombre_rol,
-            es_responsable: user.es_responsable,
-            puede_reabrir_casos: user.puede_reabrir_casos,
-            puede_rechazar_reportes: user.puede_rechazar_reportes,
-            id_area: user.id_area,
-            nombre: user.nombre,
-            id_sesion: sesion.id_sesion,
-        });
-        // Se guarda el acceso anterior antes de sobrescribirlo: así "último
-        // acceso" en el perfil muestra la sesión previa, no la que recién empieza.
-        const ultimoAccesoPrevio = user.ultimo_acceso;
-        await AuthRepository.updateUltimoAcceso(user.id_usuario);
-        return {
-            token,
-            usuario: {
-                id_usuario: user.id_usuario,
-                codigo_usuario: user.codigo_usuario,
-                nombre: user.nombre,
-                correo: user.correo,
-                estado: user.estado,
-                rol: user.roles?.nombre_rol,
-                area: user.areas?.nombre_area,
-                id_area: user.id_area,
-                ultimo_acceso: ultimoAccesoPrevio,
-                es_responsable: user.es_responsable,
-                puede_reabrir_casos: user.puede_reabrir_casos,
-                puede_rechazar_reportes: user.puede_rechazar_reportes,
-            },
-        };
     }
     /** Tokens emitidos antes de llevar `id_sesion` no tienen nada que cerrar del lado del servidor. */
     static async logout(id_sesion) {

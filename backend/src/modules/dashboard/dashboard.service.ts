@@ -77,6 +77,24 @@ function diasHasta(fecha: Date): number {
   return Math.round((objetivo.getTime() - hoy.getTime()) / 86_400_000);
 }
 
+type PlanDeadlineSource = {
+  fecha_plan: Date;
+  fecha_reprogramada: Date | null;
+  actividades_plan?: Array<{ fecha_fin: Date | null }>;
+};
+
+function planDeadline(plan: PlanDeadlineSource): Date {
+  if (plan.fecha_reprogramada) return plan.fecha_reprogramada;
+
+  const activityEnd = (plan.actividades_plan ?? []).reduce<Date | null>((latest, activity) => {
+    if (!activity.fecha_fin) return latest;
+    if (!latest || activity.fecha_fin.getTime() > latest.getTime()) return activity.fecha_fin;
+    return latest;
+  }, null);
+
+  return activityEnd ?? plan.fecha_plan;
+}
+
 /**
  * Todas las agregaciones de KPIs + Estadísticas en una sola consulta liviana:
  * solo los campos que se necesitan (sin evidencias, sin línea de tiempo, sin
@@ -101,6 +119,7 @@ export class DashboardService {
           select: {
             fecha_plan: true,
             fecha_reprogramada: true,
+            actividades_plan: { select: { fecha_fin: true } },
             catalogo_detalle: { select: { nombre: true } },
             areas: { select: { nombre_area: true } },
           },
@@ -174,7 +193,7 @@ export class DashboardService {
 
         porAreaMap.set(plan.areas.nombre_area, (porAreaMap.get(plan.areas.nombre_area) ?? 0) + 1);
 
-        const dias = diasHasta(plan.fecha_reprogramada ?? plan.fecha_plan);
+        const dias = diasHasta(planDeadline(plan));
         if (dias >= 0 && dias <= 30) vence0_30++;
         else if (dias > 30 && dias <= 90) vence1_3m++;
         else if (dias < 0 && dias >= -30) vencido0_30++;

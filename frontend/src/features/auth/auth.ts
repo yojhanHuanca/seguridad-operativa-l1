@@ -37,5 +37,6 @@ export function homeForRole(role: string) {
   if (normalized === "seguridad operativa") return "/seguridad";
   if (normalized === "jefe de área" || normalized === "jefe de area") return "/jefe";
   if (normalized === "monitorista") return "/monitoreo";
-  return "/reportes";
+  if (normalized === "reportante") return "/reportes/nuevo";
+  return "/";
 }

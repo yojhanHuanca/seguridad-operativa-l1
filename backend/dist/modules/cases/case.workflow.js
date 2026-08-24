@@ -39,7 +39,10 @@ const ORIGENES_VALIDOS = {
     // acciones (avances, prórroga, cierre de ejecución).
     updatePlan: [PLAN],
     // --- Ejecución del área
-    acceptPlan: [PLAN],
+    // SO puede iniciar la ejecución con al menos un plan aceptado. Los planes
+    // que quedaron pendientes deben poder aceptarse después, mientras el caso
+    // siga en Ejecución.
+    acceptPlan: [PLAN, EJECUCION],
     startExecution: [PLAN],
     completeExecution: [EJECUCION, PRORROGA],
     requestExtension: [EJECUCION],

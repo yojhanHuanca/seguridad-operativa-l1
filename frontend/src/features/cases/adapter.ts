@@ -3,7 +3,7 @@
 // portados del prototipo. Aísla la traducción en un solo lugar: las pantallas
 // portadas no saben nada de Prisma ni de nombres de relaciones.
 import { stageFromEstado, tipoEventoFromNombre, type RiskLevel, type Stage, type TipoSOP } from "./domain";
-import { criterioAceptabilidad, slaDueDate } from "./lib/sla";
+import { criterioAceptabilidad } from "./lib/sla";
 import type { CaseListItem, PlanAccion } from "./types";
 
 export interface CaseRow {
@@ -23,16 +23,6 @@ export interface CaseRow {
   /** Categoría del riesgo ("Inaceptable", "No deseable"…); null sin evaluar. */
   riskCategoria: string | null;
   createdAt: string;
-  /**
-   * Fecha límite derivada del riesgo; null mientras el caso no se evalúe.
-   *
-   * En la bandeja el plazo se cuenta desde `fecha_hallazgo` porque el listado
-   * no trae la bitácora y no hay forma de saber cuándo se evaluó. En el
-   * expediente sí se usa la fecha real de evaluación (ver lib/sla.ts). Para que
-   * ambas coincidan al día exacto, el backend tendría que exponer la fecha de
-   * evaluación en el listado.
-   */
-  slaDueDate: string | null;
   /**
    * El prototipo modela la prórroga como un objeto aparte del caso; nosotros
    * la guardamos como un estado propio ("Prórroga Solicitada"), que a efectos
@@ -78,7 +68,6 @@ export function toCaseRow(c: CaseListItem): CaseRow {
     risk: (riesgo?.codigo as RiskLevel | undefined) ?? null,
     riskCategoria: riesgo ? criterioAceptabilidad(riesgo.nombre, riesgo.codigo) ?? riesgo.nombre : null,
     createdAt: c.created_at,
-    slaDueDate: slaDueDate(c.fecha_hallazgo, riesgo?.nombre, riesgo?.codigo),
     prorrogaSolicitada: estadoNombre === "Prórroga Solicitada",
     evidencias: c.anexos_caso.length,
     planes: c.planes_accion ?? [],

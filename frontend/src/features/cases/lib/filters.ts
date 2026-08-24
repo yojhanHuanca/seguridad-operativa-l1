@@ -58,7 +58,7 @@ export const CASE_FILTERS: CaseFilter[] = [
   },
   {
     id: "pendientes",
-    label: "Reportes Pendientes",
+    label: "Pendiente de información",
     match: (c) => c.stage === "pendiente_info",
     sidebar: true,
     tab: false,

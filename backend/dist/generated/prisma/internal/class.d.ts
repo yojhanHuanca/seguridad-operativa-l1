@@ -496,6 +496,17 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
     get usuarios(): Prisma.usuariosDelegate<ExtArgs, {
         omit: OmitOpts;
     }>;
+    /**
+     * `prisma.password_resets`: Exposes CRUD operations for the **password_resets** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more Password_resets
+      * const password_resets = await prisma.password_resets.findMany()
+      * ```
+      */
+    get password_resets(): Prisma.password_resetsDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
 }
 export declare function getPrismaClientClass(dirname: string): PrismaClientConstructor;
 //# sourceMappingURL=class.d.ts.map

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, FileSearch, Timer } from "lucide-react";
+import { Check, FileSearch } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/design-system/primitives/Button";
 import { Field, Input, Select, Textarea } from "@/design-system/primitives/Input";
@@ -8,7 +8,7 @@ import { RiskMatrixPicker } from "@/features/cases/components/RiskMatrixPicker";
 import { useCatalogs } from "@/features/reports/hooks/useCatalogs";
 import { useEvaluateCase } from "@/features/cases/hooks/useCaseActions";
 import { useCurrentSoUser } from "@/features/users/hooks/useCurrentSoUser";
-import { gravedadDerivada, diasSlaPorRiesgo } from "@/features/cases/lib/sla";
+import { gravedadDerivada } from "@/features/cases/lib/sla";
 import type { RiskLevel } from "@/features/cases/domain";
 import { apiErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -46,7 +46,6 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
   const riesgoSel = riesgoItems.find((r) => r.id_detalle === idRiesgo);
   const risk = riesgoSel?.codigo as RiskLevel | undefined;
   const gravedad = gravedadDerivada(riesgoSel?.nombre, riesgoSel?.codigo);
-  const diasSla = diasSlaPorRiesgo(riesgoSel?.nombre, riesgoSel?.codigo);
 
   const PRESETS = [
     "Reporte Voluntario",
@@ -70,7 +69,7 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
         <p className="text-[12.5px] text-info-ink">
           <span className="font-semibold">Análisis del caso.</span> Defina el análisis de riesgo (matriz 1A-4E),
           clasificación y si requiere investigación. Al guardar, el caso pasa a Investigación o directamente a Plan de
-          Acción, y arranca el plazo de atención.
+          Acción.
         </p>
       </div>
 
@@ -107,11 +106,6 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
           <div className="mt-2.5 flex items-center gap-2 flex-wrap">
             <RiskPill risk={risk} showCategory />
             <span className="text-[11px] text-ink-quiet">Gravedad derivada: {gravedad ?? "—"}</span>
-            {diasSla && (
-              <span className="inline-flex items-center gap-1 text-[11px] text-ink-quiet">
-                <Timer className="h-3 w-3" /> Plazo de atención: {diasSla} días desde esta evaluación
-              </span>
-            )}
           </div>
         )}
       </Field>

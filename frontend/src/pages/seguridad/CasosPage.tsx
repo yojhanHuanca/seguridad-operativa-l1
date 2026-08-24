@@ -14,9 +14,9 @@ import { toCaseRow, type CaseRow } from "@/features/cases/adapter";
 import { CASE_FILTERS, resolveFilter } from "@/features/cases/lib/filters";
 import { ESTADOS_POR_FILTRO } from "@/features/cases/lib/filterEstados";
 import { shortPlanCode } from "@/features/cases/lib/planLabels";
-import { slaEstado, diasRestantes } from "@/features/cases/lib/sla";
+import { planDeadline } from "@/features/plans/lib/planDeadline";
 import { EVENT_LABELS, TYPE_TONE } from "@/features/cases/domain";
-import { formatDate } from "@/lib/format";
+import { daysUntil, formatDate } from "@/lib/format";
 import { downloadCsv, sufijoFecha } from "@/lib/download";
 import { api, type ApiEnvelope } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -38,7 +38,35 @@ const QUICK_ACTION: Partial<Record<CaseRow["stage"], string>> = {
 
 const PAGE_SIZE = 8;
 const TAB_FILTER_IDS = ["todos", "prorrogas", "investigacion", "verificacion"] as const;
-const SORT_A_BACKEND = { recent: "recientes", priority: "prioridad", sla: "sla" } as const;
+const SORT_A_BACKEND = { recent: "recientes", priority: "prioridad" } as const;
+const PLAN_DEADLINE_STAGES = new Set<CaseRow["stage"]>(["plan_accion", "ejecucion", "verificacion"]);
+
+type StatusBadge = { tone: "critical" | "warning"; label: string };
+
+function planTienePlazoActivo(plan: CaseRow["planes"][number]) {
+  const estado = plan.catalogo_detalle.nombre.toLowerCase();
+  return !estado.includes("cerrad") && !estado.includes("rechaz") && !estado.includes("finaliz");
+}
+
+function planMasUrgente(caso: CaseRow) {
+  return caso.planes
+    .filter(planTienePlazoActivo)
+    .sort((a, b) => daysUntil(planDeadline(a)) - daysUntil(planDeadline(b)))[0];
+}
+
+function estadoOperativoBadge(caso: CaseRow): StatusBadge | null {
+  if (PLAN_DEADLINE_STAGES.has(caso.stage) && caso.planes.length > 0) {
+    const plan = planMasUrgente(caso);
+    if (!plan) return null;
+
+    const dias = daysUntil(planDeadline(plan));
+    if (dias < 0) return { tone: "critical", label: `Plan vencido ${Math.abs(dias)}d` };
+    if (dias <= 7) return { tone: "warning", label: `Plan vence ${dias}d` };
+    return null;
+  }
+
+  return null;
+}
 
 export function SoCasosPage() {
   const [params, setParams] = useSearchParams();
@@ -46,7 +74,7 @@ export function SoCasosPage() {
   const [query, setQuery] = useState(params.get("q") ?? "");
   const [debouncedQuery, setDebouncedQuery] = useState(query);
   const [areaFilter, setAreaFilter] = useState<string>("");
-  const [sort, setSort] = useState<"recent" | "priority" | "sla">("recent");
+  const [sort, setSort] = useState<"recent" | "priority">("recent");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [nuevoOpen, setNuevoOpen] = useState(false);
@@ -194,7 +222,6 @@ export function SoCasosPage() {
             options={[
               { value: "recent", label: "Más recientes" },
               { value: "priority", label: "Por prioridad" },
-              { value: "sla", label: "Por SLA" },
             ]}
           />
         </div>
@@ -217,7 +244,7 @@ export function SoCasosPage() {
             </thead>
             <tbody className="divide-y divide-line-soft">
               {cases.map((c) => {
-                const sla = slaEstado(c.slaDueDate, c.stage);
+                const statusBadge = estadoOperativoBadge(c);
                 const hasPlan = c.planes.length > 0;
                 const isExpanded = expandedId === c.id;
                 return (
@@ -253,13 +280,7 @@ export function SoCasosPage() {
                           {c.prorrogaSolicitada && (
                             <span className="text-[10.5px] font-medium text-warning-ink">Prórroga solicitada</span>
                           )}
-                          {(sla === "overdue" || sla === "soon") && c.slaDueDate && (
-                            <Pill tone={sla === "overdue" ? "critical" : "warning"}>
-                              {sla === "overdue"
-                                ? `SLA vencido ${Math.abs(diasRestantes(c.slaDueDate))}d`
-                                : `SLA ${diasRestantes(c.slaDueDate)}d`}
-                            </Pill>
-                          )}
+                          {statusBadge && <Pill tone={statusBadge.tone}>{statusBadge.label}</Pill>}
                         </div>
                       </td>
                       <td className="px-4 py-3.5">
@@ -297,7 +318,7 @@ export function SoCasosPage() {
                                   (actividad) => actividad.catalogo_detalle?.nombre === "Completado" || Number(actividad.porcentaje ?? 0) >= 100
                                 ).length;
                                 const avance = total > 0 ? Math.round((completadas / total) * 100) : 0;
-                                const fechaObjetivo = plan.fecha_reprogramada ?? plan.fecha_plan;
+                                const fechaObjetivo = planDeadline(plan);
 
                                 return (
                                   <div key={plan.id_plan} className="rounded-lg border border-line-soft p-3 transition-colors hover:bg-surface/40">

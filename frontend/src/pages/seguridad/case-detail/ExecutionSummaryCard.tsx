@@ -29,6 +29,7 @@ import { compactPlanCodes, shortPlanCode } from "@/features/cases/lib/planLabels
 import { evidenciasDelEvento, humanEvidenceDetail, planEvidenceFiles, timelineBelongsToPlan } from "@/features/cases/lib/planEvidence";
 import { progresoPorHitos } from "@/features/cases/lib/planProgress";
 import { ACTOR_ROL_LABEL } from "@/features/cases/lib/workflow";
+import { planDeadline } from "@/features/plans/lib/planDeadline";
 import { apiErrorMessage } from "@/lib/api";
 import { formatDate, formatDateTime, relativeTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -362,7 +363,7 @@ function PlanExecutionBoard({
   // la fecha corre hacia adelante, así que un plazo igual o anterior al
   // vigente bloquea la aprobación (el backend valida lo mismo).
   const planEnRevision = extensionReview?.plan;
-  const plazoVigente = soloFecha(planEnRevision?.fecha_reprogramada ?? planEnRevision?.fecha_plan);
+  const plazoVigente = planEnRevision ? soloFecha(planDeadline(planEnRevision)) : "";
   const fechaAjustada = !!planEnRevision && extensionDate !== soloFecha(planEnRevision.prorroga_fecha);
   const fechaOtorgadaInvalida =
     extensionReview?.decision === "aprobada" && (!extensionDate || extensionDate <= plazoVigente);
@@ -457,7 +458,7 @@ function PlanExecutionBoard({
                 <div className="rounded-lg bg-surface/70 border border-line-soft p-3">
                   <p className="text-[10.5px] font-semibold uppercase tracking-wide text-ink-faint">Fecha límite</p>
                   <p className={cn("text-[12.5px] font-medium mt-1", plan.fecha_reprogramada ? "text-brand-700" : "text-ink")}>
-                    {formatDate(plan.fecha_reprogramada ?? plan.fecha_plan)}
+                    {formatDate(planDeadline(plan))}
                   </p>
                 </div>
                 <div className="rounded-lg bg-surface/70 border border-line-soft p-3">

@@ -6,6 +6,7 @@ import { Card } from "@/design-system/primitives/Card";
 import { Pill } from "@/design-system/primitives/Pill";
 import { usePlans } from "@/features/plans/hooks/usePlans";
 import { useJefeAreaFilter } from "@/features/plans/hooks/useJefeAreaFilter";
+import { planDeadline } from "@/features/plans/lib/planDeadline";
 import {
   hasPendingExtension,
   isClosed,
@@ -76,7 +77,7 @@ function priorityInfo(p: PlanItem): { label: string; tone: PillTone; rank: numbe
 
 function deadlineRank(p: PlanItem): number {
   if (isClosed(p) || isRejected(p) || isInVerification(p)) return Number.POSITIVE_INFINITY;
-  return daysUntil(p.fecha_reprogramada ?? p.fecha_plan);
+  return daysUntil(planDeadline(p));
 }
 
 function priorityWeight(p: PlanItem): number {
@@ -171,7 +172,7 @@ export function JefeHome() {
                     const plan = planForRow(row);
                     const status = statusInfo(plan);
                     const priority = priorityInfo(plan);
-                    const deadline = plan.fecha_reprogramada ?? plan.fecha_plan;
+                    const deadline = planDeadline(plan);
                     const overdue = deadlineRank(plan) < 0;
 
                     return (

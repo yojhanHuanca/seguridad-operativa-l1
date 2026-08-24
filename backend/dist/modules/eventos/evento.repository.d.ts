@@ -8,10 +8,10 @@ export declare class EventoRepository {
     } & {
         nombre: string;
         estado: boolean | null;
-        descripcion: string | null;
-        id_catalogo: number;
-        codigo: string | null;
         created_at: Date | null;
+        descripcion: string | null;
+        codigo: string | null;
+        id_catalogo: number;
         orden: number | null;
         id_detalle: number;
         color: string | null;
@@ -79,9 +79,10 @@ export declare class EventoRepository {
             } | null;
         } & {
             estado: string;
+            created_at: Date | null;
             descripcion: string | null;
             fecha: Date;
-            created_at: Date | null;
+            updated_at: Date | null;
             hora: Date | null;
             anio: number | null;
             mes: number | null;
@@ -107,7 +108,6 @@ export declare class EventoRepository {
             usuario_registra: number | null;
             asignado_a: number | null;
             id_caso_creado: number | null;
-            updated_at: Date | null;
         })[];
         total: number | undefined;
     }>;
@@ -166,9 +166,10 @@ export declare class EventoRepository {
         } | null;
     } & {
         estado: string;
+        created_at: Date | null;
         descripcion: string | null;
         fecha: Date;
-        created_at: Date | null;
+        updated_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -194,7 +195,6 @@ export declare class EventoRepository {
         usuario_registra: number | null;
         asignado_a: number | null;
         id_caso_creado: number | null;
-        updated_at: Date | null;
     }) | null>;
     /** Eventos que le asignaron a esta persona de Seguridad Operativa, para su bandeja. */
     static findByAsignado(id_usuario: number): Promise<({
@@ -245,9 +245,10 @@ export declare class EventoRepository {
         } | null;
     } & {
         estado: string;
+        created_at: Date | null;
         descripcion: string | null;
         fecha: Date;
-        created_at: Date | null;
+        updated_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -273,13 +274,13 @@ export declare class EventoRepository {
         usuario_registra: number | null;
         asignado_a: number | null;
         id_caso_creado: number | null;
-        updated_at: Date | null;
     })[]>;
     static asignar(id_evento: number, id_usuario: number): Promise<{
         estado: string;
+        created_at: Date | null;
         descripcion: string | null;
         fecha: Date;
-        created_at: Date | null;
+        updated_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -305,13 +306,13 @@ export declare class EventoRepository {
         usuario_registra: number | null;
         asignado_a: number | null;
         id_caso_creado: number | null;
-        updated_at: Date | null;
     }>;
     static create(dto: CreateEventoDto, actor?: number): Promise<{
         estado: string;
+        created_at: Date | null;
         descripcion: string | null;
         fecha: Date;
-        created_at: Date | null;
+        updated_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -337,13 +338,13 @@ export declare class EventoRepository {
         usuario_registra: number | null;
         asignado_a: number | null;
         id_caso_creado: number | null;
-        updated_at: Date | null;
     }>;
     static update(id_evento: number, dto: UpdateEventoDto): Promise<{
         estado: string;
+        created_at: Date | null;
         descripcion: string | null;
         fecha: Date;
-        created_at: Date | null;
+        updated_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -369,13 +370,13 @@ export declare class EventoRepository {
         usuario_registra: number | null;
         asignado_a: number | null;
         id_caso_creado: number | null;
-        updated_at: Date | null;
     }>;
     static remove(id_evento: number): Promise<{
         estado: string;
+        created_at: Date | null;
         descripcion: string | null;
         fecha: Date;
-        created_at: Date | null;
+        updated_at: Date | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
@@ -401,7 +402,6 @@ export declare class EventoRepository {
         usuario_registra: number | null;
         asignado_a: number | null;
         id_caso_creado: number | null;
-        updated_at: Date | null;
     }>;
 }
 //# sourceMappingURL=evento.repository.d.ts.map

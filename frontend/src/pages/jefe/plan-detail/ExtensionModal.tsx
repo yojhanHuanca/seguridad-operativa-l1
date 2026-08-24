@@ -7,6 +7,7 @@ import { Field, Input, Textarea } from "@/design-system/primitives/Input";
 import { shortPlanCode } from "@/features/cases/lib/planLabels";
 import { useConfiguracion } from "@/features/configuracion/hooks/useConfiguracion";
 import { useRequestPlanExtension } from "@/features/plans/hooks/usePlans";
+import { planDeadline } from "@/features/plans/lib/planDeadline";
 import { apiErrorMessage } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import type { PlanItem } from "@/features/plans/types";
@@ -26,7 +27,7 @@ export function ExtensionModal({ plan, open, onClose }: { plan: PlanItem; open: 
   const requestExt = useRequestPlanExtension();
   const { data: configuracion } = useConfiguracion();
   const diasProrroga = configuracion?.plazos.diasSolicitarProrroga ?? 7;
-  const plazoVigente = soloFecha(plan.fecha_reprogramada ?? plan.fecha_plan);
+  const plazoVigente = soloFecha(planDeadline(plan));
   const fechaMinima = addDays(plazoVigente, 1);
   const fechaMaxima = addDays(plazoVigente, diasProrroga);
   const sugerida = fechaMaxima;

@@ -13,6 +13,7 @@ import { useConfiguracion } from "@/features/configuracion/hooks/useConfiguracio
 import { encodeActivityDescription, parseActivityDescription } from "@/features/cases/lib/activityMeta";
 import { shortPlanCode } from "@/features/cases/lib/planLabels";
 import { planTomadoPorArea, puedeModificarPlan } from "@/features/cases/lib/workflow";
+import { planDeadline } from "@/features/plans/lib/planDeadline";
 import { apiErrorMessage } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -326,7 +327,7 @@ function PlanDisplay({ caso, onEdit }: { caso: CaseDetail; onEdit: (idPlan: numb
             </div>
             <div>
               <span className="text-ink-quiet">Fecha límite:</span>{" "}
-              <span className="font-medium">{formatDate(plan.fecha_reprogramada ?? plan.fecha_plan)}</span>
+              <span className="font-medium">{formatDate(planDeadline(plan))}</span>
               {plan.fecha_reprogramada && <span className="text-ink-faint text-xs"> (reprogramada)</span>}
             </div>
             <div>
@@ -434,7 +435,7 @@ function PlanForm({
             descripcion: parsed.descripcion,
             responsable: a.usuarios?.id_usuario ?? null,
             fecha_inicio: soloFecha(a.fecha_inicio) || hoy,
-            fecha_fin: soloFecha(a.fecha_fin) || soloFecha(plan.fecha_reprogramada ?? plan.fecha_plan),
+            fecha_fin: soloFecha(a.fecha_fin) || soloFecha(planDeadline(plan)),
             tipo_accion: parsed.meta.tipoAccion ?? TIPOS_ACCION[0],
             id_area: parsed.meta.idArea ? String(parsed.meta.idArea) : defaultArea,
           };

@@ -24,12 +24,12 @@ import { Skeleton } from "@/design-system/primitives/Skeleton";
 import { useCases } from "@/features/cases/hooks/useCases";
 import { toCaseRow, type CaseRow } from "@/features/cases/adapter";
 import { riskCategory, STAGE_STATUS } from "@/features/cases/domain";
-import { diasRestantes, slaEstado } from "@/features/cases/lib/sla";
+import { planDeadline } from "@/features/plans/lib/planDeadline";
 import { cn } from "@/lib/utils";
 import { daysUntil, formatDate, relativeTime } from "@/lib/format";
 
 type Severity = "critica" | "alta" | "media";
-type AlertType = "sla" | "riesgo" | "prorroga" | "decision" | "info" | "validacion";
+type AlertType = "plan" | "riesgo" | "prorroga" | "decision" | "info" | "validacion";
 
 interface AlertItem {
   id: string;
@@ -65,7 +65,7 @@ const SEVERITY_META: Record<Severity, { label: string; tone: "critical" | "warni
 };
 
 const TYPE_LABEL: Record<AlertType, string> = {
-  sla: "SLA",
+  plan: "Plan",
   riesgo: "Riesgo",
   prorroga: "Prorroga",
   decision: "Decision",
@@ -75,7 +75,7 @@ const TYPE_LABEL: Record<AlertType, string> = {
 
 const TYPE_OPTIONS: Array<{ value: "todas" | AlertType; label: string }> = [
   { value: "todas", label: "Todos los tipos" },
-  { value: "sla", label: "SLA" },
+  { value: "plan", label: "Planes" },
   { value: "riesgo", label: "Riesgo" },
   { value: "prorroga", label: "Prorrogas" },
   { value: "decision", label: "Decisiones" },
@@ -86,7 +86,7 @@ const TYPE_OPTIONS: Array<{ value: "todas" | AlertType; label: string }> = [
 const SEVERITY_ORDER: Record<Severity, number> = { critica: 0, alta: 1, media: 2 };
 
 export function SoAlertasPage() {
-  const { data: rawCases, isLoading } = useCases({ sort: "sla" });
+  const { data: rawCases, isLoading } = useCases({ sort: "prioridad" });
   const [severityFilter, setSeverityFilter] = useState<"todas" | Severity>("todas");
   const [typeFilter, setTypeFilter] = useState<"todas" | AlertType>("todas");
   const [query, setQuery] = useState("");
@@ -120,10 +120,10 @@ export function SoAlertasPage() {
     const critical = alerts.filter((a) => a.severity === "critica").length;
     const high = alerts.filter((a) => a.severity === "alta").length;
     const media = alerts.length - critical - high;
-    const sla = alerts.filter((a) => a.type === "sla").length;
+    const plan = alerts.filter((a) => a.type === "plan").length;
     const prorroga = alerts.filter((a) => a.type === "prorroga").length;
     const operationalHealth = alerts.length === 0 ? 100 : Math.max(0, Math.round(((openCases.length - critical - high) / Math.max(openCases.length, 1)) * 100));
-    return { critical, high, media, sla, prorroga, operationalHealth };
+    return { critical, high, media, plan, prorroga, operationalHealth };
   }, [alerts, openCases.length]);
 
   const clearFilters = () => {
@@ -137,7 +137,7 @@ export function SoAlertasPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
           <p className="max-w-2xl text-[13.5px] text-ink-quiet">
-            Prioriza expedientes con SLA comprometido, riesgo alto, prorrogas y acciones pendientes de Seguridad Operativa.
+            Prioriza expedientes con planes vencidos, riesgo alto, prorrogas y acciones pendientes de Seguridad Operativa.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -175,7 +175,7 @@ export function SoAlertasPage() {
           </div>
 
           <div className="grid grid-cols-3 gap-4 lg:pl-6">
-            <InlineStat icon={<CalendarClock className="h-4 w-4" />} label="SLA por revisar" value={stats.sla} tone={stats.sla ? "warning" : "neutral"} />
+            <InlineStat icon={<CalendarClock className="h-4 w-4" />} label="Planes vencidos" value={stats.plan} tone={stats.plan ? "warning" : "neutral"} />
             <InlineStat icon={<Timer className="h-4 w-4" />} label="Prorrogas" value={stats.prorroga} tone={stats.prorroga ? "warning" : "neutral"} />
             <InlineStat
               icon={<CheckCircle2 className="h-4 w-4" />}
@@ -232,7 +232,7 @@ export function SoAlertasPage() {
               <EmptyState
                 icon={<CheckCircle2 className="h-6 w-6" />}
                 title={alerts.length === 0 ? "Sin alertas operativas" : "No hay alertas con esos filtros"}
-                description={alerts.length === 0 ? "No se detectan SLA vencidos, prorrogas pendientes ni casos criticos abiertos." : "Ajusta los filtros para volver a ver la bandeja completa."}
+                description={alerts.length === 0 ? "No se detectan planes vencidos, prorrogas pendientes ni casos criticos abiertos." : "Ajusta los filtros para volver a ver la bandeja completa."}
                 action={alerts.length > 0 ? <Button variant="outline" size="sm" onClick={clearFilters}>Restablecer filtros</Button> : undefined}
               />
             </div>
@@ -270,8 +270,8 @@ export function SoAlertasPage() {
               </div>
             </div>
             <div className="space-y-2.5 text-[12.5px] text-ink-soft">
-              <Criterion tone="critical" label="Critica" text="SLA vencido o plan vencido con accion abierta." />
-              <Criterion tone="warning" label="Alta" text="SLA proximo, riesgo inaceptable o prorroga pendiente." />
+              <Criterion tone="critical" label="Critica" text="Plan vencido con accion abierta." />
+              <Criterion tone="warning" label="Alta" text="Riesgo inaceptable o prorroga pendiente." />
               <Criterion tone="info" label="Media" text="Recepcion, informacion pendiente o verificacion final." />
             </div>
           </Card>
@@ -287,39 +287,6 @@ function buildAlerts(cases: CaseRow[]): AlertItem[] {
   for (const c of cases) {
     if (STAGE_STATUS[c.stage] !== "abierto") continue;
 
-    const sla = slaEstado(c.slaDueDate, c.stage);
-    const slaDays = c.slaDueDate ? diasRestantes(c.slaDueDate) : null;
-
-    if (sla === "overdue") {
-      alerts.push({
-        id: `${c.id}-sla-overdue`,
-        codigo: c.id,
-        title: "SLA vencido",
-        detail: slaDays == null ? "El expediente supero el plazo definido." : `El expediente supero el plazo por ${Math.abs(slaDays)} dia(s).`,
-        action: "Revisar expediente y definir decision de cierre o continuidad.",
-        severity: "critica",
-        type: "sla",
-        icon: ShieldAlert,
-        caseRow: c,
-        dueDate: c.slaDueDate,
-        days: slaDays,
-      });
-    } else if (sla === "soon") {
-      alerts.push({
-        id: `${c.id}-sla-soon`,
-        codigo: c.id,
-        title: "SLA por vencer",
-        detail: slaDays == null ? "El expediente esta cerca del vencimiento." : `Quedan ${Math.max(slaDays, 0)} dia(s) para el vencimiento.`,
-        action: "Priorizar revision antes de que pase a vencido.",
-        severity: "alta",
-        type: "sla",
-        icon: CalendarClock,
-        caseRow: c,
-        dueDate: c.slaDueDate,
-        days: slaDays,
-      });
-    }
-
     if (c.risk && riskCategory(c.risk) === "inaceptable") {
       alerts.push({
         id: `${c.id}-risk`,
@@ -327,7 +294,7 @@ function buildAlerts(cases: CaseRow[]): AlertItem[] {
         title: "Riesgo inaceptable abierto",
         detail: `${c.risk} · ${c.riskCategoria ?? "Inaceptable"}. El caso requiere seguimiento ejecutivo.`,
         action: "Validar responsable, plan de accion y fecha comprometida.",
-        severity: sla === "overdue" ? "critica" : "alta",
+        severity: "alta",
         type: "riesgo",
         icon: AlertTriangle,
         caseRow: c,
@@ -395,7 +362,7 @@ function buildAlerts(cases: CaseRow[]): AlertItem[] {
 
     for (const plan of c.planes) {
       const estado = plan.catalogo_detalle.nombre.toLowerCase();
-      const due = plan.fecha_reprogramada ?? plan.fecha_plan;
+      const due = planDeadline(plan);
       const planDays = daysUntil(due);
 
       if (!estado.includes("cerrad") && !estado.includes("rechaz") && planDays < 0) {
@@ -406,7 +373,7 @@ function buildAlerts(cases: CaseRow[]): AlertItem[] {
           detail: `${plan.codigo_plan} vencio el ${formatDate(due)}.`,
           action: "Solicitar actualizacion al responsable o revisar prorroga.",
           severity: "critica",
-          type: "sla",
+          type: "plan",
           icon: ShieldAlert,
           caseRow: c,
           dueDate: due,

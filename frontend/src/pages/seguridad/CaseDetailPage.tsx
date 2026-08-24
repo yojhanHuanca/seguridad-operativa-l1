@@ -28,9 +28,10 @@ import { useCase } from "@/features/cases/hooks/useCase";
 import { nombreSistema, useConfiguracion } from "@/features/configuracion/hooks/useConfiguracion";
 import { stageFromEstado } from "@/features/cases/domain";
 import { panelForEstado, puede, siguientePaso, ACTOR_ROL_LABEL } from "@/features/cases/lib/workflow";
-import { criterioAceptabilidad, fechaEvaluacion, slaDueDate, slaEstado, diasRestantes } from "@/features/cases/lib/sla";
+import { criterioAceptabilidad } from "@/features/cases/lib/sla";
 import { humanEvidenceDetail } from "@/features/cases/lib/planEvidence";
 import { compactPlanCodes } from "@/features/cases/lib/planLabels";
+import { planDeadline } from "@/features/plans/lib/planDeadline";
 import { formatDate, formatDateTime, formatTime } from "@/lib/format";
 import { useCurrentSoUser } from "@/features/users/hooks/useCurrentSoUser";
 import { ReceptionStage } from "./case-detail/ReceptionStage";
@@ -46,14 +47,6 @@ import { shortPlanCode } from "@/features/cases/lib/planLabels";
 
 const mobileHeaderButtonClass =
   "h-auto min-h-8 w-full min-w-0 whitespace-normal px-2 py-1.5 text-center leading-tight sm:h-8 sm:w-auto sm:whitespace-nowrap sm:px-3 sm:py-0";
-
-function sumarDiasISO(desdeISO: string | null, dias: number): string | null {
-  if (!desdeISO) return null;
-  const limite = new Date(desdeISO);
-  if (Number.isNaN(limite.getTime())) return null;
-  limite.setDate(limite.getDate() + Math.max(1, dias));
-  return limite.toISOString();
-}
 
 // Portado de pages/seguridad/CaseFile.tsx: cabecera + stepper + panel
 // izquierdo (Información general / Evento operativo) + panel central por etapa,
@@ -104,23 +97,9 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
   // El panel central y las acciones disponibles salen de la máquina de estados:
   // la UI nunca ofrece una transición que el flujo no contempla en esta etapa.
   const panel = panelForEstado(estado);
-  const riesgo = caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle;
   const investigacionOmitida =
     !caso.investigacion_caso &&
     ["Plan de Acción", "Ejecución", "Prórroga Solicitada", "Verificación", "Cerrado"].includes(estado);
-
-  // El plazo corre desde la evaluación (que es cuando se asigna el riesgo),
-  // no desde el hallazgo: antes de evaluar no hay SLA que medir. Los casos
-  // sembrados antes del módulo de gestión ya traen riesgo pero no tienen el
-  // evento de evaluación en la bitácora; para esos se cuenta desde el hallazgo,
-  // que es el mismo criterio que usa la bandeja.
-  const evaluadoEl = fechaEvaluacion(caso.timeline_caso);
-  const slaDesde = evaluadoEl ?? caso.fecha_hallazgo;
-  const investigacionDue =
-    stage === "investigacion" ? sumarDiasISO(slaDesde, configuracion?.plazos.diasMaxInvestigacion ?? 15) : null;
-  const slaDue = investigacionDue ?? slaDueDate(slaDesde, riesgo?.nombre, riesgo?.codigo);
-  const sla = slaEstado(slaDue, stage);
-  const dias = slaDue ? diasRestantes(slaDue) : 0;
 
   // Solicitud abierta: define a qué etapa vuelve el caso cuando le respondan.
   const solicitudAbierta = caso.solicitudes_informacion.find((s) => !s.respondida);
@@ -187,11 +166,6 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
           <h1 className="mt-2 max-w-3xl break-words text-[20px] font-bold leading-tight tracking-tight text-ink sm:text-[22px]">{titulo}</h1>
         </div>
         <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
-          {sla !== "done" && sla !== "ok" && sla !== "sin_sla" && (
-            <Pill tone={sla === "overdue" ? "critical" : "warning"} dot className="self-start sm:self-auto">
-              <Timer className="h-3 w-3" /> SLA {sla === "overdue" ? `vencido ${Math.abs(dias)}d` : `${dias}d`}
-            </Pill>
-          )}
           <span data-print="hide" className="grid w-full min-w-0 grid-cols-2 gap-2 min-[440px]:grid-cols-3 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:justify-end">
           <Button variant="outline" size="sm" className={mobileHeaderButtonClass} onClick={() => setShowEvidence(true)}>
             <ImageIcon className="h-4 w-4" /> Evidencias ({caso.anexos_caso.length})
@@ -339,7 +313,7 @@ function planDescripcion(plan: CaseDetail["planes_accion"][number]): string {
 }
 
 function planFechaLimite(plan: CaseDetail["planes_accion"][number]): string {
-  return plan.fecha_reprogramada ?? plan.fecha_plan;
+  return planDeadline(plan);
 }
 
 function latestPlanLimit(caso: CaseDetail): string | null {

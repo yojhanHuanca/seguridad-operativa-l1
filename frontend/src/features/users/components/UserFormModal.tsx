@@ -14,6 +14,7 @@ import type { UserListItem } from "../types";
 const STEPS = ["datos", "acceso"] as const;
 type Step = (typeof STEPS)[number];
 const STEP_LABELS: Record<Step, string> = { datos: "Datos personales", acceso: "Acceso y rol" };
+const ROLES_OCULTOS_ADMIN = new Set(["Reportante"]);
 
 interface FormState {
   nombres: string;
@@ -83,6 +84,8 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
   const updateUser = useUpdateUser();
   const pending = createUser.isPending || updateUser.isPending;
   const step = STEPS[stepIndex];
+  const rolesDisponibles = roles.data?.filter((rol) => !ROLES_OCULTOS_ADMIN.has(rol.nombre_rol)) ?? [];
+  const set = <K extends keyof FormState>(key: K, value: FormState[K]) => setForm((f) => ({ ...f, [key]: value }));
 
   useEffect(() => {
     if (!open) return;
@@ -94,11 +97,32 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
     return () => window.clearTimeout(timer);
   }, [open, user]);
 
-  const set = <K extends keyof FormState>(key: K, value: FormState[K]) => setForm((f) => ({ ...f, [key]: value }));
+  useEffect(() => {
+    if (!open || !form.id_rol || !roles.data) return;
+    const rolActual = roles.data.find((rol) => String(rol.id_rol) === form.id_rol);
+    if (rolActual && ROLES_OCULTOS_ADMIN.has(rolActual.nombre_rol)) {
+      set("id_rol", "");
+    }
+  }, [form.id_rol, open, roles.data]);
 
-  const rolSeleccionado = roles.data?.find((r) => String(r.id_rol) === form.id_rol);
+  const rolSeleccionado = rolesDisponibles.find((r) => String(r.id_rol) === form.id_rol);
+  const nombreRolSeleccionado = rolSeleccionado?.nombre_rol ?? (isEdit && String(user?.id_rol) === form.id_rol ? user?.roles?.nombre_rol : undefined);
+  const esSeguridadOperativa = nombreRolSeleccionado === "Seguridad Operativa";
   const datosValidos = form.nombres.trim() && form.apellidos.trim() && form.correo.trim();
   const accesoValido = form.id_area && form.id_rol && (isEdit || form.password.trim().length >= 6);
+
+  useEffect(() => {
+    if (!open || esSeguridadOperativa) return;
+    setForm((actual) => {
+      if (!actual.es_responsable && !actual.puede_reabrir_casos && !actual.puede_rechazar_reportes) return actual;
+      return {
+        ...actual,
+        es_responsable: false,
+        puede_reabrir_casos: false,
+        puede_rechazar_reportes: false,
+      };
+    });
+  }, [esSeguridadOperativa, open]);
 
   const goNext = () => {
     if (!datosValidos) {
@@ -125,9 +149,9 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
       telefono: form.telefono.trim() || undefined,
       id_area: Number(form.id_area),
       id_rol: Number(form.id_rol),
-      es_responsable: form.es_responsable,
-      puede_reabrir_casos: form.puede_reabrir_casos,
-      puede_rechazar_reportes: form.puede_rechazar_reportes,
+      es_responsable: esSeguridadOperativa ? form.es_responsable : false,
+      puede_reabrir_casos: esSeguridadOperativa ? form.puede_reabrir_casos : false,
+      puede_rechazar_reportes: esSeguridadOperativa ? form.puede_rechazar_reportes : false,
     };
 
     if (isEdit) {
@@ -254,7 +278,7 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
               <Field label="Rol" required>
                 <Select value={form.id_rol} onChange={(e) => set("id_rol", e.target.value)} disabled={roles.isLoading}>
                   <option value="">Selecciona un rol…</option>
-                  {roles.data?.map((r) => (
+                  {rolesDisponibles.map((r) => (
                     <option key={r.id_rol} value={r.id_rol}>{r.nombre_rol}</option>
                   ))}
                 </Select>
@@ -268,7 +292,7 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
                 </Select>
               </Field>
             )}
-            {rolSeleccionado?.nombre_rol === "Seguridad Operativa" && (
+            {esSeguridadOperativa && (
               <label className="flex items-start gap-2.5 rounded-lg border border-line bg-surface/50 px-3 py-2.5">
                 <input
                   type="checkbox"
@@ -284,7 +308,7 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
                 </span>
               </label>
             )}
-            {rolSeleccionado?.nombre_rol === "Seguridad Operativa" && (
+            {esSeguridadOperativa && (
               <div className="grid gap-2 sm:grid-cols-2">
                 <label className="flex items-start gap-2.5 rounded-lg border border-line bg-surface/50 px-3 py-2.5">
                   <input

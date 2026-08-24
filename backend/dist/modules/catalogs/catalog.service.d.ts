@@ -11,10 +11,10 @@ export declare class CatalogService {
     } & {
         nombre: string;
         estado: boolean | null;
-        descripcion: string | null;
-        id_catalogo: number;
-        codigo: string;
         created_at: Date | null;
+        descripcion: string | null;
+        codigo: string;
+        id_catalogo: number;
     })[]>;
     static getGroupForAdmin(id_catalogo: number): Promise<{
         catalogo_detalle: {
@@ -29,18 +29,18 @@ export declare class CatalogService {
     } & {
         nombre: string;
         estado: boolean | null;
-        descripcion: string | null;
-        id_catalogo: number;
-        codigo: string;
         created_at: Date | null;
+        descripcion: string | null;
+        codigo: string;
+        id_catalogo: number;
     }>;
     static createItem(id_catalogo: number, nombre_raw: string): Promise<{
         nombre: string;
         estado: boolean | null;
-        descripcion: string | null;
-        id_catalogo: number;
-        codigo: string | null;
         created_at: Date | null;
+        descripcion: string | null;
+        codigo: string | null;
+        id_catalogo: number;
         orden: number | null;
         id_detalle: number;
         color: string | null;
@@ -48,10 +48,10 @@ export declare class CatalogService {
     static updateItem(id_detalle: number, nombre_raw: string): Promise<{
         nombre: string;
         estado: boolean | null;
-        descripcion: string | null;
-        id_catalogo: number;
-        codigo: string | null;
         created_at: Date | null;
+        descripcion: string | null;
+        codigo: string | null;
+        id_catalogo: number;
         orden: number | null;
         id_detalle: number;
         color: string | null;
@@ -59,10 +59,10 @@ export declare class CatalogService {
     static setItemEstado(id_detalle: number, estado: boolean): Promise<{
         nombre: string;
         estado: boolean | null;
-        descripcion: string | null;
-        id_catalogo: number;
-        codigo: string | null;
         created_at: Date | null;
+        descripcion: string | null;
+        codigo: string | null;
+        id_catalogo: number;
         orden: number | null;
         id_detalle: number;
         color: string | null;

@@ -9,7 +9,6 @@ import { Card } from "@/components/ui/card";
 import { ReportanteShell } from "@/components/layout/ReportanteShell";
 import { cn } from "@/lib/utils";
 import { apiErrorMessage } from "@/lib/api";
-import { useAuth } from "@/features/auth/auth";
 import { guardarReporteLocal } from "@/features/reports/lib/misReportesLocal";
 import { reportFormSchema, REPORT_STEPS, STEP_FIELDS, type ReportFormValues, type ReportStep } from "@/features/reports/schema";
 import { useCatalogs } from "@/features/reports/hooks/useCatalogs";
@@ -60,23 +59,14 @@ export function NewReportPage() {
     setStepIndex((i) => Math.max(i - 1, 0));
   };
 
-  const { token } = useAuth();
-
   const onSubmit = form.handleSubmit((values) => {
     createReport.mutate(
       { values, files },
       {
         onSuccess: (result) => {
           toast.success(`Reporte ${result.codigo_sop} registrado correctamente`);
-          // Sin cuenta, "Mis reportes" no existe: el código es la única forma
-          // de hacer seguimiento después, por eso va a la consulta pública
-          // con el código ya cargado, no a una pantalla que le pediría loguearse.
-          if (token && values.modalidad === "identificado") {
-            navigate("/reportes/mis-reportes?nuevo=" + encodeURIComponent(result.codigo_sop));
-          } else {
-            guardarReporteLocal(result.codigo_sop);
-            navigate("/reportes/consulta?codigo=" + encodeURIComponent(result.codigo_sop));
-          }
+          guardarReporteLocal(result.codigo_sop);
+          navigate("/reportes/consulta?codigo=" + encodeURIComponent(result.codigo_sop));
         },
         onError: (error) => {
           toast.error(apiErrorMessage(error, "No se pudo registrar el reporte"));

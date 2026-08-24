@@ -107,15 +107,16 @@ export class UserRepository {
      */
     static async counts() {
         const visibles = { NOT: { codigo_usuario: SYSTEM_AUDIT_USER_CODE } };
+        const seguridadOperativa = { ...visibles, roles: { nombre_rol: "Seguridad Operativa" } };
         const [total, activos, conRol, sinRol, porRol, esResponsable, puedeReabrirCasos, puedeRechazarReportes] = await Promise.all([
             prisma.usuarios.count({ where: visibles }),
             prisma.usuarios.count({ where: { ...visibles, estado: "Activo" } }),
             prisma.usuarios.count({ where: { ...visibles, id_rol: { not: null } } }),
             prisma.usuarios.count({ where: { ...visibles, id_rol: null } }),
             prisma.usuarios.groupBy({ by: ["id_rol"], where: visibles, _count: { id_rol: true } }),
-            prisma.usuarios.count({ where: { ...visibles, es_responsable: true } }),
-            prisma.usuarios.count({ where: { ...visibles, puede_reabrir_casos: true } }),
-            prisma.usuarios.count({ where: { ...visibles, puede_rechazar_reportes: true } }),
+            prisma.usuarios.count({ where: { ...seguridadOperativa, es_responsable: true } }),
+            prisma.usuarios.count({ where: { ...seguridadOperativa, puede_reabrir_casos: true } }),
+            prisma.usuarios.count({ where: { ...seguridadOperativa, puede_rechazar_reportes: true } }),
         ]);
         return {
             total,

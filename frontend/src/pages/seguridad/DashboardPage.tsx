@@ -4,10 +4,9 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   FolderClock,
-  CalendarClock,
+  AlertTriangle,
   CheckCircle2,
   ShieldCheck,
-  Gauge,
   Activity,
   TrendingUp,
   Train,
@@ -29,7 +28,6 @@ import { stationNamesFromCatalog } from "@/lib/stations";
 import { useCatalogs } from "@/features/reports/hooks/useCatalogs";
 import { cn } from "@/lib/utils";
 import { relativeTime } from "@/lib/format";
-import { slaEstado } from "@/features/cases/lib/sla";
 
 export function SoDashboardPage() {
   const { data: rawCases, isLoading } = useCases();
@@ -45,24 +43,11 @@ export function SoDashboardPage() {
     const closed = cases.filter((c) => c.stage === "cierre");
     const critical = open.filter((c) => c.risk && riskCategory(c.risk) === "inaceptable");
     const approved = cases.filter((c) => ["investigacion", "plan_accion", "ejecucion", "verificacion", "cierre"].includes(c.stage));
-    const dueSoon = open.filter((c) => {
-      const s = slaEstado(c.slaDueDate, c.stage);
-      return s === "soon" || s === "overdue";
-    });
-    const slaCompliance = (() => {
-      const total = cases.length;
-      if (!total) return 100;
-      const closedOnTime = closed.length;
-      const openOnTime = open.filter((c) => slaEstado(c.slaDueDate, c.stage) !== "overdue").length;
-      return Math.round(((closedOnTime + openOnTime) / total) * 100);
-    })();
     return {
       pendientes: open.length,
       critical: critical.length,
-      dueSoon: dueSoon.length,
       cerrados: closed.length,
       aprobados: approved.length,
-      slaCompliance,
     };
   }, [cases]);
 
@@ -129,40 +114,27 @@ export function SoDashboardPage() {
                 {stats.critical} críticos
               </Pill>
             )}
-            <Pill tone="info" dot>
-              SLA {stats.slaCompliance}%
-            </Pill>
           </>
         }
       />
 
       <motion.div
-        className="mt-5 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3"
+        className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-3"
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
       >
         <KpiCard icon={<FolderClock className="h-4.5 w-4.5" />} label="Pendientes" value={stats.pendientes} delta="Abiertos" deltaTone="info" />
         <KpiCard
-          icon={<CalendarClock className="h-4.5 w-4.5" />}
-          label="Próx. a vencer"
-          value={stats.dueSoon}
-          delta="≤ 2 días"
-          deltaTone="warning"
-          tone="warning"
+          icon={<AlertTriangle className="h-4.5 w-4.5" />}
+          label="Críticos"
+          value={stats.critical}
+          delta="Riesgo alto"
+          deltaTone={stats.critical ? "critical" : "brand"}
+          tone={stats.critical ? "critical" : "brand"}
         />
         <KpiCard icon={<CheckCircle2 className="h-4.5 w-4.5" />} label="Cerrados" value={stats.cerrados} delta="Histórico" deltaTone="brand" tone="brand" />
         <KpiCard icon={<ShieldCheck className="h-4.5 w-4.5" />} label="Aprobados" value={stats.aprobados} delta="En curso" deltaTone="brand" />
-        <KpiCard
-          icon={<Gauge className="h-4.5 w-4.5" />}
-          label="Cumpl. SLA"
-          value={stats.slaCompliance}
-          suffix="%"
-          delta={stats.slaCompliance >= 85 ? "Saludable" : "Atención"}
-          deltaTone={stats.slaCompliance >= 85 ? "brand" : "warning"}
-          tone="brand"
-          gauge={stats.slaCompliance}
-        />
       </motion.div>
 
       <div className="mt-5 grid lg:grid-cols-3 gap-5">

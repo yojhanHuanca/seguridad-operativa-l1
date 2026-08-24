@@ -60,6 +60,8 @@ export interface PlanItem {
     titulo: string | null;
     descripcion: string;
     fecha_hallazgo: string;
+    fecha_evento: string | null;
+    catalogo_detalle_casos_sop_tipoTocatalogo_detalle?: { nombre: string };
     catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { nombre: string };
     catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: { codigo: string | null; nombre: string } | null;
     investigacion_caso: {

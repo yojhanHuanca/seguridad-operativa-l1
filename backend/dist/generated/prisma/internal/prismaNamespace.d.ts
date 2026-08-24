@@ -288,6 +288,7 @@ export declare const ModelName: {
     readonly solicitudes_informacion: "solicitudes_informacion";
     readonly solicitudes_prorroga: "solicitudes_prorroga";
     readonly usuarios: "usuarios";
+    readonly password_resets: "password_resets";
 };
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
 export interface TypeMapCb<GlobalOmitOptions = {}> extends runtime.Types.Utils.Fn<{
@@ -300,7 +301,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         omit: GlobalOmitOptions;
     };
     meta: {
-        modelProps: "actividades_plan" | "anexos_caso" | "areas" | "auditoria" | "bitacora" | "casos_sop" | "catalogo_detalle" | "catalogos" | "configuracion" | "dashboard_indicadores" | "dashboards" | "estaciones" | "evento_caso" | "eventos_operativos" | "eventos_monitoreo" | "evidencias" | "evidencias_evento" | "historial_indicadores" | "incidencias" | "indicadores" | "timeline_caso" | "investigacion_caso" | "investigaciones" | "logs_sistema" | "metas_indicadores" | "notificaciones" | "planes_accion" | "reporte_detalle" | "reporte_estadistico" | "roles" | "seguimientos" | "sesiones" | "solicitudes_informacion" | "solicitudes_prorroga" | "usuarios";
+        modelProps: "actividades_plan" | "anexos_caso" | "areas" | "auditoria" | "bitacora" | "casos_sop" | "catalogo_detalle" | "catalogos" | "configuracion" | "dashboard_indicadores" | "dashboards" | "estaciones" | "evento_caso" | "eventos_operativos" | "eventos_monitoreo" | "evidencias" | "evidencias_evento" | "historial_indicadores" | "incidencias" | "indicadores" | "timeline_caso" | "investigacion_caso" | "investigaciones" | "logs_sistema" | "metas_indicadores" | "notificaciones" | "planes_accion" | "reporte_detalle" | "reporte_estadistico" | "roles" | "seguimientos" | "sesiones" | "solicitudes_informacion" | "solicitudes_prorroga" | "usuarios" | "password_resets";
         txIsolationLevel: TransactionIsolationLevel;
     };
     model: {
@@ -2894,6 +2895,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
                 };
             };
         };
+        password_resets: {
+            payload: Prisma.$password_resetsPayload<ExtArgs>;
+            fields: Prisma.password_resetsFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.password_resetsFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$password_resetsPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.password_resetsFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$password_resetsPayload>;
+                };
+                findFirst: {
+                    args: Prisma.password_resetsFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$password_resetsPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.password_resetsFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$password_resetsPayload>;
+                };
+                findMany: {
+                    args: Prisma.password_resetsFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$password_resetsPayload>[];
+                };
+                create: {
+                    args: Prisma.password_resetsCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$password_resetsPayload>;
+                };
+                createMany: {
+                    args: Prisma.password_resetsCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.password_resetsCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$password_resetsPayload>[];
+                };
+                delete: {
+                    args: Prisma.password_resetsDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$password_resetsPayload>;
+                };
+                update: {
+                    args: Prisma.password_resetsUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$password_resetsPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.password_resetsDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.password_resetsUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.password_resetsUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$password_resetsPayload>[];
+                };
+                upsert: {
+                    args: Prisma.password_resetsUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$password_resetsPayload>;
+                };
+                aggregate: {
+                    args: Prisma.Password_resetsAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregatePassword_resets>;
+                };
+                groupBy: {
+                    args: Prisma.password_resetsGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Password_resetsGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.password_resetsCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Password_resetsCountAggregateOutputType> | number;
+                };
+            };
+        };
     };
 } & {
     other: {
@@ -3349,6 +3424,15 @@ export declare const UsuariosScalarFieldEnum: {
     readonly id_rol: "id_rol";
 };
 export type UsuariosScalarFieldEnum = (typeof UsuariosScalarFieldEnum)[keyof typeof UsuariosScalarFieldEnum];
+export declare const Password_resetsScalarFieldEnum: {
+    readonly id_reset: "id_reset";
+    readonly usuario: "usuario";
+    readonly token_hash: "token_hash";
+    readonly expires_at: "expires_at";
+    readonly used_at: "used_at";
+    readonly created_at: "created_at";
+};
+export type Password_resetsScalarFieldEnum = (typeof Password_resetsScalarFieldEnum)[keyof typeof Password_resetsScalarFieldEnum];
 export declare const SortOrder: {
     readonly asc: "asc";
     readonly desc: "desc";
@@ -3574,6 +3658,7 @@ export type GlobalOmitConfig = {
     solicitudes_informacion?: Prisma.solicitudes_informacionOmit;
     solicitudes_prorroga?: Prisma.solicitudes_prorrogaOmit;
     usuarios?: Prisma.usuariosOmit;
+    password_resets?: Prisma.password_resetsOmit;
 };
 export type LogLevel = 'info' | 'query' | 'warn' | 'error';
 export type LogDefinition = {

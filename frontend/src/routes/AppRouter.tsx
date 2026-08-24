@@ -10,12 +10,8 @@ const Landing = lazyNamed(() => import("@/pages/Landing"), "Landing");
 const LoginPage = lazyNamed(() => import("@/pages/Login"), "LoginPage");
 const ForgotPasswordPage = lazyNamed(() => import("@/pages/ForgotPassword"), "ForgotPasswordPage");
 const ResetPasswordPage = lazyNamed(() => import("@/pages/ResetPassword"), "ResetPasswordPage");
-const ReportanteHomePage = lazyNamed(() => import("@/pages/reports/ReportanteHomePage"), "ReportanteHomePage");
 const NewReportPage = lazyNamed(() => import("@/pages/reports/NewReportPage"), "NewReportPage");
 const ConsultarReportePage = lazyNamed(() => import("@/pages/reports/ConsultarReportePage"), "ConsultarReportePage");
-const MyReportsPage = lazyNamed(() => import("@/pages/reports/MyReportsPage"), "MyReportsPage");
-const NotificationsPage = lazyNamed(() => import("@/pages/reports/NotificationsPage"), "NotificationsPage");
-const ReportantePerfilPage = lazyNamed(() => import("@/pages/reports/PerfilPage"), "ReportantePerfilPage");
 const SoDashboardPage = lazyNamed(() => import("@/pages/seguridad/DashboardPage"), "SoDashboardPage");
 const SoCasosPage = lazyNamed(() => import("@/pages/seguridad/CasosPage"), "SoCasosPage");
 const CaseDetailPage = lazyNamed(() => import("@/pages/seguridad/CaseDetailPage"), "CaseDetailPage");
@@ -67,14 +63,14 @@ export function AppRouter() {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/inicio" element={<Navigate to="/" replace />} />
-          <Route path="/reportes" element={<ProtectedRoute roles={["Reportante"]}><ReportanteHomePage /></ProtectedRoute>} />
+          <Route path="/reportes" element={<Navigate to="/reportes/nuevo" replace />} />
           {/* Pública, sin sesión: quien reporta llega desde un QR/URL, sin cuenta. */}
           <Route path="/reportes/nuevo" element={<NewReportPage />} />
           {/* Pública, sin sesión: seguimiento por código para quien reportó sin cuenta. */}
           <Route path="/reportes/consulta" element={<ConsultarReportePage />} />
-          <Route path="/reportes/mis-reportes" element={<ProtectedRoute roles={["Reportante"]}><MyReportsPage /></ProtectedRoute>} />
-          <Route path="/reportes/notificaciones" element={<ProtectedRoute roles={["Reportante"]}><NotificationsPage /></ProtectedRoute>} />
-          <Route path="/reportes/perfil" element={<ProtectedRoute roles={["Reportante"]}><ReportantePerfilPage /></ProtectedRoute>} />
+          <Route path="/reportes/mis-reportes" element={<Navigate to="/reportes/consulta" replace />} />
+          <Route path="/reportes/notificaciones" element={<Navigate to="/reportes/consulta" replace />} />
+          <Route path="/reportes/perfil" element={<Navigate to="/reportes/nuevo" replace />} />
 
           {/* Portal de Seguridad Operativa (Analista SO) — sin login todavía */}
           <Route path="/seguridad" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoDashboardPage /></ProtectedRoute>} />

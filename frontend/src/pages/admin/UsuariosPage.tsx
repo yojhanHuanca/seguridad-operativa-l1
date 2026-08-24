@@ -5,7 +5,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Crown,
-  FileText,
   KeyRound,
   Pencil,
   Radar,
@@ -42,7 +41,8 @@ const PERMISOS: { key: PermisoKey; label: string; shortLabel: string; hint: stri
   { key: "puede_rechazar_reportes", label: "Rechazar reportes", shortLabel: "Rechazar", hint: "Rechazo de reportes antes del flujo de gestión." },
 ];
 
-const ROLE_ORDER = ["Admin", "Seguridad Operativa", "Jefe de Área", "Reportante", "Monitorista"];
+const ROLE_ORDER = ["Admin", "Seguridad Operativa", "Jefe de Área", "Monitorista"];
+const ROLES_OCULTOS_ADMIN = new Set(["Reportante"]);
 
 const ROL_STYLE: Record<string, { icon: typeof ShieldCheck; badge: string; dot: string; active: string }> = {
   Admin: { icon: Crown, badge: "bg-red-50 text-red-700 border-red-100", dot: "bg-red-500", active: "border-red-200 bg-red-50/70 text-red-800" },
@@ -53,7 +53,6 @@ const ROL_STYLE: Record<string, { icon: typeof ShieldCheck; badge: string; dot: 
     active: "border-brand-200 bg-brand-50/80 text-brand-900",
   },
   "Jefe de Área": { icon: Briefcase, badge: "bg-blue-50 text-blue-700 border-blue-100", dot: "bg-blue-500", active: "border-blue-200 bg-blue-50/80 text-blue-800" },
-  Reportante: { icon: FileText, badge: "bg-slate-100 text-slate-700 border-slate-200", dot: "bg-slate-400", active: "border-slate-200 bg-slate-100 text-slate-800" },
   Monitorista: { icon: Radar, badge: "bg-amber-50 text-amber-700 border-amber-100", dot: "bg-amber-500", active: "border-amber-200 bg-amber-50/80 text-amber-800" },
 };
 
@@ -71,7 +70,6 @@ const MATRIZ_PERMISOS: { modulo: string; accesos: Record<string, string> }[] = [
       Admin: "Ver todo",
       "Seguridad Operativa": "Ver indicadores SO",
       "Jefe de Área": "Ver planes asignados",
-      Reportante: "Ver sus reportes",
       Monitorista: "Ver operación",
     },
   },
@@ -81,7 +79,6 @@ const MATRIZ_PERMISOS: { modulo: string; accesos: Record<string, string> }[] = [
       Admin: "Auditar",
       "Seguridad Operativa": "Gestionar flujo",
       "Jefe de Área": "Ver vinculados",
-      Reportante: "Crear y ver propios",
       Monitorista: "Derivar eventos",
     },
   },
@@ -91,7 +88,6 @@ const MATRIZ_PERMISOS: { modulo: string; accesos: Record<string, string> }[] = [
       Admin: "Auditar",
       "Seguridad Operativa": "Crear y aprobar",
       "Jefe de Área": "Ejecutar",
-      Reportante: "Sin acceso",
       Monitorista: "Sin acceso",
     },
   },
@@ -101,7 +97,6 @@ const MATRIZ_PERMISOS: { modulo: string; accesos: Record<string, string> }[] = [
       Admin: "Ver y exportar",
       "Seguridad Operativa": "Sin acceso",
       "Jefe de Área": "Sin acceso",
-      Reportante: "Sin acceso",
       Monitorista: "Sin acceso",
     },
   },
@@ -111,7 +106,6 @@ const MATRIZ_PERMISOS: { modulo: string; accesos: Record<string, string> }[] = [
       Admin: "Importar histórico",
       "Seguridad Operativa": "Sin acceso",
       "Jefe de Área": "Sin acceso",
-      Reportante: "Sin acceso",
       Monitorista: "Sin acceso",
     },
   },
@@ -121,7 +115,6 @@ const MATRIZ_PERMISOS: { modulo: string; accesos: Record<string, string> }[] = [
       Admin: "Administrar",
       "Seguridad Operativa": "Sin acceso",
       "Jefe de Área": "Sin acceso",
-      Reportante: "Sin acceso",
       Monitorista: "Sin acceso",
     },
   },
@@ -131,7 +124,6 @@ const MATRIZ_PERMISOS: { modulo: string; accesos: Record<string, string> }[] = [
       Admin: "Ver y exportar",
       "Seguridad Operativa": "Ver y exportar",
       "Jefe de Área": "Ver área",
-      Reportante: "Ver propios",
       Monitorista: "Ver operación",
     },
   },
@@ -141,7 +133,6 @@ const MATRIZ_PERMISOS: { modulo: string; accesos: Record<string, string> }[] = [
       Admin: "Ver",
       "Seguridad Operativa": "Solo Responsable SO",
       "Jefe de Área": "Sin acceso",
-      Reportante: "Sin acceso",
       Monitorista: "Gestionar",
     },
   },
@@ -166,18 +157,27 @@ function roleStyle(nombreRol?: string | null) {
 }
 
 function sortedRoles(roles: Role[]) {
-  return [...roles].sort((a, b) => {
+  return roles.filter((role) => roleVisibleForAdmin(role.nombre_rol)).sort((a, b) => {
     const ai = ROLE_ORDER.indexOf(a.nombre_rol);
     const bi = ROLE_ORDER.indexOf(b.nombre_rol);
     return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi) || a.nombre_rol.localeCompare(b.nombre_rol);
   });
 }
 
+function roleVisibleForAdmin(roleName?: string | null) {
+  return !roleName || !ROLES_OCULTOS_ADMIN.has(roleName);
+}
+
+function userIsSO(user: UserListItem) {
+  return user.roles?.nombre_rol === "Seguridad Operativa";
+}
+
 function userHasSpecialPermission(user: UserListItem) {
-  return PERMISOS.some((permiso) => Boolean(user[permiso.key]));
+  return userIsSO(user) && PERMISOS.some((permiso) => Boolean(user[permiso.key]));
 }
 
 function permissionLabels(user: UserListItem) {
+  if (!userIsSO(user)) return [];
   return PERMISOS.filter((permiso) => Boolean(user[permiso.key]));
 }
 
@@ -248,6 +248,9 @@ function AccessRoleTabs({
   value: string;
   onChange: (value: string) => void;
 }) {
+  const visibleRoles = sortedRoles(roles);
+  const visibleTotal = (counts?.sinRol ?? 0) + visibleRoles.reduce((total, role) => total + (counts?.porRol[String(role.id_rol)] ?? 0), 0);
+
   return (
     <div className="scrollbar-none flex gap-2 overflow-x-auto rounded-xl border border-line bg-white p-1">
       <button
@@ -260,10 +263,10 @@ function AccessRoleTabs({
       >
         Todos
         <span className={cn("rounded-full px-1.5 py-0.5 text-[10.5px]", value === "todos" ? "bg-white/15 text-white" : "bg-surface-2 text-ink-quiet")}>
-          {counts?.total ?? 0}
+          {visibleTotal}
         </span>
       </button>
-      {sortedRoles(roles).map((role) => {
+      {visibleRoles.map((role) => {
         const active = value === String(role.id_rol);
         const style = roleStyle(role.nombre_rol);
         const count = counts?.porRol[String(role.id_rol)] ?? 0;
@@ -338,7 +341,7 @@ function AccessUsersTable({
             </thead>
             <tbody>
               {users.map((user) => {
-                const isSO = user.roles?.nombre_rol === "Seguridad Operativa";
+                const isSO = userIsSO(user);
                 const labels = permissionLabels(user);
                 return (
                   <tr key={user.id_usuario} className="border-b border-line-soft last:border-0 hover:bg-surface/70">
@@ -470,12 +473,16 @@ export function AdminUsuariosPage() {
   });
 
   const pageUsers = useMemo(() => pageData?.items ?? [], [pageData]);
+  const visibleAccessUsers = useMemo(() => {
+    if (!rolesView) return pageUsers;
+    return pageUsers.filter((user) => roleVisibleForAdmin(user.roles?.nombre_rol));
+  }, [pageUsers, rolesView]);
   const accessUsers = useMemo(() => {
     if (!rolesView) return pageUsers;
-    if (permissionFilter === "todos") return pageUsers;
-    if (permissionFilter === "con_permisos") return pageUsers.filter(userHasSpecialPermission);
-    return pageUsers.filter((user) => Boolean(user[permissionFilter]));
-  }, [pageUsers, permissionFilter, rolesView]);
+    if (permissionFilter === "todos") return visibleAccessUsers;
+    if (permissionFilter === "con_permisos") return visibleAccessUsers.filter(userHasSpecialPermission);
+    return visibleAccessUsers.filter((user) => Boolean(user[permissionFilter]));
+  }, [pageUsers, permissionFilter, rolesView, visibleAccessUsers]);
 
   const total = pageData?.total ?? 0;
   const totalPaginas = Math.max(1, Math.ceil(total / POR_PAGINA));
@@ -502,7 +509,7 @@ export function AdminUsuariosPage() {
   };
 
   const togglePermiso = (user: UserListItem, permiso: PermisoKey, checked: boolean) => {
-    if (user.roles?.nombre_rol !== "Seguridad Operativa") {
+    if (!userIsSO(user)) {
       toast.warning("Los permisos especiales solo aplican a Seguridad Operativa");
       return;
     }
@@ -588,7 +595,7 @@ export function AdminUsuariosPage() {
             </div>
             <Select value={roleFilter} onChange={(event) => setRoleAndReset(event.target.value)} aria-label="Filtrar por rol">
               <option value="todos">Todos los roles</option>
-              {roles.map((role) => <option key={role.id_rol} value={role.id_rol}>{role.nombre_rol}</option>)}
+              {sortedRoles(roles).map((role) => <option key={role.id_rol} value={role.id_rol}>{role.nombre_rol}</option>)}
             </Select>
             <Select value={statusFilter} onChange={(event) => setStatusAndReset(event.target.value as typeof statusFilter)} aria-label="Filtrar por estado">
               <option value="todos">Todos los estados</option>

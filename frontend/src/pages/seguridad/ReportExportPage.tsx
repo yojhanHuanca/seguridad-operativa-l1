@@ -26,6 +26,7 @@ import { useCases } from "@/features/cases/hooks/useCases";
 import { toCaseRow } from "@/features/cases/adapter";
 import { CASE_FILTERS, type CaseFilterId } from "@/features/cases/lib/filters";
 import { shortPlanCode } from "@/features/cases/lib/planLabels";
+import { planDeadline } from "@/features/plans/lib/planDeadline";
 import { EVENT_LABELS } from "@/features/cases/domain";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { exportarTablaExcel } from "@/lib/excelBranded";
@@ -570,7 +571,7 @@ function PlanOnlyPreview({ rows }: { rows: ExportCase[] }) {
             <PreviewTd>{plan.usuarios.nombre}</PreviewTd>
             <PreviewTd>{plan.catalogo_detalle.nombre}</PreviewTd>
             <PreviewTd>{planProgress(plan)}%</PreviewTd>
-            <PreviewTd>{formatDate(plan.fecha_reprogramada ?? plan.fecha_plan)}</PreviewTd>
+            <PreviewTd>{formatDate(planDeadline(plan))}</PreviewTd>
             <PreviewTd>{plan.prorroga_estado ?? "Sin solicitud"}</PreviewTd>
           </tr>
         ))}
@@ -608,7 +609,7 @@ function PlanPreview({ rows }: { rows: ExportCase[] }) {
             <PreviewTd>{plan?.usuarios.nombre ?? "—"}</PreviewTd>
             <PreviewTd>{plan?.catalogo_detalle.nombre ?? "Sin plan de acción"}</PreviewTd>
             <PreviewTd>{plan ? `${planProgress(plan)}%` : "—"}</PreviewTd>
-            <PreviewTd>{plan ? formatDate(plan.fecha_reprogramada ?? plan.fecha_plan) : "—"}</PreviewTd>
+            <PreviewTd>{plan ? formatDate(planDeadline(plan)) : "—"}</PreviewTd>
             <PreviewTd className="max-w-[280px] truncate font-medium text-ink">{item.row.title}</PreviewTd>
           </tr>
         ))}
@@ -777,7 +778,7 @@ function planExtra(plan: PlanAccion) {
     "Cargo responsable": plan.usuarios.cargo ?? "—",
     "Avance": `${planProgress(plan)}%`,
     "Actividades": plan.actividades_plan.length,
-    "Fecha límite": formatDate(plan.fecha_reprogramada ?? plan.fecha_plan),
+    "Fecha límite": formatDate(planDeadline(plan)),
     "Prórroga": plan.prorroga_estado ?? "Sin solicitud",
   };
 }
@@ -895,7 +896,7 @@ function PrintPlansTable({ rows }: { rows: Array<{ item: ExportCase; plan: PlanA
             </PrintTd>
             <PrintTd>{plan.catalogo_detalle.nombre}</PrintTd>
             <PrintTd>{planProgress(plan)}%</PrintTd>
-            <PrintTd>{formatDate(plan.fecha_reprogramada ?? plan.fecha_plan)}</PrintTd>
+            <PrintTd>{formatDate(planDeadline(plan))}</PrintTd>
           </tr>
         ))}
       </tbody>

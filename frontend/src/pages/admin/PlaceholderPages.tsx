@@ -21,7 +21,7 @@ export function AdminConfiguracionPage() {
       <ComingSoon
         icon={Cog}
         title="Configuración"
-        description="Parámetros del sistema, como los plazos de SLA por nivel de riesgo."
+        description="Parámetros del sistema, como identidad, numeración y plazos operativos."
         hideTitle
       />
     </AdminShell>

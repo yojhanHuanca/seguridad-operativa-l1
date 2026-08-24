@@ -10,6 +10,7 @@ import {
   Cell,
   Line,
   LineChart,
+  LabelList,
   Pie,
   PieChart,
   RadialBar,
@@ -44,6 +45,18 @@ const tooltipStyle = {
 
 const labelStyle = { color: "#767f79", fontSize: 11, marginBottom: 2 };
 const itemStyle = { color: "#182621", fontSize: 12.5, padding: "1px 0" };
+
+type ChartItemClick = (name: string) => void;
+
+function recordFromChartPayload(item: unknown): Record<string, unknown> {
+  const raw = item && typeof item === "object" && "payload" in item ? (item as { payload?: unknown }).payload : item;
+  return raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+}
+
+function valueFromRecord(record: Record<string, unknown>, key: string): string {
+  const value = record[key];
+  return typeof value === "string" || typeof value === "number" ? String(value) : "";
+}
 
 /**
  * Props de animación para las series de recharts.
@@ -87,7 +100,7 @@ export function TrendAreaChart({
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.surface} vertical={false} />
         <XAxis dataKey={xKey} tick={{ fill: CHART_COLORS.inkFaint, fontSize: 11 }} tickLine={false} axisLine={false} dy={6} />
-        <YAxis tick={{ fill: CHART_COLORS.inkFaint, fontSize: 11 }} tickLine={false} axisLine={false} width={32} />
+        <YAxis tick={{ fill: CHART_COLORS.inkFaint, fontSize: 11 }} tickLine={false} axisLine={false} width={32} allowDecimals={false} />
         <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} itemStyle={itemStyle} cursor={{ stroke: color, strokeOpacity: 0.2 }} />
         <Area
           type="monotone"
@@ -110,6 +123,9 @@ export function TrendBarChart({
   color = CHART_COLORS.brand,
   height = 220,
   barSize = 24,
+  activeName,
+  onItemClick,
+  showLabels = false,
 }: {
   data: { label: string; value: number; color?: string }[];
   dataKey?: string;
@@ -117,11 +133,15 @@ export function TrendBarChart({
   color?: string;
   height?: number;
   barSize?: number;
+  activeName?: string | null;
+  onItemClick?: ChartItemClick;
+  showLabels?: boolean;
 }) {
   const anim = useSeriesAnimation();
   // Cada punto puede traer su propio `color` (p. ej. Cerrado en verde, En
   // Proceso en amarillo); si ninguno lo trae, todas las barras usan `color`.
   const hasPerBarColor = data.some((d) => d.color);
+  const needsCells = hasPerBarColor || !!activeName;
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap={18}>
@@ -134,8 +154,28 @@ export function TrendBarChart({
           itemStyle={itemStyle}
           cursor={{ fill: CHART_COLORS.surface, fillOpacity: 0.4 }}
         />
-        <Bar dataKey={dataKey} fill={color} radius={[4, 4, 0, 0]} barSize={barSize} {...anim}>
-          {hasPerBarColor && data.map((d, i) => <Cell key={i} fill={d.color ?? color} />)}
+        <Bar
+          dataKey={dataKey}
+          fill={color}
+          radius={[4, 4, 0, 0]}
+          barSize={barSize}
+          onClick={
+            onItemClick
+              ? (item: unknown) => {
+                  const label = valueFromRecord(recordFromChartPayload(item), xKey);
+                  if (label) onItemClick(label);
+                }
+              : undefined
+          }
+          cursor={onItemClick ? "pointer" : undefined}
+          {...anim}
+        >
+          {showLabels && <LabelList dataKey={dataKey} position="insideTop" fill="#ffffff" fontSize={11} fontWeight={700} />}
+          {needsCells &&
+            data.map((d, i) => {
+              const label = valueFromRecord(d as unknown as Record<string, unknown>, xKey);
+              return <Cell key={i} fill={d.color ?? color} opacity={activeName && activeName !== label ? 0.35 : 1} />;
+            })}
         </Bar>
       </BarChart>
     </ResponsiveContainer>
@@ -167,11 +207,15 @@ export function DonutChart({
   height = 220,
   innerRadius = 60,
   outerRadius = 90,
+  activeName,
+  onItemClick,
 }: {
   data: { name: string; value: number; color: string }[];
   height?: number;
   innerRadius?: number;
   outerRadius?: number;
+  activeName?: string | null;
+  onItemClick?: ChartItemClick;
 }) {
   const anim = useSeriesAnimation();
   return (
@@ -186,10 +230,19 @@ export function DonutChart({
           paddingAngle={2}
           stroke="#fff"
           strokeWidth={2}
+          onClick={
+            onItemClick
+              ? (item: unknown) => {
+                  const name = valueFromRecord(recordFromChartPayload(item), "name");
+                  if (name) onItemClick(name);
+                }
+              : undefined
+          }
+          cursor={onItemClick ? "pointer" : undefined}
           {...anim}
         >
           {data.map((d, i) => (
-            <Cell key={i} fill={d.color} />
+            <Cell key={i} fill={d.color} opacity={activeName && activeName !== d.name ? 0.35 : 1} />
           ))}
         </Pie>
         <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} itemStyle={itemStyle} />
@@ -201,16 +254,28 @@ export function DonutChart({
 export function HBarsChart({
   data,
   height = 220,
+  activeName,
+  onItemClick,
+  showLabels = false,
 }: {
   data: { name: string; value: number; color?: string }[];
   height?: number;
+  activeName?: string | null;
+  onItemClick?: ChartItemClick;
+  showLabels?: boolean;
 }) {
   const anim = useSeriesAnimation();
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} layout="vertical" margin={{ top: 4, right: 12, left: 8, bottom: 4 }} barCategoryGap={10}>
         <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.surface} horizontal={false} />
-        <XAxis type="number" tick={{ fill: CHART_COLORS.inkFaint, fontSize: 11 }} tickLine={false} axisLine={false} />
+        <XAxis
+          type="number"
+          tick={{ fill: CHART_COLORS.inkFaint, fontSize: 11 }}
+          tickLine={false}
+          axisLine={false}
+          allowDecimals={false}
+        />
         <YAxis
           type="category"
           dataKey="name"
@@ -226,9 +291,24 @@ export function HBarsChart({
           itemStyle={itemStyle}
           cursor={{ fill: CHART_COLORS.surface, fillOpacity: 0.5 }}
         />
-        <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={14} {...anim}>
+        <Bar
+          dataKey="value"
+          radius={[0, 6, 6, 0]}
+          barSize={14}
+          onClick={
+            onItemClick
+              ? (item: unknown) => {
+                  const name = valueFromRecord(recordFromChartPayload(item), "name");
+                  if (name) onItemClick(name);
+                }
+              : undefined
+          }
+          cursor={onItemClick ? "pointer" : undefined}
+          {...anim}
+        >
+          {showLabels && <LabelList dataKey="value" position="insideRight" fill="#ffffff" fontSize={11} fontWeight={700} />}
           {data.map((d, i) => (
-            <Cell key={i} fill={d.color ?? CHART_COLORS.brand} />
+            <Cell key={i} fill={d.color ?? CHART_COLORS.brand} opacity={activeName && activeName !== d.name ? 0.35 : 1} />
           ))}
         </Bar>
       </BarChart>

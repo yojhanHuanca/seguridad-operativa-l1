@@ -7,6 +7,7 @@ import { Field, Textarea } from "@/design-system/primitives/Input";
 import { StageSection } from "@/features/cases/components/CaseParts";
 import { useReviewExtension } from "@/features/cases/hooks/useCaseActions";
 import { shortPlanCode } from "@/features/cases/lib/planLabels";
+import { planDeadline } from "@/features/plans/lib/planDeadline";
 import { apiErrorMessage } from "@/lib/api";
 import { formatDate, relativeTime } from "@/lib/format";
 import type { CaseDetail } from "@/features/cases/types";
@@ -63,7 +64,7 @@ export function ExtensionReviewCard({ caso }: { caso: CaseDetail }) {
           </div>
           <div>
             <p className="text-[10.5px] font-semibold uppercase tracking-wider text-ink-faint">Fecha actual</p>
-            <p className="text-[12.5px] font-medium text-ink mt-0.5">{formatDate(plan.fecha_reprogramada ?? plan.fecha_plan)}</p>
+            <p className="text-[12.5px] font-medium text-ink mt-0.5">{formatDate(planDeadline(plan))}</p>
           </div>
           <div>
             <p className="text-[10.5px] font-semibold uppercase tracking-wider text-ink-faint">Fecha propuesta</p>

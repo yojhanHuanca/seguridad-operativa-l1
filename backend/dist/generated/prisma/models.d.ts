@@ -33,5 +33,6 @@ export type * from './models/sesiones.js';
 export type * from './models/solicitudes_informacion.js';
 export type * from './models/solicitudes_prorroga.js';
 export type * from './models/usuarios.js';
+export type * from './models/password_resets.js';
 export type * from './commonInputTypes.js';
 //# sourceMappingURL=models.d.ts.map

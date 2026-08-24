@@ -41,5 +41,30 @@ export class AuthRepository {
         const sesion = await prisma.sesiones.findUnique({ where: { id_sesion }, select: { estado: true } });
         return sesion?.estado === "activa";
     }
+    /** Al resetear la contraseña se cierran todas las sesiones activas — si alguien más tenía el token viejo, queda afuera. */
+    static async cerrarTodasLasSesiones(usuario) {
+        return prisma.sesiones.updateMany({
+            where: { usuario, estado: "activa" },
+            data: { estado: "cerrada", fecha_fin: new Date() },
+        });
+    }
+    static async crearPasswordReset(usuario, token_hash, expires_at) {
+        return prisma.password_resets.create({ data: { usuario, token_hash, expires_at } });
+    }
+    static async findPasswordResetVigente(token_hash) {
+        return prisma.password_resets.findFirst({
+            where: { token_hash, used_at: null, expires_at: { gt: new Date() } },
+        });
+    }
+    static async marcarPasswordResetUsado(id_reset) {
+        return prisma.password_resets.update({ where: { id_reset }, data: { used_at: new Date() } });
+    }
+    /** Invalida cualquier link de recuperación anterior sin usar: solo el más reciente debe servir. */
+    static async invalidarPasswordResetsPendientes(usuario) {
+        return prisma.password_resets.updateMany({
+            where: { usuario, used_at: null },
+            data: { used_at: new Date() },
+        });
+    }
 }
 //# sourceMappingURL=auth.repository.js.map

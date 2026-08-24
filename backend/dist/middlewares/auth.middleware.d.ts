@@ -20,6 +20,13 @@ export interface AuthenticatedRequest extends Request {
     user?: AuthTokenPayload;
 }
 export declare const verifyToken: (req: AuthenticatedRequest, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>> | undefined>;
+/**
+ * Autenticación opcional para endpoints públicos que pueden beneficiarse de
+ * una sesión válida, pero no deben exigirla. Si no hay token, sigue como
+ * usuario público; si hay token inválido, también sigue público para no romper
+ * el QR por sesiones vencidas guardadas en el navegador.
+ */
+export declare const optionalVerifyToken: (req: AuthenticatedRequest, _res: Response, next: NextFunction) => Promise<void>;
 export declare const requireRoles: (...roles: string[]) => (req: AuthenticatedRequest, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined;
 /**
  * Deja pasar a los roles listados en `roles` sin condición, o a los listados

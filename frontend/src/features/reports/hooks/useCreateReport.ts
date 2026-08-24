@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, type ApiEnvelope } from "@/lib/api";
+import { api, publicApi, type ApiEnvelope } from "@/lib/api";
 import type { ReportFormValues } from "../schema";
 import type { CreateReportResult, ReportOrigin } from "../types";
 
@@ -22,7 +22,8 @@ async function createReport({ values, files }: CreateReportInput): Promise<Creat
   }
   for (const file of files) form.append("evidencia", file);
 
-  const { data } = await api.post<ApiEnvelope<CreateReportResult>>("/reports", form, {
+  const client = values.origen === "seguridad_operativa" ? api : publicApi;
+  const { data } = await client.post<ApiEnvelope<CreateReportResult>>("/reports", form, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   if (!data.data) throw new Error(data.message);

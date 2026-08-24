@@ -66,7 +66,7 @@ const activityUpdateSchema = z.object({
     actor: z.string().trim().max(150).optional().default(""),
 });
 const extensionSchema = z.object({
-    nueva_fecha: z.string().min(1, "Indique la nueva fecha"),
+    nueva_fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use el formato AAAA-MM-DD"),
     justificacion: z.string().trim().min(5, "Explique la justificación").max(1000),
     actor: z.string().trim().max(150).optional().default(""),
 });
@@ -238,9 +238,25 @@ export class CaseService {
             ...(query.codigo ? { codigo_sop: query.codigo } : {}),
         });
     }
-    static async getByCodigo(codigo) {
+    /**
+     * Expediente completo. Un Jefe de Área solo abre los casos que le competen:
+     * los de su área o aquellos donde tiene un plan asignado — el mismo criterio
+     * que `assertPlanPropio` y que su bandeja, para que lo que ve listado sea
+     * exactamente lo que puede abrir.
+     *
+     * A quien no le corresponde se le responde "no existe" en vez de "no tienes
+     * permiso": tampoco se le confirma que ese código exista.
+     */
+    static async getByCodigo(codigo, actor) {
         const caso = await CaseRepository.findByCodigo(codigo);
         if (!caso)
+            throw new Error(`El caso ${codigo} no existe`);
+        if (!esJefeDeArea(actor))
+            return caso;
+        const areaActor = await areaDelActor(actor);
+        const esDeSuArea = areaActor != null && caso.area_responsable === areaActor;
+        const tienePlanPropio = caso.planes_accion.some((plan) => plan.responsable === actor.id_usuario || (areaActor != null && plan.id_area === areaActor));
+        if (!esDeSuArea && !tienePlanPropio)
             throw new Error(`El caso ${codigo} no existe`);
         return caso;
     }

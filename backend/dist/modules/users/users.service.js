@@ -1,14 +1,30 @@
 import { UserRepository } from "./users.repository.js";
+import { RoleRepository } from "../roles/role.repository.js";
 import { BcryptHelper } from "../../utils/bcrypt.js";
 import { createUserSchema, idParamSchema, updateUserSchema } from "./users.schema.js";
 import { AuditoriaService, diffCampos } from "../auditoria/auditoria.service.js";
 /** Campos sensibles que nunca deben llegar al registro de auditoría en texto plano. */
 const CAMPOS_SENSIBLES = new Set(["password", "password_hash"]);
+const ROL_SEGURIDAD_OPERATIVA = "Seguridad Operativa";
+const PERMISOS_ESPECIALES = ["es_responsable", "puede_reabrir_casos", "puede_rechazar_reportes"];
 function paraAuditoria(usuario) {
     return Object.fromEntries(Object.entries(usuario).filter(([key]) => !CAMPOS_SENSIBLES.has(key)));
 }
 function sinIndefinidos(obj) {
     return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
+}
+function permisosSoloParaSO(data, nombreRol) {
+    if (nombreRol === ROL_SEGURIDAD_OPERATIVA)
+        return data;
+    const recibioPermisos = PERMISOS_ESPECIALES.some((key) => data[key] !== undefined);
+    if (!recibioPermisos && data.id_rol === undefined)
+        return data;
+    return {
+        ...data,
+        es_responsable: false,
+        puede_reabrir_casos: false,
+        puede_rechazar_reportes: false,
+    };
 }
 export class UsersService {
     static async getAllUsers(query) {
@@ -47,11 +63,12 @@ export class UsersService {
         }
         // Hash de la contraseña
         const password_hash = await BcryptHelper.hash(data.password);
+        const rol = await RoleRepository.findById(data.id_rol);
         // Crear el ususario
-        const creado = await UserRepository.createWithGeneratedCode(sinIndefinidos({
+        const creado = await UserRepository.createWithGeneratedCode(sinIndefinidos(permisosSoloParaSO({
             ...data,
             password_hash,
-        }));
+        }, rol?.nombre_rol)));
         if (actor) {
             await AuditoriaService.registrar({
                 tabla: "usuarios",
@@ -82,10 +99,11 @@ export class UsersService {
         // Cadena vacía = "no cambiar contraseña", igual que si no viniera el campo.
         const { password, ...rest } = data;
         const password_hash = password ? await BcryptHelper.hash(password) : undefined;
-        const actualizado = await UserRepository.update(id, sinIndefinidos({
+        const rolDestino = rest.id_rol ? await RoleRepository.findById(rest.id_rol) : usuario.roles;
+        const actualizado = await UserRepository.update(id, sinIndefinidos(permisosSoloParaSO({
             ...rest,
             ...(password_hash ? { password_hash } : {}),
-        }));
+        }, rolDestino?.nombre_rol)));
         if (actor) {
             const cambios = diffCampos(paraAuditoria(usuario), paraAuditoria(actualizado));
             const resumen = cambios ? `Campos modificados: ${Object.keys(cambios.despues).join(", ")}` : "Sin cambios en los campos auditados";

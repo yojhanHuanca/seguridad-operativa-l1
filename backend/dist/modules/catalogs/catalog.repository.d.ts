@@ -11,10 +11,10 @@ export declare class CatalogRepository {
     } & {
         nombre: string;
         estado: boolean | null;
-        descripcion: string | null;
-        id_catalogo: number;
-        codigo: string;
         created_at: Date | null;
+        descripcion: string | null;
+        codigo: string;
+        id_catalogo: number;
     })[]>;
     static findGroupWithAllDetalle(id_catalogo: number): Promise<({
         catalogo_detalle: {
@@ -29,10 +29,10 @@ export declare class CatalogRepository {
     } & {
         nombre: string;
         estado: boolean | null;
-        descripcion: string | null;
-        id_catalogo: number;
-        codigo: string;
         created_at: Date | null;
+        descripcion: string | null;
+        codigo: string;
+        id_catalogo: number;
     }) | null>;
     static findDetalleById(id_detalle: number): Promise<({
         catalogos: {
@@ -41,10 +41,10 @@ export declare class CatalogRepository {
     } & {
         nombre: string;
         estado: boolean | null;
-        descripcion: string | null;
-        id_catalogo: number;
-        codigo: string | null;
         created_at: Date | null;
+        descripcion: string | null;
+        codigo: string | null;
+        id_catalogo: number;
         orden: number | null;
         id_detalle: number;
         color: string | null;
@@ -52,10 +52,10 @@ export declare class CatalogRepository {
     static findDetalleByNombre(id_catalogo: number, nombre: string): Promise<{
         nombre: string;
         estado: boolean | null;
-        descripcion: string | null;
-        id_catalogo: number;
-        codigo: string | null;
         created_at: Date | null;
+        descripcion: string | null;
+        codigo: string | null;
+        id_catalogo: number;
         orden: number | null;
         id_detalle: number;
         color: string | null;
@@ -63,10 +63,10 @@ export declare class CatalogRepository {
     static createDetalle(id_catalogo: number, nombre: string): Promise<{
         nombre: string;
         estado: boolean | null;
-        descripcion: string | null;
-        id_catalogo: number;
-        codigo: string | null;
         created_at: Date | null;
+        descripcion: string | null;
+        codigo: string | null;
+        id_catalogo: number;
         orden: number | null;
         id_detalle: number;
         color: string | null;
@@ -74,10 +74,10 @@ export declare class CatalogRepository {
     static updateDetalle(id_detalle: number, nombre: string): Promise<{
         nombre: string;
         estado: boolean | null;
-        descripcion: string | null;
-        id_catalogo: number;
-        codigo: string | null;
         created_at: Date | null;
+        descripcion: string | null;
+        codigo: string | null;
+        id_catalogo: number;
         orden: number | null;
         id_detalle: number;
         color: string | null;
@@ -85,10 +85,10 @@ export declare class CatalogRepository {
     static setDetalleEstado(id_detalle: number, estado: boolean): Promise<{
         nombre: string;
         estado: boolean | null;
-        descripcion: string | null;
-        id_catalogo: number;
-        codigo: string | null;
         created_at: Date | null;
+        descripcion: string | null;
+        codigo: string | null;
+        id_catalogo: number;
         orden: number | null;
         id_detalle: number;
         color: string | null;

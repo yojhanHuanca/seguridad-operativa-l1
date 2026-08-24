@@ -184,4 +184,11 @@ export type solicitudes_prorroga = Prisma.solicitudes_prorrogaModel;
  *
  */
 export type usuarios = Prisma.usuariosModel;
+/**
+ * Model password_resets
+ * Tokens de un solo uso para "Olvidé mi contraseña" — se guarda el hash del
+ * token (nunca el token en claro) y expira solo; no se reutiliza el mismo
+ * token dos veces aunque no haya expirado.
+ */
+export type password_resets = Prisma.password_resetsModel;
 //# sourceMappingURL=browser.d.ts.map

@@ -57,5 +57,33 @@ export declare class AuthRepository {
     }>;
     static cerrarSesion(id_sesion: number): Promise<import("../../generated/prisma/internal/prismaNamespace.js").BatchPayload>;
     static sesionActiva(id_sesion: number): Promise<boolean>;
+    /** Al resetear la contraseña se cierran todas las sesiones activas — si alguien más tenía el token viejo, queda afuera. */
+    static cerrarTodasLasSesiones(usuario: number): Promise<import("../../generated/prisma/internal/prismaNamespace.js").BatchPayload>;
+    static crearPasswordReset(usuario: number, token_hash: string, expires_at: Date): Promise<{
+        usuario: number;
+        token_hash: string;
+        expires_at: Date;
+        used_at: Date | null;
+        created_at: Date;
+        id_reset: number;
+    }>;
+    static findPasswordResetVigente(token_hash: string): Promise<{
+        usuario: number;
+        token_hash: string;
+        expires_at: Date;
+        used_at: Date | null;
+        created_at: Date;
+        id_reset: number;
+    } | null>;
+    static marcarPasswordResetUsado(id_reset: number): Promise<{
+        usuario: number;
+        token_hash: string;
+        expires_at: Date;
+        used_at: Date | null;
+        created_at: Date;
+        id_reset: number;
+    }>;
+    /** Invalida cualquier link de recuperación anterior sin usar: solo el más reciente debe servir. */
+    static invalidarPasswordResetsPendientes(usuario: number): Promise<import("../../generated/prisma/internal/prismaNamespace.js").BatchPayload>;
 }
 //# sourceMappingURL=auth.repository.d.ts.map

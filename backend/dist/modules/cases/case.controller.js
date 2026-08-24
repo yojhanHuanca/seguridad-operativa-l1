@@ -78,7 +78,7 @@ export class CaseController {
     }
     static async getByCodigo(req, res) {
         try {
-            const caso = await CaseService.getByCodigo(param(req, "codigo"));
+            const caso = await CaseService.getByCodigo(param(req, "codigo"), req.user);
             return res.json(ApiResponse.success("Caso obtenido correctamente", caso));
         }
         catch (error) {

@@ -70,8 +70,12 @@ export function relativeTime(iso: string | Date): string {
 }
 
 export function daysUntil(iso: string): number {
+  if (isDateOnly(iso)) {
+    const [year, month, day] = iso.slice(0, 10).split("-").map(Number);
+    const target = new Date(year, month - 1, day);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return Math.round((target.getTime() - today.getTime()) / 86400000);
+  }
   return Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000);
 }
-
-// El estado del SLA vive en features/cases/lib/sla.ts, junto a la tabla de
-// plazos por riesgo, para no tener dos definiciones del mismo criterio.
