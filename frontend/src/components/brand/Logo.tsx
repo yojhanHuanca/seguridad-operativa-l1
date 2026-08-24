@@ -29,7 +29,7 @@ export function Logo({
   const width = Math.round(size * ASPECTO);
 
   return (
-    <div className={cn("flex items-center gap-2.5", className)}>
+    <div className={cn("flex min-w-0 items-center gap-2.5", className)}>
       <img
         src="/logo-linea1.png"
         alt="Línea 1"
@@ -39,11 +39,11 @@ export function Logo({
         style={{ width, height: size }}
       />
       {withWordmark && (
-        <div className="leading-tight">
-          <p className={cn("font-display text-[15px] font-bold tracking-[-0.01em]", tone === "light" ? "text-white" : "text-ink")}>
+        <div className="min-w-0 leading-tight">
+          <p className={cn("truncate font-display text-[15px] font-bold tracking-[-0.01em]", tone === "light" ? "text-white" : "text-ink")}>
             {wordmark}
           </p>
-          <p className={cn("text-[10px] font-medium tracking-wide", tone === "light" ? "text-white/70" : "text-ink-quiet")}>
+          <p className={cn("truncate text-[10px] font-medium tracking-wide", tone === "light" ? "text-white/70" : "text-ink-quiet")}>
             {subtitle}
           </p>
         </div>

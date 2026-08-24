@@ -1,6 +1,6 @@
 export function shortPlanCode(codigo?: string | null): string {
   const raw = codigo?.trim();
-  if (!raw) return "PLA";
+  if (!raw) return "—";
 
   const match = raw.match(/(?:^|[-\s])([A-Z0-9]{2,12})[-\s]*(\d+)$/i);
   if (!match) return raw;
@@ -11,7 +11,7 @@ export function shortPlanCode(codigo?: string | null): string {
 }
 
 /**
- * Número correlativo del plan según su código (`…-PLA-03` → 3).
+ * Número correlativo del plan según el código real guardado por backend.
  *
  * Es la única fuente fiable del "Plan N" que ve el usuario: el backend lo
  * asigna al crear el plan y no cambia después, mientras que la posición en

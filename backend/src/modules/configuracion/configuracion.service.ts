@@ -287,10 +287,20 @@ export class ConfiguracionService {
     const prefix = sanitizePrefix(values.get(CONFIG_KEYS.planPrefijo) || defaultValue(CONFIG_KEYS.planPrefijo), "El prefijo de planes");
     const configured = parseNumber(values.get(CONFIG_KEYS.planSecuencia), Number(defaultValue(CONFIG_KEYS.planSecuencia)));
     const actual = await client.planes_accion.count();
-    const start = Math.max(configured, actual) + 1;
-    const codigos = Array.from({ length: cantidad }, (_item, index) => `${codigoSop}-${prefix}-${padSequence(start + index)}`);
+    const codigos: string[] = [];
+    let cursor = Math.max(configured, actual);
 
-    await upsertValue(client, CONFIG_KEYS.planSecuencia, String(start + cantidad - 1));
+    while (codigos.length < cantidad) {
+      cursor += 1;
+      const candidate = `${codigoSop}-${prefix}-${padSequence(cursor)}`;
+      const exists = await client.planes_accion.findUnique({
+        where: { codigo_plan: candidate },
+        select: { codigo_plan: true },
+      });
+      if (!exists) codigos.push(candidate);
+    }
+
+    await upsertValue(client, CONFIG_KEYS.planSecuencia, String(cursor));
     return codigos;
   }
 

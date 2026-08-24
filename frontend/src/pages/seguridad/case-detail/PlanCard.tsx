@@ -420,8 +420,6 @@ function PlanForm({
   const updatePlan = useUpdatePlan(caso.codigo_sop);
   const esEdicion = !!plan;
   const plazoRespuesta = configuracion?.plazos.diasResponderPlanes ?? DEFAULT_PLAN_DAYS;
-  const prefijoPlan = configuracion?.numeracion.prefijoPlanes || "PLA";
-  const secuenciaPlan = configuracion?.numeracion.secuenciaPlanes ?? caso.planes_accion.length;
 
   const hoy = new Date().toISOString().slice(0, 10);
   const soloFecha = (v?: string | null) => (v ? v.slice(0, 10) : "");
@@ -460,20 +458,10 @@ function PlanForm({
   const puedeEnviar = actividades.length > 0 && actividadesValidas.length === actividades.length;
 
   /**
-   * Código que realmente va a recibir cada plan del formulario.
-   *
-   * El backend numera continuando desde los planes que el caso ya tiene
-   * (`createPlans` hace count + i + 1), así que la vista previa tiene que
-   * hacer lo mismo. Numerar por el índice del borrador mostraba PLA-01 en un
-   * caso reabierto que ya tenía dos planes cerrados, y el plan terminaba
-   * guardándose como PLA-03: la pantalla decía una cosa y la base otra.
-   *
-   * En edición no hay número que calcular: se muestra el código real del plan.
+   * En creación no mostramos códigos tentativos: el backend asigna el código
+   * real al guardar. En edición sí existe un código persistido y se muestra.
    */
-  const codigoPlanPrevisto = (i: number) =>
-    plan
-      ? shortPlanCode(plan.codigo_plan)
-      : `${prefijoPlan}-${String(secuenciaPlan + i + 1).padStart(2, "0")}`;
+  const etiquetaPlan = (i: number) => (plan ? shortPlanCode(plan.codigo_plan) : `Plan nuevo ${i + 1}`);
 
   const updateActividad = (i: number, patch: Partial<PlanFormActivityInput>) =>
     setActividades((prev) => prev.map((a, idx) => (idx === i ? { ...a, ...patch } : a)));
@@ -544,7 +532,7 @@ function PlanForm({
             <div key={i} className="rounded-xl border border-line bg-white p-4">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <span className="font-mono text-[13px] font-semibold text-ink-faint">
-                  {codigoPlanPrevisto(i)}
+                  {etiquetaPlan(i)}
                 </span>
                 {actividades.length > 1 && (
                   <button
@@ -679,7 +667,7 @@ function PlanForm({
                 <div key={i} className="min-w-0 rounded-lg border border-line p-3">
                   <div className="flex items-start justify-between gap-3">
                     <span className="font-mono text-[11.5px] font-semibold text-brand-700 shrink-0">
-                      {codigoPlanPrevisto(i)}
+                      {etiquetaPlan(i)}
                     </span>
                     <Pill tone="brand" dot>{a.tipo_accion}</Pill>
                   </div>

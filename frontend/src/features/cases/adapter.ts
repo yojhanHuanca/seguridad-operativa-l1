@@ -7,7 +7,7 @@ import { criterioAceptabilidad, slaDueDate } from "./lib/sla";
 import type { CaseListItem, PlanAccion } from "./types";
 
 export interface CaseRow {
-  /** codigo_sop, ej. "SOP 12-2026" — es el identificador visible y de ruta. */
+  /** codigo_sop es el identificador real visible y de ruta. */
   id: string;
   stage: Stage;
   /** Nombre crudo del estado; distingue pausas que `stage` colapsa. */

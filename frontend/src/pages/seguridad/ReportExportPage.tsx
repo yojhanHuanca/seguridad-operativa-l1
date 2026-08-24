@@ -935,7 +935,7 @@ function planProgress(plan: PlanAccion): number {
   return Math.round(sum / total);
 }
 
-/** SOP 01-2024, SOP 02-2024... en orden ascendente, como en el histórico oficial — no por fecha de creación. */
+/** Orden ascendente por número/año del código SOP, como en el histórico oficial — no por fecha de creación. */
 function sopSortKey(id: string): { year: number; num: number } | null {
   const match = id.match(/(\d+)\s*-\s*(\d+)/);
   if (!match) return null;

@@ -40,8 +40,8 @@ router.use("/auth", authRoutes);
 // todo lo demás de /reports y /catalogs sigue exigiendo sesión más abajo.
 router.get("/catalogs", CatalogController.getAll);
 router.post("/reports", uploadEvidencia.array("evidencia", 10), ReportController.create);
-// El código de caso (ej. SOP-15-2026) hace de "llave" de seguimiento: quien
-// reportó sin cuenta lo usa para consultar su estado después, sin loguearse.
+// El código real del caso hace de "llave" de seguimiento: quien reportó sin
+// cuenta lo usa para consultar su estado después, sin loguearse.
 router.get("/reports/consulta/:codigo", ReportController.getByCodigo);
 router.get("/configuracion/publica", ConfiguracionController.publica);
 

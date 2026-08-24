@@ -35,9 +35,12 @@ function cleanPrefix(value: string) {
   return value.toUpperCase().replace(/\s+/g, "-").replace(/[^A-Z0-9-]/g, "").slice(0, 12);
 }
 
-function nextCode(prefix: string, sequence: number, suffix?: string) {
-  const number = String(Math.max(0, Number(sequence) || 0) + 1).padStart(2, "0");
-  return suffix ? `${prefix || "SOP"} ${number}-${suffix}` : `${prefix || "PLA"}-${number}`;
+function caseCodePattern(prefix: string) {
+  return `${prefix || "PREFIJO"} ##-AAAA`;
+}
+
+function planCodePattern(prefix: string) {
+  return `CODIGO-CASO-${prefix || "PREFIJO"}-##`;
 }
 
 function cloneConfig(config: ConfiguracionGeneral): ConfiguracionGeneral {
@@ -149,7 +152,7 @@ function DaysField({
   );
 }
 
-function PreviewBox({ label, value }: { label: string; value: string }) {
+function PatternBox({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-line-soft bg-surface px-3 py-2.5">
       <p className="text-[11px] font-medium text-ink-faint">{label}</p>
@@ -180,10 +183,9 @@ export function AdminConfiguracionPage() {
 
   const form = draft.sourceKey === sourceKey ? draft.value : cloneConfig(data ?? DEFAULT_CONFIG);
 
-  const year = new Date().getFullYear();
   const dirty = useMemo(() => (data ? !sameConfig(form, data) : false), [data, form]);
-  const expedientePreview = nextCode(form.numeracion.prefijoExpedientes, form.numeracion.secuenciaExpedientes, String(year));
-  const planPreview = `${expedientePreview}-${nextCode(form.numeracion.prefijoPlanes, form.numeracion.secuenciaPlanes)}`;
+  const expedienteFormato = caseCodePattern(form.numeracion.prefijoExpedientes);
+  const planFormato = planCodePattern(form.numeracion.prefijoPlanes);
 
   const setSistema = (key: keyof ConfiguracionGeneral["sistema"], value: string) => {
     setDraft((current) => {
@@ -310,7 +312,7 @@ export function AdminConfiguracionPage() {
               description="Controla los códigos que se asignan al crear nuevos expedientes y planes de acción."
             >
               <div className="grid gap-4 md:grid-cols-2">
-                <Field label="Prefijo de expedientes" required hint="Ejemplo: SOP, EXP o HLL.">
+                <Field label="Prefijo de expedientes" required hint="Usa la sigla real definida por la empresa.">
                   <Input
                     value={form.numeracion.prefijoExpedientes}
                     onChange={(event) => setNumeracion("prefijoExpedientes", cleanPrefix(event.target.value))}
@@ -321,9 +323,9 @@ export function AdminConfiguracionPage() {
                   label="Secuencia actual (expedientes)"
                   value={form.numeracion.secuenciaExpedientes}
                   onChange={(value) => setNumeracion("secuenciaExpedientes", value)}
-                  hint="El próximo expediente toma el siguiente número."
+                  hint="El backend usará el siguiente número al crear un expediente real."
                 />
-                <Field label="Prefijo de planes" required hint="Ejemplo: PLA o PLAN.">
+                <Field label="Prefijo de planes" required hint="Usa la sigla real definida por la empresa.">
                   <Input
                     value={form.numeracion.prefijoPlanes}
                     onChange={(event) => setNumeracion("prefijoPlanes", cleanPrefix(event.target.value))}
@@ -334,12 +336,12 @@ export function AdminConfiguracionPage() {
                   label="Secuencia actual (planes)"
                   value={form.numeracion.secuenciaPlanes}
                   onChange={(value) => setNumeracion("secuenciaPlanes", value)}
-                  hint="El próximo plan toma el siguiente número global."
+                  hint="El backend usará el siguiente número al guardar un plan real."
                 />
               </div>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <PreviewBox label="Próximo expediente" value={expedientePreview} />
-                <PreviewBox label="Próximo plan" value={planPreview} />
+                <PatternBox label="Formato de expediente" value={expedienteFormato} />
+                <PatternBox label="Formato de plan" value={planFormato} />
               </div>
             </Section>
 
@@ -381,8 +383,14 @@ export function AdminConfiguracionPage() {
               </div>
               <div className="rounded-lg bg-surface px-3 py-3">
                 <p className="text-[11px] font-medium uppercase text-ink-faint">Numeración</p>
-                <p className="mt-1 font-mono text-[12.5px] font-semibold text-brand-700">{expedientePreview}</p>
-                <p className="mt-1 font-mono text-[12.5px] font-semibold text-brand-700">{planPreview}</p>
+                <p className="mt-1 text-[12.5px] text-ink-soft">
+                  Expedientes: <span className="font-mono font-semibold text-brand-700">{form.numeracion.prefijoExpedientes}</span> · secuencia{" "}
+                  <span className="font-mono font-semibold text-ink">{form.numeracion.secuenciaExpedientes}</span>
+                </p>
+                <p className="mt-1 text-[12.5px] text-ink-soft">
+                  Planes: <span className="font-mono font-semibold text-brand-700">{form.numeracion.prefijoPlanes}</span> · secuencia{" "}
+                  <span className="font-mono font-semibold text-ink">{form.numeracion.secuenciaPlanes}</span>
+                </p>
               </div>
               <div className="rounded-lg bg-surface px-3 py-3">
                 <p className="text-[11px] font-medium uppercase text-ink-faint">Plazos</p>

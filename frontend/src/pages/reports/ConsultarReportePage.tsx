@@ -17,8 +17,8 @@ function formatFecha(iso: string | null) {
 
 /**
  * Seguimiento sin cuenta: quien reportó sin loguearse usa el código que se le
- * mostró al enviar su reporte (ej. SOP-15-2026) como única llave — sin
- * password, igual que un número de seguimiento de un envío.
+ * mostró al enviar su reporte como única llave — sin password, igual que un
+ * número de seguimiento de un envío.
  */
 export function ConsultarReportePage() {
   const [params] = useSearchParams();
@@ -56,7 +56,7 @@ export function ConsultarReportePage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && buscar()}
-              placeholder="Ej. SOP-15-2026"
+              placeholder="Código mostrado al registrar"
               className="flex-1 font-mono uppercase"
             />
             <Button onClick={() => buscar()} disabled={!input.trim() || isLoading}>

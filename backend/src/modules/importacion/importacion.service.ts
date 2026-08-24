@@ -1,6 +1,7 @@
 import type { Prisma } from "../../generated/prisma/client.js";
 import prisma from "../../lib/prisma.js";
 import { AuditoriaRepository } from "../auditoria/auditoria.repository.js";
+import { ConfiguracionService } from "../configuracion/configuracion.service.js";
 import type {
   ImportacionIssue,
   ImportacionPayload,
@@ -144,7 +145,7 @@ interface ParsedCase {
 
 interface PreparedPlan {
   row: number;
-  codigo: string;
+  codigo: string | null;
   descripcion: string;
   estadoId: number;
   fecha: Date;
@@ -480,7 +481,7 @@ function parsePlan(
       row: rowNumber,
       field: "Código Plan",
       severity: "warning",
-      message: "No vino código de plan; se generará uno estable con el código del caso.",
+      message: "No vino código de plan; se asignará uno con la numeración centralizada al importar.",
       value: null,
     });
   }
@@ -520,8 +521,8 @@ function parsePlan(
 async function getBuildContext(parsed: ParsedCase[]): Promise<BuildContext> {
   const codes = parsed.map((item) => item.codigo).filter(Boolean);
   const planCodes = parsed
-    .flatMap((item) => item.plans.map((plan, index) => plan.codigo || `${item.codigo}-PLA-${String(index + 1).padStart(2, "0")}`))
-    .filter(Boolean);
+    .flatMap((item) => item.plans.map((plan) => plan.codigo))
+    .filter((codigo): codigo is string => Boolean(codigo));
 
   const [catalogos, areas, usuarios, existingCases, existingPlans] = await Promise.all([
     prisma.catalogos.findMany({
@@ -721,11 +722,11 @@ function resolveUbicacionDesdeTitulo(ctx: BuildContext, titulo: string): Catalog
 function buildPreparedPlans(item: ParsedCase, ctx: BuildContext, issues: ImportacionIssue[]): PreparedPlan[] {
   const result: PreparedPlan[] = [];
 
-  item.plans.forEach((plan, index) => {
+  item.plans.forEach((plan) => {
     if (!plan.descripcion || !plan.fecha || !plan.responsable) return;
 
-    const codigo = plan.codigo || `${item.codigo}-PLA-${String(index + 1).padStart(2, "0")}`;
-    if (ctx.existingPlanCodes.has(normalizeText(codigo))) {
+    const codigo = plan.codigo?.trim() || null;
+    if (codigo && ctx.existingPlanCodes.has(normalizeText(codigo))) {
       addIssue(issues, {
         row: plan.row,
         field: "Código Plan",
@@ -874,21 +875,32 @@ async function createImportedCase(tx: TxClient, item: PreparedCase, actorId: num
   });
 
   if (item.plans.length > 0) {
+    const generatedCodes = await ConfiguracionService.nextCodigosPlan(
+      tx,
+      item.codigo,
+      item.plans.filter((plan) => !plan.codigo).length,
+    );
+    let generatedIndex = 0;
+
     await tx.planes_accion.createMany({
-      data: item.plans.map((plan) => ({
-        id_caso: caso.id_caso,
-        codigo_plan: plan.codigo,
-        descripcion: plan.descripcion,
-        id_area: plan.areaId,
-        responsable: plan.responsableId,
-        estado: plan.estadoId,
-        fecha_plan: plan.fecha,
-        fecha_reprogramada: plan.fechaReprogramada,
-        dias_abierto: 0,
-        observaciones: plan.observaciones,
-        created_at: item.fecha,
-        updated_at: new Date(),
-      })),
+      data: item.plans.map((plan) => {
+        const codigoPlan = plan.codigo ?? generatedCodes[generatedIndex++];
+        if (!codigoPlan) throw new Error(`No se pudo generar un código de plan para el caso ${item.codigo}`);
+        return {
+          id_caso: caso.id_caso,
+          codigo_plan: codigoPlan,
+          descripcion: plan.descripcion,
+          id_area: plan.areaId,
+          responsable: plan.responsableId,
+          estado: plan.estadoId,
+          fecha_plan: plan.fecha,
+          fecha_reprogramada: plan.fechaReprogramada,
+          dias_abierto: 0,
+          observaciones: plan.observaciones,
+          created_at: item.fecha,
+          updated_at: new Date(),
+        };
+      }),
     });
   }
 
