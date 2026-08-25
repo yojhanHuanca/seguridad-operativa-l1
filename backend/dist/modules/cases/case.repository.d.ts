@@ -22,10 +22,10 @@ export declare class CaseRepository {
         id_caso: number;
         id_evento: number;
         titulo: string;
+        detalle: string | null;
         kind: string;
         actor: string;
         actor_rol: string;
-        detalle: string | null;
     }[]>;
     /** Comentario operativo de SO asociado a un plan específico. */
     /**
@@ -40,10 +40,10 @@ export declare class CaseRepository {
         id_caso: number;
         id_evento: number;
         titulo: string;
+        detalle: string | null;
         kind: string;
         actor: string;
         actor_rol: string;
-        detalle: string | null;
     }[]>;
     /**
      * Quita una evidencia del plan antes de que el cierre se envíe a SO.
@@ -56,6 +56,14 @@ export declare class CaseRepository {
     static removePlanEvidence(id_plan: number, id_anexo: number, actor: string): Promise<{
         id_anexo: number;
     }>;
+    /**
+     * Casos con al menos un plan de acción activo (no cerrado/rechazado/
+     * finalizado) cuyo plazo vigente ya pasó. No es un `estado_hallazgo`
+     * literal como el resto de filtros — hay que traer los planes y calcular
+     * el plazo en JS (misma regla que `planDeadline`/`planVencido` del
+     * frontend), así que se resuelve en dos pasos en vez de un solo `where`.
+     */
+    private static vencidoCaseIds;
     static findAll(filtros: CaseListFilters): Promise<{
         data: ({
             anexos_caso: {
@@ -585,10 +593,10 @@ export declare class CaseRepository {
             id_caso: number;
             id_evento: number;
             titulo: string;
+            detalle: string | null;
             kind: string;
             actor: string;
             actor_rol: string;
-            detalle: string | null;
         }[];
         solicitudes_informacion: {
             id_caso: number;
@@ -741,10 +749,10 @@ export declare class CaseRepository {
                 fecha: Date | null;
                 id_evento: number;
                 titulo: string;
+                detalle: string | null;
                 kind: string;
                 actor: string;
                 actor_rol: string;
-                detalle: string | null;
             }[];
             descripcion: string;
             id_caso: number;
@@ -1073,6 +1081,20 @@ export declare class CaseRepository {
         conclusiones: string;
         investigador: number | null;
     }>;
+    /**
+     * Avisa por correo al Jefe de Área de cada plan recién creado, con el
+     * detalle completo (no solo un enlace). Se llama después de que la
+     * transacción que crea los planes ya confirmó, nunca desde adentro: es una
+     * llamada de red a Resend, y sostenerla dentro de una transacción de base
+     * de datos mantendría filas bloqueadas mientras tanto sin necesidad.
+     *
+     * No se espera (`void`, sin await del lado del que llama) y cada plan se
+     * envía por separado con `allSettled`: un correo que falla no debe demorar
+     * la respuesta al usuario ni impedir que salgan los demás. El plan ya quedó
+     * creado y visible en la plataforma pase lo que pase acá — el correo es un
+     * aviso adicional, no un requisito, según lo acordado con el cliente.
+     */
+    private static avisarPlanesAsignados;
     static createPlan(id_caso: number, codigo_sop: string, dto: CreatePlanDto): Promise<{
         estado: number;
         id_area: number;

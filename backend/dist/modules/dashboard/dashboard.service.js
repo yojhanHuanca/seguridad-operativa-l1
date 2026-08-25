@@ -1,4 +1,5 @@
 import prisma from "../../lib/prisma.js";
+import { planDeadline } from "../../lib/planDeadline.js";
 /**
  * Colores fijos por serie — mismos que `CHART_COLORS` del frontend
  * (`design-system/charts/Charts.tsx`). Se duplican acá porque el backend no
@@ -94,6 +95,7 @@ export class DashboardService {
                     select: {
                         fecha_plan: true,
                         fecha_reprogramada: true,
+                        actividades_plan: { select: { fecha_fin: true } },
                         catalogo_detalle: { select: { nombre: true } },
                         areas: { select: { nombre_area: true } },
                     },
@@ -162,7 +164,7 @@ export class DashboardService {
                 else
                     planEnProceso++;
                 porAreaMap.set(plan.areas.nombre_area, (porAreaMap.get(plan.areas.nombre_area) ?? 0) + 1);
-                const dias = diasHasta(plan.fecha_reprogramada ?? plan.fecha_plan);
+                const dias = diasHasta(planDeadline(plan));
                 if (dias >= 0 && dias <= 30)
                     vence0_30++;
                 else if (dias > 30 && dias <= 90)

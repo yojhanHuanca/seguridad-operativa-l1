@@ -1,6 +1,16 @@
 import { EventoService } from "./evento.service.js";
+import { IndicadoresEventosService } from "./indicadores.service.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 export class EventoController {
+    static async getIndicadores(req, res) {
+        try {
+            const data = await IndicadoresEventosService.calcular(req.query);
+            return res.json(ApiResponse.success("Indicadores obtenidos correctamente", data));
+        }
+        catch (error) {
+            return res.status(500).json(ApiResponse.error("Error al calcular los indicadores", error));
+        }
+    }
     static async getAll(req, res) {
         try {
             const { data, total } = await EventoService.getAllEventos(req.query);

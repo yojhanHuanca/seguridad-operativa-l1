@@ -1,6 +1,9 @@
 import prisma from "../../lib/prisma.js";
+import { planDeadline, planVencido } from "../../lib/planDeadline.js";
 import { NotificationRepository } from "../notifications/notification.repository.js";
 import { ConfiguracionService } from "../configuracion/configuracion.service.js";
+import { enviarCorreoPlanAsignado } from "../../utils/mailer.js";
+import { env } from "../../config/env.js";
 const LIST_INCLUDE = {
     catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { select: { nombre: true, color: true } },
     catalogo_detalle_casos_sop_tipoTocatalogo_detalle: { select: { nombre: true } },
@@ -99,6 +102,8 @@ const ACTOR_SO = "Seguridad Operativa";
 const diaISO = (d) => d.toISOString().slice(0, 10);
 const MS_DIA = 86_400_000;
 const sumarDias = (d, dias) => new Date(d.getTime() + dias * MS_DIA);
+/** Estados de `estado_hallazgo` en los que un caso puede tener un plan con plazo vigente. */
+const VENCIDO_ESTADOS = ["Plan de Acción", "Ejecución", "Prórroga Solicitada", "Verificación"];
 export class CaseRepository {
     /** Registra un evento en la bitácora del expediente. */
     static async pushTimeline(client, id_caso, e) {
@@ -228,9 +233,42 @@ export class CaseRepository {
             return { id_anexo };
         });
     }
+    /**
+     * Casos con al menos un plan de acción activo (no cerrado/rechazado/
+     * finalizado) cuyo plazo vigente ya pasó. No es un `estado_hallazgo`
+     * literal como el resto de filtros — hay que traer los planes y calcular
+     * el plazo en JS (misma regla que `planDeadline`/`planVencido` del
+     * frontend), así que se resuelve en dos pasos en vez de un solo `where`.
+     */
+    static async vencidoCaseIds(area) {
+        const where = {
+            catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { nombre: { in: VENCIDO_ESTADOS } },
+        };
+        if (area)
+            where.area_responsable = area;
+        const casos = await prisma.casos_sop.findMany({
+            where,
+            select: {
+                id_caso: true,
+                planes_accion: {
+                    select: {
+                        fecha_plan: true,
+                        fecha_reprogramada: true,
+                        catalogo_detalle: { select: { nombre: true } },
+                        actividades_plan: { select: { fecha_fin: true } },
+                    },
+                },
+            },
+        });
+        const ahora = new Date();
+        return casos.filter((c) => c.planes_accion.some((p) => planVencido(p, ahora))).map((c) => c.id_caso);
+    }
     static async findAll(filtros) {
         const where = {};
-        if (filtros.estados?.length) {
+        if (filtros.vencidos) {
+            where.id_caso = { in: await CaseRepository.vencidoCaseIds(filtros.area) };
+        }
+        else if (filtros.estados?.length) {
             where.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle = { nombre: { in: filtros.estados } };
         }
         if (filtros.area)
@@ -278,7 +316,6 @@ export class CaseRepository {
         const baseWhere = area ? { area_responsable: area } : {};
         const grupos = {
             nuevos: ["Recepción", "Evaluación", "En Proceso"],
-            pendientes: ["Pendiente de Información"],
             investigacion: ["Investigación"],
             proceso: ["Plan de Acción", "Ejecución", "Prórroga Solicitada"],
             prorrogas: ["Prórroga Solicitada"],
@@ -286,13 +323,14 @@ export class CaseRepository {
             cerrados: ["Cerrado", "Rechazado"],
         };
         const entradas = Object.entries(grupos);
-        const [todos, ...resto] = await Promise.all([
+        const [todos, vencidosIds, ...resto] = await Promise.all([
             prisma.casos_sop.count({ where: baseWhere }),
+            CaseRepository.vencidoCaseIds(area),
             ...entradas.map(([, estados]) => prisma.casos_sop.count({
                 where: { ...baseWhere, catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { nombre: { in: estados } } },
             })),
         ]);
-        const out = { todos };
+        const out = { todos, vencidos: vencidosIds.length };
         entradas.forEach(([clave], i) => {
             out[clave] = resto[i] ?? 0;
         });
@@ -672,6 +710,53 @@ export class CaseRepository {
             return investigacion;
         });
     }
+    /**
+     * Avisa por correo al Jefe de Área de cada plan recién creado, con el
+     * detalle completo (no solo un enlace). Se llama después de que la
+     * transacción que crea los planes ya confirmó, nunca desde adentro: es una
+     * llamada de red a Resend, y sostenerla dentro de una transacción de base
+     * de datos mantendría filas bloqueadas mientras tanto sin necesidad.
+     *
+     * No se espera (`void`, sin await del lado del que llama) y cada plan se
+     * envía por separado con `allSettled`: un correo que falla no debe demorar
+     * la respuesta al usuario ni impedir que salgan los demás. El plan ya quedó
+     * creado y visible en la plataforma pase lo que pase acá — el correo es un
+     * aviso adicional, no un requisito, según lo acordado con el cliente.
+     */
+    static async avisarPlanesAsignados(idsPlan) {
+        const planes = await prisma.planes_accion.findMany({
+            where: { id_plan: { in: idsPlan } },
+            select: {
+                codigo_plan: true,
+                descripcion: true,
+                fecha_plan: true,
+                observaciones: true,
+                areas: { select: { nombre_area: true } },
+                usuarios: { select: { nombre: true, correo: true } },
+                casos_sop: { select: { codigo_sop: true, descripcion: true } },
+                actividades_plan: { select: { descripcion: true, fecha_fin: true } },
+            },
+        });
+        const baseUrl = env.FRONTEND_URL.replace(/\/$/, "");
+        const resultados = await Promise.allSettled(planes.map((plan) => enviarCorreoPlanAsignado({
+            destino: plan.usuarios.correo,
+            nombreJefe: plan.usuarios.nombre,
+            codigoPlan: plan.codigo_plan,
+            codigoCaso: plan.casos_sop.codigo_sop,
+            descripcionCaso: plan.casos_sop.descripcion,
+            areaNombre: plan.areas.nombre_area,
+            descripcionPlan: plan.descripcion,
+            fechaLimite: plan.fecha_plan,
+            observaciones: plan.observaciones,
+            actividades: plan.actividades_plan,
+            url: `${baseUrl}/jefe/planes/${plan.codigo_plan}`,
+        })));
+        resultados.forEach((resultado, i) => {
+            if (resultado.status === "rejected") {
+                console.error("[planes] no se pudo avisar por correo del plan", planes[i]?.codigo_plan, resultado.reason);
+            }
+        });
+    }
     static async createPlan(id_caso, codigo_sop, dto) {
         const MAX_INTENTOS = 3;
         let intento = 0;
@@ -687,7 +772,7 @@ export class CaseRepository {
         while (true) {
             intento++;
             try {
-                return await prisma.$transaction(async (tx) => {
+                const plan = await prisma.$transaction(async (tx) => {
                     const codigo_plan = await ConfiguracionService.nextCodigoPlan(tx, codigo_sop);
                     const plan = await tx.planes_accion.create({
                         data: {
@@ -730,6 +815,8 @@ export class CaseRepository {
                     });
                     return plan;
                 });
+                void CaseRepository.avisarPlanesAsignados([plan.id_plan]);
+                return plan;
             }
             catch (error) {
                 const esColision = error instanceof Error && error.message.includes("codigo_plan");
@@ -786,9 +873,21 @@ export class CaseRepository {
                     titulo: "Plan de Acción enviado a Jefe de Área",
                     detalle: `${codigo_plan} · pendiente de aceptación por el área responsable.`,
                 });
+                // Faltaba acá: `createPlan` (un solo plan) sí la emite, pero al
+                // repartir un caso entre varios Jefes de Área ninguno se enteraba por
+                // ningún lado salvo que entrara a mirar la plataforma por su cuenta.
+                await NotificationRepository.emitir(tx, {
+                    para: { id_usuario: dto.responsable },
+                    tipo: "plan_asignado",
+                    titulo: `Nuevo plan asignado: ${codigo_plan}`,
+                    mensaje: `${dto.descripcion} Debe aceptarlo para iniciar la ejecución.`,
+                });
                 creados.push(plan);
             }
             await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estadoCasoPlan.id_detalle } });
+            return creados;
+        }).then((creados) => {
+            void CaseRepository.avisarPlanesAsignados(creados.map((plan) => plan.id_plan));
             return creados;
         });
     }
@@ -1169,12 +1268,19 @@ export class CaseRepository {
     static async requestExtensionByPlan(id_plan, dto, actor) {
         const plan = await prisma.planes_accion.findUnique({
             where: { id_plan },
-            select: { id_plan: true, id_caso: true, codigo_plan: true, fecha_plan: true, fecha_reprogramada: true },
+            select: {
+                id_plan: true,
+                id_caso: true,
+                codigo_plan: true,
+                fecha_plan: true,
+                fecha_reprogramada: true,
+                actividades_plan: { select: { fecha_fin: true } },
+            },
         });
         if (!plan)
             throw new Error(`El plan ${id_plan} no existe`);
         const configuracion = await ConfiguracionService.get();
-        const fechaVigente = plan.fecha_reprogramada ?? plan.fecha_plan;
+        const fechaVigente = planDeadline(plan);
         const fechaPedida = new Date(`${dto.nueva_fecha}T00:00:00.000Z`);
         const fechaMaxima = sumarDias(fechaVigente, configuracion.plazos.diasSolicitarProrroga);
         if (Number.isNaN(fechaPedida.getTime())) {
@@ -1232,6 +1338,7 @@ export class CaseRepository {
                 responsable: true,
                 fecha_plan: true,
                 fecha_reprogramada: true,
+                actividades_plan: { select: { fecha_fin: true } },
                 prorroga_fecha: true,
                 prorroga_estado: true,
             },
@@ -1242,7 +1349,7 @@ export class CaseRepository {
             throw new Error(`El plan ${plan.codigo_plan} no tiene una prórroga pendiente`);
         }
         // Las columnas son @db.Date: se comparan y guardan como medianoche UTC.
-        const fechaVigente = plan.fecha_reprogramada ?? plan.fecha_plan;
+        const fechaVigente = planDeadline(plan);
         const fechaFinal = decision === "aprobada"
             ? fecha_aprobada
                 ? new Date(`${fecha_aprobada}T00:00:00.000Z`)

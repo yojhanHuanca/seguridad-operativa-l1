@@ -6,6 +6,7 @@ export declare class PlanAjenoError extends Error {
 export declare class CaseService {
     static list(query: {
         estado?: string;
+        vencidos?: string;
         area?: string;
         search?: string;
         sort?: string;
@@ -425,10 +426,10 @@ export declare class CaseService {
                 fecha: Date | null;
                 id_evento: number;
                 titulo: string;
+                detalle: string | null;
                 kind: string;
                 actor: string;
                 actor_rol: string;
-                detalle: string | null;
             }[];
             descripcion: string;
             id_caso: number;
@@ -654,10 +655,10 @@ export declare class CaseService {
             id_caso: number;
             id_evento: number;
             titulo: string;
+            detalle: string | null;
             kind: string;
             actor: string;
             actor_rol: string;
-            detalle: string | null;
         }[];
         solicitudes_informacion: {
             id_caso: number;
@@ -1459,20 +1460,20 @@ export declare class CaseService {
         id_caso: number;
         id_evento: number;
         titulo: string;
+        detalle: string | null;
         kind: string;
         actor: string;
         actor_rol: string;
-        detalle: string | null;
     }[]>;
     static addPlanComment(idPlan: string, rawBody: unknown, actor?: Actor): Promise<{
         fecha: Date | null;
         id_caso: number;
         id_evento: number;
         titulo: string;
+        detalle: string | null;
         kind: string;
         actor: string;
         actor_rol: string;
-        detalle: string | null;
     }[]>;
     /** El jefe quita una evidencia equivocada, antes de enviar el cierre a SO. */
     static removePlanEvidence(idPlan: string, idAnexo: string, _rawBody: unknown, actor?: Actor): Promise<{

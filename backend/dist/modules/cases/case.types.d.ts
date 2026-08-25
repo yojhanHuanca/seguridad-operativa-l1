@@ -44,6 +44,8 @@ export interface CreatePlanDto {
 }
 export interface CaseListFilters {
     estados?: string[] | undefined;
+    /** Casos con un plan de acción activo vencido. Reemplaza a `estados` cuando viene. */
+    vencidos?: boolean | undefined;
     area?: number | undefined;
     search?: string | undefined;
     sort?: "recientes" | "prioridad" | "sla" | undefined;

@@ -209,7 +209,8 @@ async function assertPlanPropio(plan, actor) {
 }
 export class CaseService {
     static async list(query, actor) {
-        const estados = query.estado ? query.estado.split(",").filter(Boolean) : undefined;
+        const vencidos = query.vencidos === "1";
+        const estados = !vencidos && query.estado ? query.estado.split(",").filter(Boolean) : undefined;
         const area = await areaEfectiva(query.area, actor);
         const sort = query.sort === "prioridad" || query.sort === "sla" ? query.sort : "recientes";
         const filters = { sort };
@@ -220,7 +221,7 @@ export class CaseService {
         const paginar = Number.isInteger(page) && page > 0 && Number.isInteger(limit) && limit > 0;
         const fullFilters = {
             ...filters,
-            ...(estados?.length ? { estados } : {}),
+            ...(vencidos ? { vencidos: true } : estados?.length ? { estados } : {}),
             ...(area != null ? { area } : {}),
             ...(query.search ? { search: query.search } : {}),
             ...(paginar ? { page, limit } : {}),

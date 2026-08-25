@@ -11,6 +11,7 @@ const MONITOREO = requireRolesOrResponsable(["Monitorista"], ["Seguridad Operati
 // para que no las capture como si fueran un identificador.
 router.get("/", MONITOREO, EventoController.getAll);
 router.get("/counts", MONITOREO, EventoController.getCounts);
+router.get("/indicadores", MONITOREO, EventoController.getIndicadores);
 router.get("/asignados/:id_usuario", EventoController.getAsignados);
 router.get("/:id", MONITOREO, EventoController.getById);
 router.post("/", MONITOREO, EventoController.create);
