@@ -88,6 +88,31 @@ const indicadores = {
   reprogramacionPlanesAbiertos: [],
 };
 
+// Forma real de IndicadoresEventosResponse (backend/src/modules/eventos/
+// indicadores.formulas.ts). El catch-all `[]` del final de mockApi no sirve
+// acá: la página lee `data.criticos.detalle`, `data.indiceErrores.serie`, etc,
+// y un array vacío no tiene esas claves — el smoke test lo habría dejado
+// pasar igual (solo revisa que no truene y que no redirija a /login), pero
+// tapaba justamente el tipo de bug que un smoke test debería atrapar.
+const indicadoresEventos = {
+  periodo: { anio: 2026, mes: 8 },
+  totalEventos: { mes: 0, anual: 0 },
+  erroresOperativos: { mes: 0, anual: 0 },
+  accidentabilidad: { mes: 0, anual: 0 },
+  accidentabilidadSinDj: { mes: 0, anual: 0 },
+  criticos: {
+    mes: 0,
+    anual: 0,
+    detalle: [
+      { etiqueta: 'Atropello/ Embestido', mes: 0, anual: 0 },
+      { etiqueta: 'Colisiones', mes: 0, anual: 0 },
+    ],
+  },
+  indiceErrores: { valor: null, tolerable: null, unidad: 'x 1MM km-co', serie: [] },
+  indiceAccidentabilidad: { valor: null, tolerable: null, unidad: 'x 1MM pasajeros', serie: [] },
+  faltanDatos: ['Km comercial', 'Afluencia de pasajeros'],
+};
+
 function envelope(data: unknown, meta?: unknown) {
   return { success: true, message: 'mock', data, ...(meta ? { meta } : {}) };
 }
@@ -151,6 +176,7 @@ export async function mockApi(page: Page) {
     }
     if (path === '/notifications') return json({ id_usuario: 1, no_leidas: 0, items: [] });
     if (path === '/eventos/counts') return json({ total: 0, registrados: 0, enInvestigacion: 0, cerrados: 0 });
+    if (path === '/eventos/indicadores') return json(indicadoresEventos);
     if (path.startsWith('/eventos/asignados/')) return json([]);
     if (path === '/eventos') return json([], { total: 0 });
     if (path === '/dashboard/indicadores') return json(indicadores);

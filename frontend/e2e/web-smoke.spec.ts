@@ -27,8 +27,9 @@ const seguridadRoutes = [
   '/seguridad/alertas',
   '/seguridad/planes-accion',
   '/seguridad/eventos',
+  // "/seguridad/reportes/estadisticas" se eliminó: todos los gráficos se
+  // consolidaron en KPIs y la ruta ya no existe (ver AppRouter.tsx).
   '/seguridad/reportes/kpis',
-  '/seguridad/reportes/estadisticas',
   '/seguridad/reportes/exportar',
   '/seguridad/notificaciones',
   '/seguridad/perfil',
@@ -45,6 +46,7 @@ const monitoreoRoutes = [
   '/monitoreo/nuevo',
   '/monitoreo/historial',
   '/monitoreo/reportes',
+  '/monitoreo/indicadores',
   '/monitoreo/perfil',
 ];
 
@@ -56,7 +58,12 @@ for (const route of publicRoutes) {
   test(`publico: ${route}`, async ({ page }) => {
     await page.goto(route);
     await expectNoRuntimeCrash(page);
-    await expect(page).not.toHaveURL(/\/login$/);
+    // La aserción "no terminó en /login" no aplica a /login mismo: visitar esa
+    // ruta a propósito y quedarse ahí es el comportamiento correcto, no un
+    // redirect por falta de sesión.
+    if (route !== '/login') {
+      await expect(page).not.toHaveURL(/\/login$/);
+    }
   });
 }
 

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Eye, EyeOff, Loader2, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Logo } from "@/components/brand/Logo";
 import { apiErrorMessage } from "@/lib/api";
 import { homeForRole, useAuth } from "@/features/auth/auth";
@@ -10,6 +10,7 @@ import { nombreSistema, useConfiguracionPublica } from "@/features/configuracion
 export function LoginPage() {
   const { login, loginWithGoogle, user, token } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -18,7 +19,17 @@ export function LoginPage() {
   const { data: identidad } = useConfiguracionPublica();
   const systemName = nombreSistema(identidad);
 
-  if (user && token) return <Navigate to={homeForRole(user.rol)} replace />;
+  // `ProtectedRoute` guarda la ruta a la que se quería entrar en el estado de
+  // la navegación al mandar para acá — por ejemplo, el enlace de un correo de
+  // plan asignado que apunta a `/jefe/planes/:codigo`. Sin esto, después de
+  // loguearse siempre caía en el panel genérico del rol y perdía el destino
+  // real, sin importar de dónde vino. `ProtectedRoute` vuelve a filtrar por
+  // rol cuando se navega ahí, así que redirigir ciego acá es seguro: un
+  // usuario sin permiso para esa ruta rebota igual, como siempre.
+  const from = (location.state as { from?: string } | null)?.from;
+  const destino = (rol: string) => from || homeForRole(rol);
+
+  if (user && token) return <Navigate to={destino(user.rol)} replace />;
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -26,7 +37,7 @@ export function LoginPage() {
     setLoading(true);
     try {
       const authenticatedUser = await login(correo.trim().toLowerCase(), password);
-      navigate(homeForRole(authenticatedUser.rol), { replace: true });
+      navigate(destino(authenticatedUser.rol), { replace: true });
     } catch (loginError) {
       setError(apiErrorMessage(loginError, "No se pudo iniciar sesión. Verifica tus credenciales."));
     } finally {
@@ -39,7 +50,7 @@ export function LoginPage() {
     setLoading(true);
     try {
       const authenticatedUser = await loginWithGoogle(credential);
-      navigate(homeForRole(authenticatedUser.rol), { replace: true });
+      navigate(destino(authenticatedUser.rol), { replace: true });
     } catch (loginError) {
       setError(apiErrorMessage(loginError, "No se pudo iniciar sesión con Google."));
     } finally {

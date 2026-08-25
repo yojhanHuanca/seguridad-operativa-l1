@@ -24,7 +24,7 @@ export function Indicadores() {
   const { printActive, printReport } = useIndicadoresPrint(`Indicadores de Eventos Operacionales ${MESES[mes - 1]} ${anio}`);
 
   const total = data?.totalEventos;
-  const totalFactoresMes = (data?.erroresOperativos.mes ?? 0) + (data?.accidentabilidad.mes ?? 0);
+  const totalFactoresMes = (data?.erroresOperativos?.mes ?? 0) + (data?.accidentabilidad?.mes ?? 0);
   const pct = (parte: ConteoMesAnual | undefined) =>
     totalFactoresMes > 0 && parte ? formatPercent(Math.round((parte.mes / totalFactoresMes) * 1000) / 10) : "—";
 
@@ -86,16 +86,16 @@ export function Indicadores() {
             <Bloque icon={<Gauge className="h-4 w-4" />} titulo="Factores internos">
               <p className="text-[12.5px] font-bold text-brand-700">Errores operativos</p>
               <Lista items={DETALLE_INTERNOS} />
-              <Cifra mes={data?.erroresOperativos.mes} anual={data?.erroresOperativos.anual} isLoading={isLoading} />
+              <Cifra mes={data?.erroresOperativos?.mes} anual={data?.erroresOperativos?.anual} isLoading={isLoading} />
             </Bloque>
 
             <Bloque icon={<ShieldAlert className="h-4 w-4" />} titulo="Factores externos" tono="info">
               <p className="text-[12.5px] font-bold text-info-ink">Accidentabilidad (pasajeros)</p>
               <Lista items={DETALLE_EXTERNOS} />
-              <Cifra mes={data?.accidentabilidad.mes} anual={data?.accidentabilidad.anual} isLoading={isLoading} sufijo="Total DJ anual" />
+              <Cifra mes={data?.accidentabilidad?.mes} anual={data?.accidentabilidad?.anual} isLoading={isLoading} sufijo="Total DJ anual" />
               <p className="mt-1.5 rounded-md bg-surface px-2 py-1.5 text-center text-[10.5px] leading-snug text-ink-quiet">
-                Eventos sin DJ: <strong className="text-ink">{data?.accidentabilidadSinDj.mes ?? 0}</strong> mensual y{" "}
-                <strong className="text-ink">{data?.accidentabilidadSinDj.anual ?? 0}</strong> anual.
+                Eventos sin DJ: <strong className="text-ink">{data?.accidentabilidadSinDj?.mes ?? 0}</strong> mensual y{" "}
+                <strong className="text-ink">{data?.accidentabilidadSinDj?.anual ?? 0}</strong> anual.
               </p>
             </Bloque>
           </div>
@@ -114,7 +114,7 @@ export function Indicadores() {
               {/* El desglose es del mes, no del año: en el panel del cliente
                   los valores de la lista suman el `#MES` de la derecha. */}
               <div>
-                {(data?.criticos.detalle ?? []).map((item) => (
+                {(data?.criticos?.detalle ?? []).map((item) => (
                   <div
                     key={item.etiqueta}
                     className={cn(
@@ -127,14 +127,14 @@ export function Indicadores() {
                   </div>
                 ))}
               </div>
-              <Cifra mes={data?.criticos.mes} anual={data?.criticos.anual} isLoading={isLoading} />
+              <Cifra mes={data?.criticos?.mes} anual={data?.criticos?.anual} isLoading={isLoading} />
             </div>
           </Bloque>
         </div>
 
         <div className="grid gap-5">
           <GraficoIndice
-            titulo={`Índice de errores operativos ${data?.indiceErrores.unidad ?? ""}`}
+            titulo={`Índice de errores operativos ${data?.indiceErrores?.unidad ?? ""}`}
             indice={data?.indiceErrores}
             etiquetaBarras="#Errores Operativos"
             etiquetaUmbral={`Umbral tolerable (1σ) ${anio - 1}`}
@@ -142,7 +142,7 @@ export function Indicadores() {
             isLoading={isLoading}
           />
           <GraficoIndice
-            titulo={`Índice de accidentabilidad ${data?.indiceAccidentabilidad.unidad ?? ""}`}
+            titulo={`Índice de accidentabilidad ${data?.indiceAccidentabilidad?.unidad ?? ""}`}
             indice={data?.indiceAccidentabilidad}
             etiquetaBarras="Total Accidentabilidad"
             etiquetaUmbral={`Umbral tolerable (1σ) ${anio - 1}`}

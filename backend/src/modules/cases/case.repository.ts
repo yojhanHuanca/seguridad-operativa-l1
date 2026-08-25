@@ -2,6 +2,8 @@ import prisma from "../../lib/prisma.js";
 import { planDeadline, planVencido, type PlanDeadlineSource } from "../../lib/planDeadline.js";
 import { NotificationRepository } from "../notifications/notification.repository.js";
 import { ConfiguracionService } from "../configuracion/configuracion.service.js";
+import { enviarCorreoPlanAsignado } from "../../utils/mailer.js";
+import { env } from "../../config/env.js";
 import type {
   CaseListFilters,
   CreatePlanDto,
@@ -773,6 +775,60 @@ export class CaseRepository {
     });
   }
 
+  /**
+   * Avisa por correo al Jefe de Área de cada plan recién creado, con el
+   * detalle completo (no solo un enlace). Se llama después de que la
+   * transacción que crea los planes ya confirmó, nunca desde adentro: es una
+   * llamada de red a Resend, y sostenerla dentro de una transacción de base
+   * de datos mantendría filas bloqueadas mientras tanto sin necesidad.
+   *
+   * No se espera (`void`, sin await del lado del que llama) y cada plan se
+   * envía por separado con `allSettled`: un correo que falla no debe demorar
+   * la respuesta al usuario ni impedir que salgan los demás. El plan ya quedó
+   * creado y visible en la plataforma pase lo que pase acá — el correo es un
+   * aviso adicional, no un requisito, según lo acordado con el cliente.
+   */
+  private static async avisarPlanesAsignados(idsPlan: number[]) {
+    const planes = await prisma.planes_accion.findMany({
+      where: { id_plan: { in: idsPlan } },
+      select: {
+        codigo_plan: true,
+        descripcion: true,
+        fecha_plan: true,
+        observaciones: true,
+        areas: { select: { nombre_area: true } },
+        usuarios: { select: { nombre: true, correo: true } },
+        casos_sop: { select: { codigo_sop: true, descripcion: true } },
+        actividades_plan: { select: { descripcion: true, fecha_fin: true } },
+      },
+    });
+
+    const baseUrl = env.FRONTEND_URL.replace(/\/$/, "");
+    const resultados = await Promise.allSettled(
+      planes.map((plan) =>
+        enviarCorreoPlanAsignado({
+          destino: plan.usuarios.correo,
+          nombreJefe: plan.usuarios.nombre,
+          codigoPlan: plan.codigo_plan,
+          codigoCaso: plan.casos_sop.codigo_sop,
+          descripcionCaso: plan.casos_sop.descripcion,
+          areaNombre: plan.areas.nombre_area,
+          descripcionPlan: plan.descripcion,
+          fechaLimite: plan.fecha_plan,
+          observaciones: plan.observaciones,
+          actividades: plan.actividades_plan,
+          url: `${baseUrl}/jefe/planes/${plan.codigo_plan}`,
+        }),
+      ),
+    );
+
+    resultados.forEach((resultado, i) => {
+      if (resultado.status === "rejected") {
+        console.error("[planes] no se pudo avisar por correo del plan", planes[i]?.codigo_plan, resultado.reason);
+      }
+    });
+  }
+
   static async createPlan(id_caso: number, codigo_sop: string, dto: CreatePlanDto) {
     const MAX_INTENTOS = 3;
     let intento = 0;
@@ -790,7 +846,7 @@ export class CaseRepository {
     while (true) {
       intento++;
       try {
-        return await prisma.$transaction(async (tx) => {
+        const plan = await prisma.$transaction(async (tx) => {
           const codigo_plan = await ConfiguracionService.nextCodigoPlan(tx, codigo_sop);
 
           const plan = await tx.planes_accion.create({
@@ -839,6 +895,9 @@ export class CaseRepository {
 
           return plan;
         });
+
+        void CaseRepository.avisarPlanesAsignados([plan.id_plan]);
+        return plan;
       } catch (error) {
         const esColision = error instanceof Error && error.message.includes("codigo_plan");
         if (esColision && intento < MAX_INTENTOS) continue;
@@ -899,10 +958,23 @@ export class CaseRepository {
           detalle: `${codigo_plan} · pendiente de aceptación por el área responsable.`,
         });
 
+        // Faltaba acá: `createPlan` (un solo plan) sí la emite, pero al
+        // repartir un caso entre varios Jefes de Área ninguno se enteraba por
+        // ningún lado salvo que entrara a mirar la plataforma por su cuenta.
+        await NotificationRepository.emitir(tx, {
+          para: { id_usuario: dto.responsable },
+          tipo: "plan_asignado",
+          titulo: `Nuevo plan asignado: ${codigo_plan}`,
+          mensaje: `${dto.descripcion} Debe aceptarlo para iniciar la ejecución.`,
+        });
+
         creados.push(plan);
       }
 
       await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estadoCasoPlan.id_detalle } });
+      return creados;
+    }).then((creados) => {
+      void CaseRepository.avisarPlanesAsignados(creados.map((plan) => plan.id_plan));
       return creados;
     });
   }
