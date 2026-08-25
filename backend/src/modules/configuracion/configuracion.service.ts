@@ -304,6 +304,55 @@ export class ConfiguracionService {
     return codigos;
   }
 
+  /**
+   * Códigos de plan para muchos casos de una sola vez, para la importación
+   * masiva.
+   *
+   * `nextCodigosPlan` sirve para un caso suelto, pero hace una lectura de
+   * configuración, un `count` y un `findUnique` por cada código: llamarla en
+   * un bucle de diez mil casos son decenas de miles de consultas en serie, y
+   * la transacción se cae por tiempo antes de terminar. Acá se lee la
+   * configuración una vez, se traen de golpe los códigos ya ocupados y el
+   * resto se resuelve en memoria.
+   */
+  static async nextCodigosPlanBulk(client: DbClient, pedidos: { codigoSop: string; cantidad: number }[]): Promise<Map<string, string[]>> {
+    const out = new Map<string, string[]>();
+    const total = pedidos.reduce((suma, pedido) => suma + pedido.cantidad, 0);
+    if (total <= 0) return out;
+
+    const values = await ConfiguracionService.readValues(client);
+    const prefix = sanitizePrefix(values.get(CONFIG_KEYS.planPrefijo) || defaultValue(CONFIG_KEYS.planPrefijo), "El prefijo de planes");
+    const configured = parseNumber(values.get(CONFIG_KEYS.planSecuencia), Number(defaultValue(CONFIG_KEYS.planSecuencia)));
+    const actual = await client.planes_accion.count();
+
+    // Los códigos llevan el del caso adelante, así que solo pueden chocar con
+    // planes del mismo caso: alcanza con traer los de esos casos.
+    const ocupados = new Set(
+      (
+        await client.planes_accion.findMany({
+          where: { OR: pedidos.map((pedido) => ({ codigo_plan: { startsWith: `${pedido.codigoSop}-${prefix}-` } })) },
+          select: { codigo_plan: true },
+        })
+      ).map((plan) => plan.codigo_plan),
+    );
+
+    let cursor = Math.max(configured, actual);
+    for (const pedido of pedidos) {
+      const codigos: string[] = [];
+      while (codigos.length < pedido.cantidad) {
+        cursor += 1;
+        const candidate = `${pedido.codigoSop}-${prefix}-${padSequence(cursor)}`;
+        if (ocupados.has(candidate)) continue;
+        ocupados.add(candidate);
+        codigos.push(candidate);
+      }
+      out.set(pedido.codigoSop, codigos);
+    }
+
+    await upsertValue(client, CONFIG_KEYS.planSecuencia, String(cursor));
+    return out;
+  }
+
   static async nextCodigoPlan(client: DbClient, codigoSop: string): Promise<string> {
     const [codigo] = await ConfiguracionService.nextCodigosPlan(client, codigoSop, 1);
     if (!codigo) throw new Error("No se pudo generar el código del plan");

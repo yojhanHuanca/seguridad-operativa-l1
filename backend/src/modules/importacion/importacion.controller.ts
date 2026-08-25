@@ -7,7 +7,9 @@ import { ImportacionService } from "./importacion.service.js";
 const cellSchema = z.union([z.string(), z.number(), z.boolean(), z.null(), z.undefined()]);
 const payloadSchema = z.object({
   filename: z.string().trim().max(255).optional().nullable(),
-  rows: z.array(z.record(z.string(), cellSchema)).min(1).max(10000),
+  // El histórico de la empresa pasa las diez mil filas. El tope existe solo
+  // para frenar un archivo absurdo, no para limitar una importación real.
+  rows: z.array(z.record(z.string(), cellSchema)).min(1).max(100000),
 });
 
 function parsePayload(body: unknown) {

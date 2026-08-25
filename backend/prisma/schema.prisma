@@ -116,7 +116,7 @@ model casos_sop {
   // que `tipo`, que solo distingue No Conformidad / Observación.
   clasificacion                                                String?                   @db.VarChar(200)
   analisis_riesgo                                              Int?
-  acr                                                          String?                   @db.VarChar(50)
+  acr                                                          String?
   area_responsable                                             Int?
   responsable_plan                                             Int?
   estado_plan                                                  Int?

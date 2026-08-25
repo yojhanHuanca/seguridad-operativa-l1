@@ -12,7 +12,16 @@ const app = express();
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors());
-app.use(express.json());
+// El body por defecto de express son 100 KB, suficiente para todo el sistema
+// menos para la importación histórica: ahí el navegador manda el Excel ya
+// convertido a JSON, y un archivo de decenas de miles de filas pesa varios MB.
+// Se lo excluye del límite general en vez de subirlo para todas las rutas: el
+// resto de la API no tiene motivo para aceptar cuerpos gigantes.
+const jsonEstandar = express.json();
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api/importacion")) return next();
+  return jsonEstandar(req, res, next);
+});
 app.use(morgan("dev"));
 
 app.get("/", (_req, res) => {

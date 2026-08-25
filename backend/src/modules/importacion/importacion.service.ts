@@ -20,6 +20,13 @@ const OPTIONAL_COLUMNS = [
   "Área",
   "Riesgo",
   "Descripción",
+  "Procedencia",
+  "Tipo SOP",
+  "Subtipo SOP",
+  "Peligro",
+  "Consecuencias",
+  "ACR",
+  "Responsable de Hallazgo",
   "Código Plan",
   "Descripción Plan",
   "Estado Plan",
@@ -41,6 +48,20 @@ const CASE_ALIASES = {
   estado: ["estado", "estado hallazgo", "estado_hallazgo"],
   fecha: ["fecha", "fecha hallazgo", "fecha_hallazgo", "fecha evento", "fecha_evento", "fecha del hallazgo", "fecha de evento"],
   descripcion: ["descripcion", "descripción", "detalle", "observacion", "observación"],
+  procedencia: ["procedencia"],
+  tipoSop: ["tipo sop", "tipo_sop"],
+  subtipoSop: ["subtipo sop", "subtipo_sop", "subtipo"],
+  peligro: ["peligro"],
+  consecuencia: ["consecuencias", "consecuencia"],
+  acr: ["acr"],
+  responsableHallazgo: [
+    "responsable de hallazgo",
+    "responsable hallazgo",
+    "responsable de hallazgo/ investigacion/ rso",
+    "responsable de hallazgo/investigacion/rso",
+    "responsable de investigacion",
+    "responsable rso",
+  ],
 } as const;
 
 const PLAN_ALIASES = {
@@ -91,6 +112,10 @@ const ESTADO_HALLAZGO_MAP: Record<string, string> = {
 const ESTADO_PLAN_MAP: Record<string, string> = {
   abierto: "En Ejecución",
   enproceso: "En Ejecución",
+  // El histórico marca así a los planes con prórroga pedida. Acá la prórroga
+  // no es un estado del plan sino una solicitud aparte (`solicitudes_prorroga`),
+  // y mientras se resuelve el plan sigue en ejecución.
+  prorrogasolicitada: "En Ejecución",
 };
 
 function mapHistoricalValue(value: string, map: Record<string, string>): string {
@@ -141,6 +166,14 @@ interface ParsedCase {
   estado: string;
   fecha: Date | null;
   descripcion: string;
+  /** Estos seis son opcionales: sin su columna, se resuelven a los valores por defecto de siempre. */
+  procedencia: string | null;
+  tipoSop: string | null;
+  subtipoSop: string | null;
+  peligro: string | null;
+  consecuencia: string | null;
+  acr: string | null;
+  responsableHallazgo: string | null;
   plans: ParsedPlan[];
 }
 
@@ -178,9 +211,14 @@ interface PreparedCase {
     riesgo: number | null;
     procedencia: number;
     tipoSop: number;
+    subtipoSop: number | null;
     tipoCaso: number;
     reportanteUsuario: number | null;
+    responsableHallazgo: number | null;
   };
+  peligro: string | null;
+  consecuencia: string | null;
+  acr: string | null;
   plans: PreparedPlan[];
 }
 
@@ -359,6 +397,13 @@ function buildParsedCases(payload: ImportacionPayload, issues: ImportacionIssue[
     const area = getCell(row, CASE_ALIASES.area) || null;
     const riesgo = getCell(row, CASE_ALIASES.riesgo) || null;
     const descripcion = descripcionRaw || titulo || "";
+    const procedencia = getCell(row, CASE_ALIASES.procedencia) || null;
+    const tipoSop = getCell(row, CASE_ALIASES.tipoSop) || null;
+    const subtipoSop = getCell(row, CASE_ALIASES.subtipoSop) || null;
+    const peligro = getCell(row, CASE_ALIASES.peligro) || null;
+    const consecuencia = getCell(row, CASE_ALIASES.consecuencia) || null;
+    const acr = getCell(row, CASE_ALIASES.acr) || null;
+    const responsableHallazgo = getCell(row, CASE_ALIASES.responsableHallazgo) || null;
 
     if (!codigo) addIssue(issues, requiredIssue(rowNumber, "Código", codigo));
     if (!tipo) addIssue(issues, requiredIssue(rowNumber, "Tipo", tipo));
@@ -380,6 +425,8 @@ function buildParsedCases(payload: ImportacionPayload, issues: ImportacionIssue[
     if (codigo.length > 30) addIssue(issues, maxLengthIssue(rowNumber, "Código", codigo, 30));
     if (titulo && titulo.length > 200) addIssue(issues, maxLengthIssue(rowNumber, "Título", titulo, 200));
     if (reportante && reportante.length > 150) addIssue(issues, maxLengthIssue(rowNumber, "Reportante", reportante, 150));
+    // ACR (análisis de causa raíz) es texto libre: el histórico trae párrafos
+    // enteros. La columna era VarChar(50) y rechazaba casi todas las filas.
 
     const normalizedCode = codigo ? normalizeText(codigo) : "";
     const repeated = normalizedCode ? byCode.get(normalizedCode) : undefined;
@@ -412,6 +459,13 @@ function buildParsedCases(payload: ImportacionPayload, issues: ImportacionIssue[
       estado,
       fecha,
       descripcion,
+      procedencia,
+      tipoSop,
+      subtipoSop,
+      peligro,
+      consecuencia,
+      acr,
+      responsableHallazgo,
       plans: parsedPlan ? [parsedPlan] : [],
     };
 
@@ -527,23 +581,24 @@ function parsePlan(
 }
 
 async function getBuildContext(parsed: ParsedCase[]): Promise<BuildContext> {
-  const codes = parsed.map((item) => item.codigo).filter(Boolean);
-  const planCodes = parsed
-    .flatMap((item) => item.plans.map((plan) => plan.codigo))
-    .filter((codigo): codigo is string => Boolean(codigo));
-
   const [catalogos, areas, usuarios, existingCases, existingPlans] = await Promise.all([
+    // Sin filtrar por `estado`: los valores que solo existen en el histórico se
+    // guardan desactivados para no ofrecerlos al registrar un reporte nuevo,
+    // pero la importación igual tiene que poder reconocerlos.
     prisma.catalogos.findMany({
-      include: { catalogo_detalle: { where: { estado: true }, select: { id_detalle: true, nombre: true, codigo: true } } },
+      include: { catalogo_detalle: { select: { id_detalle: true, nombre: true, codigo: true } } },
     }),
     prisma.areas.findMany({ select: { id_area: true, nombre_area: true } }),
     prisma.usuarios.findMany({ select: { id_usuario: true, codigo_usuario: true, nombre: true, correo: true } }),
-    codes.length
-      ? prisma.casos_sop.findMany({ where: { codigo_sop: { in: codes } }, select: { codigo_sop: true } })
-      : Promise.resolve([]),
-    planCodes.length
-      ? prisma.planes_accion.findMany({ where: { codigo_plan: { in: planCodes } }, select: { codigo_plan: true } })
-      : Promise.resolve([]),
+    // Se traen todos los códigos, no solo los del archivo, porque la
+    // comparación es normalizada y no se puede hacer con un `in` de SQL: el
+    // histórico escribe el mismo caso como "SOP 01-2024" y sus planes como
+    // "SOP-01-2024-PLA-01". Con la comparación exacta anterior, ese caso no se
+    // reconocía como ya importado y sus planes chocaban igual, dejando un error
+    // que bloqueaba el archivo entero. Son cadenas cortas: traerlas todas pesa
+    // poco incluso con decenas de miles de casos.
+    prisma.casos_sop.findMany({ select: { codigo_sop: true } }),
+    prisma.planes_accion.findMany({ select: { codigo_plan: true } }),
   ]);
 
   return {
@@ -588,6 +643,44 @@ function resolveCatalog(
   return found ?? null;
 }
 
+/**
+ * Como `resolveCatalog`, pero para columnas opcionales de la BD histórica
+ * (Procedencia, Tipo SOP, Subtipo SOP): si el valor no viene o no coincide
+ * con ningún detalle del catálogo, no bloquea la fila — solo avisa y cae al
+ * `fallback` (el valor por defecto, o `null` si el campo es opcional de verdad).
+ */
+function resolveCatalogOrDefault(
+  ctx: BuildContext,
+  catalogName: string,
+  value: string | null,
+  fallback: CatalogDetail | null,
+  row: number,
+  field: string,
+  issues: ImportacionIssue[],
+): CatalogDetail | null {
+  if (!value) return fallback;
+  const found = ctx.catalogos.find(
+    (item) =>
+      normalizeText(item.catalogo) === normalizeText(catalogName) &&
+      (normalizeText(item.nombre) === normalizeText(value) || (item.codigo ? normalizeText(item.codigo) === normalizeText(value) : false)),
+  );
+  if (!found) {
+    addIssue(issues, {
+      row,
+      field,
+      severity: "warning",
+      // Los catálogos ampliables se completan solos al importar; el resto sí
+      // cae al valor por defecto, y conviene que el aviso lo diga distinto.
+      message: (CATALOGOS_AMPLIABLES as readonly string[]).includes(catalogName)
+        ? `No existe "${value}" en el catálogo "${catalogName}"; se agregará desactivado al importar y el caso conservará su clasificación.`
+        : `No existe "${value}" en el catálogo "${catalogName}"; se usará el valor por defecto.`,
+      value,
+    });
+    return fallback;
+  }
+  return found;
+}
+
 function resolveRequiredDefault(ctx: BuildContext, catalogName: string, value: string, issues: ImportacionIssue[]): CatalogDetail | null {
   const found = ctx.catalogos.find(
     (item) => normalizeText(item.catalogo) === normalizeText(catalogName) && normalizeText(item.nombre) === normalizeText(value),
@@ -627,7 +720,7 @@ function resolveArea(ctx: BuildContext, value: string | null, row: number, field
       row,
       field,
       severity: "warning",
-      message: `No existe el área "${value}".`,
+      message: `No existe el área "${value}"; se creará al importar.`,
       value,
     });
   }
@@ -643,6 +736,126 @@ function resolveUser(ctx: BuildContext, value: string | null): UserRef | null {
         normalizeText(usuario.correo) === normalizeText(value) ||
         normalizeText(usuario.codigo_usuario) === normalizeText(value),
     ) ?? null
+  );
+}
+
+/**
+ * Catálogos donde un valor desconocido del histórico se da de alta solo para
+ * ese archivo, en vez de reemplazarlo por el valor por defecto.
+ *
+ * Son los tres que solo clasifican: no cambian cómo se comporta el sistema. El
+ * estado del caso o del plan queda afuera a propósito — inventar un estado
+ * rompería el flujo de trabajo, así que ahí un valor desconocido sigue siendo
+ * un error que hay que corregir en la planilla.
+ */
+const CATALOGOS_AMPLIABLES = ["Procedencia", "Tipo SOP", "Subtipo SOP"] as const;
+
+interface ReferenciasCreadas {
+  usuarios: number;
+  areas: number;
+  catalogos: number;
+}
+
+/**
+ * Da de alta lo que el archivo menciona y el sistema todavía no tiene.
+ *
+ * El histórico nombra gente que ya no trabaja acá, áreas que se reorganizaron y
+ * clasificaciones viejas. Antes, cada una de esas menciones costaba datos: un
+ * plan cuyo responsable no existía se descartaba entero (el responsable es
+ * obligatorio en `planes_accion`), y una clasificación desconocida se cambiaba
+ * en silencio por el valor por defecto, dejando el archivo mal clasificado sin
+ * ningún rastro.
+ *
+ * Todo lo que se crea acá nace inactivo: no aparece al registrar un reporte
+ * nuevo ni al asignar un plan, pero el caso histórico conserva su dato real.
+ * Corre solo al importar, nunca al validar — la vista previa no escribe nada.
+ */
+async function crearReferenciasFaltantes(payload: ImportacionPayload): Promise<ReferenciasCreadas> {
+  const parsed = buildParsedCases(payload, []);
+  const ctx = await getBuildContext(parsed);
+  const creadas: ReferenciasCreadas = { usuarios: 0, areas: 0, catalogos: 0 };
+
+  const nombresUsuario = new Set<string>();
+  const nombresArea = new Set<string>();
+  const valoresCatalogo = new Map<string, Set<string>>();
+
+  const anotarArea = (valor: string | null) => {
+    if (valor?.trim() && !resolveArea(ctx, valor, 0, "", [])) nombresArea.add(valor.trim());
+  };
+  const anotarUsuario = (valor: string | null) => {
+    if (valor?.trim() && !isAnonymousReporter(valor) && !resolveUser(ctx, valor)) nombresUsuario.add(valor.trim());
+  };
+
+  for (const item of parsed) {
+    anotarUsuario(item.responsableHallazgo);
+    anotarArea(item.area);
+    for (const catalogo of CATALOGOS_AMPLIABLES) {
+      const valor = catalogo === "Procedencia" ? item.procedencia : catalogo === "Tipo SOP" ? item.tipoSop : item.subtipoSop;
+      if (!valor?.trim()) continue;
+      const existe = ctx.catalogos.some(
+        (detalle) => normalizeText(detalle.catalogo) === normalizeText(catalogo) && normalizeText(detalle.nombre) === normalizeText(valor),
+      );
+      if (existe) continue;
+      if (!valoresCatalogo.has(catalogo)) valoresCatalogo.set(catalogo, new Set());
+      valoresCatalogo.get(catalogo)!.add(valor.trim());
+    }
+    for (const plan of item.plans) {
+      anotarUsuario(plan.responsable);
+      anotarArea(plan.area);
+    }
+  }
+
+  if (nombresArea.size === 0 && nombresUsuario.size === 0 && valoresCatalogo.size === 0) return creadas;
+
+  await prisma.$transaction(
+    async (tx) => {
+      if (nombresArea.size > 0) {
+        const { count } = await tx.areas.createMany({
+          data: [...nombresArea].map((nombre) => ({ nombre_area: nombre.slice(0, 100) })),
+          skipDuplicates: true,
+        });
+        creadas.areas = count;
+      }
+
+      if (nombresUsuario.size > 0) {
+        // El correo y el código son únicos y obligatorios: se derivan del nombre
+        // con un sufijo del archivo histórico, que no colisiona con los reales.
+        const base = await tx.usuarios.count();
+        const { count } = await tx.usuarios.createMany({
+          data: [...nombresUsuario].map((nombre, i) => ({
+            codigo_usuario: `HIST-${String(base + i + 1).padStart(5, "0")}`,
+            nombre: nombre.slice(0, 150),
+            correo: `${slugCorreo(nombre)}.${base + i + 1}@historico.local`,
+            estado: "Inactivo",
+          })),
+          skipDuplicates: true,
+        });
+        creadas.usuarios = count;
+      }
+
+      for (const [catalogo, valores] of valoresCatalogo) {
+        const cab = await tx.catalogos.findFirst({ where: { nombre: catalogo }, select: { id_catalogo: true } });
+        if (!cab) continue;
+        const { count } = await tx.catalogo_detalle.createMany({
+          data: [...valores].map((nombre) => ({ id_catalogo: cab.id_catalogo, nombre: nombre.slice(0, 200), estado: false })),
+          skipDuplicates: true,
+        });
+        creadas.catalogos += count;
+      }
+    },
+    { timeout: IMPORT_TIMEOUT_MS, maxWait: 30_000 },
+  );
+
+  return creadas;
+}
+
+/** Parte local de un correo derivada del nombre: solo letras, números y puntos. */
+function slugCorreo(nombre: string): string {
+  return (
+    normalizeText(nombre)
+      .replace(/[^a-z0-9]+/g, ".")
+      .replace(/^\.+|\.+$/g, "")
+      .slice(0, 40) || "usuario"
   );
 }
 
@@ -681,10 +894,26 @@ function buildPreparedCases(parsed: ParsedCase[], ctx: BuildContext, issues: Imp
         : null;
     const ubicacion = resolveUbicacionDesdeTitulo(ctx, item.titulo);
     const reportanteUsuario = isAnonymousReporter(item.reportante) ? null : resolveUser(ctx, item.reportante);
+    // Estas tres, si la columna viene y no se reconoce, caen al valor por
+    // defecto de siempre (o a null en subtipo, que no tiene uno) — no bloquean
+    // el caso, para no romper archivos que ya funcionaban sin estas columnas.
+    const procedencia = resolveCatalogOrDefault(ctx, "Procedencia", item.procedencia, defaultProcedencia, item.row, "Procedencia", issues);
+    const tipoSop = resolveCatalogOrDefault(ctx, "Tipo SOP", item.tipoSop, defaultTipoSop, item.row, "Tipo SOP", issues);
+    const subtipoSop = resolveCatalogOrDefault(ctx, "Subtipo SOP", item.subtipoSop, null, item.row, "Subtipo SOP", issues);
+    const responsableHallazgo = resolveUser(ctx, item.responsableHallazgo);
+    if (item.responsableHallazgo && !responsableHallazgo) {
+      addIssue(issues, {
+        row: item.row,
+        field: "Responsable de Hallazgo",
+        severity: "warning",
+        message: `No existe un usuario para "${item.responsableHallazgo}"; se creará como usuario inactivo al importar.`,
+        value: item.responsableHallazgo,
+      });
+    }
 
     const preparedPlans = buildPreparedPlans(item, ctx, issues);
 
-    if (!tipoReporte || !estadoHallazgo || !defaultProcedencia || !defaultTipoSop || !defaultTipoCaso) continue;
+    if (!tipoReporte || !estadoHallazgo || !procedencia || !tipoSop || !defaultTipoCaso) continue;
 
     prepared.push({
       row: item.row,
@@ -698,6 +927,9 @@ function buildPreparedCases(parsed: ParsedCase[], ctx: BuildContext, issues: Imp
       estado: item.estado,
       fecha: item.fecha,
       descripcion: item.descripcion,
+      peligro: item.peligro,
+      consecuencia: item.consecuencia,
+      acr: item.acr,
       ids: {
         tipoReporte: tipoReporte.id_detalle,
         estadoHallazgo: estadoHallazgo.id_detalle,
@@ -705,10 +937,12 @@ function buildPreparedCases(parsed: ParsedCase[], ctx: BuildContext, issues: Imp
         ubicacion: ubicacion?.id_detalle ?? null,
         area: area?.id_area ?? null,
         riesgo: riesgo?.id_detalle ?? null,
-        procedencia: defaultProcedencia.id_detalle,
-        tipoSop: defaultTipoSop.id_detalle,
+        procedencia: procedencia.id_detalle,
+        tipoSop: tipoSop.id_detalle,
+        subtipoSop: subtipoSop?.id_detalle ?? null,
         tipoCaso: defaultTipoCaso.id_detalle,
         reportanteUsuario: reportanteUsuario?.id_usuario ?? null,
+        responsableHallazgo: responsableHallazgo?.id_usuario ?? null,
       },
       plans: preparedPlans,
     });
@@ -736,11 +970,17 @@ function buildPreparedPlans(item: ParsedCase, ctx: BuildContext, issues: Importa
 
     const codigo = plan.codigo?.trim() || null;
     if (codigo && ctx.existingPlanCodes.has(normalizeText(codigo))) {
+      // Si el caso ya está importado, sus planes tampoco se van a insertar: no
+      // hay conflicto real que reportar. Antes esto era un error y bastaba con
+      // un caso repetido en la planilla para bloquear el archivo entero.
+      const casoYaExiste = ctx.existingCodes.has(normalizeText(item.codigo));
       addIssue(issues, {
         row: plan.row,
         field: "Código Plan",
-        severity: "error",
-        message: `El plan "${codigo}" ya existe en el sistema.`,
+        severity: casoYaExiste ? "warning" : "error",
+        message: casoYaExiste
+          ? `El plan "${codigo}" ya existe: pertenece al caso "${item.codigo}", que también se omitirá.`
+          : `El plan "${codigo}" ya existe en el sistema.`,
         value: codigo,
       });
       return;
@@ -763,7 +1003,7 @@ function buildPreparedPlans(item: ParsedCase, ctx: BuildContext, issues: Importa
         row: plan.row,
         field: "Responsable Plan",
         severity: "warning",
-        message: `No existe un usuario para el responsable "${plan.responsable}"; el plan se omitirá.`,
+        message: `No existe un usuario para el responsable "${plan.responsable}"; se creará como usuario inactivo al importar y el plan conservará su responsable.`,
         value: plan.responsable,
       });
     }
@@ -836,67 +1076,130 @@ async function buildPreview(payload: ImportacionPayload): Promise<BuildResult> {
   };
 }
 
-async function createImportedCase(tx: TxClient, item: PreparedCase, actorId: number): Promise<{ plans: number }> {
-  const caso = await tx.casos_sop.create({
-    data: {
-      codigo_sop: item.codigo,
-      titulo: item.titulo,
-      nombre_reportante: item.reportante,
-      fecha_hallazgo: item.fecha,
-      fecha_evento: item.fecha,
-      estado_hallazgo: item.ids.estadoHallazgo,
-      dias_abierto: 0,
-      procedencia: item.ids.procedencia,
-      tipo: item.ids.tipoCaso,
-      descripcion: item.descripcion,
-      tipo_sop: item.ids.tipoSop,
-      analisis_riesgo: item.ids.riesgo,
-      area_responsable: item.ids.area,
-      created_by: item.ids.reportanteUsuario,
-      created_at: item.fecha,
-      updated_at: new Date(),
-    },
-  });
+/**
+ * Postgres acepta 65535 parámetros por sentencia. Con ~25 columnas por fila,
+ * mil filas por lote dejan margen de sobra y siguen siendo pocas sentencias:
+ * un archivo de diez mil casos son diez inserciones, no diez mil.
+ */
+const INSERT_CHUNK = 1000;
 
-  const evento = await tx.eventos_operativos.create({
-    data: {
-      fecha: item.fecha,
-      anio: item.fecha.getUTCFullYear(),
-      mes: item.fecha.getUTCMonth() + 1,
-      dia: DIAS[item.fecha.getUTCDay()] ?? null,
-      tipo_incidente: item.ids.tipoReporte,
-      lugar_incidente: item.ids.estacion,
-      ubicacion: item.ids.ubicacion,
-      descripcion: item.descripcion,
-      usuario_registra: actorId,
-      created_at: item.fecha,
-      updated_at: new Date(),
-    },
-  });
+/** Diez minutos: un histórico completo entra en segundos, pero el margen evita
+ *  que una base lenta o un archivo enorme corte la importación por la mitad. */
+const IMPORT_TIMEOUT_MS = 10 * 60 * 1000;
 
-  await tx.evento_caso.create({
-    data: {
-      id_evento: evento.id_evento,
-      id_caso: caso.id_caso,
-      usuario: actorId,
-      fecha_conversion: new Date(),
-    },
-  });
+function enLotes<T>(items: T[], tamano: number): T[][] {
+  const lotes: T[][] = [];
+  for (let i = 0; i < items.length; i += tamano) lotes.push(items.slice(i, i + tamano));
+  return lotes;
+}
 
-  if (item.plans.length > 0) {
-    const generatedCodes = await ConfiguracionService.nextCodigosPlan(
-      tx,
-      item.codigo,
-      item.plans.filter((plan) => !plan.codigo).length,
-    );
-    let generatedIndex = 0;
+/**
+ * Inserta todos los casos del archivo con operaciones masivas.
+ *
+ * Antes se insertaba caso por caso: cinco consultas por fila, en serie. Diez
+ * mil casos eran cincuenta mil idas y vueltas a la base — minutos de reloj — y
+ * la transacción se caía por tiempo mucho antes de terminar. Acá cada tipo de
+ * registro se inserta de una sola vez por lote, así el costo depende de la
+ * cantidad de lotes y no de la cantidad de filas.
+ *
+ * `createManyAndReturn` es lo que hace posible el cambio: devuelve los ids
+ * recién creados, que es lo que obligaba a insertar de a uno para poder
+ * colgarle a cada caso su evento y sus planes.
+ */
+async function createImportedCases(
+  tx: TxClient,
+  items: PreparedCase[],
+  actorId: number,
+): Promise<{ casos: number; eventos: number; planes: number }> {
+  if (items.length === 0) return { casos: 0, eventos: 0, planes: 0 };
 
-    await tx.planes_accion.createMany({
-      data: item.plans.map((plan) => {
-        const codigoPlan = plan.codigo ?? generatedCodes[generatedIndex++];
+  // Los códigos de plan se resuelven todos juntos antes de insertar: pedirlos
+  // caso por caso era el otro punto donde la importación se iba en consultas.
+  const pedidos = items
+    .map((item) => ({ codigoSop: item.codigo, cantidad: item.plans.filter((plan) => !plan.codigo).length }))
+    .filter((pedido) => pedido.cantidad > 0);
+  const codigosGenerados = await ConfiguracionService.nextCodigosPlanBulk(tx, pedidos);
+
+  const ahora = new Date();
+  let planes = 0;
+
+  for (const lote of enLotes(items, INSERT_CHUNK)) {
+    const casos = await tx.casos_sop.createManyAndReturn({
+      data: lote.map((item) => ({
+        codigo_sop: item.codigo,
+        titulo: item.titulo,
+        nombre_reportante: item.reportante,
+        fecha_hallazgo: item.fecha,
+        fecha_evento: item.fecha,
+        estado_hallazgo: item.ids.estadoHallazgo,
+        dias_abierto: 0,
+        procedencia: item.ids.procedencia,
+        tipo: item.ids.tipoCaso,
+        descripcion: item.descripcion,
+        tipo_sop: item.ids.tipoSop,
+        subtipo_sop: item.ids.subtipoSop,
+        peligro: item.peligro,
+        consecuencia: item.consecuencia,
+        acr: item.acr,
+        analisis_riesgo: item.ids.riesgo,
+        area_responsable: item.ids.area,
+        responsable_hallazgo: item.ids.responsableHallazgo,
+        created_by: item.ids.reportanteUsuario,
+        created_at: item.fecha,
+        updated_at: ahora,
+      })),
+      select: { id_caso: true, codigo_sop: true },
+    });
+
+    // Se empareja por código y no por posición: `codigo_sop` es único, así que
+    // el vínculo no depende de en qué orden devuelva las filas la base.
+    const idPorCodigo = new Map(casos.map((caso) => [caso.codigo_sop, caso.id_caso]));
+    const idDe = (item: PreparedCase) => {
+      const id = idPorCodigo.get(item.codigo);
+      if (id == null) throw new Error(`No se pudo recuperar el caso ${item.codigo} recién creado`);
+      return id;
+    };
+
+    const eventos = await tx.eventos_operativos.createManyAndReturn({
+      data: lote.map((item) => ({
+        fecha: item.fecha,
+        anio: item.fecha.getUTCFullYear(),
+        mes: item.fecha.getUTCMonth() + 1,
+        dia: DIAS[item.fecha.getUTCDay()] ?? null,
+        tipo_incidente: item.ids.tipoReporte,
+        lugar_incidente: item.ids.estacion,
+        ubicacion: item.ids.ubicacion,
+        descripcion: item.descripcion,
+        usuario_registra: actorId,
+        created_at: item.fecha,
+        updated_at: ahora,
+      })),
+      select: { id_evento: true },
+    });
+
+    // Los eventos no tienen clave natural, así que acá sí se empareja por
+    // posición. Es una sola sentencia INSERT ... RETURNING por lote, y Postgres
+    // devuelve las filas en el mismo orden en que se enviaron.
+    await tx.evento_caso.createMany({
+      data: lote.map((item, i) => {
+        const evento = eventos[i];
+        if (!evento) throw new Error(`No se pudo recuperar el evento del caso ${item.codigo}`);
+        return {
+          id_evento: evento.id_evento,
+          id_caso: idDe(item),
+          usuario: actorId,
+          fecha_conversion: ahora,
+        };
+      }),
+    });
+
+    const planesDelLote = lote.flatMap((item) => {
+      const generados = [...(codigosGenerados.get(item.codigo) ?? [])];
+      return item.plans.map((plan) => {
+        const codigoPlan = plan.codigo ?? generados.shift();
         if (!codigoPlan) throw new Error(`No se pudo generar un código de plan para el caso ${item.codigo}`);
         return {
-          id_caso: caso.id_caso,
+          id_caso: idDe(item),
           codigo_plan: codigoPlan,
           descripcion: plan.descripcion,
           id_area: plan.areaId,
@@ -907,25 +1210,30 @@ async function createImportedCase(tx: TxClient, item: PreparedCase, actorId: num
           dias_abierto: 0,
           observaciones: plan.observaciones,
           created_at: item.fecha,
-          updated_at: new Date(),
+          updated_at: ahora,
         };
-      }),
+      });
+    });
+
+    for (const lotePlanes of enLotes(planesDelLote, INSERT_CHUNK)) {
+      await tx.planes_accion.createMany({ data: lotePlanes });
+    }
+    planes += planesDelLote.length;
+
+    await tx.timeline_caso.createMany({
+      data: lote.map((item) => ({
+        id_caso: idDe(item),
+        kind: "creado",
+        actor: "Importación histórica",
+        actor_rol: "admin",
+        titulo: "Caso importado desde archivo histórico",
+        detalle: `${item.codigo} fue importado con ${item.plans.length} plan(es) de acción.`,
+        fecha: ahora,
+      })),
     });
   }
 
-  await tx.timeline_caso.create({
-    data: {
-      id_caso: caso.id_caso,
-      kind: "creado",
-      actor: "Importación histórica",
-      actor_rol: "admin",
-      titulo: "Caso importado desde archivo histórico",
-      detalle: `${item.codigo} fue importado con ${item.plans.length} plan(es) de acción.`,
-      fecha: new Date(),
-    },
-  });
-
-  return { plans: item.plans.length };
+  return { casos: items.length, eventos: items.length, planes };
 }
 
 export class ImportacionService {
@@ -935,6 +1243,10 @@ export class ImportacionService {
   }
 
   static async importar(payload: ImportacionPayload, actorId: number, ip: string | null): Promise<ImportacionResult> {
+    // Primero se dan de alta las personas, áreas y clasificaciones que el
+    // archivo menciona y todavía no existen; recién después se arma la
+    // importación, para que esas filas ya no se descarten ni se reclasifiquen.
+    const referencias = await crearReferenciasFaltantes(payload);
     const { preview, prepared } = await buildPreview(payload);
     if (!preview.canImport) {
       if (preview.resumen.errores === 0 && prepared.length === 0) {
@@ -943,21 +1255,27 @@ export class ImportacionService {
       throw new Error("El archivo tiene errores de validación. Corrige los datos antes de importar.");
     }
 
-    const imported = await prisma.$transaction(async (tx) => {
-      let planes = 0;
-      for (const item of prepared) {
-        const created = await createImportedCase(tx, item, actorId);
-        planes += created.plans;
-      }
-      return { casos: prepared.length, eventos: prepared.length, planes, skipped: 0 };
-    });
+    // Todo el archivo entra en una sola transacción: o se importa completo o no
+    // se importa nada. El `timeout` es explícito porque el de Prisma son cinco
+    // segundos, insuficiente para un archivo del tamaño real del histórico.
+    const imported = await prisma.$transaction(
+      async (tx) => {
+        const { casos, eventos, planes } = await createImportedCases(tx, prepared, actorId);
+        return { casos, eventos, planes, skipped: 0 };
+      },
+      { timeout: IMPORT_TIMEOUT_MS, maxWait: 30_000 },
+    );
 
     await AuditoriaRepository.registrar({
       tabla: "importacion_historica",
       accion: "crear",
       usuario: actorId,
       ip,
-      descripcion: `Archivo ${payload.filename ?? "sin nombre"} importado: ${imported.casos} caso(s), ${imported.eventos} evento(s), ${imported.planes} plan(es).`,
+      descripcion:
+        `Archivo ${payload.filename ?? "sin nombre"} importado: ${imported.casos} caso(s), ${imported.eventos} evento(s), ${imported.planes} plan(es).` +
+        (referencias.usuarios + referencias.areas + referencias.catalogos > 0
+          ? ` Se dieron de alta ${referencias.usuarios} usuario(s), ${referencias.areas} área(s) y ${referencias.catalogos} valor(es) de catálogo del histórico.`
+          : ""),
     });
 
     return {

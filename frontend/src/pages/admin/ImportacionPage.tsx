@@ -305,7 +305,12 @@ export function AdminImportacionPage() {
             </div>
             <div className="mt-4 rounded-lg border border-line bg-surface p-3 text-[12px] text-ink-quiet">
               <p className="font-medium text-ink-soft">Columnas obligatorias</p>
-              <p className="mt-1">{preview?.requiredColumns.join(", ") ?? "Código, Tipo, Título, Estación, Estado, Fecha"}</p>
+              <p className="mt-1">{preview?.requiredColumns.join(", ") ?? "Código, Tipo, Estado, Fecha"}</p>
+              <p className="mt-3 font-medium text-ink-soft">Columnas opcionales reconocidas</p>
+              <p className="mt-1">
+                {preview?.optionalColumns.join(", ") ??
+                  "Título, Estación, Reportante, Área, Riesgo, Descripción, Procedencia, Tipo SOP, Subtipo SOP, Peligro, Consecuencias, ACR, Responsable de Hallazgo, Código Plan, Descripción Plan, Estado Plan, Fecha Plan, Fecha Reprogramada, Área Plan, Responsable Plan, Observaciones Plan"}
+              </p>
             </div>
           </div>
         </div>
