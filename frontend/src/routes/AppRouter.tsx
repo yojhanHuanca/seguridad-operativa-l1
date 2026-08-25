@@ -31,6 +31,7 @@ const MonitoreoDashboardPage = lazyNamed(() => import("@/pages/monitoreo/Dashboa
 const MonitoreoRegistroPage = lazyNamed(() => import("@/pages/monitoreo/Registro"), "Registro");
 const MonitoreoHistorialPage = lazyNamed(() => import("@/pages/monitoreo/Historial"), "Historial");
 const MonitoreoReportesPage = lazyNamed(() => import("@/pages/monitoreo/Reportes"), "Reportes");
+const MonitoreoIndicadoresPage = lazyNamed(() => import("@/pages/monitoreo/Indicadores"), "Indicadores");
 const MonitoreoDetallePage = lazyNamed(() => import("@/pages/monitoreo/Detalle"), "Detalle");
 const MonitoreoEditarPage = lazyNamed(() => import("@/pages/monitoreo/Editar"), "Editar");
 const MonitoreoPerfilPage = lazyNamed(() => import("@/pages/monitoreo/Perfil"), "Perfil");
@@ -98,6 +99,7 @@ export function AppRouter() {
           <Route path="/monitoreo/evento/:id" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoDetallePage /></ProtectedRoute>} />
           <Route path="/monitoreo/editar/:id" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoEditarPage /></ProtectedRoute>} />
           <Route path="/monitoreo/reportes" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoReportesPage /></ProtectedRoute>} />
+          <Route path="/monitoreo/indicadores" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoIndicadoresPage /></ProtectedRoute>} />
           <Route path="/monitoreo/perfil" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoPerfilPage /></ProtectedRoute>} />
 
           {/* Panel de Administrador — sin login todavía */}

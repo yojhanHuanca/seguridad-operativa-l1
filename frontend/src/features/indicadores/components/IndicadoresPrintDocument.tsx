@@ -25,11 +25,6 @@ export interface MonthTrendItem {
   key: string;
 }
 
-function pct(value: number, total: number): string {
-  if (!total) return "0%";
-  return `${Math.round((value / total) * 1000) / 10}%`;
-}
-
 export function IndicadoresPrintDocument({
   systemName,
   panelLabel,
@@ -270,8 +265,9 @@ export function TotalPlanesCard({
             activeName={activePlanStatus}
             onItemClick={onSelectPlanStatus}
             animated={!dense}
+            showPercentLabels
           />
-          <LegendList data={planes.donut} total={planes.total} active={activePlanStatus} onSelect={onSelectPlanStatus} dense={dense} />
+          <LegendList data={planes.donut} active={activePlanStatus} onSelect={onSelectPlanStatus} dense={dense} />
         </>
       )}
     </Card>
@@ -320,8 +316,9 @@ export function RiesgoCard({
             activeName={activeRisk}
             onItemClick={onSelectRisk}
             animated={!dense}
+            showPercentLabels
           />
-          <LegendList data={riesgo} total={riesgoTotal} active={activeRisk} onSelect={onSelectRisk} dense={dense} />
+          <LegendList data={riesgo} active={activeRisk} onSelect={onSelectRisk} dense={dense} />
         </>
       )}
     </Card>
@@ -364,7 +361,7 @@ export function ReportesPorMesCard({
           height={dense ? 205 : 300}
           activeName={activeMonth}
           onItemClick={onSelectMonth}
-          showLabels={!dense}
+          showLabels
           animated={!dense}
           allTicks
           xTickFontSize={dense ? 8.5 : 11}
@@ -509,13 +506,11 @@ export function ReprogramacionCard({
 
 export function LegendList({
   data,
-  total,
   active,
   onSelect,
   dense,
 }: {
   data: { name: string; value: number; color: string }[];
-  total: number;
   active: string | null;
   /** Sin esto (p. ej. en el PDF), la lista se dibuja como texto plano en vez de botones — la impresión oculta todo `<button>` dentro de `main`. */
   onSelect?: (label: string) => void;
@@ -535,9 +530,7 @@ export function LegendList({
           <>
             <span className={cn("shrink-0 rounded-full", dense ? "h-1.5 w-1.5" : "h-2 w-2")} style={{ background: item.color }} />
             <span className="truncate">{item.name}</span>
-            <span className="ml-auto tabular-nums text-ink-faint">
-              {item.value} ({pct(item.value, total)})
-            </span>
+            <span className="ml-auto tabular-nums text-ink-faint">{item.value}</span>
           </>
         );
         return onSelect ? (

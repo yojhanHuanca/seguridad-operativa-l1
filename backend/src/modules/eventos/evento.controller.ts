@@ -1,9 +1,19 @@
 import type { Request, Response } from "express";
 import { EventoService } from "./evento.service.js";
+import { IndicadoresEventosService } from "./indicadores.service.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
 
 export class EventoController {
+  static async getIndicadores(req: Request, res: Response) {
+    try {
+      const data = await IndicadoresEventosService.calcular(req.query as Record<string, string>);
+      return res.json(ApiResponse.success("Indicadores obtenidos correctamente", data));
+    } catch (error) {
+      return res.status(500).json(ApiResponse.error("Error al calcular los indicadores", error));
+    }
+  }
+
   static async getAll(req: Request, res: Response) {
     try {
       const { data, total } = await EventoService.getAllEventos(req.query as Record<string, string>);

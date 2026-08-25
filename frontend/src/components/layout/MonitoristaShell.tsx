@@ -5,6 +5,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   ExternalLink,
+  Gauge,
   History,
   LayoutDashboard,
   Menu,
@@ -33,7 +34,10 @@ interface NavSection {
 
 const COLLAPSE_KEY = "sigma-monitoreo-sidebar-collapsed";
 
-// Sin "Indicadores": el cliente lo pidió fuera del sidebar de Monitoreo.
+// "Indicadores" estuvo fuera de este sidebar por pedido del cliente, cuando
+// los indicadores eran los de casos SOP. Vuelve porque son otros: los de
+// eventos operacionales, que es justamente lo que registra el Monitorista
+// ("incluir en el perfil de los monitoristas", correo del 24/08/2026).
 const SECTIONS: NavSection[] = [
   {
     title: "Monitoreo",
@@ -45,7 +49,10 @@ const SECTIONS: NavSection[] = [
   },
   {
     title: "Análisis",
-    items: [{ to: "/monitoreo/reportes", label: "Reportes", icon: Activity }],
+    items: [
+      { to: "/monitoreo/indicadores", label: "Indicadores", icon: Gauge },
+      { to: "/monitoreo/reportes", label: "Reportes", icon: Activity },
+    ],
   },
 ];
 
@@ -55,6 +62,7 @@ const TITLES: Record<string, { title: string; crumb: string }> = {
   "/monitoreo": { title: "Dashboard de Monitoreo", crumb: "Inicio" },
   "/monitoreo/nuevo": { title: "Registrar evento", crumb: "Inicio / Registrar evento" },
   "/monitoreo/historial": { title: "Historial de eventos", crumb: "Inicio / Historial" },
+  "/monitoreo/indicadores": { title: "Indicadores", crumb: "Inicio / Indicadores" },
   "/monitoreo/reportes": { title: "Reportes", crumb: "Inicio / Reportes" },
 };
 
@@ -179,6 +187,7 @@ export function MonitoristaShell({ children }: { children: ReactNode }) {
       <div className="min-h-screen bg-surface md:flex">
       {/* Desktop sidebar */}
       <aside
+        data-print="hide"
         className={cn(
           "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-line bg-white transition-[width] duration-200 md:flex",
           collapsed ? "w-[64px]" : "w-[264px]"
@@ -197,7 +206,7 @@ export function MonitoristaShell({ children }: { children: ReactNode }) {
 
       {/* Mobile drawer */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-40 md:hidden">
+        <div data-print="hide" className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileOpenPath(null)} aria-hidden />
           <aside className="absolute left-0 top-0 flex h-full w-[264px] flex-col bg-white shadow-xl">
             <SidebarContent collapsed={false} onNavigate={() => setMobileOpenPath(null)} />
@@ -206,7 +215,7 @@ export function MonitoristaShell({ children }: { children: ReactNode }) {
       )}
 
       <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur-xl">
+        <header data-print="hide" className="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur-xl">
           <div className="flex min-h-[64px] items-center gap-3 px-4 py-2.5 sm:px-6">
             <button
               type="button"

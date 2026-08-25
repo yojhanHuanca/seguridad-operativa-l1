@@ -246,10 +246,10 @@ export function JefeIndicadoresPage() {
                 height={220}
                 activeName={activeFor("planStatus")}
                 onItemClick={(label) => selectItem("planStatus", label, "Estado de plan")}
+                showPercentLabels
               />
               <LegendList
                 data={planTotals.donut}
-                total={planTotals.total}
                 active={selection?.kind === "planStatus" ? selection.value : null}
                 onSelect={(label) => selectItem("planStatus", label, "Estado de plan")}
               />
@@ -301,8 +301,8 @@ export function JefeIndicadoresPage() {
             <div className="grid h-[200px] place-items-center text-[13px] text-ink-quiet">Sin casos abiertos con riesgo asignado</div>
           ) : (
             <>
-              <DonutChart data={riesgo} height={200} activeName={activeFor("risk")} onItemClick={(label) => selectItem("risk", label, "Análisis de riesgo")} />
-              <LegendList data={riesgo} total={riesgoTotal} active={selection?.kind === "risk" ? selection.value : null} onSelect={(label) => selectItem("risk", label, "Análisis de riesgo")} />
+              <DonutChart data={riesgo} height={200} activeName={activeFor("risk")} onItemClick={(label) => selectItem("risk", label, "Análisis de riesgo")} showPercentLabels />
+              <LegendList data={riesgo} active={selection?.kind === "risk" ? selection.value : null} onSelect={(label) => selectItem("risk", label, "Análisis de riesgo")} />
             </>
           )}
         </Card>
