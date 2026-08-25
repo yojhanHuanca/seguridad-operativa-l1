@@ -849,6 +849,32 @@ async function crearReferenciasFaltantes(payload: ImportacionPayload): Promise<R
   return creadas;
 }
 
+/**
+ * Convierte los errores de escritura de Postgres en algo accionable.
+ *
+ * Cuando la base de un entorno todavía no tiene aplicado el último cambio de
+ * schema, el insert masivo falla con "value too long for the column's type" y
+ * ni siquiera dice cuál columna (Postgres no la reporta en un INSERT de miles
+ * de filas). Sin este mensaje, el único indicio es un error de Prisma en
+ * pantalla que no lleva a ningún lado.
+ */
+function traducirErrorDeEscritura(error: unknown): Error {
+  const mensaje = error instanceof Error ? error.message : String(error);
+  if (/too long for the column/i.test(mensaje)) {
+    return new Error(
+      "La base de datos rechazó un valor por ser demasiado largo para su columna. " +
+        "Suele pasar cuando el entorno todavía no tiene aplicado el último cambio de esquema: " +
+        "ejecute `npx prisma db push` contra esa base y vuelva a intentar.",
+    );
+  }
+  if (/Transaction (already closed|not found)|timed out/i.test(mensaje)) {
+    return new Error(
+      "La importación superó el tiempo máximo de la transacción. Reintente; si el archivo es muy grande, divídalo en dos partes.",
+    );
+  }
+  return error instanceof Error ? error : new Error(mensaje);
+}
+
 /** Parte local de un correo derivada del nombre: solo letras, números y puntos. */
 function slugCorreo(nombre: string): string {
   return (
@@ -1258,13 +1284,17 @@ export class ImportacionService {
     // Todo el archivo entra en una sola transacción: o se importa completo o no
     // se importa nada. El `timeout` es explícito porque el de Prisma son cinco
     // segundos, insuficiente para un archivo del tamaño real del histórico.
-    const imported = await prisma.$transaction(
-      async (tx) => {
-        const { casos, eventos, planes } = await createImportedCases(tx, prepared, actorId);
-        return { casos, eventos, planes, skipped: 0 };
-      },
-      { timeout: IMPORT_TIMEOUT_MS, maxWait: 30_000 },
-    );
+    const imported = await prisma
+      .$transaction(
+        async (tx) => {
+          const { casos, eventos, planes } = await createImportedCases(tx, prepared, actorId);
+          return { casos, eventos, planes, skipped: 0 };
+        },
+        { timeout: IMPORT_TIMEOUT_MS, maxWait: 30_000 },
+      )
+      .catch((error: unknown) => {
+        throw traducirErrorDeEscritura(error);
+      });
 
     await AuditoriaRepository.registrar({
       tabla: "importacion_historica",

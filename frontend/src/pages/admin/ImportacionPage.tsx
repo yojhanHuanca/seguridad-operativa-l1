@@ -265,7 +265,7 @@ export function AdminImportacionPage() {
             <label className="flex min-h-[158px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-line-strong bg-surface px-4 py-6 text-center transition-colors hover:border-brand-600 hover:bg-brand-50/40">
               <UploadCloud className="h-8 w-8 text-brand-700" />
               <span className="mt-3 text-[14px] font-semibold text-ink">Seleccionar archivo</span>
-              <span className="mt-1 text-[12px] text-ink-quiet">CSV, XLSX o XLSM · máximo 10 000 filas</span>
+              <span className="mt-1 text-[12px] text-ink-quiet">CSV, XLSX o XLSM · máximo 100 000 filas</span>
               <input
                 ref={inputRef}
                 type="file"
