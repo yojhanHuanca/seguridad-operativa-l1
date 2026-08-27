@@ -1,6 +1,19 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider      = "prisma-client"
+  output        = "../src/generated/prisma"
+  // "native" cubre el motor de quien desarrolla en Windows/Mac fuera de Docker;
+  // "debian-openssl-3.0.x" es el que necesita la imagen node:*-bookworm-slim
+  // que usa el Dockerfile. Sin este segundo, el cliente generado adentro del
+  // contenedor no trae el binario correcto y Prisma falla al conectar.
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+  // Sin esto, el generador decide la extensión de los imports relativos
+  // inspeccionando si hay un tsconfig.json visible en ese momento. En el
+  // stage "deps" del Dockerfile, `npm ci` (que dispara este generate vía
+  // postinstall) corre antes de copiar tsconfig.json, así que no lo detecta
+  // y cae a extensión ".ts" — que tsc luego copia tal cual al output
+  // (verbatimModuleSyntax) y Node no puede resolver en runtime. Fijarlo a
+  // "js" lo vuelve determinista sin importar el orden de copiado.
+  importFileExtension = "js"
 }
 
 datasource db {

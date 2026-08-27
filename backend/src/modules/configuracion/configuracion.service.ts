@@ -2,6 +2,7 @@ import { z } from "zod";
 import prisma from "../../lib/prisma.js";
 import type { Prisma } from "../../generated/prisma/client.js";
 import { AuditoriaService, diffCampos } from "../auditoria/auditoria.service.js";
+import { codigoSopSequence } from "./codigo-sop.js";
 
 type DbClient = typeof prisma | Prisma.TransactionClient;
 
@@ -35,7 +36,7 @@ const DESCRIPTIONS: Record<string, string> = {
   [CONFIG_KEYS.sistemaNombre]: "Nombre visible del sistema.",
   [CONFIG_KEYS.sistemaVersion]: "Versión funcional mostrada en administración.",
   [CONFIG_KEYS.expedientePrefijo]: "Prefijo usado al generar nuevos expedientes/casos SOP.",
-  [CONFIG_KEYS.expedienteSecuencia]: "Última secuencia usada para expedientes del año actual.",
+  [CONFIG_KEYS.expedienteSecuencia]: "Última secuencia usada para expedientes SOP.",
   [CONFIG_KEYS.planPrefijo]: "Prefijo usado al generar nuevos planes de acción.",
   [CONFIG_KEYS.planSecuencia]: "Última secuencia global usada para planes de acción.",
   [CONFIG_KEYS.diasInvestigacion]: "Días máximos de investigación.",
@@ -179,10 +180,32 @@ async function upsertValue(client: DbClient, nombre: string, valor: string) {
   });
 }
 
-async function currentYearCaseCount(client: DbClient, year: number) {
-  const inicioAnio = new Date(Date.UTC(year, 0, 1));
-  const finAnio = new Date(Date.UTC(year + 1, 0, 1));
-  return client.casos_sop.count({ where: { fecha_hallazgo: { gte: inicioAnio, lt: finAnio } } });
+async function maxCaseSequence(client: DbClient, prefix: string) {
+  const codigos = await client.casos_sop.findMany({
+    where: {
+      codigo_sop: { startsWith: prefix, mode: "insensitive" },
+    },
+    select: { codigo_sop: true },
+  });
+
+  return codigos.reduce((max, { codigo_sop }) => {
+    const sequence = codigoSopSequence(codigo_sop, prefix);
+    return sequence == null ? max : Math.max(max, sequence);
+  }, 0);
+}
+
+async function nextAvailableCaseCode(client: DbClient, prefix: string, year: number, fromSequence: number) {
+  let sequence = fromSequence;
+
+  while (true) {
+    sequence += 1;
+    const codigo = `${prefix} ${padSequence(sequence)}-${year}`;
+    const exists = await client.casos_sop.findUnique({
+      where: { codigo_sop: codigo },
+      select: { codigo_sop: true },
+    });
+    if (!exists) return { codigo, sequence };
+  }
 }
 
 export class ConfiguracionService {
@@ -196,12 +219,12 @@ export class ConfiguracionService {
 
   static async get(client: DbClient = prisma): Promise<ConfiguracionGeneral> {
     const values = await ConfiguracionService.readValues(client);
-    const year = new Date().getUTCFullYear();
-    const [casosDelAnio, planesTotales] = await Promise.all([currentYearCaseCount(client, year), client.planes_accion.count()]);
+    const prefix = sanitizePrefix(values.get(CONFIG_KEYS.expedientePrefijo) || defaultValue(CONFIG_KEYS.expedientePrefijo), "El prefijo de expedientes");
+    const [secuenciaCasos, planesTotales] = await Promise.all([maxCaseSequence(client, prefix), client.planes_accion.count()]);
 
     return mapToConfiguracion(
       values,
-      Math.max(parseNumber(values.get(CONFIG_KEYS.expedienteSecuencia), Number(defaultValue(CONFIG_KEYS.expedienteSecuencia))), casosDelAnio),
+      Math.max(parseNumber(values.get(CONFIG_KEYS.expedienteSecuencia), Number(defaultValue(CONFIG_KEYS.expedienteSecuencia))), secuenciaCasos),
       Math.max(parseNumber(values.get(CONFIG_KEYS.planSecuencia), Number(defaultValue(CONFIG_KEYS.planSecuencia))), planesTotales)
     );
   }
@@ -273,11 +296,11 @@ export class ConfiguracionService {
     const values = await ConfiguracionService.readValues(client);
     const prefix = sanitizePrefix(values.get(CONFIG_KEYS.expedientePrefijo) || defaultValue(CONFIG_KEYS.expedientePrefijo), "El prefijo de expedientes");
     const configured = parseNumber(values.get(CONFIG_KEYS.expedienteSecuencia), Number(defaultValue(CONFIG_KEYS.expedienteSecuencia)));
-    const actual = await currentYearCaseCount(client, year);
-    const next = Math.max(configured, actual) + 1;
+    const actual = await maxCaseSequence(client, prefix);
+    const { codigo, sequence } = await nextAvailableCaseCode(client, prefix, year, Math.max(configured, actual));
 
-    await upsertValue(client, CONFIG_KEYS.expedienteSecuencia, String(next));
-    return `${prefix} ${padSequence(next)}-${year}`;
+    await upsertValue(client, CONFIG_KEYS.expedienteSecuencia, String(sequence));
+    return codigo;
   }
 
   static async nextCodigosPlan(client: DbClient, codigoSop: string, cantidad: number): Promise<string[]> {
