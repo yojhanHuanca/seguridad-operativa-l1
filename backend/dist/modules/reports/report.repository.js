@@ -79,6 +79,19 @@ const CONTACTO_REPORTANTE_OCULTO = {
     correo_reportante: true,
     telefono_reportante: true,
 };
+function isUniqueConstraintError(error, field) {
+    if (!error || typeof error !== "object")
+        return false;
+    const prismaError = error;
+    if (prismaError.code !== "P2002")
+        return false;
+    const target = prismaError.meta?.target;
+    if (Array.isArray(target))
+        return target.includes(field);
+    if (typeof target === "string")
+        return target.includes(field);
+    return true;
+}
 export class ReportRepository {
     static async findAll() {
         return prisma.casos_sop.findMany({
@@ -299,9 +312,12 @@ export class ReportRepository {
                 });
             }
             catch (error) {
-                const esColisionCodigo = error instanceof Error && error.message.includes("codigo_sop");
+                const esColisionCodigo = isUniqueConstraintError(error, "codigo_sop");
                 if (esColisionCodigo && intento < MAX_INTENTOS)
                     continue;
+                if (esColisionCodigo) {
+                    throw new Error("No se pudo generar un código SOP único. Intenta registrar el reporte nuevamente.", { cause: error });
+                }
                 throw error;
             }
         }
