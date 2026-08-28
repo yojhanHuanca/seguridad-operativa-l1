@@ -79,19 +79,6 @@ const CONTACTO_REPORTANTE_OCULTO = {
     correo_reportante: true,
     telefono_reportante: true,
 };
-function isUniqueConstraintError(error, field) {
-    if (!error || typeof error !== "object")
-        return false;
-    const prismaError = error;
-    if (prismaError.code !== "P2002")
-        return false;
-    const target = prismaError.meta?.target;
-    if (Array.isArray(target))
-        return target.includes(field);
-    if (typeof target === "string")
-        return target.includes(field);
-    return true;
-}
 export class ReportRepository {
     static async findAll() {
         return prisma.casos_sop.findMany({
@@ -172,155 +159,139 @@ export class ReportRepository {
         });
     }
     static async createFullReport(dto, archivos, id_usuario_creador) {
-        const MAX_INTENTOS = 3;
-        let intento = 0;
-        while (true) {
-            intento++;
-            try {
-                return await prisma.$transaction(async (tx) => {
-                    const ahora = new Date();
-                    const fecha = new Date(Date.UTC(ahora.getFullYear(), ahora.getMonth(), ahora.getDate()));
-                    const hora = new Date(Date.UTC(1970, 0, 1, ahora.getHours(), ahora.getMinutes(), ahora.getSeconds()));
-                    const evento = await tx.eventos_operativos.create({
-                        data: {
-                            fecha,
-                            hora,
-                            anio: fecha.getUTCFullYear(),
-                            mes: fecha.getUTCMonth() + 1,
-                            dia: DIAS[fecha.getUTCDay()] ?? null,
-                            tipo_incidente: dto.id_tipo,
-                            lugar_incidente: dto.id_lugar,
-                            ubicacion: dto.id_lugar_especifico ?? null,
-                            descripcion: dto.descripcion,
-                            // Anónimo real más abajo (ver `esIdentificado`): si no viene
-                            // identificado, tampoco se guarda acá quién lo registró.
-                            usuario_registra: dto.modalidad === "identificado" ? id_usuario_creador ?? null : null,
-                        },
-                    });
-                    // El wizard no pide Área, Tipo SOP ni Tipo (No Conformidad/
-                    // Observación) — Seguridad Operativa los define al derivar el
-                    // caso, en la etapa de Evaluación.
-                    const [estadoRecepcion, estadoEvaluacion, procedencia, tipoSopDefault, tipoDefault, tipoReporte, lugar, lugarEspecifico] = await Promise.all([
-                        tx.catalogo_detalle.findFirst({ where: { nombre: "Recepción", catalogos: { nombre: "Estado Hallazgo" } } }),
-                        tx.catalogo_detalle.findFirst({ where: { nombre: "Evaluación", catalogos: { nombre: "Estado Hallazgo" } } }),
-                        tx.catalogo_detalle.findFirst({ where: { nombre: "Incidencias", catalogos: { nombre: "Procedencia" } } }),
-                        tx.catalogo_detalle.findFirst({ where: { nombre: "Hallazgo", catalogos: { nombre: "Tipo SOP" } } }),
-                        tx.catalogo_detalle.findFirst({ where: { nombre: "Observación", catalogos: { nombre: "Tipo" } } }),
-                        tx.catalogo_detalle.findUnique({ where: { id_detalle: dto.id_tipo }, select: { nombre: true } }),
-                        tx.catalogo_detalle.findUnique({ where: { id_detalle: dto.id_lugar }, select: { nombre: true } }),
-                        dto.id_lugar_especifico
-                            ? tx.catalogo_detalle.findUnique({ where: { id_detalle: dto.id_lugar_especifico }, select: { nombre: true } })
-                            : Promise.resolve(null),
-                    ]);
-                    if (!estadoRecepcion)
-                        throw new Error("Falta el estado 'Recepción' en el catálogo 'Estado Hallazgo'");
-                    if (!estadoEvaluacion)
-                        throw new Error("Falta el estado 'Evaluación' en el catálogo 'Estado Hallazgo'");
-                    if (!procedencia)
-                        throw new Error("Falta el valor 'Incidencias' en el catálogo 'Procedencia'");
-                    if (!tipoSopDefault)
-                        throw new Error("Falta el valor 'Hallazgo' en el catálogo 'Tipo SOP'");
-                    if (!tipoDefault)
-                        throw new Error("Falta el valor 'Observación' en el catálogo 'Tipo'");
-                    if (!tipoReporte)
-                        throw new Error("El tipo de reporte seleccionado no existe");
-                    if (!lugar)
-                        throw new Error("El lugar seleccionado no existe");
-                    const codigo_sop = await ConfiguracionService.nextCodigoExpediente(tx, fecha);
-                    const esIdentificado = dto.modalidad === "identificado";
-                    // Registrado por el analista desde el panel de SO: el caso nace con
-                    // su firma en la bitácora en vez de la del reportante de campo, y
-                    // se salta Recepción (esa etapa es para filtrar reportes que llegan
-                    // de afuera; un caso que ya crea SO no necesita ese filtro).
-                    const esRegistroSO = dto.origen === "seguridad_operativa";
-                    const estadoInicial = esRegistroSO ? estadoEvaluacion : estadoRecepcion;
-                    const nombreReportante = dto.nombre_reportante?.trim() || null;
-                    const ubicacionTitulo = [lugar.nombre, lugarEspecifico?.nombre].filter(Boolean).join(" · ");
-                    const titulo = `${tipoReporte.nombre} en ${ubicacionTitulo}`;
-                    const caso = await tx.casos_sop.create({
-                        data: {
-                            codigo_sop,
-                            titulo,
-                            fecha_hallazgo: ahora,
-                            fecha_evento: ahora,
-                            estado_hallazgo: estadoInicial.id_detalle,
-                            procedencia: procedencia.id_detalle,
-                            tipo: tipoDefault.id_detalle,
-                            descripcion: dto.descripcion,
-                            tipo_sop: tipoSopDefault.id_detalle,
-                            nombre_reportante: esIdentificado ? nombreReportante : null,
-                            correo_reportante: esIdentificado ? dto.correo_reportante?.trim().toLowerCase() || null : null,
-                            telefono_reportante: esIdentificado ? dto.telefono_reportante?.trim() || null : null,
-                            // Anonimato real: si eligió modalidad anónima, no se guarda
-                            // quién lo reportó — ni oculto en pantalla, ausente de la base.
-                            // Antes se guardaba igual (verificado en BD, caso 48), así que
-                            // "anónimo" era anónimo solo en la interfaz.
-                            created_by: esIdentificado ? id_usuario_creador ?? null : null,
-                            // Si lo registra SO directamente, esa persona ya es quien investiga.
-                            // Si viene de un Reportante, queda sin responsable hasta que SO lo evalúe.
-                            ...(esRegistroSO && id_usuario_creador ? { responsable_hallazgo: id_usuario_creador } : {}),
-                            // area_responsable: lo define Seguridad Operativa al derivar el caso.
-                        },
-                    });
-                    await tx.evento_caso.create({
-                        data: { id_evento: evento.id_evento, id_caso: caso.id_caso },
-                    });
-                    // Si el hallazgo se creó desde "Eventos asignados" de Monitoreo,
-                    // deja registrado a qué caso dio origen ese evento — así esa
-                    // tarjeta pasa de "Crear hallazgo" a "Ver hallazgo" y no se repite.
-                    if (dto.id_evento_monitoreo != null) {
-                        await tx.eventos_monitoreo.update({
-                            where: { id_evento: dto.id_evento_monitoreo },
-                            data: { id_caso_creado: caso.id_caso },
-                        });
-                    }
-                    const actorReportante = esIdentificado ? nombreReportante || "Reportante Identificado" : "Reporte Anónimo";
-                    await tx.timeline_caso.create({
-                        data: {
-                            id_caso: caso.id_caso,
-                            kind: "creado",
-                            actor: esRegistroSO ? nombreReportante || "Seguridad Operativa" : actorReportante,
-                            actor_rol: esRegistroSO ? "seguridad" : "reportante",
-                            titulo: esRegistroSO ? "Reporte registrado por Seguridad Operativa" : "Reporte registrado por trabajador",
-                            detalle: esRegistroSO
-                                ? `${codigo_sop} creado desde el panel de Seguridad Operativa. Pasa directo a Evaluación.`
-                                : `${codigo_sop} creado. Enviado a la bandeja de Seguridad Operativa.`,
-                        },
-                    });
-                    await NotificationRepository.emitir(tx, {
-                        para: { rol: "Seguridad Operativa" },
-                        tipo: "reporte_nuevo",
-                        titulo: `Nuevo reporte ${codigo_sop}`,
-                        mensaje: `${titulo}. Registrado por ${esRegistroSO
-                            ? `${nombreReportante || "Seguridad Operativa"} (Seguridad Operativa)`
-                            : esIdentificado
-                                ? nombreReportante || "un reportante identificado"
-                                : "un reportante anónimo"}. ${esRegistroSO ? "Pendiente de evaluación." : "Pendiente de recepción."}`,
-                    });
-                    if (archivos.length > 0) {
-                        await tx.anexos_caso.createMany({
-                            data: archivos.map((f) => ({
-                                id_caso: caso.id_caso,
-                                nombre_archivo: f.originalname,
-                                ruta_archivo: `/uploads/casos/${f.filename}`,
-                                tipo_archivo: f.mimetype,
-                                peso: Math.round((f.size / 1024) * 100) / 100, // KB
-                            })),
-                        });
-                    }
-                    return { caso, evento };
+        return await prisma.$transaction(async (tx) => {
+            const ahora = new Date();
+            const fecha = new Date(Date.UTC(ahora.getFullYear(), ahora.getMonth(), ahora.getDate()));
+            const hora = new Date(Date.UTC(1970, 0, 1, ahora.getHours(), ahora.getMinutes(), ahora.getSeconds()));
+            const evento = await tx.eventos_operativos.create({
+                data: {
+                    fecha,
+                    hora,
+                    anio: fecha.getUTCFullYear(),
+                    mes: fecha.getUTCMonth() + 1,
+                    dia: DIAS[fecha.getUTCDay()] ?? null,
+                    tipo_incidente: dto.id_tipo,
+                    lugar_incidente: dto.id_lugar,
+                    ubicacion: dto.id_lugar_especifico ?? null,
+                    descripcion: dto.descripcion,
+                    // Anónimo real más abajo (ver `esIdentificado`): si no viene
+                    // identificado, tampoco se guarda acá quién lo registró.
+                    usuario_registra: dto.modalidad === "identificado" ? id_usuario_creador ?? null : null,
+                },
+            });
+            // El wizard no pide Área, Tipo SOP ni Tipo (No Conformidad/
+            // Observación) — Seguridad Operativa los define al derivar el
+            // caso, en la etapa de Evaluación.
+            const [estadoRecepcion, estadoEvaluacion, procedencia, tipoSopDefault, tipoDefault, tipoReporte, lugar, lugarEspecifico] = await Promise.all([
+                tx.catalogo_detalle.findFirst({ where: { nombre: "Recepción", catalogos: { nombre: "Estado Hallazgo" } } }),
+                tx.catalogo_detalle.findFirst({ where: { nombre: "Evaluación", catalogos: { nombre: "Estado Hallazgo" } } }),
+                tx.catalogo_detalle.findFirst({ where: { nombre: "Incidencias", catalogos: { nombre: "Procedencia" } } }),
+                tx.catalogo_detalle.findFirst({ where: { nombre: "Hallazgo", catalogos: { nombre: "Tipo SOP" } } }),
+                tx.catalogo_detalle.findFirst({ where: { nombre: "Observación", catalogos: { nombre: "Tipo" } } }),
+                tx.catalogo_detalle.findUnique({ where: { id_detalle: dto.id_tipo }, select: { nombre: true } }),
+                tx.catalogo_detalle.findUnique({ where: { id_detalle: dto.id_lugar }, select: { nombre: true } }),
+                dto.id_lugar_especifico
+                    ? tx.catalogo_detalle.findUnique({ where: { id_detalle: dto.id_lugar_especifico }, select: { nombre: true } })
+                    : Promise.resolve(null),
+            ]);
+            if (!estadoRecepcion)
+                throw new Error("Falta el estado 'Recepción' en el catálogo 'Estado Hallazgo'");
+            if (!estadoEvaluacion)
+                throw new Error("Falta el estado 'Evaluación' en el catálogo 'Estado Hallazgo'");
+            if (!procedencia)
+                throw new Error("Falta el valor 'Incidencias' en el catálogo 'Procedencia'");
+            if (!tipoSopDefault)
+                throw new Error("Falta el valor 'Hallazgo' en el catálogo 'Tipo SOP'");
+            if (!tipoDefault)
+                throw new Error("Falta el valor 'Observación' en el catálogo 'Tipo'");
+            if (!tipoReporte)
+                throw new Error("El tipo de reporte seleccionado no existe");
+            if (!lugar)
+                throw new Error("El lugar seleccionado no existe");
+            const codigo_sop = await ConfiguracionService.nextCodigoExpediente(tx, fecha);
+            const esIdentificado = dto.modalidad === "identificado";
+            // Registrado por el analista desde el panel de SO: el caso nace con
+            // su firma en la bitácora en vez de la del reportante de campo, y
+            // se salta Recepción (esa etapa es para filtrar reportes que llegan
+            // de afuera; un caso que ya crea SO no necesita ese filtro).
+            const esRegistroSO = dto.origen === "seguridad_operativa";
+            const estadoInicial = esRegistroSO ? estadoEvaluacion : estadoRecepcion;
+            const nombreReportante = dto.nombre_reportante?.trim() || null;
+            const ubicacionTitulo = [lugar.nombre, lugarEspecifico?.nombre].filter(Boolean).join(" · ");
+            const titulo = `${tipoReporte.nombre} en ${ubicacionTitulo}`;
+            const caso = await tx.casos_sop.create({
+                data: {
+                    codigo_sop,
+                    titulo,
+                    fecha_hallazgo: ahora,
+                    fecha_evento: ahora,
+                    estado_hallazgo: estadoInicial.id_detalle,
+                    procedencia: procedencia.id_detalle,
+                    tipo: tipoDefault.id_detalle,
+                    descripcion: dto.descripcion,
+                    tipo_sop: tipoSopDefault.id_detalle,
+                    nombre_reportante: esIdentificado ? nombreReportante : null,
+                    correo_reportante: esIdentificado ? dto.correo_reportante?.trim().toLowerCase() || null : null,
+                    telefono_reportante: esIdentificado ? dto.telefono_reportante?.trim() || null : null,
+                    // Anonimato real: si eligió modalidad anónima, no se guarda
+                    // quién lo reportó — ni oculto en pantalla, ausente de la base.
+                    // Antes se guardaba igual (verificado en BD, caso 48), así que
+                    // "anónimo" era anónimo solo en la interfaz.
+                    created_by: esIdentificado ? id_usuario_creador ?? null : null,
+                    // Si lo registra SO directamente, esa persona ya es quien investiga.
+                    // Si viene de un Reportante, queda sin responsable hasta que SO lo evalúe.
+                    ...(esRegistroSO && id_usuario_creador ? { responsable_hallazgo: id_usuario_creador } : {}),
+                    // area_responsable: lo define Seguridad Operativa al derivar el caso.
+                },
+            });
+            await tx.evento_caso.create({
+                data: { id_evento: evento.id_evento, id_caso: caso.id_caso },
+            });
+            // Si el hallazgo se creó desde "Eventos asignados" de Monitoreo,
+            // deja registrado a qué caso dio origen ese evento — así esa
+            // tarjeta pasa de "Crear hallazgo" a "Ver hallazgo" y no se repite.
+            if (dto.id_evento_monitoreo != null) {
+                await tx.eventos_monitoreo.update({
+                    where: { id_evento: dto.id_evento_monitoreo },
+                    data: { id_caso_creado: caso.id_caso },
                 });
             }
-            catch (error) {
-                const esColisionCodigo = isUniqueConstraintError(error, "codigo_sop");
-                if (esColisionCodigo && intento < MAX_INTENTOS)
-                    continue;
-                if (esColisionCodigo) {
-                    throw new Error("No se pudo generar un código SOP único. Intenta registrar el reporte nuevamente.", { cause: error });
-                }
-                throw error;
+            const actorReportante = esIdentificado ? nombreReportante || "Reportante Identificado" : "Reporte Anónimo";
+            await tx.timeline_caso.create({
+                data: {
+                    id_caso: caso.id_caso,
+                    kind: "creado",
+                    actor: esRegistroSO ? nombreReportante || "Seguridad Operativa" : actorReportante,
+                    actor_rol: esRegistroSO ? "seguridad" : "reportante",
+                    titulo: esRegistroSO ? "Reporte registrado por Seguridad Operativa" : "Reporte registrado por trabajador",
+                    detalle: esRegistroSO
+                        ? `${codigo_sop} creado desde el panel de Seguridad Operativa. Pasa directo a Evaluación.`
+                        : `${codigo_sop} creado. Enviado a la bandeja de Seguridad Operativa.`,
+                },
+            });
+            await NotificationRepository.emitir(tx, {
+                para: { rol: "Seguridad Operativa" },
+                tipo: "reporte_nuevo",
+                titulo: `Nuevo reporte ${codigo_sop}`,
+                mensaje: `${titulo}. Registrado por ${esRegistroSO
+                    ? `${nombreReportante || "Seguridad Operativa"} (Seguridad Operativa)`
+                    : esIdentificado
+                        ? nombreReportante || "un reportante identificado"
+                        : "un reportante anónimo"}. ${esRegistroSO ? "Pendiente de evaluación." : "Pendiente de recepción."}`,
+            });
+            if (archivos.length > 0) {
+                await tx.anexos_caso.createMany({
+                    data: archivos.map((f) => ({
+                        id_caso: caso.id_caso,
+                        nombre_archivo: f.originalname,
+                        ruta_archivo: `/uploads/casos/${f.filename}`,
+                        tipo_archivo: f.mimetype,
+                        peso: Math.round((f.size / 1024) * 100) / 100, // KB
+                    })),
+                });
             }
-        }
+            return { caso, evento };
+        });
     }
 }
 //# sourceMappingURL=report.repository.js.map

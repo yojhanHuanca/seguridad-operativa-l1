@@ -758,8 +758,6 @@ export class CaseRepository {
         });
     }
     static async createPlan(id_caso, codigo_sop, dto) {
-        const MAX_INTENTOS = 3;
-        let intento = 0;
         // El caso NO pasa a Ejecución al crear el plan: queda en "Plan de Acción"
         // con el plan en estado "Enviado", esperando que el Jefe del Área lo
         // acepte (acceptPlan). Recién ahí arranca la Ejecución — mismo flujo que
@@ -769,62 +767,51 @@ export class CaseRepository {
             CaseRepository.findEstado("Plan de Acción"),
             CaseRepository.findEstadoActividad("Pendiente"),
         ]);
-        while (true) {
-            intento++;
-            try {
-                const plan = await prisma.$transaction(async (tx) => {
-                    const codigo_plan = await ConfiguracionService.nextCodigoPlan(tx, codigo_sop);
-                    const plan = await tx.planes_accion.create({
-                        data: {
-                            id_caso,
-                            codigo_plan,
-                            descripcion: dto.descripcion,
-                            id_area: dto.id_area,
-                            responsable: dto.responsable,
-                            estado: estadoPlanEnviado.id_detalle,
-                            fecha_plan: new Date(dto.fecha_plan),
-                            observaciones: dto.observaciones ?? null,
-                        },
-                    });
-                    if (dto.actividades.length > 0) {
-                        await tx.actividades_plan.createMany({
-                            data: dto.actividades.map((a) => ({
-                                id_plan: plan.id_plan,
-                                descripcion: a.descripcion,
-                                responsable: a.responsable ?? null,
-                                fecha_inicio: a.fecha_inicio ? new Date(a.fecha_inicio) : null,
-                                fecha_fin: a.fecha_fin ? new Date(a.fecha_fin) : null,
-                                estado: estadoActividadPendiente.id_detalle,
-                                porcentaje: 0,
-                            })),
-                        });
-                    }
-                    await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estadoCasoPlan.id_detalle } });
-                    await CaseRepository.pushTimeline(tx, id_caso, {
-                        kind: "plan_propuesto",
-                        actor: ACTOR_SO,
-                        actor_rol: "seguridad",
-                        titulo: "Plan de Acción enviado a Jefe de Área",
-                        detalle: `${codigo_plan} · pendiente de aceptación por el área responsable.`,
-                    });
-                    await NotificationRepository.emitir(tx, {
-                        para: { id_usuario: dto.responsable },
-                        tipo: "plan_asignado",
-                        titulo: `Nuevo plan asignado: ${codigo_plan}`,
-                        mensaje: `${dto.descripcion} Debe aceptarlo para iniciar la ejecución.`,
-                    });
-                    return plan;
+        const plan = await prisma.$transaction(async (tx) => {
+            const codigo_plan = await ConfiguracionService.nextCodigoPlan(tx, codigo_sop);
+            const plan = await tx.planes_accion.create({
+                data: {
+                    id_caso,
+                    codigo_plan,
+                    descripcion: dto.descripcion,
+                    id_area: dto.id_area,
+                    responsable: dto.responsable,
+                    estado: estadoPlanEnviado.id_detalle,
+                    fecha_plan: new Date(dto.fecha_plan),
+                    observaciones: dto.observaciones ?? null,
+                },
+            });
+            if (dto.actividades.length > 0) {
+                await tx.actividades_plan.createMany({
+                    data: dto.actividades.map((a) => ({
+                        id_plan: plan.id_plan,
+                        descripcion: a.descripcion,
+                        responsable: a.responsable ?? null,
+                        fecha_inicio: a.fecha_inicio ? new Date(a.fecha_inicio) : null,
+                        fecha_fin: a.fecha_fin ? new Date(a.fecha_fin) : null,
+                        estado: estadoActividadPendiente.id_detalle,
+                        porcentaje: 0,
+                    })),
                 });
-                void CaseRepository.avisarPlanesAsignados([plan.id_plan]);
-                return plan;
             }
-            catch (error) {
-                const esColision = error instanceof Error && error.message.includes("codigo_plan");
-                if (esColision && intento < MAX_INTENTOS)
-                    continue;
-                throw error;
-            }
-        }
+            await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estadoCasoPlan.id_detalle } });
+            await CaseRepository.pushTimeline(tx, id_caso, {
+                kind: "plan_propuesto",
+                actor: ACTOR_SO,
+                actor_rol: "seguridad",
+                titulo: "Plan de Acción enviado a Jefe de Área",
+                detalle: `${codigo_plan} · pendiente de aceptación por el área responsable.`,
+            });
+            await NotificationRepository.emitir(tx, {
+                para: { id_usuario: dto.responsable },
+                tipo: "plan_asignado",
+                titulo: `Nuevo plan asignado: ${codigo_plan}`,
+                mensaje: `${dto.descripcion} Debe aceptarlo para iniciar la ejecución.`,
+            });
+            return plan;
+        });
+        void CaseRepository.avisarPlanesAsignados([plan.id_plan]);
+        return plan;
     }
     static async createPlans(id_caso, codigo_sop, dtos) {
         if (dtos.length === 0)
