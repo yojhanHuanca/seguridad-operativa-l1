@@ -11,5 +11,9 @@ export declare const env: {
     EMAIL_FROM: string;
     /** Origen del frontend, para armar el link de "Olvidé mi contraseña" (ej. https://seguridad-operativa-l1.vercel.app). */
     FRONTEND_URL: string;
+    /** Par de claves VAPID para notificaciones push (generar con `web-push generate-vapid-keys`). Vacías: el push queda desactivado, sin romper nada. */
+    VAPID_PUBLIC_KEY: string;
+    VAPID_PRIVATE_KEY: string;
+    VAPID_SUBJECT: string;
 };
 //# sourceMappingURL=env.d.ts.map

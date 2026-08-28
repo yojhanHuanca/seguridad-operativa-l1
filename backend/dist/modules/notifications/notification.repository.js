@@ -1,4 +1,5 @@
 import prisma from "../../lib/prisma.js";
+import { PushService } from "./push.service.js";
 export class NotificationRepository {
     /**
      * Crea la notificación para todos los destinatarios que correspondan.
@@ -24,17 +25,29 @@ export class NotificationRepository {
             await client.notificaciones.createMany({
                 data: ids.map((usuario) => ({ usuario, titulo: n.titulo, mensaje: n.mensaje, tipo: n.tipo })),
             });
+            // Sin `await`: mandar el push es una llamada de red a un servicio
+            // externo por cada suscripción, y `emitir` se llama casi siempre desde
+            // dentro de una transacción — esperarla acá adentro la dejaría abierta
+            // de más. `enviarAUsuarios` ya nunca lanza, así que esto es seguro.
+            void PushService.enviarAUsuarios(ids, { title: n.titulo, body: n.mensaje });
         }
         catch (error) {
             console.error("[notificaciones] no se pudo emitir", n.tipo, error);
         }
     }
-    static async listarPorUsuario(id_usuario, soloNoLeidas = false) {
-        return prisma.notificaciones.findMany({
-            where: { usuario: id_usuario, ...(soloNoLeidas ? { leido: false } : {}) },
+    /**
+     * Pide `limit + 1` filas para saber si hay más sin una consulta de `count`
+     * aparte — si vuelven de más, se recorta la última y `hasMore` queda true.
+     */
+    static async listarPorUsuario(id_usuario, opts = {}) {
+        const limit = opts.limit ?? 20;
+        const filas = await prisma.notificaciones.findMany({
+            where: { usuario: id_usuario, ...(opts.soloNoLeidas ? { leido: false } : {}) },
             orderBy: { fecha: "desc" },
-            take: 100,
+            take: limit + 1,
         });
+        const hasMore = filas.length > limit;
+        return { items: hasMore ? filas.slice(0, limit) : filas, hasMore };
     }
     static async contarNoLeidas(id_usuario) {
         return prisma.notificaciones.count({ where: { usuario: id_usuario, leido: false } });

@@ -62,15 +62,25 @@ export declare class NotificationRepository {
      * tiene el caso asignado y no a todos los del rol.
      */
     static emitir(client: NotificationClient, n: NuevaNotificacion): Promise<void>;
-    static listarPorUsuario(id_usuario: number, soloNoLeidas?: boolean): Promise<{
-        usuario: number;
-        fecha: Date | null;
-        titulo: string | null;
-        tipo: string | null;
-        id_notificacion: number;
-        mensaje: string | null;
-        leido: boolean | null;
-    }[]>;
+    /**
+     * Pide `limit + 1` filas para saber si hay más sin una consulta de `count`
+     * aparte — si vuelven de más, se recorta la última y `hasMore` queda true.
+     */
+    static listarPorUsuario(id_usuario: number, opts?: {
+        soloNoLeidas?: boolean;
+        limit?: number;
+    }): Promise<{
+        items: {
+            usuario: number;
+            fecha: Date | null;
+            titulo: string | null;
+            tipo: string | null;
+            id_notificacion: number;
+            mensaje: string | null;
+            leido: boolean | null;
+        }[];
+        hasMore: boolean;
+    }>;
     static contarNoLeidas(id_usuario: number): Promise<number>;
     /** Marca una notificación como leída, verificando que sea de ese usuario. */
     static marcarLeida(id_notificacion: number, id_usuario: number): Promise<import("../../generated/prisma/internal/prismaNamespace.js").BatchPayload>;

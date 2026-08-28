@@ -1,7 +1,8 @@
 import type { Actor } from "../../utils/actor.js";
 export declare class NotificationService {
     static list(query: {
-        soloNoLeidas?: string;
+        soloNoLeidas?: string | undefined;
+        limit?: string | undefined;
     }, actor?: Actor): Promise<{
         id_usuario: number;
         no_leidas: number;
@@ -14,6 +15,7 @@ export declare class NotificationService {
             mensaje: string | null;
             leido: boolean | null;
         }[];
+        hasMore: boolean;
     }>;
     static markRead(idNotificacion: string, actor?: Actor): Promise<import("../../generated/prisma/internal/prismaNamespace.js").BatchPayload>;
     static markAllRead(actor?: Actor): Promise<import("../../generated/prisma/internal/prismaNamespace.js").BatchPayload>;

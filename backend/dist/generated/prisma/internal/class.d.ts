@@ -398,6 +398,17 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
         omit: OmitOpts;
     }>;
     /**
+     * `prisma.push_subscriptions`: Exposes CRUD operations for the **push_subscriptions** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more Push_subscriptions
+      * const push_subscriptions = await prisma.push_subscriptions.findMany()
+      * ```
+      */
+    get push_subscriptions(): Prisma.push_subscriptionsDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    /**
      * `prisma.planes_accion`: Exposes CRUD operations for the **planes_accion** model.
       * Example usage:
       * ```ts

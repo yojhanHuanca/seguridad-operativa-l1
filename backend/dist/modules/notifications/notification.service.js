@@ -16,11 +16,13 @@ export class NotificationService {
     static async list(query, actor) {
         const id = usuarioEnSesion(actor);
         const soloNoLeidas = query.soloNoLeidas === "true";
-        const [items, noLeidas] = await Promise.all([
-            NotificationRepository.listarPorUsuario(id, soloNoLeidas),
+        // Tope en 100 para que nadie pida una página gigante por accidente.
+        const limit = Math.min(Math.max(Number(query.limit) || 20, 1), 100);
+        const [{ items, hasMore }, noLeidas] = await Promise.all([
+            NotificationRepository.listarPorUsuario(id, { soloNoLeidas, limit }),
             NotificationRepository.contarNoLeidas(id),
         ]);
-        return { id_usuario: id, no_leidas: noLeidas, items };
+        return { id_usuario: id, no_leidas: noLeidas, items, hasMore };
     }
     static async markRead(idNotificacion, actor) {
         const id = usuarioEnSesion(actor);

@@ -18,7 +18,10 @@ function fallo(res, error, mensaje) {
 export class NotificationController {
     static async list(req, res) {
         try {
-            const data = await NotificationService.list(req.query.soloNoLeidas === "true" ? { soloNoLeidas: "true" } : {}, req.user);
+            const data = await NotificationService.list({
+                soloNoLeidas: req.query.soloNoLeidas === "true" ? "true" : undefined,
+                limit: typeof req.query.limit === "string" ? req.query.limit : undefined,
+            }, req.user);
             return res.json(ApiResponse.success("Notificaciones obtenidas correctamente", data));
         }
         catch (error) {

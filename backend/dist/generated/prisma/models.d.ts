@@ -24,6 +24,7 @@ export type * from './models/investigaciones.js';
 export type * from './models/logs_sistema.js';
 export type * from './models/metas_indicadores.js';
 export type * from './models/notificaciones.js';
+export type * from './models/push_subscriptions.js';
 export type * from './models/planes_accion.js';
 export type * from './models/reporte_detalle.js';
 export type * from './models/reporte_estadistico.js';

@@ -157,6 +157,12 @@ export type metas_indicadores = Prisma.metas_indicadoresModel;
  */
 export type notificaciones = Prisma.notificacionesModel;
 /**
+ * Model push_subscriptions
+ * Un usuario puede tener varias filas (un celular, una laptop, etc.) --
+ * cada `endpoint` es el navegador/dispositivo que aceptó recibir push.
+ */
+export type push_subscriptions = Prisma.push_subscriptionsModel;
+/**
  * Model planes_accion
  *
  */

@@ -94,6 +94,7 @@ export const ModelName = {
     logs_sistema: 'logs_sistema',
     metas_indicadores: 'metas_indicadores',
     notificaciones: 'notificaciones',
+    push_subscriptions: 'push_subscriptions',
     planes_accion: 'planes_accion',
     reporte_detalle: 'reporte_detalle',
     reporte_estadistico: 'reporte_estadistico',
@@ -406,6 +407,14 @@ export const NotificacionesScalarFieldEnum = {
     tipo: 'tipo',
     leido: 'leido',
     fecha: 'fecha'
+};
+export const Push_subscriptionsScalarFieldEnum = {
+    id_suscripcion: 'id_suscripcion',
+    usuario: 'usuario',
+    endpoint: 'endpoint',
+    p256dh: 'p256dh',
+    auth: 'auth',
+    created_at: 'created_at'
 };
 export const Planes_accionScalarFieldEnum = {
     id_plan: 'id_plan',

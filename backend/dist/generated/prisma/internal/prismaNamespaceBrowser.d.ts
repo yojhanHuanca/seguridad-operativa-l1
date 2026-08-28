@@ -67,6 +67,7 @@ export declare const ModelName: {
     readonly logs_sistema: "logs_sistema";
     readonly metas_indicadores: "metas_indicadores";
     readonly notificaciones: "notificaciones";
+    readonly push_subscriptions: "push_subscriptions";
     readonly planes_accion: "planes_accion";
     readonly reporte_detalle: "reporte_detalle";
     readonly reporte_estadistico: "reporte_estadistico";
@@ -405,6 +406,15 @@ export declare const NotificacionesScalarFieldEnum: {
     readonly fecha: "fecha";
 };
 export type NotificacionesScalarFieldEnum = (typeof NotificacionesScalarFieldEnum)[keyof typeof NotificacionesScalarFieldEnum];
+export declare const Push_subscriptionsScalarFieldEnum: {
+    readonly id_suscripcion: "id_suscripcion";
+    readonly usuario: "usuario";
+    readonly endpoint: "endpoint";
+    readonly p256dh: "p256dh";
+    readonly auth: "auth";
+    readonly created_at: "created_at";
+};
+export type Push_subscriptionsScalarFieldEnum = (typeof Push_subscriptionsScalarFieldEnum)[keyof typeof Push_subscriptionsScalarFieldEnum];
 export declare const Planes_accionScalarFieldEnum: {
     readonly id_plan: "id_plan";
     readonly id_caso: "id_caso";
