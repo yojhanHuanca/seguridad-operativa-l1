@@ -26,6 +26,7 @@ const SoPerfilPage = lazyNamed(() => import("@/pages/seguridad/PerfilPage"), "So
 const JefeHome = lazyNamed(() => import("@/pages/jefe/JefeHome"), "JefeHome");
 const PlanDetail = lazyNamed(() => import("@/pages/jefe/PlanDetail"), "PlanDetail");
 const JefeIndicadoresPage = lazyNamed(() => import("@/pages/jefe/IndicadoresPage"), "JefeIndicadoresPage");
+const JefeNotificacionesPage = lazyNamed(() => import("@/pages/jefe/NotificacionesPage"), "JefeNotificacionesPage");
 const JefePerfilPage = lazyNamed(() => import("@/pages/jefe/PerfilPage"), "JefePerfilPage");
 const MonitoreoDashboardPage = lazyNamed(() => import("@/pages/monitoreo/Dashboard"), "Dashboard");
 const MonitoreoRegistroPage = lazyNamed(() => import("@/pages/monitoreo/Registro"), "Registro");
@@ -90,6 +91,7 @@ export function AppRouter() {
           <Route path="/jefe" element={<ProtectedRoute roles={["Jefe de Área"]}><JefeHome /></ProtectedRoute>} />
           <Route path="/jefe/planes/:codigo" element={<ProtectedRoute roles={["Jefe de Área"]}><PlanDetail /></ProtectedRoute>} />
           <Route path="/jefe/indicadores" element={<ProtectedRoute roles={["Jefe de Área"]}><JefeIndicadoresPage /></ProtectedRoute>} />
+          <Route path="/jefe/notificaciones" element={<ProtectedRoute roles={["Jefe de Área"]}><JefeNotificacionesPage /></ProtectedRoute>} />
           <Route path="/jefe/perfil" element={<ProtectedRoute roles={["Jefe de Área"]}><JefePerfilPage /></ProtectedRoute>} />
 
           {/* Panel de Monitoreo — en construcción, portado desde el prototipo */}

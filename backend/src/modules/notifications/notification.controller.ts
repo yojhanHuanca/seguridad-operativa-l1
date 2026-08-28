@@ -24,7 +24,10 @@ export class NotificationController {
   static async list(req: Request, res: Response) {
     try {
       const data = await NotificationService.list(
-        req.query.soloNoLeidas === "true" ? { soloNoLeidas: "true" } : {},
+        {
+          soloNoLeidas: req.query.soloNoLeidas === "true" ? "true" : undefined,
+          limit: typeof req.query.limit === "string" ? req.query.limit : undefined,
+        },
         (req as AuthenticatedRequest).user
       );
       return res.json(ApiResponse.success("Notificaciones obtenidas correctamente", data));

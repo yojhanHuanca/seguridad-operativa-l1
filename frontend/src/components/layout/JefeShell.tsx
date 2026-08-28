@@ -3,6 +3,7 @@ import { Link, useLocation, useSearchParams } from "react-router-dom";
 import {
   Activity,
   BarChart3,
+  Bell,
   Calendar,
   ChevronsLeft,
   ChevronsRight,
@@ -22,6 +23,7 @@ import { SessionExitButton } from "@/features/auth/SessionExitButton";
 import { AdminPanelSwitcher } from "@/features/auth/AdminPanelSwitcher";
 import { AdminViewingBanner } from "@/features/auth/AdminViewingBanner";
 import { useAuth } from "@/features/auth/auth";
+import { useNotifications } from "@/features/notifications/hooks/useNotifications";
 import { nombreSistema, useConfiguracion } from "@/features/configuracion/hooks/useConfiguracion";
 
 interface NavItem {
@@ -36,6 +38,7 @@ const COLLAPSE_KEY = "sigma-jefe-sidebar-collapsed";
 const TITLES: Record<string, { title: string; crumb: string }> = {
   "/jefe": { title: "Mi Plan de Acción", crumb: "Inicio" },
   "/jefe/indicadores": { title: "Indicadores", crumb: "Inicio / Indicadores" },
+  "/jefe/notificaciones": { title: "Notificaciones", crumb: "Inicio / Notificaciones" },
 };
 
 function isActive(pathname: string, search: string, to: string) {
@@ -146,6 +149,8 @@ export function JefeShell({ children }: { children: ReactNode }) {
   const meta = metaFor(location.pathname);
   const { data: configuracion } = useConfiguracion();
   const systemName = nombreSistema(configuracion);
+  const { data: notifications } = useNotifications();
+  const unreadNotifications = notifications?.no_leidas ?? 0;
 
   useEffect(() => {
     localStorage.setItem(COLLAPSE_KEY, collapsed ? "1" : "0");
@@ -209,6 +214,18 @@ export function JefeShell({ children }: { children: ReactNode }) {
                 </Link>
                 <Link to="/jefe/indicadores" className="grid h-9 w-9 place-items-center rounded-lg text-ink-soft transition-colors hover:bg-surface hover:text-ink" aria-label="Indicadores">
                   <BarChart3 className="h-4 w-4" />
+                </Link>
+                <Link
+                  to="/jefe/notificaciones"
+                  className="relative grid h-9 w-9 place-items-center rounded-lg text-ink-soft transition-colors hover:bg-surface hover:text-ink"
+                  aria-label="Notificaciones"
+                >
+                  <Bell className="h-4 w-4" />
+                  {unreadNotifications > 0 && (
+                    <span className="absolute right-1.5 top-1.5 grid h-[15px] min-w-[15px] place-items-center rounded-full bg-critical px-1 text-[9.5px] font-semibold text-white">
+                      {unreadNotifications > 9 ? "9+" : unreadNotifications}
+                    </span>
+                  )}
                 </Link>
                 <AdminPanelSwitcher />
               </div>

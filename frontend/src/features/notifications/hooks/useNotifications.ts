@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, type ApiEnvelope } from "@/lib/api";
 
@@ -28,28 +29,35 @@ interface BandejaNotificaciones {
   id_usuario: number;
   no_leidas: number;
   items: Notificacion[];
+  hasMore: boolean;
 }
 
-async function fetchNotifications(): Promise<BandejaNotificaciones> {
-  const { data } = await api.get<ApiEnvelope<BandejaNotificaciones>>("/notifications");
-  return data.data ?? { id_usuario: 0, no_leidas: 0, items: [] };
+async function fetchNotifications(limit: number): Promise<BandejaNotificaciones> {
+  const { data } = await api.get<ApiEnvelope<BandejaNotificaciones>>("/notifications", { params: { limit } });
+  return data.data ?? { id_usuario: 0, no_leidas: 0, items: [], hasMore: false };
 }
+
+const PAGE_SIZE = 20;
 
 /**
- * Bandeja del usuario conectado.
+ * Bandeja del usuario conectado. El destinatario sale del token — no hace
+ * falta pasarlo.
  *
- * TODO(auth): el backend resuelve hoy el destinatario por rol porque no hay
- * sesión; cuando exista login, la clave de la query debe incluir el usuario
- * para no compartir caché entre cuentas.
+ * "Cargar más" no pagina de verdad (no hay cursor): simplemente pide una
+ * página más grande. Para una bandeja de notificaciones alcanza y evita
+ * tener que fusionar páginas a mano contra el polling de 60s.
  */
 export function useNotifications() {
-  return useQuery({
-    queryKey: ["notifications"],
-    queryFn: fetchNotifications,
+  const [limit, setLimit] = useState(PAGE_SIZE);
+  const query = useQuery({
+    queryKey: ["notifications", limit],
+    queryFn: () => fetchNotifications(limit),
     // Las notificaciones nacen de acciones de otras personas, así que no
     // llegan por invalidación local: hay que ir a buscarlas cada tanto.
     refetchInterval: 60_000,
   });
+
+  return { ...query, cargarMas: () => setLimit((l) => l + PAGE_SIZE) };
 }
 
 export function useMarkNotificationRead() {
