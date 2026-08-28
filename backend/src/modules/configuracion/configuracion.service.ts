@@ -3,6 +3,15 @@ import prisma from "../../lib/prisma.js";
 import type { Prisma } from "../../generated/prisma/client.js";
 import { AuditoriaService, diffCampos } from "../auditoria/auditoria.service.js";
 import { codigoSopSequence } from "./codigo-sop.js";
+import {
+  SEQ_CASOS_SOP,
+  SEQ_PLANES_ACCION,
+  advanceSequenceAtLeast,
+  currentSequenceValue,
+  ensureSequence,
+  nextSequenceValue,
+  nextSequenceValues,
+} from "./sequences.js";
 
 type DbClient = typeof prisma | Prisma.TransactionClient;
 
@@ -180,6 +189,12 @@ async function upsertValue(client: DbClient, nombre: string, valor: string) {
   });
 }
 
+/**
+ * Escanea la tabla para encontrar la secuencia más alta ya usada. Cara (trae
+ * todos los códigos y los parsea en memoria), así que solo se llama una vez
+ * al arrancar el servidor (`bootstrapSequences`) — el resto del tiempo la
+ * fuente de verdad es la secuencia de Postgres, no un escaneo de la tabla.
+ */
 async function maxCaseSequence(client: DbClient, prefix: string) {
   const codigos = await client.casos_sop.findMany({
     where: {
@@ -194,20 +209,6 @@ async function maxCaseSequence(client: DbClient, prefix: string) {
   }, 0);
 }
 
-async function nextAvailableCaseCode(client: DbClient, prefix: string, year: number, fromSequence: number) {
-  let sequence = fromSequence;
-
-  while (true) {
-    sequence += 1;
-    const codigo = `${prefix} ${padSequence(sequence)}-${year}`;
-    const exists = await client.casos_sop.findUnique({
-      where: { codigo_sop: codigo },
-      select: { codigo_sop: true },
-    });
-    if (!exists) return { codigo, sequence };
-  }
-}
-
 export class ConfiguracionService {
   private static async readValues(client: DbClient = prisma) {
     const rows = await client.configuracion.findMany({
@@ -219,14 +220,12 @@ export class ConfiguracionService {
 
   static async get(client: DbClient = prisma): Promise<ConfiguracionGeneral> {
     const values = await ConfiguracionService.readValues(client);
-    const prefix = sanitizePrefix(values.get(CONFIG_KEYS.expedientePrefijo) || defaultValue(CONFIG_KEYS.expedientePrefijo), "El prefijo de expedientes");
-    const [secuenciaCasos, planesTotales] = await Promise.all([maxCaseSequence(client, prefix), client.planes_accion.count()]);
+    const [secuenciaCasos, secuenciaPlanes] = await Promise.all([
+      currentSequenceValue(client, SEQ_CASOS_SOP),
+      currentSequenceValue(client, SEQ_PLANES_ACCION),
+    ]);
 
-    return mapToConfiguracion(
-      values,
-      Math.max(parseNumber(values.get(CONFIG_KEYS.expedienteSecuencia), Number(defaultValue(CONFIG_KEYS.expedienteSecuencia))), secuenciaCasos),
-      Math.max(parseNumber(values.get(CONFIG_KEYS.planSecuencia), Number(defaultValue(CONFIG_KEYS.planSecuencia))), planesTotales)
-    );
+    return mapToConfiguracion(values, secuenciaCasos, secuenciaPlanes);
   }
 
   static async publica(client: DbClient = prisma): Promise<ConfiguracionPublica> {
@@ -261,6 +260,11 @@ export class ConfiguracionService {
       for (const [key, value] of payloadToEntries(next)) {
         await upsertValue(tx, key, value);
       }
+      // La secuencia de Postgres es la fuente de verdad real; esto solo deja
+      // que un admin "adelante" el contador a mano (p.ej. para saltar un
+      // rango) sin arriesgar reusar un número ya emitido — nunca retrocede.
+      await advanceSequenceAtLeast(tx, SEQ_CASOS_SOP, next.numeracion.secuenciaExpedientes);
+      await advanceSequenceAtLeast(tx, SEQ_PLANES_ACCION, next.numeracion.secuenciaPlanes);
       return ConfiguracionService.get(tx);
     });
 
@@ -295,12 +299,8 @@ export class ConfiguracionService {
     const year = fecha.getUTCFullYear();
     const values = await ConfiguracionService.readValues(client);
     const prefix = sanitizePrefix(values.get(CONFIG_KEYS.expedientePrefijo) || defaultValue(CONFIG_KEYS.expedientePrefijo), "El prefijo de expedientes");
-    const configured = parseNumber(values.get(CONFIG_KEYS.expedienteSecuencia), Number(defaultValue(CONFIG_KEYS.expedienteSecuencia)));
-    const actual = await maxCaseSequence(client, prefix);
-    const { codigo, sequence } = await nextAvailableCaseCode(client, prefix, year, Math.max(configured, actual));
-
-    await upsertValue(client, CONFIG_KEYS.expedienteSecuencia, String(sequence));
-    return codigo;
+    const sequence = await nextSequenceValue(client, SEQ_CASOS_SOP);
+    return `${prefix} ${padSequence(sequence)}-${year}`;
   }
 
   static async nextCodigosPlan(client: DbClient, codigoSop: string, cantidad: number): Promise<string[]> {
@@ -308,35 +308,16 @@ export class ConfiguracionService {
 
     const values = await ConfiguracionService.readValues(client);
     const prefix = sanitizePrefix(values.get(CONFIG_KEYS.planPrefijo) || defaultValue(CONFIG_KEYS.planPrefijo), "El prefijo de planes");
-    const configured = parseNumber(values.get(CONFIG_KEYS.planSecuencia), Number(defaultValue(CONFIG_KEYS.planSecuencia)));
-    const actual = await client.planes_accion.count();
-    const codigos: string[] = [];
-    let cursor = Math.max(configured, actual);
-
-    while (codigos.length < cantidad) {
-      cursor += 1;
-      const candidate = `${codigoSop}-${prefix}-${padSequence(cursor)}`;
-      const exists = await client.planes_accion.findUnique({
-        where: { codigo_plan: candidate },
-        select: { codigo_plan: true },
-      });
-      if (!exists) codigos.push(candidate);
-    }
-
-    await upsertValue(client, CONFIG_KEYS.planSecuencia, String(cursor));
-    return codigos;
+    const secuencias = await nextSequenceValues(client, SEQ_PLANES_ACCION, cantidad);
+    return secuencias.map((sequence) => `${codigoSop}-${prefix}-${padSequence(sequence)}`);
   }
 
   /**
    * Códigos de plan para muchos casos de una sola vez, para la importación
-   * masiva.
-   *
-   * `nextCodigosPlan` sirve para un caso suelto, pero hace una lectura de
-   * configuración, un `count` y un `findUnique` por cada código: llamarla en
-   * un bucle de diez mil casos son decenas de miles de consultas en serie, y
-   * la transacción se cae por tiempo antes de terminar. Acá se lee la
-   * configuración una vez, se traen de golpe los códigos ya ocupados y el
-   * resto se resuelve en memoria.
+   * masiva. Antes esto necesitaba traer de golpe los códigos ya ocupados y
+   * resolver colisiones a mano en memoria; con la secuencia de Postgres cada
+   * código ya sale único, así que alcanza con reservar de una vez tantos
+   * valores como códigos se piden en total.
    */
   static async nextCodigosPlanBulk(client: DbClient, pedidos: { codigoSop: string; cantidad: number }[]): Promise<Map<string, string[]>> {
     const out = new Map<string, string[]>();
@@ -345,34 +326,17 @@ export class ConfiguracionService {
 
     const values = await ConfiguracionService.readValues(client);
     const prefix = sanitizePrefix(values.get(CONFIG_KEYS.planPrefijo) || defaultValue(CONFIG_KEYS.planPrefijo), "El prefijo de planes");
-    const configured = parseNumber(values.get(CONFIG_KEYS.planSecuencia), Number(defaultValue(CONFIG_KEYS.planSecuencia)));
-    const actual = await client.planes_accion.count();
+    const secuencias = await nextSequenceValues(client, SEQ_PLANES_ACCION, total);
 
-    // Los códigos llevan el del caso adelante, así que solo pueden chocar con
-    // planes del mismo caso: alcanza con traer los de esos casos.
-    const ocupados = new Set(
-      (
-        await client.planes_accion.findMany({
-          where: { OR: pedidos.map((pedido) => ({ codigo_plan: { startsWith: `${pedido.codigoSop}-${prefix}-` } })) },
-          select: { codigo_plan: true },
-        })
-      ).map((plan) => plan.codigo_plan),
-    );
-
-    let cursor = Math.max(configured, actual);
+    let cursor = 0;
     for (const pedido of pedidos) {
-      const codigos: string[] = [];
-      while (codigos.length < pedido.cantidad) {
-        cursor += 1;
-        const candidate = `${pedido.codigoSop}-${prefix}-${padSequence(cursor)}`;
-        if (ocupados.has(candidate)) continue;
-        ocupados.add(candidate);
-        codigos.push(candidate);
-      }
+      const codigos = secuencias
+        .slice(cursor, cursor + pedido.cantidad)
+        .map((sequence) => `${pedido.codigoSop}-${prefix}-${padSequence(sequence)}`);
+      cursor += pedido.cantidad;
       out.set(pedido.codigoSop, codigos);
     }
 
-    await upsertValue(client, CONFIG_KEYS.planSecuencia, String(cursor));
     return out;
   }
 
@@ -380,5 +344,27 @@ export class ConfiguracionService {
     const [codigo] = await ConfiguracionService.nextCodigosPlan(client, codigoSop, 1);
     if (!codigo) throw new Error("No se pudo generar el código del plan");
     return codigo;
+  }
+
+  /**
+   * Crea las secuencias de Postgres si no existen y las adelanta hasta el
+   * máximo ya usado en la base (escaneando `casos_sop`/`planes_accion`) y
+   * hasta lo que haya configurado un admin a mano. Se llama una sola vez al
+   * arrancar el servidor — después de esto la secuencia misma es la fuente
+   * de verdad, no hace falta volver a escanear la tabla en cada reporte.
+   */
+  static async bootstrapSequences(client: DbClient = prisma) {
+    await ensureSequence(client, SEQ_CASOS_SOP);
+    await ensureSequence(client, SEQ_PLANES_ACCION);
+
+    const values = await ConfiguracionService.readValues(client);
+    const prefix = sanitizePrefix(values.get(CONFIG_KEYS.expedientePrefijo) || defaultValue(CONFIG_KEYS.expedientePrefijo), "El prefijo de expedientes");
+    const configuradoCasos = parseNumber(values.get(CONFIG_KEYS.expedienteSecuencia), 0);
+    const configuradoPlanes = parseNumber(values.get(CONFIG_KEYS.planSecuencia), 0);
+
+    const [maxCasos, totalPlanes] = await Promise.all([maxCaseSequence(client, prefix), client.planes_accion.count()]);
+
+    await advanceSequenceAtLeast(client, SEQ_CASOS_SOP, Math.max(configuradoCasos, maxCasos));
+    await advanceSequenceAtLeast(client, SEQ_PLANES_ACCION, Math.max(configuradoPlanes, totalPlanes));
   }
 }

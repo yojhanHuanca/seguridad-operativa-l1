@@ -2,6 +2,8 @@ import type { Prisma } from "../../generated/prisma/client.js";
 import prisma from "../../lib/prisma.js";
 import { AuditoriaRepository } from "../auditoria/auditoria.repository.js";
 import { ConfiguracionService } from "../configuracion/configuracion.service.js";
+import { codigoSopSequence } from "../configuracion/codigo-sop.js";
+import { SEQ_CASOS_SOP, advanceSequenceAtLeast } from "../configuracion/sequences.js";
 import type {
   ImportacionIssue,
   ImportacionPayload,
@@ -1258,6 +1260,18 @@ async function createImportedCases(
       })),
     });
   }
+
+  // Los casos importados traen su codigo_sop tal cual del Excel — nunca pasan
+  // por `nextCodigoExpediente` — así que la secuencia de Postgres que genera
+  // los códigos nuevos no se entera sola de hasta dónde llegó el histórico.
+  // Sin este paso, el primer caso creado desde la web después de importar
+  // podría repetir un número ya usado en el archivo.
+  const { numeracion } = await ConfiguracionService.get(tx);
+  const maxImportado = items.reduce((max, item) => {
+    const sequence = codigoSopSequence(item.codigo, numeracion.prefijoExpedientes);
+    return sequence == null ? max : Math.max(max, sequence);
+  }, 0);
+  if (maxImportado > 0) await advanceSequenceAtLeast(tx, SEQ_CASOS_SOP, maxImportado);
 
   return { casos: items.length, eventos: items.length, planes };
 }
