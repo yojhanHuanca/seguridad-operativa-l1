@@ -394,7 +394,7 @@ function WorkflowSection({ systemName }: { systemName: string }) {
   );
 }
 
-const ROLES_ACCESO = ["Trabajador", "Seguridad Operativa", "Jefe de Área", "Monitorista"];
+const ROLES_ACCESO = ["Seguridad Operativa", "Jefe de Área", "Monitorista"];
 
 function AccessBand() {
   return (
