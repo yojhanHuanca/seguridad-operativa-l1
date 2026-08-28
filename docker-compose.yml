@@ -1,0 +1,69 @@
+# Entorno de desarrollo local dockerizado. NO es lo que corre en producción
+# (eso sigue siendo Vercel + Railway) — esto es para poder levantar todo con
+# `docker compose up` sin instalar Postgres/Node a mano en la máquina.
+#
+# Antes de correr:
+#   cp .env.docker.example .env
+#   (completar JWT_SECRET, y opcionalmente RESEND_API_KEY/GOOGLE_CLIENT_ID)
+#
+# El backend corre `prisma db push` contra la base de este mismo compose antes
+# de arrancar — el proyecto no usa `prisma migrate`, usa `db push` (igual que
+# en Railway), así que la primera vez deja la base al día sola. Si alguna vez
+# rechaza el push por una pérdida de datos, se corre a mano con el flag:
+#   docker compose exec backend npx prisma db push --accept-data-loss
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sigma
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sigma_dev_password}
+      POSTGRES_DB: bd_seguridad_metro
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sigma -d bd_seguridad_metro"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://sigma:${POSTGRES_PASSWORD:-sigma_dev_password}@postgres:5432/bd_seguridad_metro?schema=public
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET:?Definí JWT_SECRET en .env}
+      JWT_EXPIRES_IN: 8h
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-SIGMA L1 <onboarding@resend.dev>}
+      FRONTEND_URL: http://localhost:5173
+    ports:
+      - "3000:3000"
+    volumes:
+      - backend_uploads:/app/uploads
+    command: sh -c "npx prisma db push --skip-generate && node dist/server.js"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:3000/api
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  pgdata:
+  backend_uploads:
