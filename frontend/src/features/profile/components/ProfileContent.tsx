@@ -2,6 +2,8 @@ import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowUpRight,
+  Bell,
+  BellOff,
   BriefcaseBusiness,
   CalendarDays,
   Camera,
@@ -37,6 +39,7 @@ import { apiErrorMessage } from "@/lib/api";
 import { useArchivoProtegido } from "@/lib/archivos";
 import { formatDate, formatDateTime, initials } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { usePushSubscription } from "@/features/notifications/hooks/usePushSubscription";
 import { useMyActivity, useMyProfile, useUpdatePhone, useUploadAvatar, useChangePassword } from "../hooks/useProfile";
 
 // Mismos límites que exige el backend (`uploadAvatar` en upload.middleware.ts).
@@ -221,6 +224,65 @@ function QuickActionLink({ action }: { action: QuickAction }) {
       <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-ink">{action.label}</span>
       <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-ink-faint transition-colors group-hover:text-brand-700" />
     </Link>
+  );
+}
+
+/**
+ * Auto-oculta la tarjeta entera si no hay VITE_VAPID_PUBLIC_KEY configurada
+ * o el navegador no admite push — mismo criterio que el botón de Google.
+ */
+function PushNotificationsCard() {
+  const { estado, activar, desactivar } = usePushSubscription();
+  const [busy, setBusy] = useState(false);
+
+  if (estado === "cargando" || estado === "no-soportado" || estado === "sin-clave") return null;
+
+  const alternar = async () => {
+    setBusy(true);
+    try {
+      if (estado === "activo") {
+        await desactivar();
+        toast.success("Notificaciones push desactivadas en este dispositivo");
+      } else {
+        await activar();
+        toast.success("Notificaciones push activadas en este dispositivo");
+      }
+    } catch (e) {
+      toast.error(apiErrorMessage(e, "No se pudo cambiar la configuración de notificaciones"));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader
+        icon={<Bell className="h-4.5 w-4.5" />}
+        title="Notificaciones push"
+        subtitle="Recibe un aviso con sonido en este dispositivo cuando te llegue algo nuevo."
+      />
+      {estado === "denegado" ? (
+        <p className="rounded-lg border border-warning-soft bg-warning-soft/40 px-3 py-2.5 text-[12.5px] leading-relaxed text-warning-ink">
+          Bloqueaste los avisos para este sitio. Actívalos desde la configuración de notificaciones de tu navegador.
+        </p>
+      ) : (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="max-w-md text-[12.5px] leading-relaxed text-ink-quiet">
+            {estado === "activo"
+              ? "Activadas en este dispositivo."
+              : "Actívalas para no tener que revisar la bandeja a cada rato."}
+          </p>
+          <Button size="sm" variant={estado === "activo" ? "outline" : "primary"} onClick={alternar} disabled={busy}>
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : estado === "activo" ? <BellOff className="h-3.5 w-3.5" /> : <Bell className="h-3.5 w-3.5" />}
+            {estado === "activo" ? "Desactivar" : "Activar notificaciones"}
+          </Button>
+        </div>
+      )}
+      <p className="mt-3 text-[11.5px] leading-relaxed text-ink-faint">
+        En iPhone: agrega este sitio a tu pantalla de inicio (Compartir → Agregar a inicio) para que los avisos funcionen — es una
+        restricción de Apple, no de esta plataforma.
+      </p>
+    </Card>
   );
 }
 
@@ -472,6 +534,8 @@ export function ProfileContent() {
             </div>
           </div>
         </Card>
+
+        <PushNotificationsCard />
 
         <Card>
           <CardHeader icon={<Gauge className="h-4.5 w-4.5" />} title="Resumen operativo" subtitle="Indicadores asociados a tu cuenta." />

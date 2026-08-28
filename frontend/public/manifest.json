@@ -1,0 +1,12 @@
+{
+  "name": "SIGMA L1 · Seguridad Operativa",
+  "short_name": "SIGMA L1",
+  "description": "Seguridad operativa de Línea 1 del Metro de Lima.",
+  "start_url": "/login",
+  "display": "standalone",
+  "background_color": "#0c0c0c",
+  "theme_color": "#0c0c0c",
+  "icons": [
+    { "src": "/logo-linea1.png", "sizes": "1536x1024", "type": "image/png", "purpose": "any" }
+  ]
+}
