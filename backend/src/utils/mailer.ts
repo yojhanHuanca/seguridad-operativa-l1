@@ -1,14 +1,67 @@
 import { Resend } from "resend";
+import nodemailer, { type Transporter } from "nodemailer";
 import { env } from "../config/env.js";
 import { ConfiguracionService } from "../modules/configuracion/configuracion.service.js";
 
 let client: Resend | null = null;
+let smtpTransport: Transporter | null = null;
 const DEFAULT_SYSTEM_NAME = "SIGMA L1";
 
 function getClient() {
   if (!env.RESEND_API_KEY) return null;
   client ??= new Resend(env.RESEND_API_KEY);
   return client;
+}
+
+/**
+ * `SMTP_HOST=ethereal` es un valor especial: crea al vuelo una bandeja de
+ * prueba en https://ethereal.email (vía nodemailer, sin registro ni Docker) —
+ * nada sale a un destinatario real, pero cada envío devuelve un link para ver
+ * el correo tal cual habría llegado. Sirve para probar en desarrollo sin
+ * depender de un dominio verificado en Resend ni de infraestructura local.
+ */
+async function getSmtpTransport(): Promise<Transporter | null> {
+  if (!env.SMTP_HOST) return null;
+  if (smtpTransport) return smtpTransport;
+
+  if (env.SMTP_HOST === "ethereal") {
+    const cuentaPrueba = await nodemailer.createTestAccount();
+    smtpTransport = nodemailer.createTransport({
+      host: "smtp.ethereal.email",
+      port: 587,
+      secure: false,
+      auth: { user: cuentaPrueba.user, pass: cuentaPrueba.pass },
+    });
+    return smtpTransport;
+  }
+
+  smtpTransport = nodemailer.createTransport({ host: env.SMTP_HOST, port: env.SMTP_PORT, secure: false });
+  return smtpTransport;
+}
+
+/**
+ * Punto único de envío: si hay un SMTP configurado para desarrollo (Ethereal
+ * o un Mailpit local), el correo sale por ahí sin importar el destinatario.
+ * Si no, cae a Resend (lo que corre en producción). Sin ninguno de los dos
+ * configurados, no hay a dónde mandarlo.
+ */
+async function enviarCorreo(opts: { to: string; subject: string; html: string }) {
+  const smtp = await getSmtpTransport();
+  if (smtp) {
+    const info = await smtp.sendMail({ from: env.EMAIL_FROM, to: opts.to, subject: opts.subject, html: opts.html });
+    const previewUrl = nodemailer.getTestMessageUrl(info);
+    if (previewUrl) console.log(`[mail] "${opts.subject}" para ${opts.to} — vista previa: ${previewUrl}`);
+    return;
+  }
+
+  const resend = getClient();
+  if (!resend) {
+    throw new Error("El envío de correos no está configurado en el servidor");
+  }
+  const { error } = await resend.emails.send({ from: env.EMAIL_FROM, to: opts.to, subject: opts.subject, html: opts.html });
+  if (error) {
+    throw new Error(`No se pudo enviar el correo: ${error.message}`);
+  }
 }
 
 function escapeHtml(value: string) {
@@ -31,14 +84,9 @@ async function getSystemName() {
 
 /** true si el correo se pudo pedir a Resend (no garantiza que ya llegó a la bandeja). */
 export async function enviarCorreoRecuperacion(destino: string, nombre: string, resetUrl: string) {
-  const resend = getClient();
-  if (!resend) {
-    throw new Error("El envío de correos no está configurado en el servidor");
-  }
   const systemName = await getSystemName();
 
-  const { error } = await resend.emails.send({
-    from: env.EMAIL_FROM,
+  await enviarCorreo({
     to: destino,
     subject: `Recupera tu contraseña — ${systemName}`,
     html: `
@@ -54,10 +102,6 @@ export async function enviarCorreoRecuperacion(destino: string, nombre: string, 
       </div>
     `,
   });
-
-  if (error) {
-    throw new Error(`No se pudo enviar el correo: ${error.message}`);
-  }
 }
 
 function formatearFecha(fecha: Date) {
@@ -95,10 +139,6 @@ export interface PlanAsignadoCorreo {
  * error acá solo se registra en el log, nunca revierte nada.
  */
 export async function enviarCorreoPlanAsignado(datos: PlanAsignadoCorreo) {
-  const resend = getClient();
-  if (!resend) {
-    throw new Error("El envío de correos no está configurado en el servidor");
-  }
   const systemName = await getSystemName();
 
   const filasActividades = datos.actividades
@@ -131,8 +171,7 @@ export async function enviarCorreoPlanAsignado(datos: PlanAsignadoCorreo) {
     ? `<p style="margin:16px 0 0;font-size:13px;color:#41504A;"><strong>Observaciones:</strong> ${escapeHtml(datos.observaciones)}</p>`
     : "";
 
-  const { error } = await resend.emails.send({
-    from: env.EMAIL_FROM,
+  await enviarCorreo({
     to: datos.destino,
     subject: `Nuevo plan de acción asignado: ${datos.codigoPlan} — ${systemName}`,
     html: `
@@ -160,8 +199,4 @@ export async function enviarCorreoPlanAsignado(datos: PlanAsignadoCorreo) {
       </div>
     `,
   });
-
-  if (error) {
-    throw new Error(`No se pudo enviar el correo: ${error.message}`);
-  }
 }

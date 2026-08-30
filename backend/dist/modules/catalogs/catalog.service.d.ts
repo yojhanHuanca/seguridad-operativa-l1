@@ -3,9 +3,9 @@ export declare class CatalogService {
         catalogo_detalle: {
             nombre: string;
             descripcion: string | null;
+            id_detalle: number;
             codigo: string | null;
             orden: number | null;
-            id_detalle: number;
             color: string | null;
         }[];
     } & {
@@ -13,17 +13,17 @@ export declare class CatalogService {
         estado: boolean | null;
         created_at: Date | null;
         descripcion: string | null;
-        codigo: string;
         id_catalogo: number;
+        codigo: string;
     })[]>;
     static getGroupForAdmin(id_catalogo: number): Promise<{
         catalogo_detalle: {
             nombre: string;
             estado: boolean | null;
             descripcion: string | null;
+            id_detalle: number;
             codigo: string | null;
             orden: number | null;
-            id_detalle: number;
             color: string | null;
         }[];
     } & {
@@ -31,18 +31,18 @@ export declare class CatalogService {
         estado: boolean | null;
         created_at: Date | null;
         descripcion: string | null;
-        codigo: string;
         id_catalogo: number;
+        codigo: string;
     }>;
     static createItem(id_catalogo: number, nombre_raw: string): Promise<{
         nombre: string;
         estado: boolean | null;
         created_at: Date | null;
         descripcion: string | null;
-        codigo: string | null;
-        id_catalogo: number;
-        orden: number | null;
         id_detalle: number;
+        id_catalogo: number;
+        codigo: string | null;
+        orden: number | null;
         color: string | null;
     }>;
     static updateItem(id_detalle: number, nombre_raw: string): Promise<{
@@ -50,10 +50,10 @@ export declare class CatalogService {
         estado: boolean | null;
         created_at: Date | null;
         descripcion: string | null;
-        codigo: string | null;
-        id_catalogo: number;
-        orden: number | null;
         id_detalle: number;
+        id_catalogo: number;
+        codigo: string | null;
+        orden: number | null;
         color: string | null;
     }>;
     static setItemEstado(id_detalle: number, estado: boolean): Promise<{
@@ -61,10 +61,10 @@ export declare class CatalogService {
         estado: boolean | null;
         created_at: Date | null;
         descripcion: string | null;
-        codigo: string | null;
-        id_catalogo: number;
-        orden: number | null;
         id_detalle: number;
+        id_catalogo: number;
+        codigo: string | null;
+        orden: number | null;
         color: string | null;
     }>;
 }

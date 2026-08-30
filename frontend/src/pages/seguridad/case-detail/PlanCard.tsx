@@ -61,6 +61,10 @@ function blankActividad(idArea = "", plazoDias = DEFAULT_PLAN_DAYS): PlanFormAct
   };
 }
 
+function previewPlanCode(prefix: string, index: number) {
+  return `${prefix.trim().toUpperCase() || "PLA"}-${String(index + 1).padStart(2, "0")}`;
+}
+
 function ResponsableSearch({
   value,
   users,
@@ -315,7 +319,7 @@ function PlanDisplay({ caso, onEdit }: { caso: CaseDetail; onEdit: (idPlan: numb
           </div>
           <div className="grid sm:grid-cols-2 gap-3 text-sm">
             <div>
-              <span className="text-ink-quiet">Plan:</span> <span className="font-medium font-mono">{shortPlanCode(plan.codigo_plan)}</span>
+              <span className="font-medium font-mono text-brand-700">{shortPlanCode(plan.codigo_plan)}</span>
             </div>
             <div>
               <span className="text-ink-quiet">Responsable:</span>{" "}
@@ -458,11 +462,11 @@ function PlanForm({
   const actividadesValidas = actividades.filter(actividadCompleta);
   const puedeEnviar = actividades.length > 0 && actividadesValidas.length === actividades.length;
 
-  /**
-   * En creación no mostramos códigos tentativos: el backend asigna el código
-   * real al guardar. En edición sí existe un código persistido y se muestra.
-   */
-  const etiquetaPlan = (i: number) => (plan ? shortPlanCode(plan.codigo_plan) : `Plan nuevo ${i + 1}`);
+  // El código real lo asigna el backend; aquí solo se muestra una vista previa legible.
+  const planPrefix = configuracion?.numeracion.prefijoPlanes ?? "PLA";
+  const planEditIndex = plan ? caso.planes_accion.findIndex((p) => p.id_plan === plan.id_plan) : -1;
+  const basePlanIndex = plan ? Math.max(0, planEditIndex) : caso.planes_accion.length;
+  const etiquetaPlan = (i: number) => (plan ? shortPlanCode(plan.codigo_plan) : previewPlanCode(planPrefix, basePlanIndex + i));
 
   const updateActividad = (i: number, patch: Partial<PlanFormActivityInput>) =>
     setActividades((prev) => prev.map((a, idx) => (idx === i ? { ...a, ...patch } : a)));

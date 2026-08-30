@@ -341,7 +341,13 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
               required={!isEdit}
               hint={isEdit ? "Déjalo en blanco para no cambiarla." : "Mínimo 6 caracteres."}
             >
-              <Input type="password" value={form.password} onChange={(e) => set("password", e.target.value)} placeholder={isEdit ? "••••••••" : "Contraseña de acceso"} />
+              <Input
+                type="password"
+                value={form.password}
+                onChange={(e) => set("password", e.target.value)}
+                placeholder={isEdit ? "••••••••" : "Contraseña de acceso"}
+                autoComplete="new-password"
+              />
             </Field>
           </>
         )}

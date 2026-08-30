@@ -548,7 +548,14 @@ export function AdminUsuariosPage() {
           <div className="mt-4 grid gap-3 rounded-2xl border border-line bg-white p-4 lg:grid-cols-[minmax(260px,1fr)_190px_230px]">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
-              <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar usuario, correo o área" className="pl-9" />
+              <Input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Buscar usuario, correo o área"
+                className="pl-9"
+                autoComplete="off"
+                name="buscar-usuarios-accesos"
+              />
             </div>
             <Select value={statusFilter} onChange={(event) => setStatusAndReset(event.target.value as typeof statusFilter)} aria-label="Filtrar por estado">
               <option value="todos">Todos los estados</option>
@@ -591,7 +598,14 @@ export function AdminUsuariosPage() {
           <div className="mt-5 grid gap-3 rounded-2xl border border-line bg-white p-4 sm:grid-cols-[minmax(260px,1fr)_minmax(190px,1fr)_minmax(170px,1fr)]">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
-              <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar usuario" className="pl-9" />
+              <Input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Buscar usuario"
+                className="pl-9"
+                autoComplete="off"
+                name="buscar-usuarios"
+              />
             </div>
             <Select value={roleFilter} onChange={(event) => setRoleAndReset(event.target.value)} aria-label="Filtrar por rol">
               <option value="todos">Todos los roles</option>

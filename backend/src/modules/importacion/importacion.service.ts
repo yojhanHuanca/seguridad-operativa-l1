@@ -1144,7 +1144,11 @@ async function createImportedCases(
   // Los códigos de plan se resuelven todos juntos antes de insertar: pedirlos
   // caso por caso era el otro punto donde la importación se iba en consultas.
   const pedidos = items
-    .map((item) => ({ codigoSop: item.codigo, cantidad: item.plans.filter((plan) => !plan.codigo).length }))
+    .map((item) => ({
+      codigoSop: item.codigo,
+      cantidad: item.plans.filter((plan) => !plan.codigo).length,
+      codigosExistentes: item.plans.map((plan) => plan.codigo).filter((codigo): codigo is string => Boolean(codigo)),
+    }))
     .filter((pedido) => pedido.cantidad > 0);
   const codigosGenerados = await ConfiguracionService.nextCodigosPlanBulk(tx, pedidos);
 

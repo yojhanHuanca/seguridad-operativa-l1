@@ -28,7 +28,7 @@ import { Pill, RiskPill, StagePill } from "@/design-system/primitives/Pill";
 import { useCases } from "@/features/cases/hooks/useCases";
 import { toCaseRow, type CaseRow } from "@/features/cases/adapter";
 import { riskCategory, type RiskLevel as DomainRiskLevel } from "@/features/cases/domain";
-import { MAP_W, MAP_H, resolveStationCoords, resolveTalleresCoords } from "@/lib/stations";
+import { computeMapSize, resolveStationCoords, resolveTalleresCoords } from "@/lib/stations";
 import { useCatalogs } from "@/features/reports/hooks/useCatalogs";
 import { IsometricLineMap } from "./IsometricLineMap";
 import { cn } from "@/lib/utils";
@@ -93,6 +93,7 @@ export function IncidentMap() {
   const lugares = useMemo(() => catalogsByName.get("Lugar de Incidente")?.catalogo_detalle ?? [], [catalogsByName]);
   const stationCoords = useMemo(() => resolveStationCoords(lugares), [lugares]);
   const talleres = useMemo(() => resolveTalleresCoords(lugares, stationCoords), [lugares, stationCoords]);
+  const { mapW, mapH } = useMemo(() => computeMapSize(stationCoords, talleres), [stationCoords, talleres]);
 
   const stations = useMemo(() => stationCoords.map((coord) => buildStationData(coord, cases)), [stationCoords, cases]);
 
@@ -149,8 +150,8 @@ export function IncidentMap() {
       <div className="grid grid-cols-2 xl:grid-cols-5 gap-3">
         <MapKpi icon={<Train className="h-4.5 w-4.5" />} label="Estaciones monitoreadas" value={kpis.monitoreadas} tone="brand" sub="Cobertura Línea 1" />
         <MapKpi icon={<Activity className="h-4.5 w-4.5" />} label="Estaciones con casos activos" value={kpis.activas} tone="info" sub="Seguimiento operativo" />
-        <MapKpi icon={<AlertOctagon className="h-4.5 w-4.5" />} label="Casos abiertos" value={kpis.incidenciasAbiertas} tone="critical" sub="Pendientes de gestión" />
-        <MapKpi icon={<CheckCircle2 className="h-4.5 w-4.5" />} label="Casos cerrados" value={kpis.totalCerrados} tone="brand" sub="Histórico consolidado" />
+        <MapKpi icon={<AlertOctagon className="h-4.5 w-4.5" />} label="Abiertos en estaciones" value={kpis.incidenciasAbiertas} tone="critical" sub="Pendientes de gestión" />
+        <MapKpi icon={<CheckCircle2 className="h-4.5 w-4.5" />} label="Cerrados en estaciones" value={kpis.totalCerrados} tone="brand" sub="Histórico consolidado" />
         <MapKpi
           icon={<TrendingUp className="h-4.5 w-4.5" />}
           label="Estación prioritaria"
@@ -191,8 +192,8 @@ export function IncidentMap() {
               stations={stations}
               talleres={talleres}
               linePath={linePath}
-              mapW={MAP_W}
-              mapH={MAP_H}
+              mapW={mapW}
+              mapH={mapH}
               hovered={hovered}
               selectedName={selected?.name ?? null}
               onHover={setHovered}
@@ -210,8 +211,8 @@ export function IncidentMap() {
               <MapPopup
                 x={selected.x}
                 y={selected.y}
-                mapW={MAP_W}
-                mapH={MAP_H}
+                mapW={mapW}
+                mapH={mapH}
                 onClose={() => {
                   setSelectedStation(null);
                   setSelectedTaller(null);

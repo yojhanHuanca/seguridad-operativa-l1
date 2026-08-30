@@ -112,6 +112,6 @@ export interface CommentDto {
 }
 
 export interface RollbackStageDto {
-  destino: "Evaluación" | "Investigación";
+  destino: "Evaluación" | "Investigación" | "Plan de Acción";
   motivo: string;
 }

@@ -2,15 +2,14 @@ import { z } from "zod";
 import prisma from "../../lib/prisma.js";
 import type { Prisma } from "../../generated/prisma/client.js";
 import { AuditoriaService, diffCampos } from "../auditoria/auditoria.service.js";
+import { buildCodigoPlan, codigoPlanSequenceForCase } from "./codigo-plan.js";
 import { codigoSopSequence } from "./codigo-sop.js";
 import {
   SEQ_CASOS_SOP,
-  SEQ_PLANES_ACCION,
   advanceSequenceAtLeast,
   currentSequenceValue,
   ensureSequence,
   nextSequenceValue,
-  nextSequenceValues,
 } from "./sequences.js";
 
 type DbClient = typeof prisma | Prisma.TransactionClient;
@@ -47,7 +46,7 @@ const DESCRIPTIONS: Record<string, string> = {
   [CONFIG_KEYS.expedientePrefijo]: "Prefijo usado al generar nuevos expedientes/casos SOP.",
   [CONFIG_KEYS.expedienteSecuencia]: "Última secuencia usada para expedientes SOP.",
   [CONFIG_KEYS.planPrefijo]: "Prefijo usado al generar nuevos planes de acción.",
-  [CONFIG_KEYS.planSecuencia]: "Última secuencia global usada para planes de acción.",
+  [CONFIG_KEYS.planSecuencia]: "Cantidad referencial de planes de acción. La numeración visible reinicia por cada SOP.",
   [CONFIG_KEYS.diasInvestigacion]: "Días máximos de investigación.",
   [CONFIG_KEYS.diasResponderPlanes]: "Días para que el jefe de área responda planes.",
   [CONFIG_KEYS.diasSolicitarProrroga]: "Días máximos para solicitar una prórroga.",
@@ -209,6 +208,31 @@ async function maxCaseSequence(client: DbClient, prefix: string) {
   }, 0);
 }
 
+function nextPlanCodes(codigoSop: string, prefix: string, cantidad: number, codigosExistentes: string[]) {
+  const secuenciasOcupadas = new Set<number>();
+  const codigosOcupados = new Set(codigosExistentes.map((codigo) => codigo.trim().toUpperCase()));
+
+  for (const codigo of codigosExistentes) {
+    const sequence = codigoPlanSequenceForCase(codigo, codigoSop, prefix);
+    if (sequence != null) secuenciasOcupadas.add(sequence);
+  }
+
+  const codigos: string[] = [];
+  let sequence = Math.max(codigosExistentes.length, ...secuenciasOcupadas);
+
+  while (codigos.length < cantidad) {
+    sequence += 1;
+    const candidate = buildCodigoPlan(codigoSop, prefix, sequence);
+    if (secuenciasOcupadas.has(sequence) || codigosOcupados.has(candidate.toUpperCase())) continue;
+
+    secuenciasOcupadas.add(sequence);
+    codigosOcupados.add(candidate.toUpperCase());
+    codigos.push(candidate);
+  }
+
+  return codigos;
+}
+
 export class ConfiguracionService {
   private static async readValues(client: DbClient = prisma) {
     const rows = await client.configuracion.findMany({
@@ -222,7 +246,7 @@ export class ConfiguracionService {
     const values = await ConfiguracionService.readValues(client);
     const [secuenciaCasos, secuenciaPlanes] = await Promise.all([
       currentSequenceValue(client, SEQ_CASOS_SOP),
-      currentSequenceValue(client, SEQ_PLANES_ACCION),
+      client.planes_accion.count(),
     ]);
 
     return mapToConfiguracion(values, secuenciaCasos, secuenciaPlanes);
@@ -261,10 +285,9 @@ export class ConfiguracionService {
         await upsertValue(tx, key, value);
       }
       // La secuencia de Postgres es la fuente de verdad real; esto solo deja
-      // que un admin "adelante" el contador a mano (p.ej. para saltar un
+      // que un admin "adelante" el contador de SOP a mano (p.ej. para saltar un
       // rango) sin arriesgar reusar un número ya emitido — nunca retrocede.
       await advanceSequenceAtLeast(tx, SEQ_CASOS_SOP, next.numeracion.secuenciaExpedientes);
-      await advanceSequenceAtLeast(tx, SEQ_PLANES_ACCION, next.numeracion.secuenciaPlanes);
       return ConfiguracionService.get(tx);
     });
 
@@ -308,33 +331,29 @@ export class ConfiguracionService {
 
     const values = await ConfiguracionService.readValues(client);
     const prefix = sanitizePrefix(values.get(CONFIG_KEYS.planPrefijo) || defaultValue(CONFIG_KEYS.planPrefijo), "El prefijo de planes");
-    const secuencias = await nextSequenceValues(client, SEQ_PLANES_ACCION, cantidad);
-    return secuencias.map((sequence) => `${codigoSop}-${prefix}-${padSequence(sequence)}`);
+    const existentes = await client.planes_accion.findMany({
+      where: { casos_sop: { codigo_sop: codigoSop } },
+      select: { codigo_plan: true },
+    });
+
+    return nextPlanCodes(codigoSop, prefix, cantidad, existentes.map((plan) => plan.codigo_plan));
   }
 
   /**
    * Códigos de plan para muchos casos de una sola vez, para la importación
-   * masiva. Antes esto necesitaba traer de golpe los códigos ya ocupados y
-   * resolver colisiones a mano en memoria; con la secuencia de Postgres cada
-   * código ya sale único, así que alcanza con reservar de una vez tantos
-   * valores como códigos se piden en total.
+   * masiva. Se numeran dentro de cada SOP: si un caso importado no trae código
+   * de plan, sus planes generados empiezan en PLA-01 para ese caso.
    */
-  static async nextCodigosPlanBulk(client: DbClient, pedidos: { codigoSop: string; cantidad: number }[]): Promise<Map<string, string[]>> {
+  static async nextCodigosPlanBulk(client: DbClient, pedidos: { codigoSop: string; cantidad: number; codigosExistentes?: string[] }[]): Promise<Map<string, string[]>> {
     const out = new Map<string, string[]>();
     const total = pedidos.reduce((suma, pedido) => suma + pedido.cantidad, 0);
     if (total <= 0) return out;
 
     const values = await ConfiguracionService.readValues(client);
     const prefix = sanitizePrefix(values.get(CONFIG_KEYS.planPrefijo) || defaultValue(CONFIG_KEYS.planPrefijo), "El prefijo de planes");
-    const secuencias = await nextSequenceValues(client, SEQ_PLANES_ACCION, total);
 
-    let cursor = 0;
     for (const pedido of pedidos) {
-      const codigos = secuencias
-        .slice(cursor, cursor + pedido.cantidad)
-        .map((sequence) => `${pedido.codigoSop}-${prefix}-${padSequence(sequence)}`);
-      cursor += pedido.cantidad;
-      out.set(pedido.codigoSop, codigos);
+      out.set(pedido.codigoSop, nextPlanCodes(pedido.codigoSop, prefix, pedido.cantidad, pedido.codigosExistentes ?? []));
     }
 
     return out;
@@ -347,24 +366,19 @@ export class ConfiguracionService {
   }
 
   /**
-   * Crea las secuencias de Postgres si no existen y las adelanta hasta el
-   * máximo ya usado en la base (escaneando `casos_sop`/`planes_accion`) y
-   * hasta lo que haya configurado un admin a mano. Se llama una sola vez al
-   * arrancar el servidor — después de esto la secuencia misma es la fuente
-   * de verdad, no hace falta volver a escanear la tabla en cada reporte.
+   * Crea la secuencia de Postgres de SOP si no existe y la adelanta hasta el
+   * máximo ya usado en la base. Los planes no usan secuencia global: reinician
+   * su numeración dentro de cada SOP.
    */
   static async bootstrapSequences(client: DbClient = prisma) {
     await ensureSequence(client, SEQ_CASOS_SOP);
-    await ensureSequence(client, SEQ_PLANES_ACCION);
 
     const values = await ConfiguracionService.readValues(client);
     const prefix = sanitizePrefix(values.get(CONFIG_KEYS.expedientePrefijo) || defaultValue(CONFIG_KEYS.expedientePrefijo), "El prefijo de expedientes");
     const configuradoCasos = parseNumber(values.get(CONFIG_KEYS.expedienteSecuencia), 0);
-    const configuradoPlanes = parseNumber(values.get(CONFIG_KEYS.planSecuencia), 0);
 
-    const [maxCasos, totalPlanes] = await Promise.all([maxCaseSequence(client, prefix), client.planes_accion.count()]);
+    const maxCasos = await maxCaseSequence(client, prefix);
 
     await advanceSequenceAtLeast(client, SEQ_CASOS_SOP, Math.max(configuradoCasos, maxCasos));
-    await advanceSequenceAtLeast(client, SEQ_PLANES_ACCION, Math.max(configuradoPlanes, totalPlanes));
   }
 }

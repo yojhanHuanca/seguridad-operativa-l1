@@ -75,10 +75,9 @@ const ROLE_PROFILES: Record<string, RoleProfileConfig> = {
   "seguridad operativa": {
     panel: "Seguridad Operativa",
     subtitle: "Gestión de casos, planes e indicadores operativos.",
-    scopeItems: ["Evaluación y seguimiento de casos SOP", "Aprobación y cierre de planes de acción", "Reportes, alertas y eventos operativos"],
+    scopeItems: ["Evaluación y seguimiento de casos SOP", "Aprobación y cierre de planes de acción", "Reportes y eventos operativos"],
     actions: [
       { label: "Casos SOP", to: "/seguridad/casos", icon: ClipboardList },
-      { label: "Alertas", to: "/seguridad/alertas", icon: Sparkles },
       { label: "Indicadores", to: "/seguridad/reportes/kpis", icon: Gauge },
       { label: "Exportación", to: "/seguridad/reportes/exportar", icon: FileText },
     ],

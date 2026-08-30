@@ -6,27 +6,23 @@ import {
   FolderClock,
   AlertTriangle,
   CheckCircle2,
-  ShieldCheck,
+  CalendarPlus,
   Activity,
-  TrendingUp,
   Train,
 } from "lucide-react";
 import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
-import { WelcomeBanner } from "@/components/layout/WelcomeBanner";
 import { Card } from "@/design-system/primitives/Card";
 import { Pill, RiskPill } from "@/design-system/primitives/Pill";
-import { Progress } from "@/design-system/primitives/Progress";
-import { Skeleton, SkeletonChart, SkeletonDonut } from "@/design-system/primitives/Skeleton";
+import { Skeleton } from "@/design-system/primitives/Skeleton";
 import { CountUp } from "@/design-system/motion/motion";
 import { riseItem, staggerContainer } from "@/design-system/motion/variants";
-import { CHART_COLORS, DonutChart, HBarsChart, TrendBarChart } from "@/design-system/charts/Charts";
+import { CHART_COLORS, HBarsChart } from "@/design-system/charts/Charts";
 import { IncidentMap } from "@/pages/seguridad/IncidentMap";
 import { useCases } from "@/features/cases/hooks/useCases";
 import { toCaseRow } from "@/features/cases/adapter";
-import { STAGE_STATUS, EVENT_LABELS, riskCategory } from "@/features/cases/domain";
+import { STAGE_STATUS, riskCategory } from "@/features/cases/domain";
 import { stationNamesFromCatalog } from "@/lib/stations";
 import { useCatalogs } from "@/features/reports/hooks/useCatalogs";
-import { cn } from "@/lib/utils";
 import { relativeTime } from "@/lib/format";
 
 export function SoDashboardPage() {
@@ -42,42 +38,14 @@ export function SoDashboardPage() {
     const open = cases.filter((c) => STAGE_STATUS[c.stage] === "abierto");
     const closed = cases.filter((c) => c.stage === "cierre");
     const critical = open.filter((c) => c.risk && riskCategory(c.risk) === "inaceptable");
-    const approved = cases.filter((c) => ["investigacion", "plan_accion", "ejecucion", "verificacion", "cierre"].includes(c.stage));
+    const unaSemanaMs = 7 * 24 * 60 * 60 * 1000;
+    const nuevos = cases.filter((c) => Date.now() - new Date(c.createdAt).getTime() <= unaSemanaMs);
     return {
       pendientes: open.length,
       critical: critical.length,
       cerrados: closed.length,
-      aprobados: approved.length,
+      nuevos: nuevos.length,
     };
-  }, [cases]);
-
-  const trend = useMemo(() => {
-    const months = 12;
-    const out: { label: string; value: number }[] = [];
-    const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-    for (let i = months - 1; i >= 0; i--) {
-      const d = new Date();
-      d.setMonth(d.getMonth() - i);
-      const year = d.getFullYear();
-      const month = d.getMonth();
-      const count = cases.filter((c) => {
-        const caseDate = new Date(c.createdAt);
-        return caseDate.getFullYear() === year && caseDate.getMonth() === month;
-      }).length;
-      out.push({ label: `${monthNames[month]} ${year.toString().slice(2)}`, value: count });
-    }
-    return out;
-  }, [cases]);
-
-  const byType = useMemo(() => {
-    const map = new Map<string, number>();
-    cases.forEach((c) => map.set(c.type, (map.get(c.type) ?? 0) + 1));
-    const palette = [CHART_COLORS.brand, CHART_COLORS.info, CHART_COLORS.warning, CHART_COLORS.critical, CHART_COLORS.brandLight];
-    return Array.from(map.entries()).map(([type, value], i) => ({
-      name: EVENT_LABELS[type as keyof typeof EVENT_LABELS],
-      value,
-      color: palette[i % palette.length],
-    }));
   }, [cases]);
 
   const byStation = useMemo(() => {
@@ -100,100 +68,84 @@ export function SoDashboardPage() {
 
   return (
     <SeguridadOperativaShell>
-      <WelcomeBanner
-        photoSrc="/tren-linea1.png"
-        greeting="Centro de Control · Seguridad Operativa"
-        subtitle="Monitoreo en tiempo real de la seguridad operativa de Línea 1. La gestión detallada ocurre dentro del expediente de cada caso."
-        meta={
-          <>
-            <Pill tone="brand" dot>
-              {stats.pendientes} casos pendientes
-            </Pill>
-            {stats.critical > 0 && (
-              <Pill tone="critical" dot>
-                {stats.critical} críticos
-              </Pill>
-            )}
-          </>
-        }
-      />
-
       <motion.div
-        className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-3"
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
+        className="relative overflow-hidden rounded-[20px] text-white shadow-[var(--shadow-plate)] ring-1 ring-white/10 flex flex-col lg:flex-row"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25 }}
       >
-        <KpiCard icon={<FolderClock className="h-4.5 w-4.5" />} label="Pendientes" value={stats.pendientes} delta="Abiertos" deltaTone="info" />
-        <KpiCard
-          icon={<AlertTriangle className="h-4.5 w-4.5" />}
-          label="Críticos"
-          value={stats.critical}
-          delta="Riesgo alto"
-          deltaTone={stats.critical ? "critical" : "brand"}
-          tone={stats.critical ? "critical" : "brand"}
-        />
-        <KpiCard icon={<CheckCircle2 className="h-4.5 w-4.5" />} label="Cerrados" value={stats.cerrados} delta="Histórico" deltaTone="brand" tone="brand" />
-        <KpiCard icon={<ShieldCheck className="h-4.5 w-4.5" />} label="Aprobados" value={stats.aprobados} delta="En curso" deltaTone="brand" />
-      </motion.div>
-
-      <div className="mt-5 grid lg:grid-cols-3 gap-5">
-        <Card className="lg:col-span-2">
-          <div className="flex items-start justify-between gap-4 mb-4">
-            <div className="flex items-start gap-3 min-w-0">
-              <div className="shrink-0 h-9 w-9 rounded-lg bg-brand-50 text-brand-700 grid place-items-center">
-                <TrendingUp className="h-4.5 w-4.5" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-[15px] font-semibold text-ink leading-tight truncate">Tendencia de casos · últimos 12 meses</h3>
-                <p className="text-[12.5px] text-ink-quiet mt-0.5">Casos reportados por mes</p>
-              </div>
+        {/* Mensaje del centro de control, sobre la foto de la Línea 1 */}
+        <div className="relative lg:w-[56%] px-6 py-7 sm:px-9 sm:py-8">
+          <img src="/tren-linea1.png" alt="" className="absolute inset-0 h-full w-full object-cover" aria-hidden />
+          <div className="absolute inset-0 bg-gradient-to-r from-brand-950/95 via-brand-900/85 to-brand-700/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-brand-950/60 via-transparent to-transparent" />
+          <div className="relative max-w-xl">
+            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/75">Línea 1 · Metro de Lima</p>
+            <h1 className="font-display text-balance text-[24px] font-bold leading-[1.15] tracking-[-0.015em] sm:text-[28px]">
+              Centro de Control
+              <br />
+              Seguridad Operativa
+            </h1>
+            <p className="mt-2.5 max-w-md text-[13px] leading-relaxed text-white/85">
+              Monitoreo en tiempo real de la seguridad operativa de Línea 1. La gestión detallada ocurre dentro del expediente de cada caso.
+            </p>
+            <div className="mt-4 flex items-center gap-1.5">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-300 opacity-75" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand-300" />
+              </span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-white/85">Datos en vivo</span>
             </div>
-            <Pill tone="brand" dot>
-              Último año
-            </Pill>
           </div>
-          {isLoading ? <SkeletonChart height={240} /> : <TrendBarChart data={trend} height={240} />}
-        </Card>
-        <Card>
-          <div className="flex items-start gap-3 mb-4">
-            <div className="shrink-0 h-9 w-9 rounded-lg bg-brand-50 text-brand-700 grid place-items-center">
-              <Activity className="h-4.5 w-4.5" />
+        </div>
+
+        {/* Indicadores: un solo panel, no 4 tarjetas repetidas — "Pendientes"
+            queda como cifra protagonista porque es la que exige acción; las
+            otras tres son lectura secundaria separada por divisores finos. */}
+        <div className="relative lg:w-[44%] bg-gradient-to-br from-brand-900 to-brand-950 px-6 py-7 sm:px-8 flex flex-col justify-center gap-5">
+          <div className="flex items-end gap-4 pb-4 border-b border-white/10">
+            <div className="h-10 w-10 shrink-0 rounded-[11px] bg-white/10 grid place-items-center">
+              <FolderClock className="h-5 w-5 text-brand-200" />
             </div>
             <div className="min-w-0">
-              <h3 className="text-[15px] font-semibold text-ink leading-tight truncate">Distribución por tipo</h3>
-              <p className="text-[12.5px] text-ink-quiet mt-0.5">Composición del total de casos</p>
+              <p className="font-display text-[34px] font-bold leading-none text-white">
+                <CountUp value={stats.pendientes} />
+              </p>
+              <p className="mt-1 text-[12px] text-white/70">Casos pendientes · abiertos en el sistema</p>
             </div>
           </div>
-          {isLoading ? (
-            <SkeletonDonut height={200} />
-          ) : byType.length === 0 ? (
-            <div className="h-[200px] grid place-items-center text-[13px] text-ink-quiet">Sin datos aún</div>
-          ) : (
-            <>
-              <DonutChart data={byType} height={200} />
-              <motion.div
-                className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5"
-                variants={staggerContainer}
-                initial="hidden"
-                animate="visible"
-              >
-                {byType.map((d) => (
-                  <motion.div
-                    key={d.name}
-                    variants={riseItem}
-                    className="flex items-center gap-1.5 text-[11.5px] text-ink-soft min-w-0"
-                  >
-                    <span className="h-2 w-2 rounded-full shrink-0" style={{ background: d.color }} />
-                    <span className="truncate">{d.name}</span>
-                    <span className="ml-auto tabular-nums text-ink-faint">{d.value}</span>
-                  </motion.div>
-                ))}
-              </motion.div>
-            </>
-          )}
-        </Card>
-      </div>
+
+          <div className="grid grid-cols-3">
+            <div className="flex flex-col gap-1.5 pr-4">
+              <div className="flex items-center gap-1.5">
+                <AlertTriangle className="h-3.5 w-3.5 text-red-300" />
+                <span className="text-[9.5px] font-semibold uppercase tracking-wide text-white/55">Críticos</span>
+              </div>
+              <p className="font-display text-[20px] font-bold text-red-300">
+                <CountUp value={stats.critical} />
+              </p>
+            </div>
+            <div className="flex flex-col gap-1.5 px-4 border-l border-white/10">
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-3.5 w-3.5 text-brand-200" />
+                <span className="text-[9.5px] font-semibold uppercase tracking-wide text-white/55">Cerrados</span>
+              </div>
+              <p className="font-display text-[20px] font-bold text-white">
+                <CountUp value={stats.cerrados} />
+              </p>
+            </div>
+            <div className="flex flex-col gap-1.5 pl-4 border-l border-white/10">
+              <div className="flex items-center gap-1.5">
+                <CalendarPlus className="h-3.5 w-3.5 text-white/55" />
+                <span className="text-[9.5px] font-semibold uppercase tracking-wide text-white/55">Nuevos · 7d</span>
+              </div>
+              <p className="font-display text-[20px] font-bold text-white">
+                <CountUp value={stats.nuevos} />
+              </p>
+            </div>
+          </div>
+        </div>
+      </motion.div>
 
       <div className="mt-5">
         <IncidentMap />
@@ -280,67 +232,4 @@ function initialsOf(name: string): string {
   const parts = name.trim().split(/\s+/);
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
-function KpiCard({
-  icon,
-  label,
-  value,
-  suffix,
-  delta,
-  deltaTone,
-  tone = "neutral",
-  gauge,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  suffix?: string;
-  delta?: string;
-  deltaTone?: "brand" | "critical" | "warning" | "info" | "neutral";
-  tone?: "neutral" | "brand" | "critical" | "warning";
-  gauge?: number;
-}) {
-  return (
-    <motion.div variants={riseItem} whileHover={{ y: -3 }} transition={{ duration: 0.18 }}>
-      <Card className="p-4 h-full">
-      <div className="flex items-center justify-between">
-        <div
-          className={cn(
-            "h-9 w-9 rounded-lg grid place-items-center shrink-0",
-            tone === "brand" && "bg-brand-50 text-brand-700",
-            tone === "critical" && "bg-critical-soft text-critical-ink",
-            tone === "warning" && "bg-warning-soft text-warning-ink",
-            tone === "neutral" && "bg-surface-2 text-ink-soft"
-          )}
-        >
-          {icon}
-        </div>
-        {delta && (
-          <span
-            className={cn(
-              "text-[10.5px] font-semibold px-1.5 py-0.5 rounded-full",
-              deltaTone === "brand" && "bg-brand-50 text-brand-800",
-              deltaTone === "critical" && "bg-critical-soft text-critical-ink",
-              deltaTone === "warning" && "bg-warning-soft text-warning-ink",
-              deltaTone === "info" && "bg-info-soft text-info-ink",
-              (!deltaTone || deltaTone === "neutral") && "bg-surface-2 text-ink-quiet"
-            )}
-          >
-            {delta}
-          </span>
-        )}
-      </div>
-      <p className="font-display mt-3 text-[23px] font-bold tabular-nums text-ink leading-none tracking-[-0.02em]">
-        <CountUp value={value} suffix={suffix} />
-      </p>
-      <p className="text-[12px] text-ink-quiet mt-1.5">{label}</p>
-      {gauge !== undefined && (
-        <div className="mt-3">
-          <Progress value={gauge} tone={gauge >= 85 ? "brand" : "warning"} showLabel />
-        </div>
-      )}
-      </Card>
-    </motion.div>
-  );
 }

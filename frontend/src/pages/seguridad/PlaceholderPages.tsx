@@ -20,7 +20,6 @@ export function SoPlanesAccionPage() {
   );
 }
 
-// Alertas ya está implementada en ./AlertasPage.
 // Eventos Operativos ya está implementada en ./EventosOperativosPage.
 // Notificaciones ya está implementada en ./NotificacionesPage.
 // Mi Perfil ya está implementada en ./PerfilPage.

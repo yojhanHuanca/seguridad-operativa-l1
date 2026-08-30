@@ -213,13 +213,23 @@ export function IsometricLineMap<S extends IsoStation, T extends IsoTaller>({
               {idx + 1}
             </text>
 
-            {/* Contador de casos abiertos, flotando sobre el prisma. */}
+            {/* Contador de casos abiertos, flotando sobre el prisma. Ancho
+                variable: 22px alcanza para 1-2 dígitos, pero un caso con
+                cientos/miles de incidencias no debe recortar el número. */}
             {activa && (
               <g pointerEvents="none">
-                <rect x={station.x - 11} y={cima - D - 22} width={22} height={16} rx={5} fill={color} />
-                <text x={station.x} y={cima - D - 10.5} textAnchor="middle" fontSize="10" fontWeight="700" fill="#fff">
-                  {station.abiertos}
-                </text>
+                {(() => {
+                  const digitos = String(station.abiertos).length;
+                  const anchoBadge = digitos <= 2 ? 22 : 22 + (digitos - 2) * 7;
+                  return (
+                    <>
+                      <rect x={station.x - anchoBadge / 2} y={cima - D - 22} width={anchoBadge} height={16} rx={5} fill={color} />
+                      <text x={station.x} y={cima - D - 10.5} textAnchor="middle" fontSize="10" fontWeight="700" fill="#fff">
+                        {station.abiertos}
+                      </text>
+                    </>
+                  );
+                })()}
               </g>
             )}
 

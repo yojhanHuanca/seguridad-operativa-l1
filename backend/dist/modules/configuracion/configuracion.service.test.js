@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { buildCodigoPlan, codigoPlanSequenceForCase } from "./codigo-plan.js";
 import { codigoSopSequence, codigoSopSequenceForYear } from "./codigo-sop.js";
 describe("codigoSopSequenceForYear", () => {
     it("lee la secuencia del formato vigente prefijo secuencia-año", () => {
@@ -21,6 +22,19 @@ describe("codigoSopSequenceForYear", () => {
     });
     it("ignora textos que solo empiezan parecido al prefijo", () => {
         expect(codigoSopSequenceForYear("SOPORTE 58-2026", "SOP", 2026)).toBeNull();
+    });
+});
+describe("codigoPlanSequenceForCase", () => {
+    it("lee el numero de plan cuando el codigo pertenece al SOP", () => {
+        expect(codigoPlanSequenceForCase("SOP 58-2026-PLA-01", "SOP 58-2026", "PLA")).toBe(1);
+        expect(codigoPlanSequenceForCase("SOP-2026-000123-PLA-03", "SOP-2026-000123", "PLA")).toBe(3);
+    });
+    it("ignora codigos globales porque los planes reinician por SOP", () => {
+        expect(codigoPlanSequenceForCase("PLA-234", "SOP 58-2026", "PLA")).toBeNull();
+    });
+    it("arma codigos unicos por SOP aunque la etiqueta visible sea PLA-01", () => {
+        expect(buildCodigoPlan("SOP 58-2026", "PLA", 1)).toBe("SOP 58-2026-PLA-01");
+        expect(buildCodigoPlan("SOP 59-2026", "PLA", 1)).toBe("SOP 59-2026-PLA-01");
     });
 });
 //# sourceMappingURL=configuracion.service.test.js.map

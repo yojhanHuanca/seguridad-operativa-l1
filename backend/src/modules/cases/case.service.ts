@@ -47,7 +47,7 @@ const reopenSchema = z.object({
 });
 
 const rollbackSchema = z.object({
-  destino: z.enum(["Evaluación", "Investigación"]),
+  destino: z.enum(["Evaluación", "Investigación", "Plan de Acción"]),
   motivo: z.string().trim().min(5, "Explique el motivo del retroceso").max(1000),
 });
 

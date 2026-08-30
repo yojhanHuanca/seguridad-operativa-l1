@@ -105,11 +105,6 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
   const currentPageTitle = getPageTitle(location.pathname);
   const currentSection =
     location.pathname === "/seguridad/casos" ? activeFilter?.label ?? "Gestión de Reportes" : currentPageTitle;
-  // Dos contadores distintos porque son dos cosas distintas: el de Alertas
-  // cuenta casos que esperan una decisión (estado), el de Notificaciones
-  // cuenta avisos sin leer (eventos). Antes ambos badges mostraban este mismo
-  // número y hacían pensar que las dos secciones tenían el mismo contenido.
-  const pendingDecisions = counts.nuevos + counts.vencidos + counts.prorrogas + counts.verificacion;
   const unreadNotifications = notifications?.no_leidas ?? 0;
   const currentSoUser = useCurrentSoUser();
   const { nombre: userName, cargo: userRole, iniciales: userInitials, user: soUser } = currentSoUser;
@@ -132,7 +127,6 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
           badgeTone: "danger",
           match: (p) => p === "/seguridad/eventos-asignados",
         },
-        { to: "/seguridad/alertas", label: "Alertas", icon: AlertTriangle, badge: pendingDecisions || undefined, badgeTone: "neutral", match: (p) => p === "/seguridad/alertas" },
         // Solo para el RSO (flag es_responsable) — mismo permiso con el que ya entra a Monitoreo.
         ...(soUser?.es_responsable
           ? [{ to: "/seguridad/eventos", label: "Eventos Operativos", icon: Activity, match: (p: string) => p === "/seguridad/eventos" }]
@@ -439,7 +433,6 @@ function getPageTitle(pathname: string) {
   if (pathname === "/seguridad/planes-accion") return "Planes de Acción";
   if (pathname === "/seguridad/eventos") return "Eventos operativos";
   if (pathname === "/seguridad/eventos-asignados") return "Eventos asignados";
-  if (pathname === "/seguridad/alertas") return "Alertas";
   if (pathname === "/seguridad/reportes" || pathname === "/seguridad/reportes/kpis") return "KPIs";
   if (pathname === "/seguridad/reportes/exportar") return "Exportar Reportes";
   if (pathname === "/seguridad/usuarios") return "Administración de Usuarios";
@@ -454,7 +447,6 @@ function getBreadcrumb(pathname: string) {
   if (pathname === "/seguridad/planes-accion") return "Inicio / Planes de Acción";
   if (pathname === "/seguridad/eventos") return "Inicio / Eventos operativos";
   if (pathname === "/seguridad/eventos-asignados") return "Inicio / Eventos asignados";
-  if (pathname === "/seguridad/alertas") return "Inicio / Alertas";
   if (pathname === "/seguridad/reportes" || pathname === "/seguridad/reportes/kpis") return "Inicio / Reportes / KPIs";
   if (pathname === "/seguridad/reportes/exportar") return "Inicio / Reportes / Exportar";
   if (pathname === "/seguridad/usuarios") return "Inicio / Usuarios";

@@ -14,19 +14,19 @@ export declare class PushRepository {
     static guardar(id_usuario: number, sub: SuscripcionPush): Promise<{
         usuario: number;
         created_at: Date | null;
+        auth: string;
         id_suscripcion: number;
         endpoint: string;
         p256dh: string;
-        auth: string;
     }>;
     static eliminar(endpoint: string): Promise<void>;
     static listarPorUsuarios(ids: number[]): Promise<{
         usuario: number;
         created_at: Date | null;
+        auth: string;
         id_suscripcion: number;
         endpoint: string;
         p256dh: string;
-        auth: string;
     }[]>;
 }
 //# sourceMappingURL=push.repository.d.ts.map

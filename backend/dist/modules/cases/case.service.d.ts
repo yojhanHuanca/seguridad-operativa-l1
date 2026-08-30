@@ -35,17 +35,13 @@ export declare class CaseService {
                     descripcion: string | null;
                     fecha: Date;
                     updated_at: Date | null;
+                    id_evento: number;
+                    codigo_evento: string | null;
                     hora: Date | null;
                     anio: number | null;
                     mes: number | null;
                     semana: number | null;
                     dia: string | null;
-                    numero_carrera: string | null;
-                    informacion_adicional: string | null;
-                    camara_monitoreada: string | null;
-                    demora: import("@prisma/client/runtime/library").Decimal | null;
-                    id_evento: number;
-                    codigo_evento: string | null;
                     rango_horario: number | null;
                     tipo_incidente: number;
                     ubicacion: number | null;
@@ -54,16 +50,20 @@ export declare class CaseService {
                     lugar_incidente: number | null;
                     modelo_mr: number | null;
                     numero_mr: number | null;
+                    numero_carrera: string | null;
                     personal_involucrado: number | null;
                     tipo_causa: number | null;
                     posible_causa: number | null;
+                    informacion_adicional: string | null;
+                    camara_monitoreada: string | null;
+                    demora: import("@prisma/client/runtime/library").Decimal | null;
                     usuario_registra: number | null;
                 };
             } & {
                 usuario: number | null;
                 id_caso: number;
-                id: number;
                 id_evento: number;
+                id: number;
                 fecha_conversion: Date | null;
             })[];
             planes_accion: ({
@@ -136,9 +136,9 @@ export declare class CaseService {
             } | null;
             catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: {
                 nombre: string;
+                id_detalle: number;
                 codigo: string | null;
                 orden: number | null;
-                id_detalle: number;
             } | null;
             catalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalle: {
                 nombre: string;
@@ -207,17 +207,13 @@ export declare class CaseService {
                     descripcion: string | null;
                     fecha: Date;
                     updated_at: Date | null;
+                    id_evento: number;
+                    codigo_evento: string | null;
                     hora: Date | null;
                     anio: number | null;
                     mes: number | null;
                     semana: number | null;
                     dia: string | null;
-                    numero_carrera: string | null;
-                    informacion_adicional: string | null;
-                    camara_monitoreada: string | null;
-                    demora: import("@prisma/client/runtime/library").Decimal | null;
-                    id_evento: number;
-                    codigo_evento: string | null;
                     rango_horario: number | null;
                     tipo_incidente: number;
                     ubicacion: number | null;
@@ -226,16 +222,20 @@ export declare class CaseService {
                     lugar_incidente: number | null;
                     modelo_mr: number | null;
                     numero_mr: number | null;
+                    numero_carrera: string | null;
                     personal_involucrado: number | null;
                     tipo_causa: number | null;
                     posible_causa: number | null;
+                    informacion_adicional: string | null;
+                    camara_monitoreada: string | null;
+                    demora: import("@prisma/client/runtime/library").Decimal | null;
                     usuario_registra: number | null;
                 };
             } & {
                 usuario: number | null;
                 id_caso: number;
-                id: number;
                 id_evento: number;
+                id: number;
                 fecha_conversion: Date | null;
             })[];
             planes_accion: ({
@@ -308,9 +308,9 @@ export declare class CaseService {
             } | null;
             catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: {
                 nombre: string;
+                id_detalle: number;
                 codigo: string | null;
                 orden: number | null;
-                id_detalle: number;
             } | null;
             catalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalle: {
                 nombre: string;
@@ -532,17 +532,13 @@ export declare class CaseService {
                 descripcion: string | null;
                 fecha: Date;
                 updated_at: Date | null;
+                id_evento: number;
+                codigo_evento: string | null;
                 hora: Date | null;
                 anio: number | null;
                 mes: number | null;
                 semana: number | null;
                 dia: string | null;
-                numero_carrera: string | null;
-                informacion_adicional: string | null;
-                camara_monitoreada: string | null;
-                demora: import("@prisma/client/runtime/library").Decimal | null;
-                id_evento: number;
-                codigo_evento: string | null;
                 rango_horario: number | null;
                 tipo_incidente: number;
                 ubicacion: number | null;
@@ -551,16 +547,20 @@ export declare class CaseService {
                 lugar_incidente: number | null;
                 modelo_mr: number | null;
                 numero_mr: number | null;
+                numero_carrera: string | null;
                 personal_involucrado: number | null;
                 tipo_causa: number | null;
                 posible_causa: number | null;
+                informacion_adicional: string | null;
+                camara_monitoreada: string | null;
+                demora: import("@prisma/client/runtime/library").Decimal | null;
                 usuario_registra: number | null;
             };
         } & {
             usuario: number | null;
             id_caso: number;
-            id: number;
             id_evento: number;
+            id: number;
             fecha_conversion: Date | null;
         })[];
         investigacion_caso: ({
@@ -692,9 +692,9 @@ export declare class CaseService {
         } | null;
         catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: {
             nombre: string;
+            id_detalle: number;
             codigo: string | null;
             orden: number | null;
-            id_detalle: number;
         } | null;
         catalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalle: {
             nombre: string;
@@ -853,17 +853,13 @@ export declare class CaseService {
         descripcion: string | null;
         fecha: Date;
         updated_at: Date | null;
+        id_evento: number;
+        codigo_evento: string | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
         semana: number | null;
         dia: string | null;
-        numero_carrera: string | null;
-        informacion_adicional: string | null;
-        camara_monitoreada: string | null;
-        demora: import("@prisma/client/runtime/library").Decimal | null;
-        id_evento: number;
-        codigo_evento: string | null;
         rango_horario: number | null;
         tipo_incidente: number;
         ubicacion: number | null;
@@ -872,9 +868,13 @@ export declare class CaseService {
         lugar_incidente: number | null;
         modelo_mr: number | null;
         numero_mr: number | null;
+        numero_carrera: string | null;
         personal_involucrado: number | null;
         tipo_causa: number | null;
         posible_causa: number | null;
+        informacion_adicional: string | null;
+        camara_monitoreada: string | null;
+        demora: import("@prisma/client/runtime/library").Decimal | null;
         usuario_registra: number | null;
     }>;
     static reject(codigo: string, rawBody: unknown): Promise<{

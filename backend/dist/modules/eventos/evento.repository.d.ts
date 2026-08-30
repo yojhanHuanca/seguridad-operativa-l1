@@ -10,10 +10,10 @@ export declare class EventoRepository {
         estado: boolean | null;
         created_at: Date | null;
         descripcion: string | null;
-        codigo: string | null;
-        id_catalogo: number;
-        orden: number | null;
         id_detalle: number;
+        id_catalogo: number;
+        codigo: string | null;
+        orden: number | null;
         color: string | null;
     }) | null>;
     /**
@@ -35,18 +35,12 @@ export declare class EventoRepository {
             casos_sop: {
                 codigo_sop: string;
             } | null;
-            catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle: {
+            catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle: {
                 nombre: string;
             } | null;
             catalogo_detalle_eventos_monitoreo_lugar_incidenteTocatalogo_detalle: {
                 nombre: string;
                 codigo: string | null;
-            } | null;
-            catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle: {
-                nombre: string;
-            };
-            catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle: {
-                nombre: string;
             } | null;
             catalogo_detalle_eventos_monitoreo_modelo_mrTocatalogo_detalle: {
                 nombre: string;
@@ -63,10 +57,16 @@ export declare class EventoRepository {
             catalogo_detalle_eventos_monitoreo_rango_horarioTocatalogo_detalle: {
                 nombre: string;
             } | null;
+            catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle: {
+                nombre: string;
+            };
             catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle: {
                 nombre: string;
             } | null;
             catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle: {
+                nombre: string;
+            } | null;
+            catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle: {
                 nombre: string;
             } | null;
             usuarios_eventos_monitoreo_usuario_registraTousuarios: {
@@ -83,17 +83,13 @@ export declare class EventoRepository {
             descripcion: string | null;
             fecha: Date;
             updated_at: Date | null;
+            id_evento: number;
+            codigo_evento: string | null;
             hora: Date | null;
             anio: number | null;
             mes: number | null;
             semana: number | null;
             dia: string | null;
-            numero_carrera: string | null;
-            informacion_adicional: string | null;
-            camara_monitoreada: string | null;
-            demora: import("@prisma/client/runtime/library").Decimal | null;
-            id_evento: number;
-            codigo_evento: string | null;
             rango_horario: number | null;
             tipo_incidente: number;
             ubicacion: number | null;
@@ -102,9 +98,13 @@ export declare class EventoRepository {
             lugar_incidente: number | null;
             modelo_mr: number | null;
             numero_mr: number | null;
+            numero_carrera: string | null;
             personal_involucrado: number | null;
             tipo_causa: number | null;
             posible_causa: number | null;
+            informacion_adicional: string | null;
+            camara_monitoreada: string | null;
+            demora: import("@prisma/client/runtime/library").Decimal | null;
             usuario_registra: number | null;
             asignado_a: number | null;
             id_caso_creado: number | null;
@@ -122,18 +122,12 @@ export declare class EventoRepository {
         casos_sop: {
             codigo_sop: string;
         } | null;
-        catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle: {
+        catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle: {
             nombre: string;
         } | null;
         catalogo_detalle_eventos_monitoreo_lugar_incidenteTocatalogo_detalle: {
             nombre: string;
             codigo: string | null;
-        } | null;
-        catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle: {
-            nombre: string;
-        };
-        catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle: {
-            nombre: string;
         } | null;
         catalogo_detalle_eventos_monitoreo_modelo_mrTocatalogo_detalle: {
             nombre: string;
@@ -150,10 +144,16 @@ export declare class EventoRepository {
         catalogo_detalle_eventos_monitoreo_rango_horarioTocatalogo_detalle: {
             nombre: string;
         } | null;
+        catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle: {
+            nombre: string;
+        };
         catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle: {
             nombre: string;
         } | null;
         catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle: {
+            nombre: string;
+        } | null;
+        catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle: {
             nombre: string;
         } | null;
         usuarios_eventos_monitoreo_usuario_registraTousuarios: {
@@ -170,17 +170,13 @@ export declare class EventoRepository {
         descripcion: string | null;
         fecha: Date;
         updated_at: Date | null;
+        id_evento: number;
+        codigo_evento: string | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
         semana: number | null;
         dia: string | null;
-        numero_carrera: string | null;
-        informacion_adicional: string | null;
-        camara_monitoreada: string | null;
-        demora: import("@prisma/client/runtime/library").Decimal | null;
-        id_evento: number;
-        codigo_evento: string | null;
         rango_horario: number | null;
         tipo_incidente: number;
         ubicacion: number | null;
@@ -189,9 +185,13 @@ export declare class EventoRepository {
         lugar_incidente: number | null;
         modelo_mr: number | null;
         numero_mr: number | null;
+        numero_carrera: string | null;
         personal_involucrado: number | null;
         tipo_causa: number | null;
         posible_causa: number | null;
+        informacion_adicional: string | null;
+        camara_monitoreada: string | null;
+        demora: import("@prisma/client/runtime/library").Decimal | null;
         usuario_registra: number | null;
         asignado_a: number | null;
         id_caso_creado: number | null;
@@ -201,18 +201,12 @@ export declare class EventoRepository {
         casos_sop: {
             codigo_sop: string;
         } | null;
-        catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle: {
+        catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle: {
             nombre: string;
         } | null;
         catalogo_detalle_eventos_monitoreo_lugar_incidenteTocatalogo_detalle: {
             nombre: string;
             codigo: string | null;
-        } | null;
-        catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle: {
-            nombre: string;
-        };
-        catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle: {
-            nombre: string;
         } | null;
         catalogo_detalle_eventos_monitoreo_modelo_mrTocatalogo_detalle: {
             nombre: string;
@@ -229,10 +223,16 @@ export declare class EventoRepository {
         catalogo_detalle_eventos_monitoreo_rango_horarioTocatalogo_detalle: {
             nombre: string;
         } | null;
+        catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle: {
+            nombre: string;
+        };
         catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle: {
             nombre: string;
         } | null;
         catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle: {
+            nombre: string;
+        } | null;
+        catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle: {
             nombre: string;
         } | null;
         usuarios_eventos_monitoreo_usuario_registraTousuarios: {
@@ -249,17 +249,13 @@ export declare class EventoRepository {
         descripcion: string | null;
         fecha: Date;
         updated_at: Date | null;
+        id_evento: number;
+        codigo_evento: string | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
         semana: number | null;
         dia: string | null;
-        numero_carrera: string | null;
-        informacion_adicional: string | null;
-        camara_monitoreada: string | null;
-        demora: import("@prisma/client/runtime/library").Decimal | null;
-        id_evento: number;
-        codigo_evento: string | null;
         rango_horario: number | null;
         tipo_incidente: number;
         ubicacion: number | null;
@@ -268,9 +264,13 @@ export declare class EventoRepository {
         lugar_incidente: number | null;
         modelo_mr: number | null;
         numero_mr: number | null;
+        numero_carrera: string | null;
         personal_involucrado: number | null;
         tipo_causa: number | null;
         posible_causa: number | null;
+        informacion_adicional: string | null;
+        camara_monitoreada: string | null;
+        demora: import("@prisma/client/runtime/library").Decimal | null;
         usuario_registra: number | null;
         asignado_a: number | null;
         id_caso_creado: number | null;
@@ -281,17 +281,13 @@ export declare class EventoRepository {
         descripcion: string | null;
         fecha: Date;
         updated_at: Date | null;
+        id_evento: number;
+        codigo_evento: string | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
         semana: number | null;
         dia: string | null;
-        numero_carrera: string | null;
-        informacion_adicional: string | null;
-        camara_monitoreada: string | null;
-        demora: import("@prisma/client/runtime/library").Decimal | null;
-        id_evento: number;
-        codigo_evento: string | null;
         rango_horario: number | null;
         tipo_incidente: number;
         ubicacion: number | null;
@@ -300,9 +296,13 @@ export declare class EventoRepository {
         lugar_incidente: number | null;
         modelo_mr: number | null;
         numero_mr: number | null;
+        numero_carrera: string | null;
         personal_involucrado: number | null;
         tipo_causa: number | null;
         posible_causa: number | null;
+        informacion_adicional: string | null;
+        camara_monitoreada: string | null;
+        demora: import("@prisma/client/runtime/library").Decimal | null;
         usuario_registra: number | null;
         asignado_a: number | null;
         id_caso_creado: number | null;
@@ -313,17 +313,13 @@ export declare class EventoRepository {
         descripcion: string | null;
         fecha: Date;
         updated_at: Date | null;
+        id_evento: number;
+        codigo_evento: string | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
         semana: number | null;
         dia: string | null;
-        numero_carrera: string | null;
-        informacion_adicional: string | null;
-        camara_monitoreada: string | null;
-        demora: import("@prisma/client/runtime/library").Decimal | null;
-        id_evento: number;
-        codigo_evento: string | null;
         rango_horario: number | null;
         tipo_incidente: number;
         ubicacion: number | null;
@@ -332,9 +328,13 @@ export declare class EventoRepository {
         lugar_incidente: number | null;
         modelo_mr: number | null;
         numero_mr: number | null;
+        numero_carrera: string | null;
         personal_involucrado: number | null;
         tipo_causa: number | null;
         posible_causa: number | null;
+        informacion_adicional: string | null;
+        camara_monitoreada: string | null;
+        demora: import("@prisma/client/runtime/library").Decimal | null;
         usuario_registra: number | null;
         asignado_a: number | null;
         id_caso_creado: number | null;
@@ -345,17 +345,13 @@ export declare class EventoRepository {
         descripcion: string | null;
         fecha: Date;
         updated_at: Date | null;
+        id_evento: number;
+        codigo_evento: string | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
         semana: number | null;
         dia: string | null;
-        numero_carrera: string | null;
-        informacion_adicional: string | null;
-        camara_monitoreada: string | null;
-        demora: import("@prisma/client/runtime/library").Decimal | null;
-        id_evento: number;
-        codigo_evento: string | null;
         rango_horario: number | null;
         tipo_incidente: number;
         ubicacion: number | null;
@@ -364,9 +360,13 @@ export declare class EventoRepository {
         lugar_incidente: number | null;
         modelo_mr: number | null;
         numero_mr: number | null;
+        numero_carrera: string | null;
         personal_involucrado: number | null;
         tipo_causa: number | null;
         posible_causa: number | null;
+        informacion_adicional: string | null;
+        camara_monitoreada: string | null;
+        demora: import("@prisma/client/runtime/library").Decimal | null;
         usuario_registra: number | null;
         asignado_a: number | null;
         id_caso_creado: number | null;
@@ -377,17 +377,13 @@ export declare class EventoRepository {
         descripcion: string | null;
         fecha: Date;
         updated_at: Date | null;
+        id_evento: number;
+        codigo_evento: string | null;
         hora: Date | null;
         anio: number | null;
         mes: number | null;
         semana: number | null;
         dia: string | null;
-        numero_carrera: string | null;
-        informacion_adicional: string | null;
-        camara_monitoreada: string | null;
-        demora: import("@prisma/client/runtime/library").Decimal | null;
-        id_evento: number;
-        codigo_evento: string | null;
         rango_horario: number | null;
         tipo_incidente: number;
         ubicacion: number | null;
@@ -396,9 +392,13 @@ export declare class EventoRepository {
         lugar_incidente: number | null;
         modelo_mr: number | null;
         numero_mr: number | null;
+        numero_carrera: string | null;
         personal_involucrado: number | null;
         tipo_causa: number | null;
         posible_causa: number | null;
+        informacion_adicional: string | null;
+        camara_monitoreada: string | null;
+        demora: import("@prisma/client/runtime/library").Decimal | null;
         usuario_registra: number | null;
         asignado_a: number | null;
         id_caso_creado: number | null;

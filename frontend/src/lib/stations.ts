@@ -36,8 +36,43 @@ export const TALLERES: { name: string; x: number; y: number; km: number; tipo: s
   { name: "Taller Bayóvar", x: 1192, y: 320, km: 34, tipo: "Mantenimiento ligero y garaje", capacidad: "12 unidades" },
 ];
 
+/** Tamaño base del lienzo: el trazado actual de 26 estaciones + 2 talleres cabe justo aquí. */
 export const MAP_W = 1240;
 export const MAP_H = 510;
+
+/**
+ * Espacio que necesita cada estación además de su punto (x,y): el ancho del
+ * prisma, su sombra, el badge flotante de conteo y el texto con el nombre/km
+ * debajo. Calibrado para que con las 26 estaciones + 2 talleres de hoy el
+ * resultado sea prácticamente el mismo MAP_W/MAP_H de siempre — este cambio
+ * es para que una estación nueva no se salga, no para reescalar el mapa actual.
+ */
+const MARGEN_LIENZO = 60;
+
+/**
+ * El lienzo isométrico tenía un tamaño fijo (MAP_W × MAP_H) sin relación con
+ * dónde caían realmente las estaciones — así que una estación nueva agregada
+ * al catálogo (ver resolveStationCoords, que la extrapola siguiendo la
+ * dirección de la línea) podía terminar fuera del lienzo y quedar invisible,
+ * sin que nadie se enterara. Esta función mide dónde caen de verdad todas las
+ * estaciones y talleres ya resueltos, y devuelve un lienzo que siempre las
+ * contiene — nunca más chico que el tamaño base, solo crece cuando hace falta.
+ */
+export function computeMapSize(
+  stations: { x: number; y: number }[],
+  talleres: { x: number; y: number }[]
+): { mapW: number; mapH: number } {
+  const puntos = [...stations, ...talleres];
+  if (puntos.length === 0) return { mapW: MAP_W, mapH: MAP_H };
+
+  const maxX = Math.max(...puntos.map((p) => p.x));
+  const maxY = Math.max(...puntos.map((p) => p.y));
+
+  return {
+    mapW: Math.max(MAP_W, Math.round(maxX + MARGEN_LIENZO)),
+    mapH: Math.max(MAP_H, Math.round(maxY + MARGEN_LIENZO)),
+  };
+}
 
 /** No son estaciones de la línea, aunque vivan en el mismo catálogo "Lugar de Incidente". */
 export function esTaller(nombre: string) {

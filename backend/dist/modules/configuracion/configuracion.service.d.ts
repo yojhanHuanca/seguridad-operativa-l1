@@ -39,22 +39,19 @@ export declare class ConfiguracionService {
     static nextCodigosPlan(client: DbClient, codigoSop: string, cantidad: number): Promise<string[]>;
     /**
      * Códigos de plan para muchos casos de una sola vez, para la importación
-     * masiva. Antes esto necesitaba traer de golpe los códigos ya ocupados y
-     * resolver colisiones a mano en memoria; con la secuencia de Postgres cada
-     * código ya sale único, así que alcanza con reservar de una vez tantos
-     * valores como códigos se piden en total.
+     * masiva. Se numeran dentro de cada SOP: si un caso importado no trae código
+     * de plan, sus planes generados empiezan en PLA-01 para ese caso.
      */
     static nextCodigosPlanBulk(client: DbClient, pedidos: {
         codigoSop: string;
         cantidad: number;
+        codigosExistentes?: string[];
     }[]): Promise<Map<string, string[]>>;
     static nextCodigoPlan(client: DbClient, codigoSop: string): Promise<string>;
     /**
-     * Crea las secuencias de Postgres si no existen y las adelanta hasta el
-     * máximo ya usado en la base (escaneando `casos_sop`/`planes_accion`) y
-     * hasta lo que haya configurado un admin a mano. Se llama una sola vez al
-     * arrancar el servidor — después de esto la secuencia misma es la fuente
-     * de verdad, no hace falta volver a escanear la tabla en cada reporte.
+     * Crea la secuencia de Postgres de SOP si no existe y la adelanta hasta el
+     * máximo ya usado en la base. Los planes no usan secuencia global: reinician
+     * su numeración dentro de cada SOP.
      */
     static bootstrapSequences(client?: DbClient): Promise<void>;
 }

@@ -130,6 +130,21 @@ const sumarDias = (d: Date, dias: number) => new Date(d.getTime() + dias * MS_DI
 /** Estados de `estado_hallazgo` en los que un caso puede tener un plan con plazo vigente. */
 const VENCIDO_ESTADOS = ["Plan de Acción", "Ejecución", "Prórroga Solicitada", "Verificación"];
 
+/**
+ * El formulario de planes codifica tipo de acción y área dentro del texto de
+ * `descripcion` de cada actividad (ver `activityMeta.ts` en el frontend), con
+ * marcadores `__SIGMA_PLAN_ACTIVITY__{...}__/SIGMA_PLAN_ACTIVITY__` al inicio.
+ * Para mostrarla en el correo hay que quitarlos, si no sale la metadata cruda.
+ */
+function descripcionLimpia(descripcion: string): string {
+  const PREFIJO = "__SIGMA_PLAN_ACTIVITY__";
+  const SUFIJO = "__/SIGMA_PLAN_ACTIVITY__";
+  if (!descripcion.startsWith(PREFIJO)) return descripcion;
+  const fin = descripcion.indexOf(SUFIJO);
+  if (fin === -1) return descripcion;
+  return descripcion.slice(fin + SUFIJO.length).replace(/^\s+/, "");
+}
+
 export class CaseRepository {
   /** Registra un evento en la bitácora del expediente. */
   static async pushTimeline(client: TimelineClient, id_caso: number, e: TimelineEntry) {
@@ -792,6 +807,7 @@ export class CaseRepository {
     const planes = await prisma.planes_accion.findMany({
       where: { id_plan: { in: idsPlan } },
       select: {
+        id_plan: true,
         codigo_plan: true,
         descripcion: true,
         fecha_plan: true,
@@ -816,8 +832,13 @@ export class CaseRepository {
           descripcionPlan: plan.descripcion,
           fechaLimite: plan.fecha_plan,
           observaciones: plan.observaciones,
-          actividades: plan.actividades_plan,
-          url: `${baseUrl}/jefe/planes/${plan.codigo_plan}`,
+          actividades: plan.actividades_plan.map((a) => ({ ...a, descripcion: descripcionLimpia(a.descripcion) })),
+          // El detalle vive en /jefe/planes/:codigo por el código del CASO
+          // (mismo criterio que el resto de la app, ver usePlansByCase), no
+          // por el del plan — aunque a veces se parezcan casi idénticos. El
+          // ?plan= evita que, si el caso tiene más de un plan, el correo
+          // mande a elegir entre todos en vez de abrir directo el asignado.
+          url: `${baseUrl}/jefe/planes/${encodeURIComponent(plan.casos_sop.codigo_sop)}?plan=${plan.id_plan}`,
         }),
       ),
     );
@@ -1787,12 +1808,13 @@ export class CaseRepository {
   static async rollbackStage(
     id_caso: number,
     estadoActualNombre: string,
-    destinoNombre: "Evaluación" | "Investigación",
+    destinoNombre: "Evaluación" | "Investigación" | "Plan de Acción",
     motivo: string
   ) {
-    const permitidos: Record<string, Array<"Evaluación" | "Investigación">> = {
+    const permitidos: Record<string, Array<"Evaluación" | "Investigación" | "Plan de Acción">> = {
       Investigación: ["Evaluación"],
       "Plan de Acción": ["Investigación"],
+      Ejecución: ["Plan de Acción"],
     };
 
     if (!permitidos[estadoActualNombre]?.includes(destinoNombre)) {

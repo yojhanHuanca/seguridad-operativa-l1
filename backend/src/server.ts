@@ -5,9 +5,9 @@ import { ConfiguracionService } from "./modules/configuracion/configuracion.serv
 
 const PORT = process.env.PORT || 3000;
 
-// Crea (si no existen) y pone al día las secuencias de Postgres que generan
-// codigo_sop/codigo_plan, antes de aceptar tráfico — así ningún request
-// concurrente puede llegar antes de que la secuencia exista.
+// Crea (si no existe) y pone al día la secuencia de Postgres que genera
+// codigo_sop, antes de aceptar tráfico — así ningún request concurrente puede
+// llegar antes de que la secuencia exista.
 await ConfiguracionService.bootstrapSequences();
 
 app.listen(PORT, () => {

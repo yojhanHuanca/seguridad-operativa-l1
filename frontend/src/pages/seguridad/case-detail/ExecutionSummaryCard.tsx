@@ -35,6 +35,7 @@ import { formatDate, formatDateTime, relativeTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { abrirArchivoProtegido, useArchivoProtegido } from "@/lib/archivos";
 import type { ActividadPlan, AnexoCaso, CaseDetail, PlanAccion, TimelineEvento } from "@/features/cases/types";
+import { StageRollbackButton } from "./StageRollbackButton";
 
 // Portado de pages/seguridad/CaseFile.tsx → ExecutionStage / VerificationStage
 // / ClosedStage. Las tres comparten la lectura del plan ejecutado y se
@@ -1125,9 +1126,20 @@ export function ExecutionSummaryCard({
           }
           icon={enVerificacion ? <Activity className="h-5 w-5" /> : enProrroga ? <Timer className="h-5 w-5" /> : <Rocket className="h-5 w-5" />}
           action={
-            <Pill tone={enVerificacion || enProrroga ? "warning" : "brand"} dot>
-              {enVerificacion ? "Por verificar" : enProrroga ? "Prórroga pendiente" : "En ejecución"}
-            </Pill>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Pill tone={enVerificacion || enProrroga ? "warning" : "brand"} dot>
+                {enVerificacion ? "Por verificar" : enProrroga ? "Prórroga pendiente" : "En ejecución"}
+              </Pill>
+              {panel === "ejecucion" && (
+                <StageRollbackButton
+                  codigo={caso.codigo_sop}
+                  destino="Plan de Acción"
+                  label="Volver a Plan de Acción"
+                  title="Volver a Plan de Acción"
+                  description="El caso regresará a Plan de Acción. Los planes, avances, evidencias y comentarios registrados se mantienen guardados."
+                />
+              )}
+            </div>
           }
         >
           <PlanExecutionBoard caso={caso} cerrado={cerrado} enVerificacion={enVerificacion} openPlanReview={openPlanReview} />

@@ -44,7 +44,7 @@ export interface RespondInfoInput {
 }
 
 export interface RollbackStageInput {
-  destino: "Evaluación" | "Investigación";
+  destino: "Evaluación" | "Investigación" | "Plan de Acción";
   motivo: string;
 }
 
