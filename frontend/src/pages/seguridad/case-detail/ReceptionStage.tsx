@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, X, Mail, Send, StickyNote, Inbox, FileSearch, Pencil } from "lucide-react";
+import { Check, X, Mail, Send, StickyNote, Inbox, FileSearch, Pencil, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/design-system/primitives/Button";
 import { Modal } from "@/design-system/primitives/Modal";
@@ -10,13 +10,25 @@ import { useAuth } from "@/features/auth/auth";
 import { useApproveCase, useRejectCase, useRequestInfo, useAddObservation, useUpdateTipo } from "@/features/cases/hooks/useCaseActions";
 import { useCatalogs } from "@/features/reports/hooks/useCatalogs";
 import { apiErrorMessage } from "@/lib/api";
-import { relativeTime } from "@/lib/format";
+import { formatDateTime, relativeTime } from "@/lib/format";
 import { EvaluationForm } from "./EvaluationForm";
 import type { CaseDetail } from "@/features/cases/types";
 
 // Portado de pages/seguridad/CaseFile.tsx → ReceptionStage.
 // Cubre Recepción y Evaluación: es la misma tarjeta, cambia el copy y el cuerpo.
-export function ReceptionStage({ caso, isRecepcion }: { caso: CaseDetail; isRecepcion: boolean }) {
+export function ReceptionStage({
+  caso,
+  isRecepcion,
+  onSolicitudYaPendiente,
+}: {
+  caso: CaseDetail;
+  isRecepcion: boolean;
+  /** Si ya hay una solicitud sin responder, "Solicitar información" no abre un
+   * formulario para una nueva: avisa al que llama (p. ej. PendingInfoCard,
+   * para que vuelva a mostrar la solicitud pendiente en vez de dejar crear
+   * una segunda en paralelo). */
+  onSolicitudYaPendiente?: () => void;
+}) {
   const { user } = useAuth();
   const puedeRechazar = user?.rol === "Admin" || user?.puede_rechazar_reportes;
   const [rejectOpen, setRejectOpen] = useState(false);
@@ -48,6 +60,15 @@ export function ReceptionStage({ caso, isRecepcion }: { caso: CaseDetail; isRece
   };
 
   const pendiente = caso.solicitudes_informacion.find((s) => !s.respondida);
+  const historicas = caso.solicitudes_informacion.filter((s) => s.respondida);
+
+  const abrirSolicitarInfo = () => {
+    if (pendiente && onSolicitudYaPendiente) {
+      onSolicitudYaPendiente();
+      return;
+    }
+    setInfoOpen(true);
+  };
 
   return (
     <div className="space-y-4">
@@ -95,6 +116,27 @@ export function ReceptionStage({ caso, isRecepcion }: { caso: CaseDetail; isRece
           </div>
         )}
 
+        {historicas.length > 0 && (
+          <div className="mt-4">
+            <p className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+              <MessageCircle className="h-3.5 w-3.5" /> Respuestas del reportante ({historicas.length})
+            </p>
+            <div className="space-y-2">
+              {historicas.map((s) => (
+                <div key={s.id_solicitud} className="rounded-lg border border-line bg-surface/50 p-3">
+                  <p className="text-[12.5px] text-ink-soft">{s.mensaje}</p>
+                  {s.respuesta && (
+                    <p className="mt-1.5 text-[12.5px] text-ink border-l-2 border-line-strong pl-2.5">{s.respuesta}</p>
+                  )}
+                  <p className="mt-1.5 text-[10.5px] text-ink-faint">
+                    Respondida {s.fecha_respuesta ? formatDateTime(s.fecha_respuesta) : "—"}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {isRecepcion ? (
           <div className="mt-5 pt-5 border-t border-line-soft flex items-center gap-2 flex-wrap">
             <Button
@@ -109,7 +151,7 @@ export function ReceptionStage({ caso, isRecepcion }: { caso: CaseDetail; isRece
             >
               <Check className="h-4 w-4" /> Aprobar reporte
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setInfoOpen(true)}>
+            <Button variant="outline" size="sm" onClick={abrirSolicitarInfo}>
               <Mail className="h-4 w-4" /> Solicitar información
             </Button>
             <Button variant="outline" size="sm" onClick={() => setObsOpen(true)}>
@@ -130,7 +172,7 @@ export function ReceptionStage({ caso, isRecepcion }: { caso: CaseDetail; isRece
                 responder la solicitud el caso vuelve a Evaluación, no a Recepción. */}
             <div className="mt-4 pt-4 border-t border-line-soft flex items-center gap-2 flex-wrap">
               <span className="text-[11.5px] text-ink-quiet mr-auto">¿Falta información o el caso no procede?</span>
-              <Button variant="outline" size="sm" onClick={() => setInfoOpen(true)}>
+              <Button variant="outline" size="sm" onClick={abrirSolicitarInfo}>
                 <Mail className="h-4 w-4" /> Solicitar información
               </Button>
               <Button variant="outline" size="sm" onClick={() => setObsOpen(true)}>

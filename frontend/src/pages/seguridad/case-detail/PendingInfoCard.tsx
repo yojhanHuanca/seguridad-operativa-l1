@@ -1,20 +1,36 @@
 import { useState } from "react";
-import { AlertCircle, Mail, CornerUpLeft } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import { AlertCircle, Mail, CornerUpLeft, Undo2, MessageSquarePlus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/design-system/primitives/Button";
 import { Pill } from "@/design-system/primitives/Pill";
-import { Field, Textarea } from "@/design-system/primitives/Input";
+import { Textarea } from "@/design-system/primitives/Input";
 import { StageSection, DescriptionBlock } from "@/features/cases/components/CaseParts";
 import { useRespondInfo } from "@/features/cases/hooks/useCaseActions";
 import { apiErrorMessage } from "@/lib/api";
 import { formatDateTime, relativeTime } from "@/lib/format";
-import { EvidencePanel } from "./EvidencePanel";
+import { ReceptionStage } from "./ReceptionStage";
 import type { CaseDetail } from "@/features/cases/types";
 
 // Portado de pages/seguridad/CaseFile.tsx → PendingInfoStage, más el bloque
 // para registrar la respuesta (en el prototipo la responde el Reportante desde
-// su portal; aquí la registra SO mientras ese portal no existe).
+// su portal; aquí la registra SO mientras ese portal no existe). Si el
+// reportante nunca responde, "Volver a opciones" reemplaza esta tarjeta por
+// la pantalla real de la etapa en la que se pausó (Recepción o Evaluación) —
+// no la agrega debajo, la lleva a ese mismo lugar.
 export function PendingInfoCard({ caso }: { caso: CaseDetail }) {
+  // En la URL (no en un useState) para que sobreviva un refresh: sin esto, al
+  // recargar con "Volver a opciones" abierto, la página perdía esa vista y
+  // volvía a mostrar esta tarjeta de pausa desde cero.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const mostrarOpciones = searchParams.get("vista") === "opciones";
+  const setMostrarOpciones = (valor: boolean) => {
+    const next = new URLSearchParams(searchParams);
+    if (valor) next.set("vista", "opciones");
+    else next.delete("vista");
+    setSearchParams(next, { replace: true });
+  };
+  const [mostrarComentario, setMostrarComentario] = useState(false);
   const solicitud = caso.solicitudes_informacion.find((s) => !s.respondida);
   const historicas = caso.solicitudes_informacion.filter((s) => s.respondida);
   const [respuesta, setRespuesta] = useState("");
@@ -23,6 +39,16 @@ export function PendingInfoCard({ caso }: { caso: CaseDetail }) {
   if (!solicitud) return null;
 
   const vuelveA = solicitud.estado_previo ?? "Evaluación";
+
+  if (mostrarOpciones) {
+    return (
+      <ReceptionStage
+        caso={caso}
+        isRecepcion={vuelveA === "Recepción"}
+        onSolicitudYaPendiente={() => setMostrarOpciones(false)}
+      />
+    );
+  }
 
   return (
     <StageSection
@@ -75,38 +101,60 @@ export function PendingInfoCard({ caso }: { caso: CaseDetail }) {
         </div>
       )}
 
-      <div className="mt-4">
-        <EvidencePanel caso={caso} puedeAdjuntar compact />
+      <div className="mt-4 pt-4 border-t border-line-soft flex items-center gap-4 flex-wrap">
+        {!mostrarComentario ? (
+          <button
+            type="button"
+            onClick={() => setMostrarComentario(true)}
+            className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-brand-700 hover:underline"
+          >
+            <MessageSquarePlus className="h-3.5 w-3.5" /> Registrar respuesta manual
+          </button>
+        ) : null}
+        <button
+          type="button"
+          onClick={() => setMostrarOpciones(true)}
+          className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-brand-700 hover:underline"
+        >
+          <Undo2 className="h-3.5 w-3.5" /> Volver a opciones
+        </button>
       </div>
 
-      <div className="mt-4 pt-4 border-t border-line-soft">
-        <Field
-          label="Registrar respuesta del reportante"
-          hint="Transcriba lo que respondió el reportante. Al guardar, el caso vuelve a su etapa anterior."
-        >
-          <Textarea rows={3} placeholder="Detalle la información recibida…" value={respuesta} onChange={(e) => setRespuesta(e.target.value)} />
-        </Field>
-        <div className="mt-2 flex justify-end">
-          <Button
-            size="sm"
-            disabled={respond.isPending}
-            onClick={() =>
-              respond.mutate(
-                { id_solicitud: solicitud.id_solicitud, respuesta: respuesta.trim() || undefined },
-                {
-                  onSuccess: () => {
-                    toast.success(`Respuesta registrada, el caso vuelve a ${vuelveA}`);
-                    setRespuesta("");
-                  },
-                  onError: (error) => toast.error(apiErrorMessage(error, "No se pudo registrar la respuesta")),
-                }
-              )
-            }
-          >
-            Marcar como respondida
-          </Button>
+      {mostrarComentario && (
+        <div className="mt-3">
+          <Textarea
+            rows={2}
+            placeholder="Ej. me llamó y dijo que…"
+            value={respuesta}
+            onChange={(e) => setRespuesta(e.target.value)}
+          />
+          <p className="mt-1 text-[11px] text-ink-faint">Solo si te respondió por fuera del sistema (llamada, WhatsApp, etc). Al guardar, el caso vuelve a {vuelveA}.</p>
+          <div className="mt-2 flex justify-end gap-2">
+            <Button size="sm" variant="ghost" onClick={() => setMostrarComentario(false)}>
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              disabled={respond.isPending}
+              onClick={() =>
+                respond.mutate(
+                  { id_solicitud: solicitud.id_solicitud, respuesta: respuesta.trim() || undefined },
+                  {
+                    onSuccess: () => {
+                      toast.success(`Respuesta registrada, el caso vuelve a ${vuelveA}`);
+                      setRespuesta("");
+                      setMostrarComentario(false);
+                    },
+                    onError: (error) => toast.error(apiErrorMessage(error, "No se pudo registrar la respuesta")),
+                  }
+                )
+              }
+            >
+              Guardar
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
     </StageSection>
   );
 }

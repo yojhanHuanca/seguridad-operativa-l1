@@ -42,6 +42,31 @@ export class ReportController {
     }
   }
 
+  static async responderInfo(req: Request, res: Response) {
+    try {
+      const codigo = req.params.codigo;
+      if (typeof codigo !== "string" || codigo.trim() === "") {
+        throw new Error("Código de reporte inválido");
+      }
+      const files = ((req.files as Express.Multer.File[] | undefined) ?? []).map((f) => ({
+        originalname: f.originalname,
+        filename: f.filename,
+        mimetype: f.mimetype,
+        size: f.size,
+      }));
+
+      const solicitud = await ReportService.responderInfoPublico(codigo, req.body, files);
+      return res.json(ApiResponse.success("Respuesta registrada correctamente", solicitud));
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json(ApiResponse.error("Datos inválidos", error.flatten().fieldErrors));
+      }
+      return res
+        .status(400)
+        .json(ApiResponse.error(error instanceof Error ? error.message : "No se pudo registrar la respuesta", error));
+    }
+  }
+
   static async create(req: Request, res: Response) {
     try {
       const files = ((req.files as Express.Multer.File[] | undefined) ?? []).map((f) => ({

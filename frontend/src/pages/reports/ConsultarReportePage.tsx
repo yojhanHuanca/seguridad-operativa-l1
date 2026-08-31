@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search, FileSearch, Mail, MapPin, MessageCircle, CheckCircle2, Clock } from "lucide-react";
+import { toast } from "sonner";
+import { Search, FileSearch, Mail, MapPin, MessageCircle, CheckCircle2, Clock, Send } from "lucide-react";
 import { ReportanteShell } from "@/components/layout/ReportanteShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { EstadoPill } from "@/features/reports/components/EstadoPill";
+import { EvidencePicker } from "@/features/reports/components/EvidencePicker";
 import { useConsultarReporte } from "@/features/reports/hooks/useConsultarReporte";
+import { useResponderInfoPublico } from "@/features/reports/hooks/useResponderInfoPublico";
 import { leerReportesLocales } from "@/features/reports/lib/misReportesLocal";
 import { apiErrorMessage } from "@/lib/api";
 
@@ -15,6 +19,59 @@ const APP_TIME_ZONE = "America/Lima";
 function formatFecha(iso: string | null) {
   if (!iso) return "—";
   return new Date(iso).toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric", timeZone: APP_TIME_ZONE });
+}
+
+/**
+ * Formulario de respuesta, sin cuenta: el código SOP de la página es la única
+ * llave, la misma que ya usa esta pantalla para consultar. Colapsado por
+ * defecto para no abrumar a alguien que solo vino a ver el estado.
+ */
+function ResponderSolicitudForm({ codigo, idSolicitud }: { codigo: string; idSolicitud: number }) {
+  const [abierto, setAbierto] = useState(false);
+  const [respuesta, setRespuesta] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
+  const responder = useResponderInfoPublico(codigo);
+
+  if (!abierto) {
+    return (
+      <Button size="sm" className="mt-2.5" onClick={() => setAbierto(true)}>
+        <Send className="h-3.5 w-3.5" /> Responder
+      </Button>
+    );
+  }
+
+  return (
+    <div className="mt-3 space-y-3">
+      <Textarea
+        value={respuesta}
+        onChange={(e) => setRespuesta(e.target.value)}
+        placeholder="Escribe la información que te pidieron…"
+        rows={3}
+        className="bg-white"
+      />
+      <EvidencePicker files={files} setFiles={setFiles} />
+      <div className="flex items-center gap-2">
+        <Button
+          size="sm"
+          disabled={!respuesta.trim() || responder.isPending}
+          onClick={() =>
+            responder.mutate(
+              { id_solicitud: idSolicitud, respuesta: respuesta.trim(), files },
+              {
+                onSuccess: () => toast.success("Tu respuesta fue enviada a Seguridad Operativa"),
+                onError: (e) => toast.error(apiErrorMessage(e, "No se pudo enviar tu respuesta")),
+              }
+            )
+          }
+        >
+          <Send className="h-3.5 w-3.5" /> {responder.isPending ? "Enviando..." : "Enviar respuesta"}
+        </Button>
+        <Button size="sm" variant="ghost" disabled={responder.isPending} onClick={() => setAbierto(false)}>
+          Cancelar
+        </Button>
+      </div>
+    </div>
+  );
 }
 
 /**
@@ -135,9 +192,12 @@ export function ConsultarReportePage() {
                           <p className="mt-1 min-w-0 whitespace-pre-wrap text-[13px] text-ink-soft [overflow-wrap:anywhere]">{solicitud.respuesta}</p>
                         </div>
                       ) : (
-                        <p className="mt-2 flex items-center gap-1.5 text-[11.5px] font-medium text-warning-ink">
-                          <Mail className="h-3.5 w-3.5" /> Pendiente de tu respuesta — contacta a Seguridad Operativa con tu código a la mano.
-                        </p>
+                        <div className="mt-2 rounded-lg bg-warning-soft border border-warning/25 p-3">
+                          <p className="flex items-center gap-1.5 text-[11.5px] font-medium text-warning-ink">
+                            <Mail className="h-3.5 w-3.5" /> Pendiente de tu respuesta
+                          </p>
+                          <ResponderSolicitudForm codigo={reporte.codigo_sop} idSolicitud={solicitud.id_solicitud} />
+                        </div>
                       )}
                     </div>
                   ))}

@@ -16,6 +16,8 @@ import {
   Search,
   Train,
   Download,
+  Mail,
+  Phone,
 } from "lucide-react";
 import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
 import { Logo } from "@/components/brand/Logo";
@@ -215,6 +217,12 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
             <InfoRow icon={<Calendar className="h-3.5 w-3.5" />} label="Fecha" value={formatDate(evento?.fecha ?? caso.fecha_hallazgo)} />
             <InfoRow icon={<Clock className="h-3.5 w-3.5" />} label="Hora" value={evento?.hora ? formatTime(evento.hora) : "—"} />
             <InfoRow icon={<UserIcon className="h-3.5 w-3.5" />} label="Reportante" value={caso.nombre_reportante?.trim() || "Reporte Anónimo"} />
+            {caso.correo_reportante?.trim() && (
+              <InfoRow icon={<Mail className="h-3.5 w-3.5" />} label="Correo" value={caso.correo_reportante.trim()} />
+            )}
+            {caso.telefono_reportante?.trim() && (
+              <InfoRow icon={<Phone className="h-3.5 w-3.5" />} label="Teléfono" value={caso.telefono_reportante.trim()} />
+            )}
             {caso.usuarios_casos_sop_responsable_hallazgoTousuarios && (
               <InfoRow icon={<UserIcon className="h-3.5 w-3.5" />} label="Asignado a" value={caso.usuarios_casos_sop_responsable_hallazgoTousuarios.nombre} />
             )}

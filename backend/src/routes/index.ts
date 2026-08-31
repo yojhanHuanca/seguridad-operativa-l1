@@ -45,6 +45,13 @@ router.post("/reports", publicReportRateLimit, optionalVerifyToken, uploadEviden
 // El código real del caso hace de "llave" de seguimiento: quien reportó sin
 // cuenta lo usa para consultar su estado después, sin loguearse.
 router.get("/reports/consulta/:codigo", ReportController.getByCodigo);
+// Responder una solicitud de información sin cuenta: mismo código como llave.
+router.post(
+  "/reports/consulta/:codigo/responder-info",
+  publicReportRateLimit,
+  uploadEvidencia.array("evidencia", 10),
+  ReportController.responderInfo
+);
 router.get("/configuracion/publica", ConfiguracionController.publica);
 
 router.use(verifyToken);

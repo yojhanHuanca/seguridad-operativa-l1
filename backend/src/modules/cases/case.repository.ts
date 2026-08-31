@@ -2,7 +2,7 @@ import prisma from "../../lib/prisma.js";
 import { planDeadline, planVencido, type PlanDeadlineSource } from "../../lib/planDeadline.js";
 import { NotificationRepository } from "../notifications/notification.repository.js";
 import { ConfiguracionService } from "../configuracion/configuracion.service.js";
-import { enviarCorreoPlanAsignado } from "../../utils/mailer.js";
+import { enviarCorreoPlanAsignado, enviarCorreoSolicitudInformacion } from "../../utils/mailer.js";
 import { env } from "../../config/env.js";
 import type {
   CaseListFilters,
@@ -692,11 +692,22 @@ export class CaseRepository {
     const estadoPausa = await CaseRepository.findEstado("Pendiente de Información");
     const caso = await prisma.casos_sop.findUniqueOrThrow({
       where: { id_caso },
-      select: { codigo_sop: true, created_by: true },
+      select: { codigo_sop: true, created_by: true, correo_reportante: true },
     });
+    // Si SO vuelve a pedir información con el caso ya pausado, no se puede
+    // usar el estado actual como "estado_previo" (quedaría apuntándose a sí
+    // mismo) — se hereda el destino real de la solicitud abierta.
+    let estadoPrevio = estadoActualNombre;
+    if (estadoActualNombre === "Pendiente de Información") {
+      const abierta = await prisma.solicitudes_informacion.findFirst({
+        where: { id_caso, respondida: false },
+        orderBy: { id_solicitud: "asc" },
+      });
+      estadoPrevio = abierta?.estado_previo ?? "Evaluación";
+    }
     return prisma.$transaction(async (tx) => {
       const solicitud = await tx.solicitudes_informacion.create({
-        data: { id_caso, mensaje: dto.mensaje, estado_previo: estadoActualNombre },
+        data: { id_caso, mensaje: dto.mensaje, estado_previo: estadoPrevio },
       });
       await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estadoPausa.id_detalle } });
       await CaseRepository.pushTimeline(tx, id_caso, {
@@ -715,6 +726,24 @@ export class CaseRepository {
           tipo: "caso_devuelto",
           titulo: `Se necesita más información — ${caso.codigo_sop}`,
           mensaje: dto.mensaje,
+        });
+      }
+      return solicitud;
+    }).then((solicitud) => {
+      // Fuera de la transacción, a propósito: es una llamada de red a Resend y
+      // no debe mantener filas bloqueadas ni demorar la respuesta. Solo se
+      // manda si dejó correo al reportar — anónimos y quienes no lo dejaron no
+      // tienen a dónde recibirlo, y ya quedan avisados por la vía en la web
+      // (consulta pública por código) sin que esto los bloquee.
+      if (caso.correo_reportante) {
+        const baseUrl = env.FRONTEND_URL.replace(/\/$/, "");
+        void enviarCorreoSolicitudInformacion({
+          destino: caso.correo_reportante,
+          codigoSop: caso.codigo_sop,
+          mensaje: dto.mensaje,
+          url: `${baseUrl}/reportes/consulta?codigo=${encodeURIComponent(caso.codigo_sop)}`,
+        }).catch((error) => {
+          console.error("[reportes] no se pudo avisar por correo la solicitud de información", caso.codigo_sop, error);
         });
       }
       return solicitud;

@@ -123,6 +123,8 @@ export interface EventoOperativoDetalle {
 }
 
 export interface CaseDetail extends CaseListItem {
+  correo_reportante: string | null;
+  telefono_reportante: string | null;
   peligro: string | null;
   consecuencia: string | null;
   descripcion_evento: string | null;

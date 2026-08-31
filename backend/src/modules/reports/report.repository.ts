@@ -193,6 +193,20 @@ export class ReportRepository {
     });
   }
 
+  /** Evidencia adjuntada después de creado el caso — misma forma que al crear el reporte. */
+  static async agregarEvidencias(id_caso: number, archivos: UploadedFile[]) {
+    if (archivos.length === 0) return;
+    await prisma.anexos_caso.createMany({
+      data: archivos.map((f) => ({
+        id_caso,
+        nombre_archivo: f.originalname,
+        ruta_archivo: `/uploads/casos/${f.filename}`,
+        tipo_archivo: f.mimetype,
+        peso: Math.round((f.size / 1024) * 100) / 100, // KB
+      })),
+    });
+  }
+
   static async findCatalogoDetalle(catalogoNombre: string, valorNombre: string) {
     return prisma.catalogo_detalle.findFirst({
       where: { nombre: valorNombre, catalogos: { nombre: catalogoNombre } },

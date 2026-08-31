@@ -2,6 +2,7 @@ import { z } from "zod";
 import { ReportRepository } from "./report.repository.js";
 import type { UploadedFile } from "./report.types.js";
 import { esReportante, type Actor } from "../../utils/actor.js";
+import { CaseRepository } from "../cases/case.repository.js";
 
 const idPositivo = z.coerce.number().int().positive();
 const telefonoSchema = z
@@ -42,6 +43,11 @@ export const createReportSchema = z
     message: "El nombre completo es obligatorio para un reporte identificado",
     path: ["nombre_reportante"],
   });
+
+const responderInfoSchema = z.object({
+  id_solicitud: idPositivo,
+  respuesta: z.string().trim().min(3, "Escribe la respuesta").max(1000),
+});
 
 async function assertCatalogo(id_detalle: number, catalogoEsperado: string) {
   const detalle = await ReportRepository.findCatalogoDetalleById(id_detalle);
@@ -108,6 +114,28 @@ export class ReportService {
       ...(query?.search ? { search: query.search } : {}),
       ...(paginar ? { page, limit } : {}),
     });
+  }
+
+  /**
+   * El reportante responde una solicitud de información sin cuenta ni sesión:
+   * el código SOP es la misma llave que ya usa para consultar su caso (como
+   * un número de seguimiento). Funciona igual para anónimos e identificados,
+   * hayan dejado correo o no — el correo es solo el aviso extra, no un
+   * requisito para poder responder.
+   */
+  static async responderInfoPublico(codigo_sop: string, rawBody: unknown, files: UploadedFile[]) {
+    const dto = responderInfoSchema.parse(rawBody);
+    const caso = await ReportRepository.findPublicByCodigo(codigo_sop);
+    if (!caso) throw new Error(`El caso ${codigo_sop} no existe`);
+
+    const solicitud = caso.solicitudes_informacion.find(
+      (s) => s.id_solicitud === dto.id_solicitud && !s.respondida
+    );
+    if (!solicitud) throw new Error("Esa solicitud de información no existe o ya fue respondida");
+
+    const actualizada = await CaseRepository.respondInfo(caso.id_caso, dto.id_solicitud, { respuesta: dto.respuesta });
+    await ReportRepository.agregarEvidencias(caso.id_caso, files);
+    return actualizada;
   }
 
   static async getByCodigo(codigo_sop: string, actor?: Actor) {

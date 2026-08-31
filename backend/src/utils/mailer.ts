@@ -5,7 +5,7 @@ import { ConfiguracionService } from "../modules/configuracion/configuracion.ser
 
 let client: Resend | null = null;
 let smtpTransport: Transporter | null = null;
-const DEFAULT_SYSTEM_NAME = "SIGMA L1";
+const DEFAULT_SYSTEM_NAME = "SMS L1";
 
 function getClient() {
   if (!env.RESEND_API_KEY) return null;
@@ -99,6 +99,42 @@ export async function enviarCorreoRecuperacion(destino: string, nombre: string, 
           <a href="${escapeHtml(resetUrl)}" style="background:#0F7A3D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">Elegir nueva contraseña</a>
         </p>
         <p style="font-size: 12px; color: #5F6F68;">Si tú no pediste esto, ignora este correo — tu contraseña actual sigue funcionando igual.</p>
+      </div>
+    `,
+  });
+}
+
+/**
+ * Aviso al reportante de que Seguridad Operativa necesita más información —
+ * solo se llama cuando dejó un correo al reportar (identificado con correo);
+ * anónimos y quienes no lo dejaron nunca llegan acá, no tienen a dónde
+ * mandarles nada. El link lleva directo a la consulta pública por código,
+ * el mismo mecanismo sin cuenta que ya usa para ver el estado del caso.
+ */
+export async function enviarCorreoSolicitudInformacion(datos: {
+  destino: string;
+  codigoSop: string;
+  mensaje: string;
+  url: string;
+}) {
+  const systemName = await getSystemName();
+
+  await enviarCorreo({
+    to: datos.destino,
+    subject: `Necesitamos más información sobre tu reporte ${datos.codigoSop} — ${systemName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #12352A;">
+        <p style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #0F7A3D; letter-spacing: 0.05em;">${escapeHtml(systemName)} · Seguridad Operativa</p>
+        <h1 style="font-size: 20px; margin: 12px 0;">Necesitamos más información</h1>
+        <p>Hola,</p>
+        <p>Seguridad Operativa está revisando tu reporte <strong>${escapeHtml(datos.codigoSop)}</strong> y necesita que aclares lo siguiente:</p>
+        <div style="margin:20px 0;padding:16px;background:#F3F7F4;border-radius:10px;border:1px solid #E3E8E5;">
+          <p style="margin:0;font-size:14px;color:#182621;white-space:pre-wrap;">${escapeHtml(datos.mensaje)}</p>
+        </div>
+        <p style="margin:24px 0;">
+          <a href="${escapeHtml(datos.url)}" style="background:#0F7A3D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">Responder ahora</a>
+        </p>
+        <p style="font-size: 12px; color: #5F6F68;">No necesitas cuenta ni contraseña: el botón te lleva directo a tu reporte con el código ${escapeHtml(datos.codigoSop)}.</p>
       </div>
     `,
   });
