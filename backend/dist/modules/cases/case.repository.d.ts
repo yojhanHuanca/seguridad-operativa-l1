@@ -1158,41 +1158,6 @@ export declare class CaseRepository {
         prorroga_estado: string | null;
         prorroga_fecha_sol: Date | null;
     }>;
-    /** ETAPA 5 — el Jefe del Área acepta el plan y arranca la Ejecución. */
-    static acceptPlan(id_caso: number, actor: string): Promise<{
-        created_at: Date | null;
-        descripcion: string;
-        id_caso: number;
-        codigo_sop: string;
-        titulo: string | null;
-        nombre_reportante: string | null;
-        correo_reportante: string | null;
-        telefono_reportante: string | null;
-        fecha_hallazgo: Date;
-        fecha_evento: Date | null;
-        estado_hallazgo: number;
-        dias_abierto: number | null;
-        procedencia: number;
-        tipo: number;
-        responsable_hallazgo: number | null;
-        tipo_sop: number;
-        subtipo_sop: number | null;
-        peligro: string | null;
-        consecuencia: string | null;
-        descripcion_evento: string | null;
-        clasificacion: string | null;
-        analisis_riesgo: number | null;
-        acr: string | null;
-        area_responsable: number | null;
-        responsable_plan: number | null;
-        estado_plan: number | null;
-        fecha_plan: Date | null;
-        fecha_reprogramada: Date | null;
-        dias_abierto_plan: number | null;
-        observaciones: string | null;
-        created_by: number | null;
-        updated_at: Date | null;
-    }>;
     /** ETAPA 5 — el Jefe del Área acepta un plan específico del reporte. */
     /**
      * ETAPA 4 → 5 — SO adelanta el caso a Ejecución sin esperar a que todas las
@@ -1349,41 +1314,6 @@ export declare class CaseRepository {
         prorroga_estado: string | null;
         prorroga_fecha_sol: Date | null;
     }>;
-    /** ETAPA 5 → 6 — el área termina las actividades y devuelve el caso a SO. */
-    static completeExecution(id_caso: number, actor: string): Promise<{
-        created_at: Date | null;
-        descripcion: string;
-        id_caso: number;
-        codigo_sop: string;
-        titulo: string | null;
-        nombre_reportante: string | null;
-        correo_reportante: string | null;
-        telefono_reportante: string | null;
-        fecha_hallazgo: Date;
-        fecha_evento: Date | null;
-        estado_hallazgo: number;
-        dias_abierto: number | null;
-        procedencia: number;
-        tipo: number;
-        responsable_hallazgo: number | null;
-        tipo_sop: number;
-        subtipo_sop: number | null;
-        peligro: string | null;
-        consecuencia: string | null;
-        descripcion_evento: string | null;
-        clasificacion: string | null;
-        analisis_riesgo: number | null;
-        acr: string | null;
-        area_responsable: number | null;
-        responsable_plan: number | null;
-        estado_plan: number | null;
-        fecha_plan: Date | null;
-        fecha_reprogramada: Date | null;
-        dias_abierto_plan: number | null;
-        observaciones: string | null;
-        created_by: number | null;
-        updated_at: Date | null;
-    } | null>;
     /** SO confirma que ya no queda ejecución abierta y mueve el expediente a Verificación. */
     static sendToVerification(id_caso: number): Promise<{
         created_at: Date | null;
@@ -1584,7 +1514,7 @@ export declare class CaseRepository {
         updated_at: Date | null;
     }>;
     /** Retroceso controlado entre etapas activas, sin borrar datos del expediente. */
-    static rollbackStage(id_caso: number, estadoActualNombre: string, destinoNombre: "Evaluación" | "Investigación", motivo: string): Promise<{
+    static rollbackStage(id_caso: number, estadoActualNombre: string, destinoNombre: "Evaluación" | "Investigación" | "Plan de Acción", motivo: string): Promise<{
         created_at: Date | null;
         descripcion: string;
         id_caso: number;

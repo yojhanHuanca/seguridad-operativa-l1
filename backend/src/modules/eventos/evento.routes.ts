@@ -1,12 +1,13 @@
 import { Router } from "express";
 import { EventoController } from "./evento.controller.js";
-import { requireRolesOrResponsable } from "../../middlewares/auth.middleware.js";
+import { requireRoles, requireRolesOrResponsable } from "../../middlewares/auth.middleware.js";
 
 const router = Router();
 
 // Monitorista siempre; el RSO de Seguridad Operativa (es_responsable) puede
 // "visitar" el panel de Monitoreo y hacer todo lo mismo ahí.
 const MONITOREO = requireRolesOrResponsable(["Monitorista"], ["Seguridad Operativa"]);
+const SO_ASIGNADOS = requireRoles("Seguridad Operativa", "Admin");
 
 // El listado completo de eventos es del panel de Monitoreo: antes cualquier
 // rol autenticado (un Reportante, un Jefe de Área) podía pedirlo, porque el
@@ -15,7 +16,7 @@ const MONITOREO = requireRolesOrResponsable(["Monitorista"], ["Seguridad Operati
 router.get("/", MONITOREO, EventoController.getAll);
 router.get("/counts", MONITOREO, EventoController.getCounts);
 router.get("/indicadores", MONITOREO, EventoController.getIndicadores);
-router.get("/asignados/:id_usuario", EventoController.getAsignados);
+router.get("/asignados/:id_usuario", SO_ASIGNADOS, EventoController.getAsignados);
 router.get("/:id", MONITOREO, EventoController.getById);
 router.post("/", MONITOREO, EventoController.create);
 router.patch("/:id/asignar", MONITOREO, EventoController.asignar);

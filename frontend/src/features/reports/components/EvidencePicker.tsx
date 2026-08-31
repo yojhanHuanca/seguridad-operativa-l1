@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const MAX_SIZE_MB = 25;
+const MAX_SIZE_MB = 30;
 const MAX_FILES = 10;
 const ACCEPTED_IMAGES = ["image/jpeg", "image/png", "image/webp"];
 const ACCEPTED_VIDEOS = ["video/mp4", "video/quicktime"];

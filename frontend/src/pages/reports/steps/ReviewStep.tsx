@@ -16,9 +16,9 @@ function findLabel(catalogs: Map<string, CatalogGroup>, groupName: string, id?: 
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
-    <div>
+    <div className="min-w-0">
       <p className="text-[11px] font-medium uppercase tracking-wide text-ink-faint">{label}</p>
-      <p className="mt-1 text-sm leading-snug text-ink">{value || "—"}</p>
+      <p className="mt-1 min-w-0 whitespace-pre-wrap text-sm leading-snug text-ink [overflow-wrap:anywhere]">{value || "—"}</p>
     </div>
   );
 }
@@ -44,7 +44,7 @@ export function ReviewStep({
       : findLabel(catalogs, "Lugar de Incidente", v.id_lugar);
 
   return (
-    <Card className="p-5">
+    <Card className="overflow-hidden p-5">
       <div className="mb-4">
         <h2 className="text-lg font-bold text-ink">¿Cómo deseas enviar tu reporte?</h2>
         <p className="text-sm text-ink-quiet">Elige la modalidad de envío.</p>
@@ -106,7 +106,7 @@ export function ReviewStep({
         </div>
       )}
 
-      <div className="mt-4 rounded-xl border border-border bg-secondary/30 p-4">
+      <div className="mt-4 min-w-0 overflow-hidden rounded-xl border border-border bg-secondary/30 p-4">
         <p className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Resumen del reporte</p>
         <div className="grid gap-4 sm:grid-cols-2">
           <SummaryRow label="Tipo de reporte" value={findLabel(catalogs, "Tipo de Reporte", v.id_tipo)} />

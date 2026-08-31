@@ -15,13 +15,11 @@ export declare class CaseController {
     static createPlan(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static createPlans(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static close(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
-    static acceptPlan(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static acceptPlanById(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static completeExecutionByPlan(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static reviewFinalPlanById(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static requestExtensionByPlan(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static reviewExtensionByPlan(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
-    static completeExecution(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static startExecution(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static sendToVerification(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static keepPending(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;

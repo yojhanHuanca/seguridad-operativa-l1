@@ -1071,33 +1071,6 @@ export class CaseRepository {
     });
   }
 
-  /** ETAPA 5 — el Jefe del Área acepta el plan y arranca la Ejecución. */
-  static async acceptPlan(id_caso: number, actor: string) {
-    const [estadoCaso, estadoPlanEnEjecucion, estadoActEnProgreso] = await Promise.all([
-      CaseRepository.findEstado("Ejecución"),
-      CaseRepository.findEstadoPlan("En Ejecución"),
-      CaseRepository.findEstadoActividad("En progreso"),
-    ]);
-    return prisma.$transaction(async (tx) => {
-      const planes = await tx.planes_accion.findMany({ where: { id_caso }, select: { id_plan: true } });
-      const ids = planes.map((p) => p.id_plan);
-      await tx.planes_accion.updateMany({ where: { id_caso }, data: { estado: estadoPlanEnEjecucion.id_detalle } });
-      if (ids.length > 0) {
-        await tx.actividades_plan.updateMany({ where: { id_plan: { in: ids } }, data: { estado: estadoActEnProgreso.id_detalle, porcentaje: 0 } });
-      }
-      const caso = await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estadoCaso.id_detalle } });
-      await CaseRepository.pushTimeline(tx, id_caso, {
-        kind: "plan_aprobado",
-        actor,
-        actor_rol: "jefe",
-        titulo: "Plan aceptado por el jefe del área",
-        detalle: "El área aceptó el plan. Ejecución iniciada.",
-      });
-      return caso;
-    });
-  }
-
-
   /** ETAPA 5 — el Jefe del Área acepta un plan específico del reporte. */
   /**
    * ETAPA 4 → 5 — SO adelanta el caso a Ejecución sin esperar a que todas las
@@ -1592,36 +1565,6 @@ export class CaseRepository {
       });
 
       return actualizado;
-    });
-  }
-
-  /** ETAPA 5 → 6 — el área termina las actividades y devuelve el caso a SO. */
-  static async completeExecution(id_caso: number, actor: string) {
-    const [estadoPlanFinalizado, estadoActCompletado] = await Promise.all([
-      CaseRepository.ensureEstadoPlan("Finalizado"),
-      CaseRepository.findEstadoActividad("Completado"),
-    ]);
-    return prisma.$transaction(async (tx) => {
-      const planes = await tx.planes_accion.findMany({ where: { id_caso }, select: { id_plan: true } });
-      const ids = planes.map((p) => p.id_plan);
-      if (ids.length > 0) {
-        await tx.planes_accion.updateMany({
-          where: { id_plan: { in: ids } },
-          data: { estado: estadoPlanFinalizado.id_detalle, updated_at: new Date() },
-        });
-        await tx.actividades_plan.updateMany({
-          where: { id_plan: { in: ids } },
-          data: { estado: estadoActCompletado.id_detalle, porcentaje: 100 },
-        });
-      }
-      await CaseRepository.pushTimeline(tx, id_caso, {
-        kind: "seguimiento",
-        actor,
-        actor_rol: "jefe",
-        titulo: "Planes finalizados por el área",
-        detalle: "Los planes quedaron pendientes de revisión final individual por Seguridad Operativa.",
-      });
-      return tx.casos_sop.findUnique({ where: { id_caso } });
     });
   }
 

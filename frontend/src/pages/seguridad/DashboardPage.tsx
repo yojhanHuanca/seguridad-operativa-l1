@@ -1,6 +1,6 @@
 // Portado del prototipo SIGMA L1 (pages/seguridad/Dashboard.tsx), conectado a
 // datos reales vía useCases() + toCaseRow en vez del store de localStorage.
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   FolderClock,
@@ -26,6 +26,7 @@ import { useCatalogs } from "@/features/reports/hooks/useCatalogs";
 import { relativeTime } from "@/lib/format";
 
 export function SoDashboardPage() {
+  const [ahora] = useState(Date.now);
   const { data: rawCases, isLoading } = useCases();
   const cases = useMemo(() => (rawCases ?? []).map(toCaseRow), [rawCases]);
   const { byName: catalogsByName } = useCatalogs();
@@ -39,14 +40,14 @@ export function SoDashboardPage() {
     const closed = cases.filter((c) => c.stage === "cierre");
     const critical = open.filter((c) => c.risk && riskCategory(c.risk) === "inaceptable");
     const unaSemanaMs = 7 * 24 * 60 * 60 * 1000;
-    const nuevos = cases.filter((c) => Date.now() - new Date(c.createdAt).getTime() <= unaSemanaMs);
+    const nuevos = cases.filter((c) => ahora - new Date(c.createdAt).getTime() <= unaSemanaMs);
     return {
       pendientes: open.length,
       critical: critical.length,
       cerrados: closed.length,
       nuevos: nuevos.length,
     };
-  }, [cases]);
+  }, [ahora, cases]);
 
   const byStation = useMemo(() => {
     const map = new Map<string, number>();

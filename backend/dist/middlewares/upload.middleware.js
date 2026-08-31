@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
 });
 export const uploadEvidencia = multer({
     storage,
-    limits: { fileSize: 25 * 1024 * 1024, files: 10 },
+    limits: { fileSize: 30 * 1024 * 1024, files: 10 },
     fileFilter: (_req, file, cb) => {
         if (!ALLOWED_MIME.has(file.mimetype)) {
             cb(new Error(`Tipo de archivo no permitido: ${file.mimetype}`));

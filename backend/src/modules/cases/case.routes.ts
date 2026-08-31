@@ -46,8 +46,6 @@ router.post("/planes/:idPlan/actualizacion", JEFE, uploadEvidencia.array("eviden
 router.patch("/actividades/:idActividad", JEFE, CaseController.updateActivity);
 router.post("/:codigo/extension", JEFE, CaseController.requestExtension);
 router.post("/:codigo/extension/review", SO, CaseController.reviewExtension);
-router.post("/:codigo/accept-plan", JEFE, CaseController.acceptPlan);
-router.post("/:codigo/complete-execution", JEFE, CaseController.completeExecution);
 router.post("/:codigo/start-execution", SO, CaseController.startExecution);
 router.post("/:codigo/send-verification", SO, CaseController.sendToVerification);
 router.post("/:codigo/keep-pending", SO, CaseController.keepPending);

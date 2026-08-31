@@ -77,7 +77,7 @@ export interface CommentDto {
     texto: string;
 }
 export interface RollbackStageDto {
-    destino: "Evaluación" | "Investigación";
+    destino: "Evaluación" | "Investigación" | "Plan de Acción";
     motivo: string;
 }
 //# sourceMappingURL=case.types.d.ts.map

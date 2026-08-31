@@ -1,5 +1,7 @@
 // Helpers de formato portados del prototipo SIGMA L1 (lib/utils.ts).
-// Se mantienen idénticos para que las pantallas portadas rindan el mismo texto.
+// El sistema opera en Lima; los timestamps reales se muestran siempre en esa
+// zona horaria para no depender de la configuración del navegador o servidor.
+const APP_TIME_ZONE = "America/Lima";
 
 /**
  * Las columnas `@db.Date` (fecha_plan, fecha_hallazgo, prorroga_fecha…) llegan
@@ -17,6 +19,18 @@ function isDateOnly(iso: string | Date): boolean {
   return typeof iso === "string" && (/T00:00:00(\.000)?Z$/.test(iso) || /^\d{4}-\d{2}-\d{2}$/.test(iso));
 }
 
+function isTimeOnly(iso: string | Date): boolean {
+  if (typeof iso === "string") return /^\d{2}:\d{2}(:\d{2})?/.test(iso) || /^1970-01-01T/.test(iso);
+  return iso.getUTCFullYear() === 1970 && iso.getUTCMonth() === 0 && iso.getUTCDate() === 1;
+}
+
+function parsePlainTime(iso: string): Date | null {
+  const match = iso.match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
+  if (!match) return null;
+  const [, hours, minutes, seconds = "0"] = match;
+  return new Date(Date.UTC(1970, 0, 1, Number(hours), Number(minutes), Number(seconds)));
+}
+
 export function formatDate(iso: string | Date): string {
   const d = typeof iso === "string" ? new Date(iso) : iso;
   if (isNaN(d.getTime())) return "—";
@@ -24,20 +38,25 @@ export function formatDate(iso: string | Date): string {
     day: "2-digit",
     month: "short",
     year: "numeric",
-    ...(isDateOnly(iso) ? { timeZone: "UTC" as const } : {}),
+    timeZone: isDateOnly(iso) ? "UTC" : APP_TIME_ZONE,
   });
 }
 
 export function formatTime(iso: string | Date): string {
-  const d = typeof iso === "string" ? new Date(iso) : iso;
+  const d = typeof iso === "string" ? parsePlainTime(iso) ?? new Date(iso) : iso;
   if (isNaN(d.getTime())) return "";
-  return d.toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleTimeString("es-PE", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: isTimeOnly(iso) ? "UTC" : APP_TIME_ZONE,
+  });
 }
 
 export function formatDateTime(iso: string | Date): string {
   const d = typeof iso === "string" ? new Date(iso) : iso;
   if (isNaN(d.getTime())) return "—";
-  return `${formatDate(d)} · ${formatTime(d)}`;
+  if (isDateOnly(iso)) return formatDate(iso);
+  return `${formatDate(iso)} · ${formatTime(iso)}`;
 }
 
 export function formatDateShort(iso: string | Date): string {
@@ -46,7 +65,7 @@ export function formatDateShort(iso: string | Date): string {
   return d.toLocaleDateString("es-PE", {
     day: "2-digit",
     month: "short",
-    ...(isDateOnly(iso) ? { timeZone: "UTC" as const } : {}),
+    timeZone: isDateOnly(iso) ? "UTC" : APP_TIME_ZONE,
   });
 }
 

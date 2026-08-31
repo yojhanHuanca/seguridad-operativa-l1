@@ -100,9 +100,9 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
   useEffect(() => {
     if (!open || !form.id_rol || !roles.data) return;
     const rolActual = roles.data.find((rol) => String(rol.id_rol) === form.id_rol);
-    if (rolActual && ROLES_OCULTOS_ADMIN.has(rolActual.nombre_rol)) {
-      set("id_rol", "");
-    }
+    if (!rolActual || !ROLES_OCULTOS_ADMIN.has(rolActual.nombre_rol)) return;
+    const timer = window.setTimeout(() => set("id_rol", ""), 0);
+    return () => window.clearTimeout(timer);
   }, [form.id_rol, open, roles.data]);
 
   const rolSeleccionado = rolesDisponibles.find((r) => String(r.id_rol) === form.id_rol);
@@ -113,15 +113,18 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
 
   useEffect(() => {
     if (!open || esSeguridadOperativa) return;
-    setForm((actual) => {
-      if (!actual.es_responsable && !actual.puede_reabrir_casos && !actual.puede_rechazar_reportes) return actual;
-      return {
-        ...actual,
-        es_responsable: false,
-        puede_reabrir_casos: false,
-        puede_rechazar_reportes: false,
-      };
-    });
+    const timer = window.setTimeout(() => {
+      setForm((actual) => {
+        if (!actual.es_responsable && !actual.puede_reabrir_casos && !actual.puede_rechazar_reportes) return actual;
+        return {
+          ...actual,
+          es_responsable: false,
+          puede_reabrir_casos: false,
+          puede_rechazar_reportes: false,
+        };
+      });
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [esSeguridadOperativa, open]);
 
   const goNext = () => {

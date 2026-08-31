@@ -38,7 +38,7 @@ const reopenSchema = z.object({
         .default("Verificación"),
 });
 const rollbackSchema = z.object({
-    destino: z.enum(["Evaluación", "Investigación"]),
+    destino: z.enum(["Evaluación", "Investigación", "Plan de Acción"]),
     motivo: z.string().trim().min(5, "Explique el motivo del retroceso").max(1000),
 });
 const actorSchema = z.object({
@@ -335,10 +335,6 @@ export class CaseService {
         const caso = await getCasoBasico(codigo, "startExecution");
         return CaseRepository.startExecution(caso.id_caso);
     }
-    static async acceptPlan(codigo, _rawBody, actor) {
-        const caso = await getCasoBasico(codigo, "acceptPlan");
-        return CaseRepository.acceptPlan(caso.id_caso, await nombreDelActor(actor));
-    }
     static async acceptPlanById(idPlan, _rawBody, actor) {
         const plan = await getPlanBasico(idPlan, "acceptPlan", actor);
         return CaseRepository.acceptPlanById(plan.id_plan, await nombreDelActor(actor));
@@ -363,10 +359,6 @@ export class CaseService {
         const dto = extensionReviewSchema.parse(rawBody);
         const plan = await getPlanBasico(idPlan, "reviewExtension");
         return CaseRepository.reviewExtensionByPlan(plan.id_plan, dto.decision, dto.nota ?? null, dto.fecha_aprobada ?? null);
-    }
-    static async completeExecution(codigo, _rawBody, actor) {
-        const caso = await getCasoBasico(codigo, "completeExecution");
-        return CaseRepository.completeExecution(caso.id_caso, await nombreDelActor(actor));
     }
     static async sendToVerification(codigo) {
         const caso = await getCasoBasico(codigo, "sendToVerification");

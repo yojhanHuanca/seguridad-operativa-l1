@@ -34,7 +34,8 @@ export function usePushSubscription() {
   }, [soportado]);
 
   useEffect(() => {
-    void revisar();
+    const timer = window.setTimeout(() => void revisar(), 0);
+    return () => window.clearTimeout(timer);
   }, [revisar]);
 
   const activar = useCallback(async () => {

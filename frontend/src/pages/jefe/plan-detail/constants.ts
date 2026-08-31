@@ -8,4 +8,4 @@ export const ACCEPT_IMAGES = "image/jpeg,image/png,image/webp";
 export const ACCEPT_VIDEOS = "video/mp4,video/quicktime";
 export const ACCEPT_DOCUMENTS = "application/pdf";
 export const MAX_ARCHIVOS = 10;
-export const MAX_BYTES = 25 * 1024 * 1024;
+export const MAX_BYTES = 20 * 1024 * 1024;

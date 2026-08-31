@@ -192,15 +192,6 @@ export class CaseController {
             return handleError(res, error, "Error al cerrar el caso");
         }
     }
-    static async acceptPlan(req, res) {
-        try {
-            const caso = await CaseService.acceptPlan(param(req, "codigo"), req.body, req.user);
-            return res.json(ApiResponse.success("Plan aceptado, la ejecución ha iniciado", caso));
-        }
-        catch (error) {
-            return handleError(res, error, "Error al aceptar el plan");
-        }
-    }
     static async acceptPlanById(req, res) {
         try {
             const idPlan = param(req, "idPlan");
@@ -256,15 +247,6 @@ export class CaseController {
         }
         catch (error) {
             return handleError(res, error, "Error al resolver la ampliación del plan");
-        }
-    }
-    static async completeExecution(req, res) {
-        try {
-            const caso = await CaseService.completeExecution(param(req, "codigo"), req.body, req.user);
-            return res.json(ApiResponse.success("Ejecución completada, el caso pasó a Verificación", caso));
-        }
-        catch (error) {
-            return handleError(res, error, "Error al completar la ejecución");
         }
     }
     static async startExecution(req, res) {

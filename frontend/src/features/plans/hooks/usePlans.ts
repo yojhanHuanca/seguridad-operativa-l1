@@ -116,20 +116,6 @@ export function useRequestPlanExtension() {
     }
   );
 }
-export function useAcceptPlanByCase() {
-  return usePlanMutation<{ codigo: string; actor?: string }>(async ({ codigo, actor }) => {
-    const { data } = await api.post(`/cases/${encodeURIComponent(codigo)}/accept-plan`, { actor });
-    return data;
-  });
-}
-
-export function useCompleteExecutionByCase() {
-  return usePlanMutation<{ codigo: string; actor?: string }>(async ({ codigo, actor }) => {
-    const { data } = await api.post(`/cases/${encodeURIComponent(codigo)}/complete-execution`, { actor });
-    return data;
-  });
-}
-
 export function useRequestExtension() {
   return usePlanMutation<{ codigo: string; nueva_fecha: string; justificacion: string; actor?: string }>(
     async ({ codigo, ...body }) => {

@@ -393,12 +393,6 @@ export class CaseService {
     return CaseRepository.startExecution(caso.id_caso);
   }
 
-  static async acceptPlan(codigo: string, _rawBody: unknown, actor?: Actor) {
-    const caso = await getCasoBasico(codigo, "acceptPlan");
-    return CaseRepository.acceptPlan(caso.id_caso, await nombreDelActor(actor));
-  }
-
-
   static async acceptPlanById(idPlan: string, _rawBody: unknown, actor?: Actor) {
     const plan = await getPlanBasico(idPlan, "acceptPlan", actor);
     return CaseRepository.acceptPlanById(plan.id_plan, await nombreDelActor(actor));
@@ -436,11 +430,6 @@ export class CaseService {
     const dto = extensionReviewSchema.parse(rawBody);
     const plan = await getPlanBasico(idPlan, "reviewExtension");
     return CaseRepository.reviewExtensionByPlan(plan.id_plan, dto.decision, dto.nota ?? null, dto.fecha_aprobada ?? null);
-  }
-
-  static async completeExecution(codigo: string, _rawBody: unknown, actor?: Actor) {
-    const caso = await getCasoBasico(codigo, "completeExecution");
-    return CaseRepository.completeExecution(caso.id_caso, await nombreDelActor(actor));
   }
 
   static async sendToVerification(codigo: string) {

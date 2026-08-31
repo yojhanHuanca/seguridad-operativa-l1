@@ -214,21 +214,6 @@ export function useAddPlanComment(codigo: string) {
   );
 }
 
-/** Acciones del Jefe del Área (portal propio pendiente; se exponen ya para el ciclo). */
-export function useAcceptPlan(codigo: string) {
-  return useCaseMutation<{ actor?: string }>(codigo, async (input) => {
-    const { data } = await api.post(`/cases/${encodeURIComponent(codigo)}/accept-plan`, input ?? {});
-    return data;
-  });
-}
-
-export function useCompleteExecution(codigo: string) {
-  return useCaseMutation<{ actor?: string }>(codigo, async (input) => {
-    const { data } = await api.post(`/cases/${encodeURIComponent(codigo)}/complete-execution`, input ?? {});
-    return data;
-  });
-}
-
 /**
  * SO arranca la Ejecución con los planes que ya aceptaron las áreas, sin
  * esperar a las que faltan. Los planes pendientes siguen vigentes.

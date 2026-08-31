@@ -19,7 +19,7 @@ import { abrirArchivoProtegido } from "@/lib/archivos";
 const TIPOS_PERMITIDOS = ["image/jpeg", "image/png", "image/webp", "video/mp4", "video/quicktime", "application/pdf"];
 const ACCEPT = TIPOS_PERMITIDOS.join(",");
 const MAX_ARCHIVOS = 10;
-const MAX_BYTES = 25 * 1024 * 1024;
+const MAX_BYTES = 30 * 1024 * 1024;
 const PLAN_EVIDENCE_MARKER = "__PLAN_EVIDENCE__:";
 const CASE_EVIDENCE_MARKER = "__CASE_EVIDENCE__:";
 

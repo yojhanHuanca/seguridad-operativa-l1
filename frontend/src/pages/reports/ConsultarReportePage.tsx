@@ -10,9 +10,11 @@ import { useConsultarReporte } from "@/features/reports/hooks/useConsultarReport
 import { leerReportesLocales } from "@/features/reports/lib/misReportesLocal";
 import { apiErrorMessage } from "@/lib/api";
 
+const APP_TIME_ZONE = "America/Lima";
+
 function formatFecha(iso: string | null) {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" });
+  return new Date(iso).toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric", timeZone: APP_TIME_ZONE });
 }
 
 /**
@@ -95,7 +97,7 @@ export function ConsultarReportePage() {
         )}
 
         {reporte && (
-          <Card className="mt-4 p-5">
+          <Card className="mt-4 overflow-hidden p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="font-mono text-[13px] font-semibold text-brand-700">{reporte.codigo_sop}</p>
@@ -106,7 +108,7 @@ export function ConsultarReportePage() {
               <EstadoPill estado={reporte.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle?.nombre ?? "—"} />
             </div>
 
-            <p className="mt-3 text-[13.5px] leading-relaxed text-ink-soft">{reporte.descripcion}</p>
+            <p className="mt-3 min-w-0 whitespace-pre-wrap text-[13.5px] leading-relaxed text-ink-soft [overflow-wrap:anywhere]">{reporte.descripcion}</p>
 
             <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1.5 text-[12.5px] text-ink-quiet">
               <span className="inline-flex items-center gap-1.5">
@@ -124,13 +126,13 @@ export function ConsultarReportePage() {
                   {reporte.solicitudes_informacion.map((solicitud) => (
                     <div key={solicitud.id_solicitud} className="rounded-lg border border-line bg-surface/50 p-3">
                       <p className="text-[11.5px] text-ink-quiet">{formatFecha(solicitud.fecha_solicitud)} · Seguridad Operativa pidió información</p>
-                      <p className="mt-1 text-[13px] text-ink">{solicitud.mensaje}</p>
+                      <p className="mt-1 min-w-0 whitespace-pre-wrap text-[13px] text-ink [overflow-wrap:anywhere]">{solicitud.mensaje}</p>
                       {solicitud.respondida ? (
                         <div className="mt-2 rounded-lg bg-brand-50 p-2.5">
                           <p className="flex items-center gap-1.5 text-[11.5px] font-medium text-brand-800">
                             <CheckCircle2 className="h-3.5 w-3.5" /> Respondido {formatFecha(solicitud.fecha_respuesta)}
                           </p>
-                          <p className="mt-1 text-[13px] text-ink-soft">{solicitud.respuesta}</p>
+                          <p className="mt-1 min-w-0 whitespace-pre-wrap text-[13px] text-ink-soft [overflow-wrap:anywhere]">{solicitud.respuesta}</p>
                         </div>
                       ) : (
                         <p className="mt-2 flex items-center gap-1.5 text-[11.5px] font-medium text-warning-ink">

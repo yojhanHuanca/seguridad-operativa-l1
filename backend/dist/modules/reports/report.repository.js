@@ -2,6 +2,34 @@ import prisma from "../../lib/prisma.js";
 import { NotificationRepository } from "../notifications/notification.repository.js";
 import { ConfiguracionService } from "../configuracion/configuracion.service.js";
 const DIAS = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+const APP_TIME_ZONE = "America/Lima";
+function limaParts(instant) {
+    const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: APP_TIME_ZONE,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hourCycle: "h23",
+    }).formatToParts(instant);
+    const part = (type) => Number(parts.find((item) => item.type === type)?.value ?? 0);
+    return {
+        year: part("year"),
+        month: part("month"),
+        day: part("day"),
+        hour: part("hour"),
+        minute: part("minute"),
+        second: part("second"),
+    };
+}
+function fechaHoraLima(instant = new Date()) {
+    const parts = limaParts(instant);
+    const fecha = new Date(Date.UTC(parts.year, parts.month - 1, parts.day));
+    const hora = new Date(Date.UTC(1970, 0, 1, parts.hour, parts.minute, parts.second));
+    return { fecha, hora };
+}
 const LIST_INCLUDE = {
     catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { select: { nombre: true, color: true } },
     catalogo_detalle_casos_sop_tipoTocatalogo_detalle: { select: { nombre: true } },
@@ -161,8 +189,7 @@ export class ReportRepository {
     static async createFullReport(dto, archivos, id_usuario_creador) {
         return await prisma.$transaction(async (tx) => {
             const ahora = new Date();
-            const fecha = new Date(Date.UTC(ahora.getFullYear(), ahora.getMonth(), ahora.getDate()));
-            const hora = new Date(Date.UTC(1970, 0, 1, ahora.getHours(), ahora.getMinutes(), ahora.getSeconds()));
+            const { fecha, hora } = fechaHoraLima(ahora);
             const evento = await tx.eventos_operativos.create({
                 data: {
                     fecha,
