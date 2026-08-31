@@ -189,7 +189,7 @@ function EventosPrintDocument({
         <div className="flex items-center gap-3">
           <Logo size={30} withWordmark={false} />
           <div>
-            <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-brand-800">SIGMA L1 · Monitoreo</p>
+            <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-brand-800">SMS L1 · Monitoreo</p>
             <h1 className="mt-0.5 text-[15px] font-bold leading-tight text-ink">Indicadores | Eventos operacionales</h1>
             <p className="text-[10px] text-ink-quiet">
               Línea 1 del Metro de Lima · {total.mes} eventos · {periodo}
@@ -283,7 +283,7 @@ function EventosPrintDocument({
       </div>
 
       <footer className="mt-2 border-t border-line pt-1.5 text-[9px] text-ink-quiet">
-        Documento generado por SIGMA L1 · Monitoreo · {formatDateTime(generatedAt)}
+        Documento generado por SMS L1 · Monitoreo · {formatDateTime(generatedAt)}
       </footer>
     </section>
   );

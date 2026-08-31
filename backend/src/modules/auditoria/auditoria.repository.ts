@@ -24,8 +24,8 @@ export interface NuevaAuditoria {
 
 const SYSTEM_AUDIT_USER = {
   codigo_usuario: "SYS-AUDIT",
-  nombre: "Sistema SIGMA",
-  correo: "sistema.auditoria@sigma.local",
+  nombre: "Sistema SMS",
+  correo: "sistema.auditoria@sms.local",
   cargo: "Auditoría automática",
   estado: "Sistema",
 } as const;

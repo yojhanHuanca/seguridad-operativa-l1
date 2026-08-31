@@ -15,9 +15,9 @@ self.addEventListener("push", (event) => {
   try {
     data = event.data.json();
   } catch {
-    data = { title: "SIGMA L1", body: event.data.text() };
+    data = { title: "SMS L1", body: event.data.text() };
   }
-  const title = data.title || "SIGMA L1";
+  const title = data.title || "SMS L1";
   const options = {
     body: data.body || "",
     icon: "/logo-linea1.png",

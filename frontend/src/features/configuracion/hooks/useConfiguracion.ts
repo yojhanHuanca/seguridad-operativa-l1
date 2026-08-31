@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, type ApiEnvelope } from "@/lib/api";
 import type { ConfiguracionGeneral, ConfiguracionPublica } from "../types";
 
-export const DEFAULT_SYSTEM_NAME = "SIGMA L1";
+export const DEFAULT_SYSTEM_NAME = "SMS L1";
 export const DEFAULT_SYSTEM_VERSION = "1.0.0";
 
 async function fetchConfiguracion(): Promise<ConfiguracionGeneral> {

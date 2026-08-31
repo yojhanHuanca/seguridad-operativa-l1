@@ -46,7 +46,7 @@ const CUENTAS: CuentaSeed[] = [
   },
   {
     codigo_usuario: "AD001",
-    nombre: "Administrador SIGMA",
+    nombre: "Administrador SMS",
     correo: "admin@metrolinea1.pe",
     cargo: "Administrador del sistema",
     area: "Operaciones",
@@ -55,7 +55,7 @@ const CUENTAS: CuentaSeed[] = [
   },
   {
     codigo_usuario: "MO001",
-    nombre: "Monitorista SIGMA",
+    nombre: "Monitorista SMS",
     correo: "monitorista@metrolinea1.pe",
     cargo: "Monitorista de eventos operativos",
     area: "Operaciones",
@@ -64,7 +64,7 @@ const CUENTAS: CuentaSeed[] = [
   },
   {
     codigo_usuario: "RE001",
-    nombre: "Reportante SIGMA",
+    nombre: "Reportante SMS",
     correo: "reportante@metrolinea1.pe",
     cargo: "Trabajador reportante",
     area: "Operaciones",

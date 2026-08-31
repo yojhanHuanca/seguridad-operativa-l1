@@ -22,7 +22,7 @@ export function Logo({
   size = 36,
   className,
   withWordmark = true,
-  wordmark = "SIGMA L1",
+  wordmark = "SMS L1",
   subtitle = "Seguridad Operativa · Metro de Lima",
   tone = "dark",
 }: LogoProps) {

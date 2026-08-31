@@ -44,7 +44,7 @@ services:
       JWT_EXPIRES_IN: 8h
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
-      EMAIL_FROM: ${EMAIL_FROM:-SIGMA L1 <onboarding@resend.dev>}
+      EMAIL_FROM: ${EMAIL_FROM:-SMS L1 <onboarding@resend.dev>}
       FRONTEND_URL: http://localhost:5173
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}

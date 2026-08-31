@@ -103,8 +103,9 @@ function SidebarContent({ collapsed, onNavigate, systemName }: { collapsed: bool
           </div>
         </div>
 
-        <Link to="/admin/configuracion" onClick={onNavigate} className="mt-3 flex h-10 items-center gap-3 rounded-lg px-2.5 text-[12.5px] font-medium text-ink-soft hover:bg-surface hover:text-ink">
-          <Cog className="h-4 w-4 text-ink-faint" />{!collapsed && <><span className="flex-1">Configuración</span><ChevronDown className="h-3.5 w-3.5" /></>}
+        <Link to="/admin/configuracion" onClick={onNavigate} className="flex h-10 items-center gap-3 rounded-lg px-2.5 text-[12.5px] font-medium text-ink-soft hover:bg-surface hover:text-ink">
+          <Cog className="h-4 w-4 text-ink-faint" />
+                {!collapsed && <span className="flex-1">Configuración</span>}
         </Link>
         <div className="my-3 border-t border-line-soft" />
         <Link to="/admin/auditoria" onClick={onNavigate} className="flex h-10 items-center gap-3 rounded-lg px-2.5 text-[12.5px] font-medium text-ink-soft hover:bg-surface hover:text-ink">

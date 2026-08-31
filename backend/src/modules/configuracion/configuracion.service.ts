@@ -28,7 +28,7 @@ const CONFIG_KEYS = {
 } as const;
 
 const DEFAULT_VALUES: Record<string, string> = {
-  [CONFIG_KEYS.sistemaNombre]: "SIGMA L1",
+  [CONFIG_KEYS.sistemaNombre]: "SMS L1",
   [CONFIG_KEYS.sistemaVersion]: "1.0.0",
   [CONFIG_KEYS.expedientePrefijo]: "SOP",
   [CONFIG_KEYS.expedienteSecuencia]: "0",

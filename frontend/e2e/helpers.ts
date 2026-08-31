@@ -70,7 +70,7 @@ const catalogGroups = [
 ];
 
 const configuracion = {
-  sistema: { nombre: 'SIGMA L1', version: '1.0.0' },
+  sistema: { nombre: 'SMS L1', version: '1.0.0' },
   numeracion: { prefijoExpedientes: 'SOP', secuenciaExpedientes: 56, prefijoPlanes: 'PLA', secuenciaPlanes: 28 },
   plazos: { diasMaxInvestigacion: 15, diasResponderPlanes: 7, diasSolicitarProrroga: 3 },
   meta: { ultimaActualizacion: now },
@@ -133,7 +133,7 @@ export async function mockApi(page: Page) {
       return json({ codigo_sop: 'SOP 99-2026', id_caso: 99, id_evento: 99 });
     }
 
-    if (path === '/configuracion/publica') return json({ nombre: 'SIGMA L1', version: '1.0.0' });
+    if (path === '/configuracion/publica') return json({ nombre: 'SMS L1', version: '1.0.0' });
     if (path === '/configuracion') return json(configuracion);
     if (path === '/roles') return json(roles);
     if (path === '/areas') return json(areas);

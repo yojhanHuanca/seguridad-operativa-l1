@@ -1,6 +1,6 @@
 {
-  "name": "SIGMA L1 · Seguridad Operativa",
-  "short_name": "SIGMA L1",
+  "name": "SMS L1 · Seguridad Operativa",
+  "short_name": "SMS L1",
   "description": "Seguridad operativa de Línea 1 del Metro de Lima.",
   "start_url": "/login",
   "display": "standalone",

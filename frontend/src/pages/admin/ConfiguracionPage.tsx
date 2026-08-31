@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 
 const DEFAULT_CONFIG: ConfiguracionGeneral = {
   sistema: {
-    nombre: "SIGMA L1",
+    nombre: "SMS L1",
     version: "1.0.0",
   },
   numeracion: {
