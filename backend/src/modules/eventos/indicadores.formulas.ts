@@ -69,6 +69,7 @@ export interface IndicadorEventos {
 
 export interface IndicadoresEventosResponse {
   periodo: { anio: number; mes: number | null };
+  datosMes: { kmComercial: number | null; afluenciaPasajeros: number | null };
   totalEventos: IndicadorEventos;
   erroresOperativos: IndicadorEventos;
   accidentabilidad: IndicadorEventos;

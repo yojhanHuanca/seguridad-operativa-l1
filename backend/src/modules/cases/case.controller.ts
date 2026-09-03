@@ -321,15 +321,6 @@ export class CaseController {
     }
   }
 
-  static async requestExtension(req: Request, res: Response) {
-    try {
-      const caso = await CaseService.requestExtension(param(req, "codigo"), req.body, (req as AuthenticatedRequest).user);
-      return res.status(201).json(ApiResponse.success("Ampliación de plazo solicitada", caso));
-    } catch (error) {
-      return handleError(res, error, "Error al solicitar la ampliación");
-    }
-  }
-
   static async reviewExtension(req: Request, res: Response) {
     try {
       const caso = await CaseService.reviewExtension(param(req, "codigo"), req.body);

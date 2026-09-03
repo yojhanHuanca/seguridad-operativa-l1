@@ -391,11 +391,6 @@ export class CaseService {
             await assertPlanPropio(plan, actor);
         return CaseRepository.updateActivity(id, dto.estado, dto.comentario ?? null, await nombreDelActor(actor));
     }
-    static async requestExtension(codigo, rawBody, actor) {
-        const dto = extensionSchema.parse(rawBody);
-        const caso = await getCasoBasico(codigo, "requestExtension");
-        return CaseRepository.requestExtension(caso.id_caso, { nueva_fecha: dto.nueva_fecha, justificacion: dto.justificacion }, await nombreDelActor(actor));
-    }
     static async reviewExtension(codigo, rawBody) {
         const dto = extensionReviewSchema.parse(rawBody);
         const caso = await getCasoBasico(codigo, "reviewExtension");

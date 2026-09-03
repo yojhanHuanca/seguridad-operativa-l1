@@ -13,7 +13,7 @@ export function DetailStep({ form }: { form: UseFormReturn<ReportFormValues> }) 
   const nearLimit = descripcion.length >= 470;
 
   return (
-    <Card className="p-5">
+    <Card className="p-5 shadow-[var(--shadow-card)]">
       <div className="mb-4">
         <h2 className="text-lg font-bold text-ink">Cuéntanos brevemente qué ocurrió</h2>
         <p className="text-sm text-ink-quiet">Describe lo observado y el riesgo potencial.</p>
@@ -32,7 +32,7 @@ export function DetailStep({ form }: { form: UseFormReturn<ReportFormValues> }) 
         {descripcion.length}/500 caracteres
       </p>
 
-      <div className="mt-3.5 flex items-start gap-2.5 rounded-lg bg-info-soft p-3.5 text-[12.5px] text-info-ink">
+      <div className="mt-3.5 flex items-start gap-2.5 rounded-lg border border-info/10 bg-info-soft p-3.5 text-[12.5px] text-info-ink">
         <Info className="mt-0.5 h-4 w-4 shrink-0" />
         <p>
           No es necesario identificar responsables ni conocer las causas. Solo describe lo que observaste y el

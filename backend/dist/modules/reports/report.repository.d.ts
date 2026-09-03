@@ -467,6 +467,8 @@ export declare class ReportRepository {
             nombre: string;
         };
     } | null>;
+    /** Evidencia adjuntada después de creado el caso — misma forma que al crear el reporte. */
+    static agregarEvidencias(id_caso: number, archivos: UploadedFile[]): Promise<void>;
     static findCatalogoDetalle(catalogoNombre: string, valorNombre: string): Promise<{
         nombre: string;
         estado: boolean | null;

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   AlertTriangle,
   BarChart3,
@@ -369,18 +369,19 @@ export function JefeIndicadoresPage() {
 }
 
 function MonthFilter({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  const currentYear = new Date().getFullYear();
   const [open, setOpen] = useState(false);
-  const [viewYear, setViewYear] = useState(() => parseMonthKey(value)?.year ?? new Date().getFullYear());
+  const [viewYear, setViewYear] = useState(() => parseMonthKey(value)?.year ?? currentYear);
 
-  useEffect(() => {
-    const parsed = parseMonthKey(value);
-    if (parsed) setViewYear(parsed.year);
-  }, [value]);
+  const toggleOpen = () => {
+    if (!open) setViewYear(parseMonthKey(value)?.year ?? currentYear);
+    setOpen(!open);
+  };
 
   return (
     <div className="relative grid gap-1 text-[11px] font-semibold text-ink-quiet">
       <span>{label}</span>
-      <button type="button" onClick={() => setOpen((current) => !current)} className="inline-flex h-9 min-w-[168px] items-center justify-between gap-3 rounded-lg border border-line-strong bg-white px-3 text-[12.5px] font-medium text-ink transition-colors hover:border-brand-300 focus-visible:border-brand-600 focus-visible:outline-none">
+      <button type="button" onClick={toggleOpen} className="inline-flex h-9 min-w-[168px] items-center justify-between gap-3 rounded-lg border border-line-strong bg-white px-3 text-[12.5px] font-medium text-ink transition-colors hover:border-brand-300 focus-visible:border-brand-600 focus-visible:outline-none">
         <span>{value === ALL ? "Todas" : monthSelectLabel(value)}</span>
         <CalendarDays className="h-4 w-4 text-ink-quiet" />
       </button>
@@ -424,16 +425,17 @@ function YearFilter({ label, value, onChange }: { label: string; value: string; 
   const [open, setOpen] = useState(false);
   const [viewStart, setViewStart] = useState(() => yearBlockStart(value === ALL ? currentYear : Number(value)));
 
-  useEffect(() => {
-    if (value !== ALL) setViewStart(yearBlockStart(Number(value)));
-  }, [value]);
+  const toggleOpen = () => {
+    if (!open) setViewStart(yearBlockStart(value === ALL ? currentYear : Number(value)));
+    setOpen(!open);
+  };
 
   const years = Array.from({ length: 12 }, (_, index) => viewStart + index);
 
   return (
     <div className="relative grid gap-1 text-[11px] font-semibold text-ink-quiet">
       <span>{label}</span>
-      <button type="button" onClick={() => setOpen((current) => !current)} className="inline-flex h-9 min-w-[116px] items-center justify-between gap-3 rounded-lg border border-line-strong bg-white px-3 text-[12.5px] font-medium text-ink transition-colors hover:border-brand-300 focus-visible:border-brand-600 focus-visible:outline-none">
+      <button type="button" onClick={toggleOpen} className="inline-flex h-9 min-w-[116px] items-center justify-between gap-3 rounded-lg border border-line-strong bg-white px-3 text-[12.5px] font-medium text-ink transition-colors hover:border-brand-300 focus-visible:border-brand-600 focus-visible:outline-none">
         <span>{value === ALL ? "Todas" : value}</span>
         <CalendarDays className="h-4 w-4 text-ink-quiet" />
       </button>

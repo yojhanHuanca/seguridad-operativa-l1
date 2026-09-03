@@ -1,8 +1,10 @@
 import { useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { Camera, FileText, Image as ImageIcon, Video, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { SPRING_SNAPPY } from "@/design-system/motion/variants";
 
 const MAX_SIZE_MB = 30;
 const MAX_FILES = 10;
@@ -80,10 +82,15 @@ export function EvidencePicker({
 
   return (
     <>
-      <div
+      <motion.div
+        initial={false}
+        animate={isDragging ? { scale: 1.01 } : { scale: 1 }}
+        transition={SPRING_SNAPPY}
         className={cn(
           "rounded-xl border-2 border-dashed p-6 text-center transition-colors duration-200",
-          isDragging ? "border-brand-400 bg-brand-50/60" : "border-input bg-secondary/30"
+          isDragging
+            ? "border-brand-500 bg-brand-50/75 shadow-[0_18px_40px_-28px_rgba(15,107,62,0.65)]"
+            : "border-input bg-secondary/30 hover:border-brand-300 hover:bg-brand-50/25"
         )}
         onDragOver={(e) => {
           e.preventDefault();
@@ -96,14 +103,17 @@ export function EvidencePicker({
           addFiles(e.dataTransfer.files);
         }}
       >
-        <div
+        <motion.div
+          initial={false}
+          animate={isDragging ? { y: -2, rotate: -4 } : { y: 0, rotate: 0 }}
+          transition={SPRING_SNAPPY}
           className={cn(
             "mx-auto grid h-12 w-12 place-items-center rounded-xl border transition-colors duration-200",
             isDragging ? "border-brand-300 bg-white text-brand-700" : "border-input bg-card text-brand-700"
           )}
         >
           <Camera className="h-5 w-5" />
-        </div>
+        </motion.div>
         <p className="mt-3 text-sm font-medium text-ink">Arrastra archivos o adjunta desde tu equipo</p>
         <p className="mt-1 text-xs text-ink-quiet">
           JPG, PNG, WEBP, MP4, MOV o PDF · máximo {MAX_FILES} archivos de {MAX_SIZE_MB} MB
@@ -152,7 +162,7 @@ export function EvidencePicker({
             <FileText className="h-4 w-4" /> Adjuntar PDF
           </Button>
         </div>
-      </div>
+      </motion.div>
 
       {files.length > 0 && (
         <div className="mt-3.5 space-y-2">
@@ -162,9 +172,12 @@ export function EvidencePicker({
           {files.map((file, i) => {
             const Icon = iconFor(file.type);
             return (
-              <div
+              <motion.div
                 key={`${file.name}-${i}`}
-                className="flex animate-in items-center gap-3 rounded-lg border border-border bg-card p-3 fade-in slide-in-from-top-1 duration-200"
+                initial={{ opacity: 0, y: -8, scale: 0.99 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.24, ease: "easeOut" }}
+                className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 shadow-[var(--shadow-card)]"
               >
                 <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-secondary text-ink-soft">
                   <Icon className="h-4 w-4" />
@@ -176,11 +189,12 @@ export function EvidencePicker({
                 <button
                   type="button"
                   onClick={() => removeFile(i)}
-                  className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-ink-quiet transition-colors hover:bg-secondary hover:text-destructive active:scale-90"
+                  aria-label={`Quitar ${file.name}`}
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-ink-quiet transition-colors hover:bg-secondary hover:text-destructive active:scale-90 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-destructive/20"
                 >
                   <X className="h-4 w-4" />
                 </button>
-              </div>
+              </motion.div>
             );
           })}
         </div>

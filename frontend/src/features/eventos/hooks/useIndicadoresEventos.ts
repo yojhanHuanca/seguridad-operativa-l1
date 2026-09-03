@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, type ApiEnvelope } from "@/lib/api";
 
 export interface SerieMensual {
@@ -23,6 +23,7 @@ export interface IndiceEventos {
 
 export interface IndicadoresEventos {
   periodo: { anio: number; mes: number | null };
+  datosMes: { kmComercial: number | null; afluenciaPasajeros: number | null };
   totalEventos: ConteoMesAnual;
   erroresOperativos: ConteoMesAnual;
   accidentabilidad: ConteoMesAnual;
@@ -31,6 +32,13 @@ export interface IndicadoresEventos {
   indiceErrores: IndiceEventos;
   indiceAccidentabilidad: IndiceEventos;
   faltanDatos: string[];
+}
+
+export interface DatosIndicadoresMesInput {
+  anio: number;
+  mes: number;
+  kmComercial: number;
+  afluenciaPasajeros: number;
 }
 
 async function fetchIndicadores(anio: number, mes: number): Promise<IndicadoresEventos> {
@@ -43,5 +51,19 @@ export function useIndicadoresEventos(anio: number, mes: number) {
   return useQuery({
     queryKey: ["eventos", "indicadores", anio, mes],
     queryFn: () => fetchIndicadores(anio, mes),
+  });
+}
+
+export function useGuardarDatosIndicadoresMes() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: DatosIndicadoresMesInput) => {
+      const { data } = await api.put<ApiEnvelope<DatosIndicadoresMesInput>>("/eventos/indicadores/datos-mes", input);
+      if (!data.data) throw new Error(data.message);
+      return data.data;
+    },
+    onSuccess: (data) => {
+      void queryClient.invalidateQueries({ queryKey: ["eventos", "indicadores", data.anio, data.mes] });
+    },
   });
 }

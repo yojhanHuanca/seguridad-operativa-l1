@@ -1371,43 +1371,6 @@ export declare class CaseRepository {
         porcentaje: import("@prisma/client/runtime/library").Decimal | null;
     }>;
     /** ETAPA 5 — el Jefe del Área solicita ampliación de plazo. */
-    static requestExtension(id_caso: number, dto: {
-        nueva_fecha: string;
-        justificacion: string;
-    }, actor: string): Promise<{
-        created_at: Date | null;
-        descripcion: string;
-        id_caso: number;
-        codigo_sop: string;
-        titulo: string | null;
-        nombre_reportante: string | null;
-        correo_reportante: string | null;
-        telefono_reportante: string | null;
-        fecha_hallazgo: Date;
-        fecha_evento: Date | null;
-        estado_hallazgo: number;
-        dias_abierto: number | null;
-        procedencia: number;
-        tipo: number;
-        responsable_hallazgo: number | null;
-        tipo_sop: number;
-        subtipo_sop: number | null;
-        peligro: string | null;
-        consecuencia: string | null;
-        descripcion_evento: string | null;
-        clasificacion: string | null;
-        analisis_riesgo: number | null;
-        acr: string | null;
-        area_responsable: number | null;
-        responsable_plan: number | null;
-        estado_plan: number | null;
-        fecha_plan: Date | null;
-        fecha_reprogramada: Date | null;
-        dias_abierto_plan: number | null;
-        observaciones: string | null;
-        created_by: number | null;
-        updated_at: Date | null;
-    }>;
     /** ETAPA 5 — SO aprueba o rechaza la prórroga; el caso vuelve a Ejecución. */
     static reviewExtension(id_caso: number, decision: "aprobada" | "rechazada", nota: string | null): Promise<{
         created_at: Date | null;

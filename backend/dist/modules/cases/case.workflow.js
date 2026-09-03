@@ -24,12 +24,12 @@ const RECHAZADO = "Rechazado";
 /** Etapas desde las que cada acción tiene sentido. */
 const ORIGENES_VALIDOS = {
     // --- Recepción y evaluación
-    approve: [RECEPCION],
+    approve: [RECEPCION, PENDIENTE_INFO],
     reject: [RECEPCION, EVALUACION, PENDIENTE_INFO],
     addObservation: [RECEPCION, EVALUACION, PENDIENTE_INFO],
     updateTipo: [RECEPCION, EVALUACION, PENDIENTE_INFO],
     evaluate: [EVALUACION, PENDIENTE_INFO],
-    requestInfo: [RECEPCION, EVALUACION],
+    requestInfo: [RECEPCION, EVALUACION, PENDIENTE_INFO],
     respondInfo: [PENDIENTE_INFO],
     // --- Investigación y armado del plan
     saveInvestigation: [INVESTIGACION],

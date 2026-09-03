@@ -8,6 +8,13 @@ import { ApiResponse } from "../utils/ApiResponse.js";
  * defecto al cliente. */
 export function errorMiddleware(err: unknown, _req: Request, res: Response, _next: NextFunction) {
   console.error("[unhandled]", err);
+  // El parser de JSON de Express (body-parser) llega hasta acá cuando el
+  // cuerpo de la petición no es JSON válido, con `status: 400` ya puesto —
+  // sin este chequeo caía como 500 genérico aunque la culpa era del cliente.
+  const status =
+    err && typeof err === "object" && "status" in err && typeof (err as { status?: unknown }).status === "number"
+      ? (err as { status: number }).status
+      : 500;
   const message = err instanceof Error ? err.message : "Error interno del servidor";
-  res.status(500).json(ApiResponse.error(message));
+  res.status(status).json(ApiResponse.error(message));
 }

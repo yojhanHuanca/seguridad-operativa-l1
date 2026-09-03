@@ -199,6 +199,23 @@ export declare class ReportService {
         })[];
         total: number | undefined;
     }>;
+    /**
+     * El reportante responde una solicitud de información sin cuenta ni sesión:
+     * el código SOP es la misma llave que ya usa para consultar su caso (como
+     * un número de seguimiento). Funciona igual para anónimos e identificados,
+     * hayan dejado correo o no — el correo es solo el aviso extra, no un
+     * requisito para poder responder.
+     */
+    static responderInfoPublico(codigo_sop: string, rawBody: unknown, files: UploadedFile[]): Promise<{
+        id_caso: number;
+        mensaje: string;
+        id_solicitud: number;
+        respuesta: string | null;
+        respondida: boolean;
+        estado_previo: string | null;
+        fecha_solicitud: Date | null;
+        fecha_respuesta: Date | null;
+    }>;
     static getByCodigo(codigo_sop: string, actor?: Actor): Promise<{
         anexos_caso: {
             id_anexo: number;

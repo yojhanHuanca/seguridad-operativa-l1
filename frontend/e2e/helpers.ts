@@ -96,6 +96,7 @@ const indicadores = {
 // tapaba justamente el tipo de bug que un smoke test debería atrapar.
 const indicadoresEventos = {
   periodo: { anio: 2026, mes: 8 },
+  datosMes: { kmComercial: null, afluenciaPasajeros: null },
   totalEventos: { mes: 0, anual: 0 },
   erroresOperativos: { mes: 0, anual: 0 },
   accidentabilidad: { mes: 0, anual: 0 },

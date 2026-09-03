@@ -1,10 +1,22 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import {
+  AnimatePresence,
+  animate,
+  motion,
+  MotionConfig,
+  useInView,
+  useMotionValue,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 import {
   ActivitySquare,
   ArrowRight,
   Building2,
+  ChevronDown,
   FileText,
   MapPin,
   Menu,
@@ -18,9 +30,63 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
-import { staggerContainer, riseItem, EASE_OUT } from "@/design-system/motion/variants";
+import { staggerContainer, riseItem, drawLine, EASE_OUT, SPRING_SNAPPY, TILT_SPRING } from "@/design-system/motion/variants";
 import { cn } from "@/lib/utils";
 import { nombreSistema, useConfiguracionPublica } from "@/features/configuracion/hooks/useConfiguracion";
+
+const MotionLink = motion.create(Link);
+
+/**
+ * Factor de intensidad para los efectos de scroll (parallax, línea de
+ * tiempo, pulsos): 0 con `prefers-reduced-motion` (los apaga del todo, es lo
+ * que pide esa preferencia de accesibilidad), 1 en escritorio, y un valor
+ * intermedio en pantallas angostas — reducido, no eliminado.
+ */
+function useMotionIntensity() {
+  const prefersReduced = useReducedMotion();
+  const [isNarrow, setIsNarrow] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    const update = () => setIsNarrow(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  if (prefersReduced) return 0;
+  return isNarrow ? 0.4 : 1;
+}
+
+/**
+ * Tilt 3D que sigue al cursor: rotateX/rotateY según la posición del puntero
+ * dentro del elemento, con un brillo direccional (glareX/Y, para un
+ * radial-gradient) y una sombra que se desplaza en la dirección contraria al
+ * tilt, simulando una fuente de luz fija. Se desactiva del todo con
+ * `disabled` (reduce-motion) — el mouse ya no dispara nada en pantallas
+ * táctiles, así que en móvil queda inerte de forma natural.
+ */
+function useTilt(max: number, disabled = false) {
+  const px = useMotionValue(0.5);
+  const py = useMotionValue(0.5);
+  const rotateX = useSpring(useTransform(py, [0, 1], [max, -max]), TILT_SPRING);
+  const rotateY = useSpring(useTransform(px, [0, 1], [-max, max]), TILT_SPRING);
+  const glareX = useTransform(px, (v) => `${v * 100}%`);
+  const glareY = useTransform(py, (v) => `${v * 100}%`);
+  const shadowX = useSpring(useTransform(px, [0, 1], [16, -16]), TILT_SPRING);
+  const shadowY = useSpring(useTransform(py, [0, 1], [10, -10]), TILT_SPRING);
+
+  const onMouseMove = (e: ReactMouseEvent<HTMLElement>) => {
+    if (disabled) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    px.set((e.clientX - rect.left) / rect.width);
+    py.set((e.clientY - rect.top) / rect.height);
+  };
+  const onMouseLeave = () => {
+    px.set(0.5);
+    py.set(0.5);
+  };
+
+  return { rotateX, rotateY, glareX, glareY, shadowX, shadowY, onMouseMove, onMouseLeave };
+}
 
 /**
  * Landing pública institucional de SIGMA L1. El acceso a los módulos se
@@ -130,7 +196,9 @@ function Navbar({ systemName }: { systemName: string }) {
     <header className={cn("fixed inset-x-0 top-0 z-40 transition-colors duration-300", scrolled ? "bg-white/55 shadow-sm backdrop-blur-xl" : "bg-transparent")}>
       <div className="mx-auto flex h-[76px] max-w-[1240px] items-center justify-between px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2.5">
-          <Logo size={48} withWordmark={false} />
+          <motion.div whileHover={{ scale: 1.06, rotate: -4 }} whileTap={{ scale: 0.94 }} transition={SPRING_SNAPPY}>
+            <Logo size={48} withWordmark={false} />
+          </motion.div>
           <span className={cn("font-display text-[16px] font-bold tracking-tight transition-colors", scrolled ? "text-ink" : "text-white")}>
             {systemName}
           </span>
@@ -142,11 +210,12 @@ function Navbar({ systemName }: { systemName: string }) {
               key={item.href}
               href={item.href}
               className={cn(
-                "rounded-lg px-3 py-2 text-[13px] font-medium transition-colors",
+                "group relative rounded-lg px-3 py-2 text-[13px] font-medium transition-colors",
                 scrolled ? "text-ink-soft hover:bg-surface hover:text-ink" : "text-white/85 hover:bg-white/10 hover:text-white"
               )}
             >
               {item.label}
+              <span className="pointer-events-none absolute inset-x-3 -bottom-0 h-[2px] origin-left scale-x-0 rounded-full bg-current transition-transform duration-300 ease-out group-hover:scale-x-100" />
             </a>
           ))}
           <Link to="/login" className={cn("ml-2 inline-flex h-10 items-center gap-2 rounded-lg px-4 text-[13px] font-semibold transition-colors", scrolled ? "bg-brand-700 text-white hover:bg-brand-800" : "bg-white text-brand-800 hover:bg-white/90")}>
@@ -164,16 +233,27 @@ function Navbar({ systemName }: { systemName: string }) {
         </button>
       </div>
 
-      {open && (
-        <div className="border-t border-line bg-white px-4 py-3 md:hidden">
-          {NAVEGACION_PUBLICA.map((item) => (
-            <a key={item.href} href={item.href} onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2.5 text-[13.5px] font-medium text-ink-soft hover:bg-surface">
-              {item.label}
-            </a>
-          ))}
-          <Link to="/login" onClick={() => setOpen(false)} className="mt-2 flex h-10 items-center justify-center gap-2 rounded-lg bg-brand-700 px-4 text-[13px] font-semibold text-white">Acceso interno <ArrowRight className="h-3.5 w-3.5" /></Link>
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="mobile-menu"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease: EASE_OUT }}
+            className="overflow-hidden border-t border-line bg-white md:hidden"
+          >
+            <div className="px-4 py-3">
+              {NAVEGACION_PUBLICA.map((item) => (
+                <a key={item.href} href={item.href} onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2.5 text-[13.5px] font-medium text-ink-soft hover:bg-surface">
+                  {item.label}
+                </a>
+              ))}
+              <Link to="/login" onClick={() => setOpen(false)} className="mt-2 flex h-10 items-center justify-center gap-2 rounded-lg bg-brand-700 px-4 text-[13px] font-semibold text-white">Acceso interno <ArrowRight className="h-3.5 w-3.5" /></Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
@@ -215,16 +295,31 @@ function HeroBackground() {
 }
 
 function Hero({ systemName }: { systemName: string }) {
+  const sectionRef = useRef<HTMLElement>(null);
+  const intensity = useMotionIntensity();
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
+  // Tres capas a velocidades distintas: las fotos son el fondo (la más
+  // lenta), los degradados son la capa media, y el texto es primer plano —
+  // se mueve un poco hacia arriba, en sentido contrario, para acentuar la
+  // profundidad. Con intensity en 0 (reduce-motion) los tres rangos colapsan
+  // a 0 y queda estático; en móvil se reduce a un 40%, no se elimina.
+  const bgY = useTransform(scrollYProgress, [0, 1], [0, 170 * intensity]);
+  const midY = useTransform(scrollYProgress, [0, 1], [0, 90 * intensity]);
+  const contentY = useTransform(scrollYProgress, [0, 1], [0, -40 * intensity]);
+
   return (
-    <section className="relative flex min-h-[100svh] items-end overflow-hidden bg-ink">
-      <HeroBackground />
-      <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/25" />
-      <div className="absolute inset-0 bg-gradient-to-r from-brand-950/85 via-brand-950/25 to-transparent" />
+    <section ref={sectionRef} className="relative flex min-h-[100svh] items-end overflow-hidden bg-ink">
+      <motion.div style={{ y: bgY }} className="absolute inset-0">
+        <HeroBackground />
+      </motion.div>
+      <motion.div style={{ y: midY }} className="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/25" />
+      <motion.div style={{ y: midY }} className="absolute inset-0 bg-gradient-to-r from-brand-950/85 via-brand-950/25 to-transparent" />
 
       <motion.div
         initial="hidden"
         animate="visible"
         variants={staggerContainer}
+        style={{ y: contentY }}
         className="relative mx-auto w-full max-w-[1240px] px-4 pb-20 pt-40 sm:px-6 sm:pb-28"
       >
         <motion.p variants={riseItem} className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11.5px] font-semibold uppercase tracking-[0.14em] text-white/90 backdrop-blur">
@@ -240,25 +335,84 @@ function Hero({ systemName }: { systemName: string }) {
           Una plataforma para reportar, evaluar y dar seguimiento a eventos operativos, desde el primer aviso hasta el cierre del plan de acción.
         </motion.p>
         <motion.div variants={riseItem} className="mt-8 flex flex-wrap items-center gap-3">
-          <Link
+          <MotionLink
             to="/login"
-            className="inline-flex h-12 items-center gap-2 rounded-xl bg-brand-500 px-6 text-[14px] font-semibold text-white shadow-[0_10px_30px_-8px_rgba(31,157,82,0.6)] transition-all hover:bg-brand-400 hover:shadow-[0_14px_36px_-8px_rgba(31,157,82,0.7)]"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            transition={SPRING_SNAPPY}
+            className="inline-flex h-12 items-center gap-2 rounded-xl bg-brand-500 px-6 text-[14px] font-semibold text-white shadow-[0_10px_30px_-8px_rgba(31,157,82,0.6)] transition-colors hover:bg-brand-400 hover:shadow-[0_14px_36px_-8px_rgba(31,157,82,0.7)]"
           >
             Ingresar al sistema <ArrowRight className="h-4 w-4" />
-          </Link>
-          <a href="#video" className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/25 bg-white/5 px-6 text-[14px] font-semibold text-white backdrop-blur transition-colors hover:bg-white/15">
+          </MotionLink>
+          <motion.a
+            href="#video"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            transition={SPRING_SNAPPY}
+            className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/25 bg-white/5 px-6 text-[14px] font-semibold text-white backdrop-blur transition-colors hover:bg-white/15"
+          >
             <PlayCircle className="h-4.5 w-4.5" /> Ver recorrido
-          </a>
+          </motion.a>
           {/* Pública, sin login: para quien llega desde un QR/URL a reportar directo. */}
-          <Link
+          <MotionLink
             to="/reportes/nuevo"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            transition={SPRING_SNAPPY}
             className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/25 bg-white/5 px-6 text-[14px] font-semibold text-white backdrop-blur transition-colors hover:bg-white/15"
           >
             <FileText className="h-4.5 w-4.5" /> Reportar sin cuenta
-          </Link>
+          </MotionLink>
         </motion.div>
       </motion.div>
+
+      {/* Solo en escritorio: en móvil compite por espacio con el pulgar y no aporta. */}
+      <motion.a
+        href="#plataforma"
+        aria-label="Bajar a la siguiente sección"
+        className="absolute inset-x-0 bottom-6 z-10 mx-auto hidden h-9 w-9 items-center justify-center text-white/70 transition-colors hover:text-white sm:flex"
+        animate={{ y: [0, 8, 0] }}
+        transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <ChevronDown className="h-6 w-6" />
+      </motion.a>
     </section>
+  );
+}
+
+/** Separa "34.6 km" en número (34.6, 1 decimal) y sufijo (" km"); "26" en (26, 0, ""). */
+function parseStatValue(raw: string) {
+  const match = raw.match(/^([\d.]+)(.*)$/);
+  if (!match) return null;
+  const [, numStr, suffix] = match;
+  const decimals = numStr.includes(".") ? numStr.split(".")[1].length : 0;
+  return { number: Number(numStr), decimals, suffix };
+}
+
+function AnimatedStat({ value, className }: { value: string; className?: string }) {
+  const ref = useRef<HTMLParagraphElement>(null);
+  const inView = useInView(ref, { once: true, amount: 0.6 });
+  const reduceMotion = useReducedMotion();
+  const parsed = parseStatValue(value);
+  const motionVal = useMotionValue(0);
+  const [display, setDisplay] = useState(parsed ? `0${parsed.suffix}` : value);
+
+  useEffect(() => {
+    if (!parsed || !inView || reduceMotion) return;
+    const controls = animate(motionVal, parsed.number, {
+      duration: 1.3,
+      ease: EASE_OUT,
+      onUpdate: (v) => setDisplay(`${v.toFixed(parsed.decimals)}${parsed.suffix}`),
+    });
+    return () => controls.stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inView, reduceMotion]);
+
+  // Con reduce-motion activo no hay animación que corra: se muestra el valor final directo.
+  return (
+    <p ref={ref} className={className}>
+      {reduceMotion ? value : display}
+    </p>
   );
 }
 
@@ -274,14 +428,21 @@ function StatsBand() {
           className="grid grid-cols-2 gap-3 rounded-2xl border border-line bg-white p-5 shadow-[var(--shadow-plate)] sm:grid-cols-4 sm:p-7"
         >
           {ESTADISTICAS.map((stat) => (
-            <motion.div key={stat.label} variants={riseItem} className="flex items-center gap-3.5 px-2 py-2 sm:border-l sm:border-line-soft sm:first:border-l-0 sm:pl-6">
+            <motion.div
+              key={stat.label}
+              variants={riseItem}
+              whileHover={{ y: -4 }}
+              transition={SPRING_SNAPPY}
+              className="flex items-center gap-3.5 px-2 py-2 sm:border-l sm:border-line-soft sm:first:border-l-0 sm:pl-6"
+            >
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
                 <stat.icon className="h-5.5 w-5.5" />
               </span>
               <div>
-                <p className="font-display text-[26px] font-bold leading-none tabular-nums text-ink sm:text-[32px]">
-                  {stat.value}
-                </p>
+                <AnimatedStat
+                  value={stat.value}
+                  className="font-display text-[26px] font-bold leading-none tabular-nums text-ink sm:text-[32px]"
+                />
                 <p className="mt-1.5 text-[13px] font-medium text-ink-quiet">{stat.label}</p>
               </div>
             </motion.div>
@@ -293,13 +454,41 @@ function StatsBand() {
 }
 
 function PortalCard({ portal, i, className }: { portal: Portal; i: number; className?: string }) {
+  const [hovered, setHovered] = useState(false);
+  const reduceMotion = useReducedMotion();
+  const tilt = useTilt(10, Boolean(reduceMotion));
+  const boxShadow = useTransform(
+    [tilt.shadowX, tilt.shadowY],
+    ([sx, sy]) => `${sx}px ${(sy as number) + 10}px 30px -10px rgba(15, 40, 26, 0.22)`
+  );
+  const glareBackground = useTransform(
+    [tilt.glareX, tilt.glareY],
+    ([gx, gy]) => `radial-gradient(circle at ${gx} ${gy}, rgba(31,157,82,0.28), transparent 60%)`
+  );
+
   return (
-    <motion.div variants={riseItem} className={cn("group relative overflow-hidden rounded-2xl border border-line bg-white p-7 transition-all hover:-translate-y-1 hover:border-brand-200 hover:shadow-[var(--shadow-plate)]", className)}>
-      <Link to={portal.publico ? "/reportes/nuevo" : "/login"} className="flex h-full flex-col">
+    <motion.div
+      variants={riseItem}
+      onHoverStart={() => setHovered(true)}
+      onHoverEnd={() => {
+        setHovered(false);
+        tilt.onMouseLeave();
+      }}
+      onMouseMove={tilt.onMouseMove}
+      whileHover={{ y: -6, scale: 1.015 }}
+      transition={SPRING_SNAPPY}
+      style={{ rotateX: tilt.rotateX, rotateY: tilt.rotateY, transformPerspective: 900, boxShadow }}
+      className={cn("group relative overflow-hidden rounded-2xl border border-line bg-white p-7 transition-colors hover:border-brand-200", className)}
+    >
+      <Link to={portal.publico ? "/reportes/nuevo" : "/login"} className="relative flex h-full flex-col">
         <div className="flex items-start justify-between">
-          <div className="grid h-12 w-12 place-items-center rounded-xl bg-brand-50 text-brand-700 transition-colors group-hover:bg-brand-700 group-hover:text-white">
+          <motion.div
+            animate={hovered ? { rotate: 8, scale: 1.08 } : { rotate: 0, scale: 1 }}
+            transition={SPRING_SNAPPY}
+            className="grid h-12 w-12 place-items-center rounded-xl bg-brand-50 text-brand-700 transition-colors group-hover:bg-brand-700 group-hover:text-white"
+          >
             <portal.icon className="h-6 w-6" />
-          </div>
+          </motion.div>
           <span className="font-mono text-[12px] font-semibold text-ink-faint">0{i + 1}</span>
         </div>
         <h3 className="mt-5 text-[18px] font-semibold text-ink">{portal.label}</h3>
@@ -309,6 +498,14 @@ function PortalCard({ portal, i, className }: { portal: Portal; i: number; class
           <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
         </span>
       </Link>
+      {/* Brillo direccional: sigue al cursor, por encima del contenido pero sin bloquear clics. */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{ background: glareBackground }}
+        animate={{ opacity: hovered ? 1 : 0 }}
+        transition={{ duration: 0.25 }}
+      />
     </motion.div>
   );
 }
@@ -340,11 +537,27 @@ function PortalesSection() {
 }
 
 function ImpactSection({ systemName }: { systemName: string }) {
+  const imgRef = useRef<HTMLDivElement>(null);
+  const intensity = useMotionIntensity();
+  const { scrollYProgress } = useScroll({ target: imgRef, offset: ["start end", "end start"] });
+  // Rango acotado y la foto sobredimensionada (-inset-y-10) para que el
+  // desplazamiento nunca deje ver un borde vacío arriba o abajo.
+  const parallaxY = useTransform(scrollYProgress, [0, 1], [-24 * intensity, 24 * intensity]);
+
   return (
     <section className="bg-ink">
       <div className="mx-auto grid max-w-[1240px] lg:grid-cols-2">
-        <div className="relative min-h-[340px] overflow-hidden lg:min-h-[520px]">
-          <img src="/l1-estacion-noche.jpg" alt="Tren de Línea 1 entrando a la estación Miguel Grau, de noche" className="absolute inset-0 h-full w-full object-cover" />
+        <div ref={imgRef} className="relative min-h-[340px] overflow-hidden lg:min-h-[520px]">
+          <motion.img
+            src="/l1-estacion-noche.jpg"
+            alt="Tren de Línea 1 entrando a la estación Miguel Grau, de noche"
+            initial={{ opacity: 0, scale: 1.15 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.9, ease: EASE_OUT }}
+            style={{ y: parallaxY }}
+            className="absolute -inset-y-10 inset-x-0 h-[calc(100%+80px)] w-full object-cover"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent lg:bg-gradient-to-r" />
         </div>
         <motion.div
@@ -368,6 +581,7 @@ function ImpactSection({ systemName }: { systemName: string }) {
 }
 
 function WorkflowSection({ systemName }: { systemName: string }) {
+  const intensity = useMotionIntensity();
   return (
     <section className="bg-surface py-24">
       <div className="mx-auto max-w-[1240px] px-4 sm:px-6">
@@ -378,11 +592,33 @@ function WorkflowSection({ systemName }: { systemName: string }) {
         </motion.div>
 
         <motion.ol initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={staggerContainer} className="relative grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="absolute left-0 right-0 top-6 hidden h-px bg-line lg:block" aria-hidden />
-          {FLUJO.map((step) => (
+          <motion.div
+            variants={drawLine}
+            style={{ transformOrigin: "left" }}
+            className="absolute left-0 right-0 top-6 hidden h-[2px] overflow-hidden rounded-full bg-gradient-to-r from-brand-200 via-brand-600 to-brand-200 lg:block"
+            aria-hidden
+          >
+            {/* Pulso suave: un brillo que recorre la línea, no una parpadeante — se apaga del todo fuera de escritorio o con reduce-motion. */}
+            {intensity > 0 && (
+              <motion.div
+                className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/80 to-transparent"
+                animate={{ x: ["-100%", "300%"] }}
+                transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.4 }}
+              />
+            )}
+          </motion.div>
+          {FLUJO.map((step, i) => (
             <motion.li key={step.number} variants={riseItem} className="relative">
               <span className="relative z-10 grid h-12 w-12 place-items-center rounded-full border-2 border-brand-700 bg-white font-mono text-[13px] font-bold text-brand-700">
                 {step.number}
+                {intensity > 0 && (
+                  <motion.span
+                    aria-hidden
+                    className="absolute inset-0 rounded-full border-2 border-brand-400"
+                    animate={{ scale: [1, 1.4, 1], opacity: [0.55, 0, 0.55] }}
+                    transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut", delay: i * 0.3 }}
+                  />
+                )}
               </span>
               <h3 className="mt-5 text-[18px] font-semibold text-ink">{step.title}</h3>
               <p className="mt-2 text-[13.5px] leading-6 text-ink-quiet">{step.description}</p>
@@ -399,24 +635,44 @@ const ROLES_ACCESO = ["Seguridad Operativa", "Jefe de Área", "Monitorista"];
 function AccessBand() {
   return (
     <section className="bg-brand-700 py-16 text-white">
-      <div className="mx-auto flex max-w-[1240px] flex-col justify-between gap-8 px-4 sm:px-6 md:flex-row md:items-center">
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.4 }}
+        variants={staggerContainer}
+        className="mx-auto flex max-w-[1240px] flex-col justify-between gap-8 px-4 sm:px-6 md:flex-row md:items-center"
+      >
         <div>
-          <p className="text-[12px] font-semibold uppercase tracking-wide text-white/65">Acceso protegido</p>
-          <h2 className="mt-3 font-display text-[28px] font-bold leading-tight sm:text-[32px]">Continúa en tu espacio de trabajo.</h2>
-          <p className="mt-3 max-w-lg text-[14.5px] leading-relaxed text-white/70">El sistema abrirá automáticamente el panel correspondiente a tu rol, sin pasos adicionales.</p>
-          <div className="mt-5 flex flex-wrap gap-2">
+          <motion.p variants={riseItem} className="text-[12px] font-semibold uppercase tracking-wide text-white/65">Acceso protegido</motion.p>
+          <motion.h2 variants={riseItem} className="mt-3 font-display text-[28px] font-bold leading-tight sm:text-[32px]">Continúa en tu espacio de trabajo.</motion.h2>
+          <motion.p variants={riseItem} className="mt-3 max-w-lg text-[14.5px] leading-relaxed text-white/70">El sistema abrirá automáticamente el panel correspondiente a tu rol, sin pasos adicionales.</motion.p>
+          <motion.div variants={staggerContainer} className="mt-5 flex flex-wrap gap-2">
             {ROLES_ACCESO.map((rol) => (
-              <span key={rol} className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[12px] font-medium text-white/85">{rol}</span>
+              <motion.span key={rol} variants={riseItem} className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[12px] font-medium text-white/85">{rol}</motion.span>
             ))}
-          </div>
+          </motion.div>
         </div>
-        <Link to="/login" className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-lg bg-white px-6 text-[14px] font-semibold text-brand-800 transition-colors hover:bg-brand-50">Iniciar sesión <ArrowRight className="h-4 w-4" /></Link>
-      </div>
+        <motion.div variants={riseItem}>
+          <Link to="/login" className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-lg bg-white px-6 text-[14px] font-semibold text-brand-800 transition-colors hover:bg-brand-50">Iniciar sesión <ArrowRight className="h-4 w-4" /></Link>
+        </motion.div>
+      </motion.div>
     </section>
   );
 }
 
 function VideoSection() {
+  const [hovered, setHovered] = useState(false);
+  const reduceMotion = useReducedMotion();
+  const tilt = useTilt(9, Boolean(reduceMotion));
+  const boxShadow = useTransform(
+    [tilt.shadowX, tilt.shadowY],
+    ([sx, sy]) => `${sx}px ${(sy as number) + 30}px 80px -22px rgba(0, 0, 0, 0.7)`
+  );
+  const glareBackground = useTransform(
+    [tilt.glareX, tilt.glareY],
+    ([gx, gy]) => `radial-gradient(circle at ${gx} ${gy}, rgba(255,255,255,0.22), transparent 55%)`
+  );
+
   return (
     <section id="video" className="bg-ink py-24">
       <div className="mx-auto max-w-[1000px] px-4 sm:px-6">
@@ -428,12 +684,18 @@ function VideoSection() {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 24, rotateX: 6 }}
-          whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+          initial={{ opacity: 0, y: 24, scale: 0.97 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.6, ease: EASE_OUT }}
-          style={{ transformPerspective: 1400 }}
-          className="overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_30px_80px_-20px_rgba(0,0,0,0.7)]"
+          onMouseMove={tilt.onMouseMove}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => {
+            setHovered(false);
+            tilt.onMouseLeave();
+          }}
+          style={{ rotateX: tilt.rotateX, rotateY: tilt.rotateY, transformPerspective: 1400, boxShadow }}
+          className="relative overflow-hidden rounded-2xl border border-white/10 bg-black"
         >
           <div className="relative aspect-video w-full">
             <iframe
@@ -442,6 +704,14 @@ function VideoSection() {
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
               className="absolute inset-0 h-full w-full"
+            />
+            {/* Brillo direccional: sigue al cursor, sin bloquear los controles del reproductor. */}
+            <motion.div
+              aria-hidden
+              className="pointer-events-none absolute inset-0"
+              style={{ background: glareBackground }}
+              animate={{ opacity: hovered ? 1 : 0 }}
+              transition={{ duration: 0.3 }}
             />
           </div>
         </motion.div>
@@ -522,16 +792,18 @@ export function Landing() {
   const systemName = nombreSistema(identidad);
 
   return (
-    <div className="min-h-screen bg-white">
-      <Navbar systemName={systemName} />
-      <Hero systemName={systemName} />
-      <StatsBand />
-      <PortalesSection />
-      <ImpactSection systemName={systemName} />
-      <WorkflowSection systemName={systemName} />
-      <VideoSection />
-      <AccessBand />
-      <Footer systemName={systemName} />
-    </div>
+    <MotionConfig reducedMotion="user">
+      <div className="min-h-screen bg-white">
+        <Navbar systemName={systemName} />
+        <Hero systemName={systemName} />
+        <StatsBand />
+        <PortalesSection />
+        <ImpactSection systemName={systemName} />
+        <WorkflowSection systemName={systemName} />
+        <VideoSection />
+        <AccessBand />
+        <Footer systemName={systemName} />
+      </div>
+    </MotionConfig>
   );
 }

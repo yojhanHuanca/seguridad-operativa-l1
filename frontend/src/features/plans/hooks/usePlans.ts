@@ -116,12 +116,3 @@ export function useRequestPlanExtension() {
     }
   );
 }
-export function useRequestExtension() {
-  return usePlanMutation<{ codigo: string; nueva_fecha: string; justificacion: string; actor?: string }>(
-    async ({ codigo, ...body }) => {
-      const { data } = await api.post(`/cases/${encodeURIComponent(codigo)}/extension`, body);
-      return data;
-    }
-  );
-}
-

@@ -16,6 +16,7 @@ const SO_ASIGNADOS = requireRoles("Seguridad Operativa", "Admin");
 router.get("/", MONITOREO, EventoController.getAll);
 router.get("/counts", MONITOREO, EventoController.getCounts);
 router.get("/indicadores", MONITOREO, EventoController.getIndicadores);
+router.put("/indicadores/datos-mes", MONITOREO, EventoController.guardarDatosIndicadores);
 router.get("/asignados/:id_usuario", SO_ASIGNADOS, EventoController.getAsignados);
 router.get("/:id", MONITOREO, EventoController.getById);
 router.post("/", MONITOREO, EventoController.create);

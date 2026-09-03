@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { Search, FileSearch, Mail, MapPin, MessageCircle, CheckCircle2, Clock, Send } from "lucide-react";
+import { Search, FileSearch, Mail, MapPin, MessageCircle, CheckCircle2, Clock, Send, Loader2 } from "lucide-react";
 import { ReportanteShell } from "@/components/layout/ReportanteShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import { useConsultarReporte } from "@/features/reports/hooks/useConsultarReport
 import { useResponderInfoPublico } from "@/features/reports/hooks/useResponderInfoPublico";
 import { leerReportesLocales } from "@/features/reports/lib/misReportesLocal";
 import { apiErrorMessage } from "@/lib/api";
+import { EASE_OUT, SPRING_SNAPPY, riseItem, staggerContainer } from "@/design-system/motion/variants";
 
 const APP_TIME_ZONE = "America/Lima";
 
@@ -34,14 +36,16 @@ function ResponderSolicitudForm({ codigo, idSolicitud }: { codigo: string; idSol
 
   if (!abierto) {
     return (
-      <Button size="sm" className="mt-2.5" onClick={() => setAbierto(true)}>
-        <Send className="h-3.5 w-3.5" /> Responder
-      </Button>
+      <motion.div whileHover={{ y: -2, scale: 1.015 }} whileTap={{ scale: 0.98 }} transition={SPRING_SNAPPY} className="mt-2.5 inline-flex">
+        <Button size="sm" onClick={() => setAbierto(true)}>
+          <Send className="h-3.5 w-3.5" /> Responder
+        </Button>
+      </motion.div>
     );
   }
 
   return (
-    <div className="mt-3 space-y-3">
+    <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.28, ease: EASE_OUT }} className="mt-3 space-y-3">
       <Textarea
         value={respuesta}
         onChange={(e) => setRespuesta(e.target.value)}
@@ -70,7 +74,7 @@ function ResponderSolicitudForm({ codigo, idSolicitud }: { codigo: string; idSol
           Cancelar
         </Button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -84,6 +88,7 @@ export function ConsultarReportePage() {
   const [input, setInput] = useState(params.get("codigo") ?? "");
   const [buscado, setBuscado] = useState<string | null>(params.get("codigo"));
   const [guardados] = useState(() => leerReportesLocales());
+  const reducedMotion = useReducedMotion();
 
   const { data: reporte, isLoading, isError, error } = useConsultarReporte(buscado);
 
@@ -98,18 +103,31 @@ export function ConsultarReportePage() {
 
   return (
     <ReportanteShell>
-      <div className="mx-auto max-w-2xl">
-        <div className="mb-6 text-center">
-          <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-brand-50 text-brand-700">
-            <FileSearch className="h-6 w-6" />
+      <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="mx-auto max-w-2xl">
+        <motion.div variants={riseItem} className="relative mb-6 overflow-hidden rounded-2xl bg-ink p-6 text-center text-white shadow-[var(--shadow-plate)] sm:p-7">
+          <img src="/tren-linea1.png" alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover opacity-20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/84 to-brand-950/74" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 overflow-hidden opacity-70" aria-hidden>
+            <div className="absolute bottom-6 left-0 right-0 h-px bg-white/18" />
+            <motion.div
+              className="absolute bottom-6 h-px w-1/2 bg-gradient-to-r from-transparent via-brand-200 to-transparent"
+              animate={reducedMotion ? { opacity: 0.32 } : { x: ["-45%", "210%"], opacity: [0.1, 0.75, 0.1] }}
+              transition={reducedMotion ? { duration: 0 } : { duration: 4.6, repeat: Infinity, ease: "easeInOut" }}
+            />
           </div>
-          <h1 className="mt-3 text-[22px] font-bold tracking-tight text-ink">Consultar mi reporte</h1>
-          <p className="mt-1.5 text-[13.5px] text-ink-quiet">
-            Ingresa el código que se te mostró al enviar tu reporte — no necesitas cuenta ni contraseña.
-          </p>
-        </div>
+          <div className="relative">
+            <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-white/12 text-brand-100 ring-1 ring-white/20 backdrop-blur">
+              <FileSearch className="h-6 w-6" />
+            </div>
+            <h1 className="mt-3 text-[24px] font-bold tracking-tight text-white">Consultar mi reporte</h1>
+            <p className="mx-auto mt-1.5 max-w-[520px] text-[13.5px] leading-6 text-white/75">
+              Ingresa el código que se te mostró al enviar tu reporte — no necesitas cuenta ni contraseña.
+            </p>
+          </div>
+        </motion.div>
 
-        <Card className="p-4">
+        <motion.div variants={riseItem}>
+        <Card className="p-4 shadow-[var(--shadow-card)]">
           <div className="flex flex-col gap-2 sm:flex-row">
             <Input
               value={input}
@@ -119,42 +137,66 @@ export function ConsultarReportePage() {
               className="flex-1 font-mono uppercase"
             />
             <Button onClick={() => buscar()} disabled={!input.trim() || isLoading}>
-              <Search className="h-4 w-4" /> {isLoading ? "Buscando..." : "Consultar"}
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />} {isLoading ? "Buscando..." : "Consultar"}
             </Button>
           </div>
         </Card>
+        </motion.div>
 
         {guardados.length > 0 && (
-          <Card className="mt-4 p-4">
+          <motion.div variants={riseItem}>
+          <Card className="mt-4 p-4 shadow-[var(--shadow-card)]">
             <p className="mb-2.5 flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-wide text-ink-faint">
               <Clock className="h-3.5 w-3.5" /> Reportes hechos desde este dispositivo
             </p>
             <div className="flex flex-wrap gap-2">
               {guardados.map((r) => (
-                <button
+                <motion.button
                   key={r.codigo}
                   type="button"
                   onClick={() => buscar(r.codigo)}
-                  className="rounded-lg border border-line bg-surface/50 px-3 py-1.5 font-mono text-[12.5px] font-medium text-ink-soft transition-colors hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={SPRING_SNAPPY}
+                  className="rounded-lg border border-line bg-surface/50 px-3 py-1.5 font-mono text-[12.5px] font-medium text-ink-soft transition-colors hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-brand-600/20"
                 >
                   {r.codigo}
-                </button>
+                </motion.button>
               ))}
             </div>
             <p className="mt-2.5 text-[11px] text-ink-faint">
               Esta lista solo vive en este navegador — si cambias de dispositivo, usa el código directamente.
             </p>
           </Card>
+          </motion.div>
         )}
 
-        {isError && (
-          <Card className="mt-4 border-critical/25 bg-critical-soft p-4 text-[13px] text-critical-ink">
-            {apiErrorMessage(error, "No se encontró ningún reporte con ese código")}
-          </Card>
-        )}
+        <AnimatePresence mode="wait">
+          {isError && (
+            <motion.div
+              key="query-error"
+              initial={{ opacity: 0, y: -8, scale: 0.99 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -6, scale: 0.99 }}
+              transition={{ duration: 0.24, ease: EASE_OUT }}
+            >
+              <Card className="mt-4 border-critical/25 bg-critical-soft p-4 text-[13px] text-critical-ink shadow-[var(--shadow-card)]">
+                {apiErrorMessage(error, "No se encontró ningún reporte con ese código")}
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
+        <AnimatePresence mode="wait">
         {reporte && (
-          <Card className="mt-4 overflow-hidden p-5">
+          <motion.div
+            key={reporte.codigo_sop}
+            initial={{ opacity: 0, y: 18, scale: 0.985 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.99 }}
+            transition={{ duration: 0.36, ease: EASE_OUT }}
+          >
+          <Card className="mt-4 overflow-hidden p-5 shadow-[var(--shadow-plate)]">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="font-mono text-[13px] font-semibold text-brand-700">{reporte.codigo_sop}</p>
@@ -205,8 +247,10 @@ export function ConsultarReportePage() {
               </div>
             )}
           </Card>
+          </motion.div>
         )}
-      </div>
+        </AnimatePresence>
+      </motion.div>
     </ReportanteShell>
   );
 }

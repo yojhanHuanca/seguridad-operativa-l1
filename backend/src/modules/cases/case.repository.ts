@@ -1684,30 +1684,6 @@ export class CaseRepository {
   }
 
   /** ETAPA 5 — el Jefe del Área solicita ampliación de plazo. */
-  static async requestExtension(id_caso: number, dto: { nueva_fecha: string; justificacion: string }, actor: string) {
-    const estado = await CaseRepository.findEstado("Prórroga Solicitada");
-    return prisma.$transaction(async (tx) => {
-      await tx.planes_accion.updateMany({
-        where: { id_caso },
-        data: {
-          prorroga_motivo: dto.justificacion,
-          prorroga_fecha: new Date(dto.nueva_fecha),
-          prorroga_estado: "pendiente",
-          prorroga_fecha_sol: new Date(),
-        },
-      });
-      const caso = await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estado.id_detalle } });
-      await CaseRepository.pushTimeline(tx, id_caso, {
-        kind: "ampliacion",
-        actor,
-        actor_rol: "jefe",
-        titulo: "Solicitud de ampliación de plazo",
-        detalle: `Nueva fecha: ${dto.nueva_fecha}. Justificación: ${dto.justificacion}`,
-      });
-      return caso;
-    });
-  }
-
   /** ETAPA 5 — SO aprueba o rechaza la prórroga; el caso vuelve a Ejecución. */
   static async reviewExtension(id_caso: number, decision: "aprobada" | "rechazada", nota: string | null) {
     const estado = await CaseRepository.findEstado("Ejecución");

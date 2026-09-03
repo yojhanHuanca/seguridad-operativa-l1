@@ -1,12 +1,22 @@
-import { useState, type ReactNode } from "react";
-import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Gauge, Printer, ShieldAlert, TrainFront, TriangleAlert } from "lucide-react";
+import { useState, type FormEvent, type ReactNode } from "react";
+import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Database, Gauge, Printer, ShieldAlert, TrainFront, TriangleAlert } from "lucide-react";
+import { toast } from "sonner";
 import { MonitoristaShell } from "@/components/layout/MonitoristaShell";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/design-system/primitives/Button";
+import { Field, Input } from "@/design-system/primitives/Input";
+import { Modal } from "@/design-system/primitives/Modal";
 import { SkeletonChart } from "@/design-system/primitives/Skeleton";
 import { IndiceComposedChart } from "@/design-system/charts/Charts";
-import { useIndicadoresEventos, type ConteoMesAnual, type IndicadoresEventos, type IndiceEventos } from "@/features/eventos/hooks/useIndicadoresEventos";
+import {
+  useGuardarDatosIndicadoresMes,
+  useIndicadoresEventos,
+  type ConteoMesAnual,
+  type IndicadoresEventos,
+  type IndiceEventos,
+} from "@/features/eventos/hooks/useIndicadoresEventos";
 import { useIndicadoresPrint } from "@/features/indicadores/hooks/useIndicadoresPrint";
+import { apiErrorMessage } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +30,7 @@ export function Indicadores() {
   const hoy = new Date();
   const [anio, setAnio] = useState(hoy.getFullYear());
   const [mes, setMes] = useState(hoy.getMonth() + 1);
+  const [datosOpen, setDatosOpen] = useState(false);
   const { data, isLoading } = useIndicadoresEventos(anio, mes);
   const { printActive, printReport } = useIndicadoresPrint(`Indicadores de Eventos Operacionales ${MESES[mes - 1]} ${anio}`);
 
@@ -41,6 +52,9 @@ export function Indicadores() {
           la misma pantalla. Solo el filtro y la acción de descarga. */}
       <div className="mb-5 flex flex-wrap items-center justify-end gap-3">
           <MesSelector mes={mes} anio={anio} onChangeMes={setMes} onChangeAnio={setAnio} />
+          <Button variant="primary" size="sm" onClick={() => setDatosOpen(true)}>
+            <Database className="h-4 w-4" /> Datos del mes
+          </Button>
           <Button variant="outline" size="sm" onClick={printReport} disabled={!data}>
             <Printer className="h-4 w-4" /> Descargar PDF
           </Button>
@@ -153,7 +167,99 @@ export function Indicadores() {
       </div>
         </div>
       </div>
+
+      {datosOpen && (
+        <DatosMesModal
+          open={datosOpen}
+          onClose={() => setDatosOpen(false)}
+          anio={anio}
+          mes={mes}
+          datos={data?.datosMes}
+        />
+      )}
     </MonitoristaShell>
+  );
+}
+
+function DatosMesModal({
+  open,
+  onClose,
+  anio,
+  mes,
+  datos,
+}: {
+  open: boolean;
+  onClose: () => void;
+  anio: number;
+  mes: number;
+  datos: IndicadoresEventos["datosMes"] | undefined;
+}) {
+  const guardar = useGuardarDatosIndicadoresMes();
+  const [kmComercial, setKmComercial] = useState(datos?.kmComercial != null ? String(datos.kmComercial) : "");
+  const [afluenciaPasajeros, setAfluenciaPasajeros] = useState(datos?.afluenciaPasajeros != null ? String(datos.afluenciaPasajeros) : "");
+
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const km = Number(kmComercial);
+    const pasajeros = Number(afluenciaPasajeros);
+    if (!Number.isFinite(km) || km < 0 || !Number.isFinite(pasajeros) || pasajeros < 0) {
+      toast.error("Ingresa valores válidos para kilómetros y pasajeros");
+      return;
+    }
+
+    guardar.mutate(
+      { anio, mes, kmComercial: km, afluenciaPasajeros: pasajeros },
+      {
+        onSuccess: () => {
+          toast.success("Datos del mes guardados");
+          onClose();
+        },
+        onError: (error) => toast.error(apiErrorMessage(error, "No se pudieron guardar los datos del mes")),
+      },
+    );
+  };
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Datos del mes"
+      subtitle={`${MESES[mes - 1]} ${anio}. Estos valores solo alimentan los indicadores.`}
+      footer={
+        <>
+          <Button type="button" variant="ghost" onClick={onClose} disabled={guardar.isPending}>
+            Cancelar
+          </Button>
+          <Button type="submit" form="datos-indicadores-mes-form" disabled={guardar.isPending}>
+            Guardar datos
+          </Button>
+        </>
+      }
+    >
+      <form id="datos-indicadores-mes-form" onSubmit={submit} className="grid gap-4">
+        <Field label="Km comercial recorridos" required hint="Kilómetros comerciales del mes seleccionado.">
+          <Input
+            type="number"
+            min="0"
+            step="0.01"
+            value={kmComercial}
+            onChange={(event) => setKmComercial(event.target.value)}
+            placeholder="Ej. 9760000"
+            autoFocus
+          />
+        </Field>
+        <Field label="Afluencia de pasajeros" required hint="Cantidad de pasajeros transportados en el mes seleccionado.">
+          <Input
+            type="number"
+            min="0"
+            step="1"
+            value={afluenciaPasajeros}
+            onChange={(event) => setAfluenciaPasajeros(event.target.value)}
+            placeholder="Ej. 18430000"
+          />
+        </Field>
+      </form>
+    </Modal>
   );
 }
 

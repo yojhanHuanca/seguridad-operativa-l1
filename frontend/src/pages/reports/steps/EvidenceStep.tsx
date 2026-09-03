@@ -9,7 +9,7 @@ export function EvidenceStep({
   setFiles: (files: File[]) => void;
 }) {
   return (
-    <Card className="p-5">
+    <Card className="p-5 shadow-[var(--shadow-card)]">
       <div className="mb-4">
         <h2 className="text-lg font-bold text-ink">¿Deseas adjuntar evidencias?</h2>
         <p className="text-sm text-ink-quiet">Fotografías o video. Es opcional.</p>

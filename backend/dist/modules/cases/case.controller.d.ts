@@ -27,7 +27,6 @@ export declare class CaseController {
     static rollbackStage(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static updatePlan(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static updateActivity(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
-    static requestExtension(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static reviewExtension(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static addComment(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     static removePlanEvidence(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;

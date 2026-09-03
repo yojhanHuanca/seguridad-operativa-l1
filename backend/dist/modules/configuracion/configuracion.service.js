@@ -17,7 +17,7 @@ const CONFIG_KEYS = {
     ultimaActualizacion: "sistema.ultima_actualizacion",
 };
 const DEFAULT_VALUES = {
-    [CONFIG_KEYS.sistemaNombre]: "SIGMA L1",
+    [CONFIG_KEYS.sistemaNombre]: "SMS L1",
     [CONFIG_KEYS.sistemaVersion]: "1.0.0",
     [CONFIG_KEYS.expedientePrefijo]: "SOP",
     [CONFIG_KEYS.expedienteSecuencia]: "0",

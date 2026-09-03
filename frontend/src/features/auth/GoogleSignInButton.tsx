@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 
 /**
  * Tipado mínimo de la parte de Google Identity Services (GSI) que usamos —
@@ -53,6 +54,32 @@ export function GoogleSignInButton({ onCredential, disabled }: { onCredential: (
   useEffect(() => {
     if (!clientId) return;
     let cancelled = false;
+
+    // El botón de Google no acepta un ancho en porcentaje, solo píxeles —
+    // con un valor fijo (los 396px de antes) se salía del formulario en
+    // pantallas angostas. Se mide el contenedor real y se vuelve a pedir el
+    // botón si el usuario cambia de tamaño de ventana (p.ej. gira el celular).
+    const anchoBoton = () => {
+      const disponible = containerRef.current?.getBoundingClientRect().width ?? 396;
+      return Math.round(Math.min(400, Math.max(200, disponible)));
+    };
+
+    let renderScheduled = false;
+    const render = () => {
+      if (cancelled || !window.google || !containerRef.current) return;
+      containerRef.current.innerHTML = "";
+      window.google.accounts.id.renderButton(containerRef.current, {
+        type: "standard",
+        theme: "outline",
+        size: "large",
+        shape: "rectangular",
+        text: "signin_with",
+        logo_alignment: "center",
+        width: String(anchoBoton()),
+      });
+      setReady(true);
+    };
+
     loadGoogleScript()
       .then(() => {
         if (cancelled || !window.google || !containerRef.current) return;
@@ -60,20 +87,23 @@ export function GoogleSignInButton({ onCredential, disabled }: { onCredential: (
           client_id: clientId,
           callback: (response) => onCredential(response.credential),
         });
-        window.google.accounts.id.renderButton(containerRef.current, {
-          type: "standard",
-          theme: "outline",
-          size: "large",
-          shape: "rectangular",
-          text: "signin_with",
-          logo_alignment: "center",
-          width: "396",
-        });
-        setReady(true);
+        render();
       })
       .catch(() => setReady(false));
+
+    const onResize = () => {
+      if (renderScheduled) return;
+      renderScheduled = true;
+      window.requestAnimationFrame(() => {
+        renderScheduled = false;
+        render();
+      });
+    };
+    window.addEventListener("resize", onResize);
+
     return () => {
       cancelled = true;
+      window.removeEventListener("resize", onResize);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId]);
@@ -82,12 +112,20 @@ export function GoogleSignInButton({ onCredential, disabled }: { onCredential: (
 
   return (
     <div className="w-full">
-      <div className="my-5 flex items-center gap-3 text-[11px] font-medium uppercase text-ink-faint">
+      <div className="my-3 flex items-center gap-3 text-[11px] font-medium uppercase text-ink-faint">
         <span className="h-px flex-1 bg-line-soft" />
         o
         <span className="h-px flex-1 bg-line-soft" />
       </div>
-      <div ref={containerRef} className={disabled || !ready ? "pointer-events-none opacity-50" : ""} />
+      {/* El botón lo dibuja Google directo en el DOM del contenedor, así que la
+          entrada se anima por fuera, con la opacidad, en vez del contenido en sí. */}
+      <motion.div
+        ref={containerRef}
+        initial={false}
+        animate={{ opacity: !ready ? 0 : disabled ? 0.5 : 1 }}
+        transition={{ duration: 0.3 }}
+        className={disabled ? "pointer-events-none" : ""}
+      />
     </div>
   );
 }

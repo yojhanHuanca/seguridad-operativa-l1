@@ -14,6 +14,17 @@ export class EventoController {
     }
   }
 
+  static async guardarDatosIndicadores(req: Request, res: Response) {
+    try {
+      const data = await IndicadoresEventosService.guardarDatosMes(req.body);
+      return res.json(ApiResponse.success("Datos del mes guardados correctamente", data));
+    } catch (error) {
+      return res.status(400).json(
+        ApiResponse.error(error instanceof Error ? error.message : "No se pudieron guardar los datos del mes", error)
+      );
+    }
+  }
+
   static async getAll(req: Request, res: Response) {
     try {
       const { data, total } = await EventoService.getAllEventos(req.query as Record<string, string>);

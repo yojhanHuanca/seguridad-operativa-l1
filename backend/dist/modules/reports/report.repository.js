@@ -175,6 +175,20 @@ export class ReportRepository {
             select: PUBLIC_REPORT_SELECT,
         });
     }
+    /** Evidencia adjuntada después de creado el caso — misma forma que al crear el reporte. */
+    static async agregarEvidencias(id_caso, archivos) {
+        if (archivos.length === 0)
+            return;
+        await prisma.anexos_caso.createMany({
+            data: archivos.map((f) => ({
+                id_caso,
+                nombre_archivo: f.originalname,
+                ruta_archivo: `/uploads/casos/${f.filename}`,
+                tipo_archivo: f.mimetype,
+                peso: Math.round((f.size / 1024) * 100) / 100, // KB
+            })),
+        });
+    }
     static async findCatalogoDetalle(catalogoNombre, valorNombre) {
         return prisma.catalogo_detalle.findFirst({
             where: { nombre: valorNombre, catalogos: { nombre: catalogoNombre } },

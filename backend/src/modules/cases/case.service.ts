@@ -468,16 +468,6 @@ export class CaseService {
     return CaseRepository.updateActivity(id, dto.estado, dto.comentario ?? null, await nombreDelActor(actor));
   }
 
-  static async requestExtension(codigo: string, rawBody: unknown, actor?: Actor) {
-    const dto = extensionSchema.parse(rawBody);
-    const caso = await getCasoBasico(codigo, "requestExtension");
-    return CaseRepository.requestExtension(
-      caso.id_caso,
-      { nueva_fecha: dto.nueva_fecha, justificacion: dto.justificacion },
-      await nombreDelActor(actor)
-    );
-  }
-
   static async reviewExtension(codigo: string, rawBody: unknown) {
     const dto = extensionReviewSchema.parse(rawBody);
     const caso = await getCasoBasico(codigo, "reviewExtension");

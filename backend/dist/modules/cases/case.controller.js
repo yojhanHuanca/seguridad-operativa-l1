@@ -316,15 +316,6 @@ export class CaseController {
             return handleError(res, error, "Error al actualizar la actividad");
         }
     }
-    static async requestExtension(req, res) {
-        try {
-            const caso = await CaseService.requestExtension(param(req, "codigo"), req.body, req.user);
-            return res.status(201).json(ApiResponse.success("Ampliación de plazo solicitada", caso));
-        }
-        catch (error) {
-            return handleError(res, error, "Error al solicitar la ampliación");
-        }
-    }
     static async reviewExtension(req, res) {
         try {
             const caso = await CaseService.reviewExtension(param(req, "codigo"), req.body);

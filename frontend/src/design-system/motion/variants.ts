@@ -30,3 +30,23 @@ export const pageEnter: Variants = {
   hidden: { opacity: 0, y: 8 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.34, ease: EASE_OUT } },
 };
+
+/** Resorte corto para micro-interacciones (hover/tap de botones e íconos). */
+export const SPRING_SNAPPY: Transition = { type: "spring", stiffness: 320, damping: 22 };
+
+/** Resorte más suave, para el tilt 3D que sigue al cursor (tarjetas, video). */
+export const TILT_SPRING: Transition = { type: "spring", stiffness: 220, damping: 20, mass: 0.6 };
+
+/** Temblor horizontal breve para llamar la atención sobre un error de formulario. */
+export const SHAKE_X = [0, -6, 6, -4, 4, 0];
+export const SHAKE_TRANSITION: Transition = { duration: 0.4, ease: EASE_OUT };
+
+/**
+ * Línea que se "dibuja" de izquierda a derecha. Usa las mismas llaves
+ * hidden/visible que `staggerContainer` para heredar el disparo del padre —
+ * requiere `style={{ transformOrigin: "left" }}` en el elemento.
+ */
+export const drawLine: Variants = {
+  hidden: { scaleX: 0 },
+  visible: { scaleX: 1, transition: { duration: 0.9, ease: EASE_OUT } },
+};

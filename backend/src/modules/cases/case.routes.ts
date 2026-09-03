@@ -44,7 +44,6 @@ router.delete("/planes/:idPlan/evidence/:idAnexo", JEFE, CaseController.removePl
 router.post("/planes/:idPlan/evidence", JEFE, uploadEvidencia.array("evidencia", 10), CaseController.addEvidenceByPlan);
 router.post("/planes/:idPlan/actualizacion", JEFE, uploadEvidencia.array("evidencia", 10), CaseController.addPlanUpdate);
 router.patch("/actividades/:idActividad", JEFE, CaseController.updateActivity);
-router.post("/:codigo/extension", JEFE, CaseController.requestExtension);
 router.post("/:codigo/extension/review", SO, CaseController.reviewExtension);
 router.post("/:codigo/start-execution", SO, CaseController.startExecution);
 router.post("/:codigo/send-verification", SO, CaseController.sendToVerification);

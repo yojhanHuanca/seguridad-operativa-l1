@@ -45,6 +45,110 @@ async function divisorPorMes(nombreIndicador: string): Promise<Map<string, numbe
   return out;
 }
 
+async function indicadorPorNombre(nombreIndicador: string) {
+  const existente = await prisma.indicadores.findFirst({
+    where: { nombre: nombreIndicador },
+    select: { id_indicador: true },
+  });
+  if (existente) return existente;
+
+  return prisma.indicadores.create({
+    data: {
+      nombre: nombreIndicador,
+      descripcion: `Valor mensual de ${nombreIndicador.toLowerCase()} para indicadores operacionales`,
+      tipo: "Divisor",
+      unidad_medida: nombreIndicador === INDICADOR_KM ? "km" : "pasajeros",
+      activo: true,
+    },
+    select: { id_indicador: true },
+  });
+}
+
+function fechaMes(anio: number, mes: number) {
+  return new Date(Date.UTC(anio, mes - 1, 1));
+}
+
+function validarPeriodo(anio: unknown, mes: unknown) {
+  const year = Number(anio);
+  const month = Number(mes);
+  if (!Number.isInteger(year) || year < 2000 || year > 2100) {
+    throw new Error("Selecciona un año válido");
+  }
+  if (!Number.isInteger(month) || month < 1 || month > 12) {
+    throw new Error("Selecciona un mes válido");
+  }
+  return { anio: year, mes: month };
+}
+
+function validarValor(nombre: string, valor: unknown) {
+  const number = Number(valor);
+  if (!Number.isFinite(number) || number < 0) {
+    throw new Error(`${nombre} debe ser un número mayor o igual a cero`);
+  }
+  return Math.round(number * 100) / 100;
+}
+
+async function valorDelMes(nombreIndicador: string, anio: number, mes: number): Promise<number | null> {
+  const indicador = await prisma.indicadores.findFirst({
+    where: { nombre: nombreIndicador },
+    select: { id_indicador: true },
+  });
+  if (!indicador) return null;
+  const desde = fechaMes(anio, mes);
+  const hasta = new Date(Date.UTC(anio, mes, 1));
+  const valores = await prisma.historial_indicadores.findMany({
+    where: {
+      id_indicador: indicador.id_indicador,
+      fecha: { gte: desde, lt: hasta },
+    },
+    select: { valor: true },
+  });
+  const total = valores.reduce((sum, item) => sum + Number(item.valor ?? 0), 0);
+  return valores.length > 0 ? Math.round(total * 100) / 100 : null;
+}
+
+async function guardarValorMensual(nombreIndicador: string, anio: number, mes: number, valor: number) {
+  const indicador = await indicadorPorNombre(nombreIndicador);
+  const desde = fechaMes(anio, mes);
+  const hasta = new Date(Date.UTC(anio, mes, 1));
+  const existentes = await prisma.historial_indicadores.findMany({
+    where: {
+      id_indicador: indicador.id_indicador,
+      fecha: { gte: desde, lt: hasta },
+    },
+    select: { id_historial: true },
+    orderBy: { id_historial: "asc" },
+  });
+
+  if (existentes.length === 0) {
+    await prisma.historial_indicadores.create({
+      data: {
+        id_indicador: indicador.id_indicador,
+        fecha: desde,
+        valor,
+        observacion: "Carga manual desde Indicadores",
+      },
+    });
+    return;
+  }
+
+  const [primero, ...duplicados] = existentes;
+  if (!primero) return;
+  await prisma.historial_indicadores.update({
+    where: { id_historial: primero.id_historial },
+    data: {
+      fecha: desde,
+      valor,
+      observacion: "Carga manual desde Indicadores",
+    },
+  });
+  if (duplicados.length > 0) {
+    await prisma.historial_indicadores.deleteMany({
+      where: { id_historial: { in: duplicados.map((item) => item.id_historial) } },
+    });
+  }
+}
+
 /** Meta anual del indicador. El panel del cliente compara contra la del año previo. */
 async function metaDelAnio(nombreIndicador: string, anio: number): Promise<number | null> {
   const indicador = await prisma.indicadores.findFirst({
@@ -60,6 +164,19 @@ async function metaDelAnio(nombreIndicador: string, anio: number): Promise<numbe
 }
 
 export class IndicadoresEventosService {
+  static async guardarDatosMes(input: { anio?: unknown; mes?: unknown; kmComercial?: unknown; afluenciaPasajeros?: unknown }) {
+    const { anio, mes } = validarPeriodo(input.anio, input.mes);
+    const kmComercial = validarValor("Km comercial", input.kmComercial);
+    const afluenciaPasajeros = validarValor("Afluencia de pasajeros", input.afluenciaPasajeros);
+
+    await prisma.$transaction(async () => {
+      await guardarValorMensual(INDICADOR_KM, anio, mes, kmComercial);
+      await guardarValorMensual(INDICADOR_PASAJEROS, anio, mes, afluenciaPasajeros);
+    });
+
+    return { anio, mes, kmComercial, afluenciaPasajeros };
+  }
+
   static async calcular(query: { anio?: string; mes?: string }): Promise<IndicadoresEventosResponse> {
     const hoy = new Date();
     const anio = Number(query.anio) || hoy.getUTCFullYear();
@@ -113,13 +230,18 @@ export class IndicadoresEventosService {
     const serieErrores = construirSerie(contarPorMes(eventos, esErrorOperativo), kmPorMes, anio, mes);
     const serieAccidentes = construirSerie(contarPorMes(eventos, esAccidentabilidad), pasajerosPorMes, anio, mes);
     const ultimo = <T,>(items: T[]): T | undefined => items[items.length - 1];
+    const keyMes = mesKey(anio, mes);
 
     const faltanDatos: string[] = [];
-    if (kmPorMes.size === 0) faltanDatos.push(INDICADOR_KM);
-    if (pasajerosPorMes.size === 0) faltanDatos.push(INDICADOR_PASAJEROS);
+    if (!kmPorMes.has(keyMes)) faltanDatos.push(INDICADOR_KM);
+    if (!pasajerosPorMes.has(keyMes)) faltanDatos.push(INDICADOR_PASAJEROS);
 
     return {
       periodo: { anio, mes },
+      datosMes: {
+        kmComercial: await valorDelMes(INDICADOR_KM, anio, mes),
+        afluenciaPasajeros: await valorDelMes(INDICADOR_PASAJEROS, anio, mes),
+      },
       totalEventos: contar(() => true),
       erroresOperativos: contar(esErrorOperativo),
       accidentabilidad: contar(esAccidentabilidad),
