@@ -113,13 +113,13 @@ export function ReviewStep({
           className="mt-4 grid gap-4 rounded-xl border border-brand-200 bg-brand-50/35 p-4 sm:grid-cols-2"
         >
           <Field label="Nombre Completo" required error={errors.nombre_reportante?.message} className="sm:col-span-2">
-            <Input placeholder="Tu nombre completo" {...register("nombre_reportante")} />
+            <Input placeholder="Tu nombre completo" aria-invalid={Boolean(errors.nombre_reportante)} {...register("nombre_reportante")} />
           </Field>
           <Field label="Correo Electrónico" error={errors.correo_reportante?.message} hint="Opcional">
-            <Input type="email" placeholder="nombre@correo.com" {...register("correo_reportante")} />
+            <Input type="email" placeholder="nombre@correo.com" aria-invalid={Boolean(errors.correo_reportante)} {...register("correo_reportante")} />
           </Field>
           <Field label="Teléfono" error={errors.telefono_reportante?.message} hint="Opcional">
-            <Input type="tel" placeholder="999 999 999" {...register("telefono_reportante")} />
+            <Input type="tel" placeholder="999 999 999" aria-invalid={Boolean(errors.telefono_reportante)} {...register("telefono_reportante")} />
           </Field>
         </motion.div>
       )}

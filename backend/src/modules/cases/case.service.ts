@@ -274,11 +274,19 @@ export class CaseService {
     return CaseRepository.counts(area);
   }
 
-  static async listPlans(query: { area?: string; codigo?: string }, actor?: Actor) {
+  static async listPlans(
+    query: { area?: string; codigo?: string; vencidos?: string; page?: string; limit?: string },
+    actor?: Actor
+  ) {
     const area = await areaEfectiva(query.area, actor);
+    const page = Number(query.page);
+    const limit = Number(query.limit);
+    const paginar = Number.isInteger(page) && page > 0 && Number.isInteger(limit) && limit > 0;
     return CaseRepository.findPlansByArea({
       ...(area != null ? { id_area: area } : {}),
       ...(query.codigo ? { codigo_sop: query.codigo } : {}),
+      ...(query.vencidos === "1" ? { vencidos: true } : {}),
+      ...(paginar ? { page, limit } : {}),
     });
   }
 
@@ -306,21 +314,21 @@ export class CaseService {
     return caso;
   }
 
-  static async approve(codigo: string) {
+  static async approve(codigo: string, actor?: Actor) {
     const caso = await getCasoBasico(codigo, "approve");
-    return CaseRepository.approve(caso.id_caso);
+    return CaseRepository.approve(caso.id_caso, await nombreDelActor(actor));
   }
 
-  static async addObservation(codigo: string, rawBody: unknown) {
+  static async addObservation(codigo: string, rawBody: unknown, actor?: Actor) {
     const dto = observationSchema.parse(rawBody);
     const caso = await getCasoBasico(codigo, "addObservation");
-    return CaseRepository.addObservation(caso.id_caso, dto.texto);
+    return CaseRepository.addObservation(caso.id_caso, dto.texto, await nombreDelActor(actor));
   }
 
-  static async evaluate(codigo: string, rawBody: unknown) {
+  static async evaluate(codigo: string, rawBody: unknown, actor?: Actor) {
     const dto = evaluateSchema.parse(rawBody);
     const caso = await getCasoBasico(codigo, "evaluate");
-    return CaseRepository.evaluate(caso.id_caso, dto);
+    return CaseRepository.evaluate(caso.id_caso, dto, await nombreDelActor(actor));
   }
 
   /**
@@ -335,62 +343,63 @@ export class CaseService {
     return CaseRepository.updateTipo(caso.id_caso, dto.id_tipo, await nombreDelActor(actor));
   }
 
-  static async reject(codigo: string, rawBody: unknown) {
+  static async reject(codigo: string, rawBody: unknown, actor?: Actor) {
     const dto = rejectSchema.parse(rawBody);
     const caso = await getCasoBasico(codigo, "reject");
-    return CaseRepository.reject(caso.id_caso, dto);
+    return CaseRepository.reject(caso.id_caso, dto, await nombreDelActor(actor));
   }
 
-  static async requestInfo(codigo: string, rawBody: unknown) {
+  static async requestInfo(codigo: string, rawBody: unknown, actor?: Actor) {
     const dto = requestInfoSchema.parse(rawBody);
     const caso = await getCasoBasico(codigo, "requestInfo");
     const estadoActual = caso.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre;
-    return CaseRepository.requestInfo(caso.id_caso, estadoActual, dto);
+    return CaseRepository.requestInfo(caso.id_caso, estadoActual, dto, await nombreDelActor(actor));
   }
 
-  static async respondInfo(codigo: string, idSolicitud: string, rawBody: unknown) {
+  /** SO registra a mano una respuesta que recibió por otro medio; firma con su propio usuario, no como "Reportante". */
+  static async respondInfo(codigo: string, idSolicitud: string, rawBody: unknown, actor?: Actor) {
     const dto = respondInfoSchema.parse(rawBody);
     const caso = await getCasoBasico(codigo, "respondInfo");
-    return CaseRepository.respondInfo(caso.id_caso, Number(idSolicitud), dto);
+    return CaseRepository.respondInfo(caso.id_caso, Number(idSolicitud), dto, await nombreDelActor(actor), "seguridad");
   }
 
-  static async saveInvestigation(codigo: string, rawBody: unknown) {
+  static async saveInvestigation(codigo: string, rawBody: unknown, actor?: Actor) {
     const dto = investigationSchema.parse(rawBody);
     const caso = await getCasoBasico(codigo, "saveInvestigation");
-    return CaseRepository.saveInvestigation(caso.id_caso, dto);
+    return CaseRepository.saveInvestigation(caso.id_caso, dto, await nombreDelActor(actor));
   }
 
-  static async createPlan(codigo: string, rawBody: unknown) {
+  static async createPlan(codigo: string, rawBody: unknown, actor?: Actor) {
     const dto = planSchema.parse(rawBody) as CreatePlanDto;
     await validarResponsablesJefeDeArea([dto]);
     const caso = await getCasoBasico(codigo, "createPlan");
-    return CaseRepository.createPlan(caso.id_caso, caso.codigo_sop, dto);
+    return CaseRepository.createPlan(caso.id_caso, caso.codigo_sop, dto, await nombreDelActor(actor));
   }
 
-  static async createPlans(codigo: string, rawBody: unknown) {
+  static async createPlans(codigo: string, rawBody: unknown, actor?: Actor) {
     const dto = plansBatchSchema.parse(rawBody);
     await validarResponsablesJefeDeArea(dto.planes as CreatePlanDto[]);
     const caso = await getCasoBasico(codigo, "createPlan");
-    return CaseRepository.createPlans(caso.id_caso, caso.codigo_sop, dto.planes as CreatePlanDto[]);
+    return CaseRepository.createPlans(caso.id_caso, caso.codigo_sop, dto.planes as CreatePlanDto[], await nombreDelActor(actor));
   }
 
-  static async updatePlan(idPlan: string, rawBody: unknown) {
+  static async updatePlan(idPlan: string, rawBody: unknown, actor?: Actor) {
     const dto = planSchema.parse(rawBody) as CreatePlanDto;
     await validarResponsablesJefeDeArea([dto]);
     const plan = await getPlanBasico(idPlan, "updatePlan");
-    return CaseRepository.updatePlan(plan.id_plan, dto);
+    return CaseRepository.updatePlan(plan.id_plan, dto, await nombreDelActor(actor));
   }
 
-  static async closeCase(codigo: string, rawBody: unknown) {
+  static async closeCase(codigo: string, rawBody: unknown, actor?: Actor) {
     const dto = notaSchema.parse(rawBody ?? {});
     const caso = await getCasoBasico(codigo, "close");
-    return CaseRepository.closeCase(caso.id_caso, dto.nota);
+    return CaseRepository.closeCase(caso.id_caso, dto.nota, await nombreDelActor(actor));
   }
 
   /** SO arranca la Ejecución con los planes ya aceptados, sin esperar al resto. */
-  static async startExecution(codigo: string) {
+  static async startExecution(codigo: string, actor?: Actor) {
     const caso = await getCasoBasico(codigo, "startExecution");
-    return CaseRepository.startExecution(caso.id_caso);
+    return CaseRepository.startExecution(caso.id_caso, await nombreDelActor(actor));
   }
 
   static async acceptPlanById(idPlan: string, _rawBody: unknown, actor?: Actor) {
@@ -409,11 +418,11 @@ export class CaseService {
     );
   }
 
-  static async reviewFinalPlanById(idPlan: string, rawBody: unknown) {
+  static async reviewFinalPlanById(idPlan: string, rawBody: unknown, actor?: Actor) {
     const dto = planFinalReviewSchema.parse(rawBody ?? {});
     // Sin comprobación de propiedad: la ruta ya la limita a Seguridad Operativa.
     const plan = await getPlanBasico(idPlan, "reviewFinalPlan");
-    return CaseRepository.reviewFinalPlanById(plan.id_plan, dto.decision, dto.nota ?? null);
+    return CaseRepository.reviewFinalPlanById(plan.id_plan, dto.decision, dto.nota ?? null, await nombreDelActor(actor));
   }
 
   static async requestExtensionByPlan(idPlan: string, rawBody: unknown, actor?: Actor) {
@@ -426,34 +435,40 @@ export class CaseService {
     );
   }
 
-  static async reviewExtensionByPlan(idPlan: string, rawBody: unknown) {
+  static async reviewExtensionByPlan(idPlan: string, rawBody: unknown, actor?: Actor) {
     const dto = extensionReviewSchema.parse(rawBody);
     const plan = await getPlanBasico(idPlan, "reviewExtension");
-    return CaseRepository.reviewExtensionByPlan(plan.id_plan, dto.decision, dto.nota ?? null, dto.fecha_aprobada ?? null);
+    return CaseRepository.reviewExtensionByPlan(
+      plan.id_plan,
+      dto.decision,
+      dto.nota ?? null,
+      dto.fecha_aprobada ?? null,
+      await nombreDelActor(actor)
+    );
   }
 
-  static async sendToVerification(codigo: string) {
+  static async sendToVerification(codigo: string, actor?: Actor) {
     const caso = await getCasoBasico(codigo, "sendToVerification");
-    return CaseRepository.sendToVerification(caso.id_caso);
+    return CaseRepository.sendToVerification(caso.id_caso, await nombreDelActor(actor));
   }
 
-  static async keepPending(codigo: string, rawBody: unknown) {
+  static async keepPending(codigo: string, rawBody: unknown, actor?: Actor) {
     const dto = notaSchema.parse(rawBody ?? {});
     const caso = await getCasoBasico(codigo, "keepPending");
-    return CaseRepository.keepPending(caso.id_caso, dto.nota);
+    return CaseRepository.keepPending(caso.id_caso, dto.nota, await nombreDelActor(actor));
   }
 
-  static async reopenCase(codigo: string, rawBody: unknown) {
+  static async reopenCase(codigo: string, rawBody: unknown, actor?: Actor) {
     const dto = reopenSchema.parse(rawBody ?? {});
     const caso = await getCasoBasico(codigo, "reopen");
-    return CaseRepository.reopenCase(caso.id_caso, dto.nota, dto.destino);
+    return CaseRepository.reopenCase(caso.id_caso, dto.nota, dto.destino, await nombreDelActor(actor));
   }
 
-  static async rollbackStage(codigo: string, rawBody: unknown) {
+  static async rollbackStage(codigo: string, rawBody: unknown, actor?: Actor) {
     const dto = rollbackSchema.parse(rawBody ?? {});
     const caso = await getCasoBasico(codigo, "rollback");
     const estadoActual = caso.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre;
-    return CaseRepository.rollbackStage(caso.id_caso, estadoActual, dto.destino, dto.motivo);
+    return CaseRepository.rollbackStage(caso.id_caso, estadoActual, dto.destino, dto.motivo, await nombreDelActor(actor));
   }
 
   static async updateActivity(idActividad: string, rawBody: unknown, actor?: Actor) {
@@ -468,16 +483,24 @@ export class CaseService {
     return CaseRepository.updateActivity(id, dto.estado, dto.comentario ?? null, await nombreDelActor(actor));
   }
 
-  static async reviewExtension(codigo: string, rawBody: unknown) {
+  static async reviewExtension(codigo: string, rawBody: unknown, actor?: Actor) {
     const dto = extensionReviewSchema.parse(rawBody);
     const caso = await getCasoBasico(codigo, "reviewExtension");
-    return CaseRepository.reviewExtension(caso.id_caso, dto.decision, dto.nota ?? null);
+    return CaseRepository.reviewExtension(caso.id_caso, dto.decision, dto.nota ?? null, await nombreDelActor(actor));
   }
 
-  static async addComment(codigo: string, rawBody: unknown) {
+  /**
+   * El comentario es a nivel de expediente (no de un plan puntual), así que
+   * la propiedad se valida con el mismo criterio que abrir el caso
+   * (`getByCodigo`): un Jefe de Área comenta si el caso es de su área o si
+   * tiene un plan propio ahí. Antes no había ningún chequeo — cualquier Jefe
+   * podía comentar en el timeline de un caso ajeno con solo el código.
+   */
+  static async addComment(codigo: string, rawBody: unknown, actor?: Actor) {
     const dto = observationSchema.parse(rawBody);
-    const caso = await getCasoBasico(codigo);
-    return CaseRepository.addComment(caso.id_caso, dto.texto);
+    const caso = await CaseService.getByCodigo(codigo, actor);
+    const rol = esJefeDeArea(actor) ? "jefe" : "seguridad";
+    return CaseRepository.addComment(caso.id_caso, dto.texto, await nombreDelActor(actor), rol);
   }
 
   static async addPlanComment(idPlan: string, rawBody: unknown, actor?: Actor) {
@@ -498,9 +521,9 @@ export class CaseService {
     );
   }
 
-  static async addEvidence(codigo: string, files: UploadedFile[]) {
+  static async addEvidence(codigo: string, files: UploadedFile[], actor?: Actor) {
     const caso = await getCasoBasico(codigo);
-    return CaseRepository.addEvidence(caso.id_caso, files);
+    return CaseRepository.addEvidence(caso.id_caso, files, await nombreDelActor(actor));
   }
 
   /** Actualización adicional del jefe sobre un plan ya cerrado por el área. */

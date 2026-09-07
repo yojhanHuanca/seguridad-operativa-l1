@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 
-import { ApiResponse } from "../../utils/ApiResponse.js";
+import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 import { AuthService } from "./auth.service.js";
 import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
 
@@ -105,7 +105,7 @@ export class AuthController {
       } catch (error) {
          return res.status(400).json(
            ApiResponse.error(
-             error instanceof Error ? error.message : "No se pudo restablecer la contraseña",
+             safeErrorMessage(error, "No se pudo restablecer la contraseña"),
              error
            )
          );
@@ -128,7 +128,7 @@ export class AuthController {
     } catch (error) {
       return res.status(500).json(
         ApiResponse.error(
-          error instanceof Error ? error.message : "Error interno",
+          safeErrorMessage(error, "Error interno"),
           error
         )
       );

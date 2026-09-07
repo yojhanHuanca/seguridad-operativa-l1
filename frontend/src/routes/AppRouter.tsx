@@ -20,7 +20,7 @@ const SoKpisPage = lazyNamed(() => import("@/pages/seguridad/reportes/KpisPage")
 const SoNotificacionesPage = lazyNamed(() => import("@/pages/seguridad/NotificacionesPage"), "SoNotificacionesPage");
 const EventosAsignadosPage = lazyNamed(() => import("@/pages/seguridad/EventosAsignadosPage"), "EventosAsignadosPage");
 const SoEventosPage = lazyNamed(() => import("@/pages/seguridad/EventosOperativosPage"), "SoEventosPage");
-const SoPlanesAccionPage = lazyNamed(() => import("@/pages/seguridad/PlaceholderPages"), "SoPlanesAccionPage");
+const SoPlanesAccionPage = lazyNamed(() => import("@/pages/seguridad/PlanesAccionPage"), "SoPlanesAccionPage");
 const SoPerfilPage = lazyNamed(() => import("@/pages/seguridad/PerfilPage"), "SoPerfilPage");
 const JefeHome = lazyNamed(() => import("@/pages/jefe/JefeHome"), "JefeHome");
 const PlanDetail = lazyNamed(() => import("@/pages/jefe/PlanDetail"), "PlanDetail");

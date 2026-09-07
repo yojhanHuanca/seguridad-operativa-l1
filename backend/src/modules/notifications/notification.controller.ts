@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { ZodError } from "zod";
 import { NotificationService } from "./notification.service.js";
-import { ApiResponse } from "../../utils/ApiResponse.js";
+import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
 
 /** Misma convención que case.controller: valida el parámetro de ruta. */
@@ -17,7 +17,7 @@ function fallo(res: Response, error: unknown, mensaje: string) {
   if (error instanceof ZodError) {
     return res.status(400).json(ApiResponse.error("Datos inválidos", error.issues));
   }
-  return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : mensaje));
+  return res.status(400).json(ApiResponse.error(safeErrorMessage(error, mensaje)));
 }
 
 export class NotificationController {

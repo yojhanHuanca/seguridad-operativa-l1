@@ -168,6 +168,7 @@ export function SoCasosPage() {
           <FilterSelect
             value={areaFilter}
             onChange={setAreaFilter}
+            ariaLabel="Filtrar por área"
             options={[
               { value: "", label: "Todas las áreas" },
               ...(areas ?? []).map((a) => ({ value: a.nombre_area, label: a.nombre_area })),
@@ -176,6 +177,7 @@ export function SoCasosPage() {
           <FilterSelect
             value={sort}
             onChange={(v) => setSort(v as typeof sort)}
+            ariaLabel="Ordenar por"
             options={[
               { value: "recent", label: "Más recientes" },
               { value: "priority", label: "Por prioridad" },
@@ -378,16 +380,19 @@ function FilterSelect({
   value,
   onChange,
   options,
+  ariaLabel,
 }: {
   value: string;
   onChange: (v: string) => void;
   options: { value: string; label: string }[];
+  ariaLabel: string;
 }) {
   return (
     <div className="relative">
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        aria-label={ariaLabel}
         className="h-9 pl-3 pr-8 rounded-lg bg-white border border-line text-[12.5px] text-ink-soft appearance-none cursor-pointer hover:border-line-strong focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
         style={{
           backgroundImage:

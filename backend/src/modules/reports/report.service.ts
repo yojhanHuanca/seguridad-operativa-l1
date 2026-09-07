@@ -96,18 +96,18 @@ export class ReportService {
     actor?: Actor,
     query?: { filter?: string; search?: string; page?: string; limit?: string }
   ) {
+    const page = Number(query?.page);
+    const limit = Number(query?.limit);
+    const paginar = Number.isInteger(page) && page > 0 && Number.isInteger(limit) && limit > 0;
+
     if (!esReportante(actor)) {
-      const data = await ReportRepository.findAll();
-      return { data, total: undefined as number | undefined };
+      return ReportRepository.findAll(paginar ? { page, limit } : undefined);
     }
 
     const filter =
       query?.filter === "activos" || query?.filter === "pendientes_info" || query?.filter === "cerrados"
         ? query.filter
         : undefined;
-    const page = Number(query?.page);
-    const limit = Number(query?.limit);
-    const paginar = Number.isInteger(page) && page > 0 && Number.isInteger(limit) && limit > 0;
 
     return ReportRepository.findAllByCreator(actor!.id_usuario, {
       ...(filter ? { filter } : {}),

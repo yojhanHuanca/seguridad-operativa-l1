@@ -23,7 +23,10 @@ const camposEvento = {
   id_posible_causa: idOpcional,
   informacion_adicional: z.string().trim().max(2000).optional(),
   camara_monitoreada: z.string().trim().max(50).optional(),
-  demora: z.coerce.number().nonnegative().optional(),
+  // Decimal(10,2) en la base: máximo 8 dígitos enteros + 2 decimales. Sin
+  // este .max(), un valor más largo revienta con un error crudo de Postgres
+  // (desbordamiento numérico) en vez de un 400 con mensaje claro.
+  demora: z.coerce.number().nonnegative().max(99999999.99, "La demora no puede superar 99,999,999.99").optional(),
 };
 
 export const createEventoSchema = z.object({

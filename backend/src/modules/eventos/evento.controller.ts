@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { EventoService } from "./evento.service.js";
 import { IndicadoresEventosService } from "./indicadores.service.js";
-import { ApiResponse } from "../../utils/ApiResponse.js";
+import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
 
 export class EventoController {
@@ -20,7 +20,7 @@ export class EventoController {
       return res.json(ApiResponse.success("Datos del mes guardados correctamente", data));
     } catch (error) {
       return res.status(400).json(
-        ApiResponse.error(error instanceof Error ? error.message : "No se pudieron guardar los datos del mes", error)
+        ApiResponse.error(safeErrorMessage(error, "No se pudieron guardar los datos del mes"), error)
       );
     }
   }
@@ -51,28 +51,28 @@ export class EventoController {
       const evento = await EventoService.getEventoById(Number(req.params.id));
       return res.json(ApiResponse.success("Evento obtenido correctamente", evento));
     } catch (error) {
-      return res.status(404).json(ApiResponse.error(error instanceof Error ? error.message : "Evento no encontrado", error));
+      return res.status(404).json(ApiResponse.error(safeErrorMessage(error, "Evento no encontrado"), error));
     }
   }
 
   static async create(req: AuthenticatedRequest, res: Response) {
     try {
-      const evento = await EventoService.createEvento(req.body, req.user?.id_usuario);
+      const evento = await EventoService.createEvento(req.body, req.user);
       return res.status(201).json(ApiResponse.success("Evento registrado correctamente", evento));
     } catch (error) {
       return res.status(400).json(
-        ApiResponse.error(error instanceof Error ? error.message : "Error al registrar el evento", error)
+        ApiResponse.error(safeErrorMessage(error, "Error al registrar el evento"), error)
       );
     }
   }
 
   static async update(req: Request, res: Response) {
     try {
-      const evento = await EventoService.updateEvento(Number(req.params.id), req.body);
+      const evento = await EventoService.updateEvento(Number(req.params.id), req.body, (req as AuthenticatedRequest).user);
       return res.json(ApiResponse.success("Evento actualizado correctamente", evento));
     } catch (error) {
       return res.status(400).json(
-        ApiResponse.error(error instanceof Error ? error.message : "Error al actualizar el evento", error)
+        ApiResponse.error(safeErrorMessage(error, "Error al actualizar el evento"), error)
       );
     }
   }
@@ -95,18 +95,18 @@ export class EventoController {
       return res.json(ApiResponse.success(`Evento asignado a ${resultado.nombre}`, resultado));
     } catch (error) {
       return res.status(400).json(
-        ApiResponse.error(error instanceof Error ? error.message : "Error al asignar el evento", error)
+        ApiResponse.error(safeErrorMessage(error, "Error al asignar el evento"), error)
       );
     }
   }
 
   static async remove(req: Request, res: Response) {
     try {
-      await EventoService.deleteEvento(Number(req.params.id));
+      await EventoService.deleteEvento(Number(req.params.id), (req as AuthenticatedRequest).user);
       return res.json(ApiResponse.success("Evento eliminado correctamente", null));
     } catch (error) {
       return res.status(400).json(
-        ApiResponse.error(error instanceof Error ? error.message : "Error al eliminar el evento", error)
+        ApiResponse.error(safeErrorMessage(error, "Error al eliminar el evento"), error)
       );
     }
   }

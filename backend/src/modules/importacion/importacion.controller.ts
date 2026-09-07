@@ -1,7 +1,7 @@
 import type { Response } from "express";
 import { ZodError, z } from "zod";
 import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
-import { ApiResponse } from "../../utils/ApiResponse.js";
+import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 import { ImportacionService } from "./importacion.service.js";
 
 const cellSchema = z.union([z.string(), z.number(), z.boolean(), z.null(), z.undefined()]);
@@ -34,7 +34,7 @@ export class ImportacionController {
       if (isZodError(error)) {
         return res.status(400).json(ApiResponse.error("Archivo inválido", error.flatten().fieldErrors));
       }
-      return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "No se pudo validar el archivo", error));
+      return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "No se pudo validar el archivo"), error));
     }
   }
 
@@ -48,7 +48,7 @@ export class ImportacionController {
       if (isZodError(error)) {
         return res.status(400).json(ApiResponse.error("Archivo inválido", error.flatten().fieldErrors));
       }
-      return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "No se pudo importar el archivo", error));
+      return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "No se pudo importar el archivo"), error));
     }
   }
 }

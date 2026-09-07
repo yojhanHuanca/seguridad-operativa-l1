@@ -238,7 +238,7 @@ export function EvidencePanel({
     }
     const pesado = lista.find((f) => f.size > MAX_BYTES);
     if (pesado) {
-      toast.error(`"${pesado.name}" supera los 25 MB permitidos.`);
+      toast.error(`"${pesado.name}" supera los 30 MB permitidos.`);
       return;
     }
     const invalido = lista.find((f) => !TIPOS_PERMITIDOS.includes(f.type));
@@ -314,7 +314,7 @@ export function EvidencePanel({
       {puedeAdjuntar ? (
         <div className="pt-3 border-t border-line-soft flex items-center justify-between gap-3 flex-wrap">
           <p className="text-[11.5px] text-ink-quiet">
-            Imágenes, video MP4/MOV o PDF · hasta {MAX_ARCHIVOS} archivos de 25 MB.
+            Imágenes, video MP4/MOV o PDF · hasta {MAX_ARCHIVOS} archivos de 30 MB.
           </p>
           {botonAdjuntar}
         </div>

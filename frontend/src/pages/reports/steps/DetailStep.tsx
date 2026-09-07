@@ -25,6 +25,7 @@ export function DetailStep({ form }: { form: UseFormReturn<ReportFormValues> }) 
           maxLength={500}
           placeholder="Describe brevemente lo que observaste y el riesgo que podría generar."
           className="transition-colors"
+          aria-invalid={Boolean(errors.descripcion)}
           {...register("descripcion")}
         />
       </Field>

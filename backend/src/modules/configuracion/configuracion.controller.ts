@@ -1,14 +1,14 @@
 import { z } from "zod";
 import type { Request, Response } from "express";
 import { ConfiguracionService } from "./configuracion.service.js";
-import { ApiResponse } from "../../utils/ApiResponse.js";
+import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
 
 function errorMessage(error: unknown, fallback: string) {
   if (error instanceof z.ZodError) {
     return error.issues[0]?.message ?? fallback;
   }
-  return error instanceof Error ? error.message : fallback;
+  return safeErrorMessage(error, fallback);
 }
 
 export class ConfiguracionController {

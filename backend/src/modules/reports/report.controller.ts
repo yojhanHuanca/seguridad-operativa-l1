@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { ZodError } from "zod";
 import { ReportService } from "./report.service.js";
-import { ApiResponse } from "../../utils/ApiResponse.js";
+import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
 import { AuditoriaService } from "../auditoria/auditoria.service.js";
 
@@ -38,7 +38,7 @@ export class ReportController {
     } catch (error) {
       return res
         .status(404)
-        .json(ApiResponse.error(error instanceof Error ? error.message : "Reporte no encontrado", error));
+        .json(ApiResponse.error(safeErrorMessage(error, "Reporte no encontrado"), error));
     }
   }
 
@@ -63,7 +63,7 @@ export class ReportController {
       }
       return res
         .status(400)
-        .json(ApiResponse.error(error instanceof Error ? error.message : "No se pudo registrar la respuesta", error));
+        .json(ApiResponse.error(safeErrorMessage(error, "No se pudo registrar la respuesta"), error));
     }
   }
 
@@ -119,7 +119,7 @@ export class ReportController {
         .status(400)
         .json(
           ApiResponse.error(
-            error instanceof Error ? error.message : "Error al registrar el reporte",
+            safeErrorMessage(error, "Error al registrar el reporte"),
             error
           )
         );

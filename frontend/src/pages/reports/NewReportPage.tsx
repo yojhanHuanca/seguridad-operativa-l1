@@ -135,9 +135,13 @@ function ReportIntroHero({ onStart }: { onStart: () => void }) {
   return (
     <ReportanteShell immersive>
       <section ref={sectionRef} className="relative min-h-[calc(100svh-88px)] overflow-hidden bg-ink text-white">
+        {/* `tren-linea1.png` es un panorama casi 4:1 — en un hero a pantalla
+            completa, object-cover lo recorta hasta dejar solo un fragmento
+            irreconocible y oscuro del parabrisas. Se usa la misma foto de la
+            landing (estación con buena luz, bien compuesta) en su lugar. */}
         <motion.img
-          src="/tren-linea1.png"
-          alt="Tren de Línea 1 del Metro de Lima"
+          src="/l1-tren-2.jpg"
+          alt="Tren de Línea 1 llegando a una estación del Metro de Lima"
           style={{ y: backgroundY }}
           className="absolute -inset-y-10 inset-x-0 h-[calc(100%+80px)] w-full object-cover"
         />

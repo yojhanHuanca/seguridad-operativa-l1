@@ -1,5 +1,6 @@
 import prisma from "../../lib/prisma.js";
 import type { CreateEventoDto, UpdateEventoDto } from "./evento.types.js";
+import { ConfiguracionService } from "../configuracion/configuracion.service.js";
 
 const DIAS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 export const ESTADOS_EVENTO = ["Registrado", "En investigación", "Cerrado"] as const;
@@ -174,8 +175,11 @@ export class EventoRepository {
       rango_horario = rango?.id_detalle ?? null;
     }
 
+    const codigo_evento = await ConfiguracionService.nextCodigoEvento(prisma, fecha);
+
     return prisma.eventos_monitoreo.create({
       data: {
+        codigo_evento,
         fecha,
         hora,
         anio: dto.anio ?? year,

@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { ZodError } from "zod";
 import { UsersService } from "./users.service.js";
-import { ApiResponse } from "../../utils/ApiResponse.js";
+import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
 
 function isZodError(error: unknown): error is ZodError {
@@ -53,7 +53,7 @@ export class UsersController {
         return res.status(400).json(ApiResponse.error("ID de usuario inválido", error.flatten().fieldErrors));
       }
       const status = error instanceof Error && error.message === "Usuario no encontrado" ? 404 : 500;
-      return res.status(status).json(ApiResponse.error(error instanceof Error ? error.message : "Error al obtener el usuario", error));
+      return res.status(status).json(ApiResponse.error(safeErrorMessage(error, "Error al obtener el usuario"), error));
     }
   }
 
@@ -65,7 +65,7 @@ export class UsersController {
       if (isZodError(error)) {
         return res.status(400).json(ApiResponse.error("Datos del usuario inválidos", error.flatten().fieldErrors));
       }
-      return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al crear el usuario", error));
+      return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "Error al crear el usuario"), error));
     }
   }
 
@@ -78,7 +78,7 @@ export class UsersController {
         return res.status(400).json(ApiResponse.error("Datos del usuario inválidos", error.flatten().fieldErrors));
       }
       const status = error instanceof Error && error.message === "Usuario no encontrado" ? 404 : 400;
-      return res.status(status).json(ApiResponse.error(error instanceof Error ? error.message : "Error al actualizar el usuario", error));
+      return res.status(status).json(ApiResponse.error(safeErrorMessage(error, "Error al actualizar el usuario"), error));
     }
   }
 }

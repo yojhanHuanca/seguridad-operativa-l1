@@ -1,17 +1,46 @@
 import express from "express";
-import cors from "cors";
+import cors, { type CorsOriginCallback } from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import prisma from "./lib/prisma.js";
 import routes from "./routes/index.js";
 import { notFoundMiddleware } from "./middlewares/notFound.middleware.js";
 import { errorMiddleware } from "./middlewares/error.middleware.js";
+import { env } from "./config/env.js";
 
 
 const app = express();
 
-app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
-app.use(cors());
+// Allowlist explícito: el frontend real (FRONTEND_URL, prod o el que diga el
+// .env) más los puertos de desarrollo local (Vite dev y `vite preview`).
+// Antes `cors()` sin argumentos reflejaba cualquier origen — inofensivo hoy
+// porque la sesión va por Bearer token (no por cookie), pero no es la
+// configuración correcta para una API que va a producción.
+const ORIGENES_PERMITIDOS = new Set([env.FRONTEND_URL, "http://localhost:5173", "http://localhost:4173"]);
+app.use(
+  cors({
+    origin(origin: string | undefined, callback: CorsOriginCallback) {
+      // Sin cabecera Origin (curl, health checks, servidor-a-servidor): se permite.
+      if (!origin || ORIGENES_PERMITIDOS.has(origin)) return callback(null, true);
+      callback(new Error("Origen no permitido por CORS"));
+    },
+  })
+);
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'none'"],
+        // La API solo devuelve JSON y archivos — no sirve HTML/CSS/JS propios,
+        // así que un CSP mínimo (sin scripts, sin estilos) no le quita nada
+        // funcional; solo evita que un navegador renderice contenido inyectado
+        // como si viniera de este origen.
+        frameAncestors: ["'none'"],
+      },
+    },
+  })
+);
 // El body por defecto de express son 100 KB, suficiente para todo el sistema
 // menos para la importación histórica: ahí el navegador manda el Excel ya
 // convertido a JSON, y un archivo de decenas de miles de filas pesa varios MB.

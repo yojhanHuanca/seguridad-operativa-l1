@@ -1,8 +1,15 @@
 declare module "cors" {
   import type { RequestHandler } from "express";
 
+  export type CorsOriginCallback = (err: Error | null, allow?: boolean) => void;
+
   export interface CorsOptions {
-    origin?: boolean | string | RegExp | Array<boolean | string | RegExp>;
+    origin?:
+      | boolean
+      | string
+      | RegExp
+      | Array<boolean | string | RegExp>
+      | ((origin: string | undefined, callback: CorsOriginCallback) => void);
     methods?: string | string[];
     allowedHeaders?: string | string[];
     exposedHeaders?: string | string[];

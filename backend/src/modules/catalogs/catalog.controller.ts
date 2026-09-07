@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { CatalogService } from "./catalog.service.js";
-import { ApiResponse } from "../../utils/ApiResponse.js";
+import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 
 export class CatalogController {
   static async getAll(_req: Request, res: Response) {
@@ -18,7 +18,7 @@ export class CatalogController {
       const group = await CatalogService.getGroupForAdmin(id_catalogo);
       return res.json(ApiResponse.success("Catálogo obtenido correctamente", group));
     } catch (error) {
-      return res.status(404).json(ApiResponse.error(error instanceof Error ? error.message : "Catálogo no encontrado"));
+      return res.status(404).json(ApiResponse.error(safeErrorMessage(error, "Catálogo no encontrado")));
     }
   }
 
@@ -28,7 +28,7 @@ export class CatalogController {
       const item = await CatalogService.createItem(id_catalogo, req.body?.nombre ?? "");
       return res.status(201).json(ApiResponse.success("Valor creado correctamente", item));
     } catch (error) {
-      return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al crear el valor"));
+      return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "Error al crear el valor")));
     }
   }
 
@@ -38,7 +38,7 @@ export class CatalogController {
       const item = await CatalogService.updateItem(id_detalle, req.body?.nombre ?? "");
       return res.json(ApiResponse.success("Valor actualizado correctamente", item));
     } catch (error) {
-      return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al actualizar el valor"));
+      return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "Error al actualizar el valor")));
     }
   }
 
@@ -48,7 +48,7 @@ export class CatalogController {
       const item = await CatalogService.setItemEstado(id_detalle, false);
       return res.json(ApiResponse.success("Valor desactivado correctamente", item));
     } catch (error) {
-      return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al desactivar el valor"));
+      return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "Error al desactivar el valor")));
     }
   }
 
@@ -58,7 +58,7 @@ export class CatalogController {
       const item = await CatalogService.setItemEstado(id_detalle, true);
       return res.json(ApiResponse.success("Valor reactivado correctamente", item));
     } catch (error) {
-      return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al reactivar el valor"));
+      return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "Error al reactivar el valor")));
     }
   }
 }

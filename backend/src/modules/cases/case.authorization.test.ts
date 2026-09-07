@@ -85,7 +85,7 @@ describe("autorización de planes por idPlan", () => {
 
 describe("visibilidad de planes", () => {
   it("filtra al Jefe por su área y deja el listado global al Admin", async () => {
-    const listar = vi.spyOn(CaseRepository, "findPlansByArea").mockResolvedValue([]);
+    const listar = vi.spyOn(CaseRepository, "findPlansByArea").mockResolvedValue({ data: [], total: undefined });
 
     await CaseService.listPlans({}, jefe);
     expect(listar).toHaveBeenLastCalledWith({ id_area: 100 });

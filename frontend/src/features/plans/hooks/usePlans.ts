@@ -11,6 +11,44 @@ export function usePlans(area?: number) {
   return useQuery({ queryKey: ["planes", area ?? null], queryFn: () => fetchPlans(area) });
 }
 
+export interface PlansPaginatedParams {
+  area?: number;
+  vencidos?: boolean;
+  page: number;
+  limit: number;
+}
+
+export interface PlansPage {
+  items: PlanItem[];
+  total: number;
+}
+
+/**
+ * Variante paginada de `/cases/planes`, para la vista consolidada de
+ * Seguridad Operativa (`PlanesAccionPage`) — el resto (badge, PlanDetail,
+ * JefeHome) sigue usando `usePlans` sin paginar porque necesita el listado
+ * completo del área para sus propios filtros/agregados en memoria.
+ */
+async function fetchPlansPaginated(params: PlansPaginatedParams): Promise<PlansPage> {
+  const { data } = await api.get<ApiEnvelope<PlanItem[]>>("/cases/planes", {
+    params: {
+      area: params.area,
+      vencidos: params.vencidos ? 1 : undefined,
+      page: params.page,
+      limit: params.limit,
+    },
+  });
+  return { items: data.data ?? [], total: data.meta?.total ?? data.data?.length ?? 0 };
+}
+
+export function usePlansPaginated(params: PlansPaginatedParams) {
+  return useQuery({
+    queryKey: ["planes-paginado", params],
+    queryFn: () => fetchPlansPaginated(params),
+    placeholderData: (previous) => previous,
+  });
+}
+
 /**
  * Planes de un caso puntual — antes `PlanDetail.tsx` pedía TODOS los planes
  * del área y los filtraba en el navegador buscando el código del caso, un

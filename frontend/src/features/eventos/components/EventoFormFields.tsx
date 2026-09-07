@@ -207,7 +207,7 @@ export function EventoFormFields({
           </Field>
           <div className="md:col-span-2">
             <Field label="Descripción del evento" required error={errors.descripcion}>
-              <Textarea value={form.descripcion} onChange={(e) => set("descripcion", e.target.value)} rows={2} placeholder="Describa el evento..." className={TEXTAREA_CLASS} />
+              <Textarea value={form.descripcion} onChange={(e) => set("descripcion", e.target.value)} rows={2} maxLength={2000} placeholder="Describa el evento..." className={TEXTAREA_CLASS} />
             </Field>
           </div>
           <div className="md:col-span-3">
@@ -246,7 +246,7 @@ export function EventoFormFields({
             <CatalogSelect items={numerosMr} value={form.idNumeroMr} onChange={(v) => set("idNumeroMr", v)} disabled={catalogs.isLoading} />
           </Field>
           <Field label="N.° de carrera" error={errors.numeroCarrera}>
-            <Input value={form.numeroCarrera} onChange={(e) => set("numeroCarrera", e.target.value)} placeholder="Ej. 1234" className={CONTROL_CLASS} />
+            <Input value={form.numeroCarrera} onChange={(e) => set("numeroCarrera", e.target.value)} maxLength={30} placeholder="Ej. 1234" className={CONTROL_CLASS} />
           </Field>
         </div>
       </FormSection>
@@ -262,14 +262,14 @@ export function EventoFormFields({
             </Field>
           </div>
           <Field label="Cámara">
-            <Input value={form.camaraMonitoreada} onChange={(e) => set("camaraMonitoreada", e.target.value)} placeholder="Ej. CAM-024" className={CONTROL_CLASS} />
+            <Input value={form.camaraMonitoreada} onChange={(e) => set("camaraMonitoreada", e.target.value)} maxLength={50} placeholder="Ej. CAM-024" className={CONTROL_CLASS} />
           </Field>
-          <Field label="Demora (min)">
-            <Input type="number" min="0" step="0.1" value={form.demora} onChange={(e) => set("demora", e.target.value)} placeholder="0" className={CONTROL_CLASS} />
+          <Field label="Demora (min)" error={errors.demora}>
+            <Input type="number" min="0" max="99999999.99" step="0.1" value={form.demora} onChange={(e) => set("demora", e.target.value)} placeholder="0" className={CONTROL_CLASS} />
           </Field>
           <div className="col-span-2 md:col-span-3 lg:col-span-6">
             <Field label="Información adicional" error={errors.informacionAdicional}>
-              <Textarea value={form.informacionAdicional} onChange={(e) => set("informacionAdicional", e.target.value)} rows={2} placeholder="Detalles adicionales..." className={TEXTAREA_CLASS} />
+              <Textarea value={form.informacionAdicional} onChange={(e) => set("informacionAdicional", e.target.value)} rows={2} maxLength={2000} placeholder="Detalles adicionales..." className={TEXTAREA_CLASS} />
             </Field>
           </div>
         </div>

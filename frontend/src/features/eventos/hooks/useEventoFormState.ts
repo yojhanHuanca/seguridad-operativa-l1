@@ -197,6 +197,13 @@ export function useEventoFormState(eventoInicial?: EventoListItem) {
     if (!form.idPersonalInvolucrado) nuevosErrores.idPersonalInvolucrado = "Obligatorio";
     if (!form.idTipoCausa) nuevosErrores.idTipoCausa = "Obligatorio";
     if (!form.idPosibleCausa) nuevosErrores.idPosibleCausa = "Obligatorio";
+    // Mismos límites que el backend (evento.types.ts) — el maxLength del
+    // input ya lo evita al escribir, esto cubre pegar texto más largo.
+    if (form.descripcion.length > 2000) nuevosErrores.descripcion = "Máximo 2000 caracteres";
+    if (form.numeroCarrera.length > 30) nuevosErrores.numeroCarrera = "Máximo 30 caracteres";
+    if (form.camaraMonitoreada.length > 50) nuevosErrores.camaraMonitoreada = "Máximo 50 caracteres";
+    if (form.informacionAdicional.length > 2000) nuevosErrores.informacionAdicional = "Máximo 2000 caracteres";
+    if (form.demora.trim() && Number(form.demora) > 99999999.99) nuevosErrores.demora = "Valor demasiado grande";
     setErrors(nuevosErrores);
     return Object.keys(nuevosErrores).length === 0;
   };

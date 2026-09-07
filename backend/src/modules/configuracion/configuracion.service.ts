@@ -6,6 +6,7 @@ import { buildCodigoPlan, codigoPlanSequenceForCase } from "./codigo-plan.js";
 import { codigoSopSequence } from "./codigo-sop.js";
 import {
   SEQ_CASOS_SOP,
+  SEQ_EVENTOS_MONITOREO,
   advanceSequenceAtLeast,
   currentSequenceValue,
   ensureSequence,
@@ -326,6 +327,17 @@ export class ConfiguracionService {
     return `${prefix} ${padSequence(sequence)}-${year}`;
   }
 
+  /**
+   * Código único global para un evento de monitoreo (EVT 00042-2026), por la
+   * misma secuencia atómica de Postgres que ya usa `nextCodigoExpediente` —
+   * antes `codigo_evento` se dejaba `null` siempre, sin ninguna generación.
+   */
+  static async nextCodigoEvento(client: DbClient, fecha: Date): Promise<string> {
+    const year = fecha.getUTCFullYear();
+    const sequence = await nextSequenceValue(client, SEQ_EVENTOS_MONITOREO);
+    return `EVT ${padSequence(sequence)}-${year}`;
+  }
+
   static async nextCodigosPlan(client: DbClient, codigoSop: string, cantidad: number): Promise<string[]> {
     if (cantidad <= 0) return [];
 
@@ -372,6 +384,7 @@ export class ConfiguracionService {
    */
   static async bootstrapSequences(client: DbClient = prisma) {
     await ensureSequence(client, SEQ_CASOS_SOP);
+    await ensureSequence(client, SEQ_EVENTOS_MONITOREO);
 
     const values = await ConfiguracionService.readValues(client);
     const prefix = sanitizePrefix(values.get(CONFIG_KEYS.expedientePrefijo) || defaultValue(CONFIG_KEYS.expedientePrefijo), "El prefijo de expedientes");

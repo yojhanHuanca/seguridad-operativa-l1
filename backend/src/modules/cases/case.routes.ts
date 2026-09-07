@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { CaseController } from "./case.controller.js";
-import { uploadEvidencia } from "../../middlewares/upload.middleware.js";
+import { uploadEvidencia, verificarContenidoEvidencia } from "../../middlewares/upload.middleware.js";
 import { requireRoles, requireRolesAndPermission } from "../../middlewares/auth.middleware.js";
 
 const router = Router();
@@ -41,8 +41,8 @@ router.post("/planes/:idPlan/extension", JEFE, CaseController.requestExtensionBy
 router.post("/planes/:idPlan/extension/review", SO, CaseController.reviewExtensionByPlan);
 router.post("/planes/:idPlan/comment", SO_O_JEFE, CaseController.addPlanComment);
 router.delete("/planes/:idPlan/evidence/:idAnexo", JEFE, CaseController.removePlanEvidence);
-router.post("/planes/:idPlan/evidence", JEFE, uploadEvidencia.array("evidencia", 10), CaseController.addEvidenceByPlan);
-router.post("/planes/:idPlan/actualizacion", JEFE, uploadEvidencia.array("evidencia", 10), CaseController.addPlanUpdate);
+router.post("/planes/:idPlan/evidence", JEFE, uploadEvidencia.array("evidencia", 10), verificarContenidoEvidencia, CaseController.addEvidenceByPlan);
+router.post("/planes/:idPlan/actualizacion", JEFE, uploadEvidencia.array("evidencia", 10), verificarContenidoEvidencia, CaseController.addPlanUpdate);
 router.patch("/actividades/:idActividad", JEFE, CaseController.updateActivity);
 router.post("/:codigo/extension/review", SO, CaseController.reviewExtension);
 router.post("/:codigo/start-execution", SO, CaseController.startExecution);
@@ -53,7 +53,7 @@ router.post("/:codigo/reopen", SO_PUEDE_REABRIR, CaseController.reopen);
 router.post("/:codigo/rollback", SO, CaseController.rollbackStage);
 router.post("/:codigo/comment", SO_O_JEFE, CaseController.addComment);
 router.post("/:codigo/close", SO, CaseController.close);
-router.post("/:codigo/evidence", SO, uploadEvidencia.array("evidencia", 10), CaseController.addEvidence);
+router.post("/:codigo/evidence", SO, uploadEvidencia.array("evidencia", 10), verificarContenidoEvidencia, CaseController.addEvidence);
 
 export default router;
 

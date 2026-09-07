@@ -105,7 +105,7 @@ export function ConsultarReportePage() {
     <ReportanteShell>
       <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="mx-auto max-w-2xl">
         <motion.div variants={riseItem} className="relative mb-6 overflow-hidden rounded-2xl bg-ink p-6 text-center text-white shadow-[var(--shadow-plate)] sm:p-7">
-          <img src="/tren-linea1.png" alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover opacity-20" />
+          <img src="/l1-tren-2.jpg" alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover opacity-20" />
           <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/84 to-brand-950/74" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 overflow-hidden opacity-70" aria-hidden>
             <div className="absolute bottom-6 left-0 right-0 h-px bg-white/18" />

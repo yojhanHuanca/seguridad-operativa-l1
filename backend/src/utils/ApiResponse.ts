@@ -1,3 +1,31 @@
+import { Prisma } from "../generated/prisma/client.js";
+
+const ERRORES_INTERNOS: (new (...args: never[]) => Error)[] = [
+  Prisma.PrismaClientKnownRequestError,
+  Prisma.PrismaClientUnknownRequestError,
+  Prisma.PrismaClientValidationError,
+  Prisma.PrismaClientInitializationError,
+  Prisma.PrismaClientRustPanicError,
+  TypeError,
+  RangeError,
+  SyntaxError,
+];
+
+/**
+ * Decide si el `message` de una excepción es seguro para mandar al cliente.
+ * Errores de Prisma/JS (overflow numérico, tipo incorrecto, etc.) exponen
+ * rutas, nombres de columna o mensajes técnicos internos, así que siempre
+ * caen al `fallback`. Un `Error` de negocio lanzado a propósito en el
+ * código de la aplicación (p. ej. `new Error("El caso ... no existe")`) sí
+ * es seguro y se muestra tal cual.
+ */
+export function safeErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error && !ERRORES_INTERNOS.some((Clase) => error instanceof Clase)) {
+    return error.message;
+  }
+  return fallback;
+}
+
 export class ApiResponse<T> {
   constructor(
     public success: boolean,
