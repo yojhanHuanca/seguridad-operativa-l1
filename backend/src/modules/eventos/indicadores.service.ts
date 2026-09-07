@@ -42,6 +42,24 @@ async function divisorPorMes(nombreIndicador: string): Promise<Map<string, numbe
     const key = mesKey(fecha.getUTCFullYear(), fecha.getUTCMonth() + 1);
     out.set(key, (out.get(key) ?? 0) + Number(valor));
   }
+
+  // La carga diaria es la fuente más detallada. Cuando existe para un mes,
+  // reemplaza el valor mensual manual de ese mismo mes sin duplicarlo.
+  try {
+    const diarios = await prisma.datos_operativos.findMany({
+      select: { fecha: true, km_comercial: true, qty_pasajeros: true },
+    });
+    const diariosPorMes = new Map<string, number>();
+    for (const dato of diarios) {
+      const valor = nombreIndicador === INDICADOR_KM ? dato.km_comercial : dato.qty_pasajeros;
+      const key = mesKey(dato.fecha.getUTCFullYear(), dato.fecha.getUTCMonth() + 1);
+      diariosPorMes.set(key, (diariosPorMes.get(key) ?? 0) + Number(valor));
+    }
+    for (const [key, total] of diariosPorMes) out.set(key, Math.round(total * 100) / 100);
+  } catch (error) {
+    const codigo = typeof error === "object" && error !== null && "code" in error ? error.code : null;
+    if (codigo !== "P2021") throw error;
+  }
   return out;
 }
 
@@ -104,6 +122,24 @@ async function valorDelMes(nombreIndicador: string, anio: number, mes: number): 
     select: { valor: true },
   });
   const total = valores.reduce((sum, item) => sum + Number(item.valor ?? 0), 0);
+  if (nombreIndicador === INDICADOR_KM || nombreIndicador === INDICADOR_PASAJEROS) {
+    try {
+      const diarios = await prisma.datos_operativos.findMany({
+        where: { fecha: { gte: desde, lt: hasta } },
+        select: { km_comercial: true, qty_pasajeros: true },
+      });
+      if (diarios.length > 0) {
+        const totalDiario = diarios.reduce(
+          (sum, item) => sum + Number(nombreIndicador === INDICADOR_KM ? item.km_comercial : item.qty_pasajeros),
+          0,
+        );
+        return Math.round(totalDiario * 100) / 100;
+      }
+    } catch (error) {
+      const codigo = typeof error === "object" && error !== null && "code" in error ? error.code : null;
+      if (codigo !== "P2021") throw error;
+    }
+  }
   return valores.length > 0 ? Math.round(total * 100) / 100 : null;
 }
 

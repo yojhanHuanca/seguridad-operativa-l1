@@ -437,6 +437,20 @@ model historial_indicadores {
   indicadores  indicadores? @relation(fields: [id_indicador], references: [id_indicador], onDelete: NoAction, onUpdate: NoAction, map: "fk_historial_indicador")
 }
 
+/// Valores diarios de operación que alimentan los indicadores y conservan el
+/// mismo nivel de detalle de la base histórica del cliente.
+model datos_operativos {
+  id_dato_operativo Int      @id @default(autoincrement())
+  fecha             DateTime @unique @db.Date
+  qty_carreras      Decimal  @db.Decimal(15, 2)
+  qty_pasajeros     Decimal  @db.Decimal(15, 2)
+  km_comercial      Decimal  @db.Decimal(15, 2)
+  km_no_comercial   Decimal  @db.Decimal(15, 2)
+  paradas_estacion  Decimal  @db.Decimal(15, 2)
+  created_at        DateTime @default(now()) @db.Timestamp(6)
+  updated_at        DateTime @updatedAt @db.Timestamp(6)
+}
+
 /// Sin uso real: solo se le hace `.count()` desde `AreaRepository`/
 /// `EstacionRepository` (para bloquear borrar un área/estación "en uso"),
 /// pero nada en la aplicación crea filas acá, así que ese conteo siempre

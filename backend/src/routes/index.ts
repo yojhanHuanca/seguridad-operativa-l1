@@ -16,6 +16,7 @@ import dashboardRoutes from "../modules/dashboard/dashboard.routes.js";
 import auditoriaRoutes from "../modules/auditoria/auditoria.routes.js";
 import importacionRoutes from "../modules/importacion/importacion.routes.js";
 import configuracionRoutes from "../modules/configuracion/configuracion.routes.js";
+import datosOperativosRoutes from "../modules/datos-operativos/datos-operativos.routes.js";
 import { ConfiguracionController } from "../modules/configuracion/configuracion.controller.js";
 import { AuthController } from "../modules/auth/auth.controller.js";
 import { optionalVerifyToken, verifyToken } from "../middlewares/auth.middleware.js";
@@ -72,6 +73,7 @@ router.use("/dashboard", dashboardRoutes);
 router.use("/auditoria", auditoriaRoutes);
 router.use("/importacion", importacionRoutes);
 router.use("/configuracion", configuracionRoutes);
+router.use("/datos-operativos", datosOperativosRoutes);
 router.get("/", AuthController.home);
 
 
