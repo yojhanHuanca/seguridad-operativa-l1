@@ -13,4 +13,14 @@
 // "Monitorista" se agregó después: es el perfil que registra/importa
 // eventos operativos (desde Excel/CSV/URL) antes de que lleguen a Seguridad
 // Operativa.
-export const ROLES: string[] = ["Admin", "Seguridad Operativa", "Jefe de Área", "Monitorista", "Reportante"];
+//
+// "Gestión de Planes de Contingencia" representa la plantilla
+// PLANTILLA PLANES DE CONTINGENCIA 2026.xlsx como módulo propio.
+export const ROLES: string[] = [
+  "Admin",
+  "Seguridad Operativa",
+  "Jefe de Área",
+  "Monitorista",
+  "Gestión de Planes de Contingencia",
+  "Reportante",
+];

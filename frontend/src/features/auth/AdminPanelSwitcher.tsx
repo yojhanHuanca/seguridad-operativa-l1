@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutGrid, ShieldCheck, ShieldAlert, Briefcase, Radar, Check } from "lucide-react";
+import { LayoutGrid, ShieldCheck, ShieldAlert, Briefcase, Radar, Check, ClipboardList } from "lucide-react";
 import { useAuth } from "./auth";
 import { cn } from "@/lib/utils";
 
@@ -9,6 +9,7 @@ const PANELES = [
   { to: "/seguridad", label: "Seguridad Operativa", icon: ShieldAlert, match: (p: string) => p.startsWith("/seguridad") },
   { to: "/jefe", label: "Jefe de Área", icon: Briefcase, match: (p: string) => p.startsWith("/jefe") },
   { to: "/monitoreo", label: "Monitoreo", icon: Radar, match: (p: string) => p.startsWith("/monitoreo") },
+  { to: "/contingencias/registro", label: "Contingencias", icon: ClipboardList, match: (p: string) => p.startsWith("/contingencias") },
 ];
 
 /** Solo el Admin ve esto: le permite saltar entre paneles sin escribir la URL a mano. */

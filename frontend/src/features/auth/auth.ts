@@ -38,5 +38,8 @@ export function homeForRole(role: string) {
   if (normalized === "jefe de área" || normalized === "jefe de area") return "/jefe";
   if (normalized === "monitorista") return "/monitoreo";
   if (normalized === "reportante") return "/reportes/nuevo";
+  if (normalized === "gestión de planes de contingencia" || normalized === "gestion de planes de contingencia") {
+    return "/contingencias/registro";
+  }
   return "/";
 }

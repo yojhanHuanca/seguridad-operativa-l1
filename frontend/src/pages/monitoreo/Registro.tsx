@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, Save, X } from "lucide-react";
+import { Check, ClipboardList, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { MonitoristaShell } from "@/components/layout/MonitoristaShell";
 import { Card } from "@/design-system/primitives/Card";
@@ -61,7 +61,11 @@ export function Registro() {
 
   return (
     <MonitoristaShell>
-      <form onSubmit={onSubmit}>
+      <form onSubmit={onSubmit} className="mx-auto max-w-6xl">
+        <div className="mb-5 flex items-center gap-3">
+          <span className="rounded-xl bg-brand-50 p-3 text-brand-700"><ClipboardList className="h-6 w-6" aria-hidden="true" /></span>
+          <div><h1 className="text-xl font-bold text-ink">Registrar evento operativo</h1><p className="mt-1 text-sm text-ink-quiet">Completa el formulario en una sola vista. Los campos con * son obligatorios.</p></div>
+        </div>
         <EventoFormFields form={form} set={set} errors={errors} rangoLabel={rangoLabel} />
 
         <div className="mt-4 flex items-center justify-end gap-2.5 rounded-lg border border-line bg-white p-3 shadow-[var(--shadow-card)]">

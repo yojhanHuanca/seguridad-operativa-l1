@@ -11,6 +11,7 @@
     "postbuild": "node scripts/copy-prisma-engine.mjs",
     "start": "node dist/server.js",
     "seed": "tsx prisma/seed.ts",
+    "seed:contingencias": "tsx prisma/seed-contingencias.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

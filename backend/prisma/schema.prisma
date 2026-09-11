@@ -451,6 +451,150 @@ model datos_operativos {
   updated_at        DateTime @updatedAt @db.Timestamp(6)
 }
 
+/// Catálogos propios del módulo de Planes de Contingencia. Nacen del Excel
+/// "PLANTILLA PLANES DE CONTINGENCIA 2026.xlsx" y se guardan separados de los
+/// catálogos SOP/Monitoreo para no mezclar dominios.
+model contingencia_catalogos {
+  id_catalogo  Int                           @id @default(autoincrement())
+  codigo       String                        @unique @db.VarChar(80)
+  nombre       String                        @db.VarChar(160)
+  hoja_excel   String?                       @db.VarChar(80)
+  columna_excel String?                      @db.VarChar(10)
+  estado       Boolean                       @default(true)
+  created_at   DateTime                      @default(now()) @db.Timestamp(6)
+  items        contingencia_catalogo_items[]
+
+  @@index([estado], map: "idx_cont_catalogo_estado")
+}
+
+model contingencia_catalogo_items {
+  id_item       Int                    @id @default(autoincrement())
+  id_catalogo   Int
+  valor         String                 @db.VarChar(220)
+  orden         Int                    @default(1)
+  estado        Boolean                @default(true)
+  created_at    DateTime               @default(now()) @db.Timestamp(6)
+  catalogo      contingencia_catalogos @relation(fields: [id_catalogo], references: [id_catalogo], onDelete: Cascade, onUpdate: NoAction, map: "fk_cont_item_catalogo")
+
+  @@unique([id_catalogo, valor], map: "uq_cont_item_catalogo_valor")
+  @@index([id_catalogo], map: "idx_cont_item_catalogo")
+  @@index([estado], map: "idx_cont_item_estado")
+}
+
+/// Registro principal del perfil Gestión de Planes de Contingencia. Conserva
+/// la granularidad del Excel, pero dividido en relaciones 1:1 para que el
+/// formulario pueda leerse por secciones.
+model contingencia_eventos {
+  id_evento                             Int                         @id @default(autoincrement())
+  codigo_evento                         String?                     @unique @db.VarChar(30)
+  fecha                                 DateTime                    @db.Date
+  hora_reporte                          DateTime?                   @db.Time(6)
+  mes                                   Int?                        @db.SmallInt
+  tipo_evento                           String                      @db.VarChar(100)
+  lugar_evento                          String?                     @db.VarChar(160)
+  lugar_exacto_evento                   String?                     @db.VarChar(180)
+  quien_reporta                         String?                     @db.VarChar(120)
+  medio_comunicacion_primer_reporte     String?                     @db.VarChar(180)
+  estado_usuario_reportado              String?                     @db.VarChar(80)
+  acepta_atencion                       String?                     @db.VarChar(20)
+  atencion_inicial                      String?                     @db.VarChar(120)
+  atencion_final                        String?                     @db.VarChar(120)
+  nivel_inicial                         String?                     @db.VarChar(60)
+  nivel_final                           String?                     @db.VarChar(60)
+  hora_termino_ae                       DateTime?                   @db.Time(6)
+  estado                                String                      @default("Registrado") @db.VarChar(30)
+  created_by                            Int?
+  updated_by                            Int?
+  created_at                            DateTime                    @default(now()) @db.Timestamp(6)
+  updated_at                            DateTime                    @updatedAt @db.Timestamp(6)
+  atencion                              contingencia_atenciones?
+  traslado                              contingencia_traslados?
+  persona                               contingencia_personas?
+  diagnostico                           contingencia_diagnosticos?
+  cierre                                contingencia_cierres?
+
+  @@index([fecha], map: "idx_cont_evento_fecha")
+  @@index([estado], map: "idx_cont_evento_estado")
+  @@index([tipo_evento], map: "idx_cont_evento_tipo")
+  @@index([created_by], map: "idx_cont_evento_created_by")
+}
+
+model contingencia_atenciones {
+  id_atencion                             Int                  @id @default(autoincrement())
+  id_evento                               Int                  @unique
+  hora_llamado_pco_sppa                   DateTime?            @db.Time(6)
+  hora_llegada_spaa                       DateTime?            @db.Time(6)
+  hora_inicio_spaa                        DateTime?            @db.Time(6)
+  hora_termino_atencion_inicio_traslado   DateTime?            @db.Time(6)
+  estacion_partida_spaa                   String?              @db.VarChar(160)
+  medio_transporte_spaa                   String?              @db.VarChar(120)
+  trasladado_por                          String?              @db.VarChar(120)
+  evento                                  contingencia_eventos @relation(fields: [id_evento], references: [id_evento], onDelete: Cascade, onUpdate: NoAction, map: "fk_cont_atencion_evento")
+}
+
+model contingencia_traslados {
+  id_traslado                                  Int                  @id @default(autoincrement())
+  id_evento                                    Int                  @unique
+  estacion_partida_ambulancia                  String?              @db.VarChar(160)
+  estacion_llegada_ambulancia                  String?              @db.VarChar(180)
+  hora_llamado_ambulancia                      DateTime?            @db.Time(6)
+  hora_llegada_estacion                        DateTime?            @db.Time(6)
+  hora_salida_centro_salud                     DateTime?            @db.Time(6)
+  hora_llegada_centro_medico                   DateTime?            @db.Time(6)
+  hora_retiro_centro_medico                    DateTime?            @db.Time(6)
+  hora_retorno_puesto                          DateTime?            @db.Time(6)
+  hora_llamado_ambulancia_tercero              DateTime?            @db.Time(6)
+  hora_llegada_ambulancia_terceros             DateTime?            @db.Time(6)
+  hora_inicio_traslado_ambulancia_terceros     DateTime?            @db.Time(6)
+  centro_salud                                 String?              @db.VarChar(180)
+  evento                                       contingencia_eventos @relation(fields: [id_evento], references: [id_evento], onDelete: Cascade, onUpdate: NoAction, map: "fk_cont_traslado_evento")
+}
+
+model contingencia_personas {
+  id_persona                  Int                  @id @default(autoincrement())
+  id_evento                   Int                  @unique
+  nombre_persona              String?              @db.VarChar(180)
+  dni                         String?              @db.VarChar(20)
+  sexo                        String?              @db.VarChar(10)
+  edad                        Int?
+  tarjeta_cliente             String?              @db.VarChar(60)
+  categoria_paciente          String?              @db.VarChar(120)
+  extranjero                  String?              @db.VarChar(10)
+  estacion_origen_usuario     String?              @db.VarChar(160)
+  estacion_destino_usuario    String?              @db.VarChar(160)
+  acompanante                 String?              @db.VarChar(80)
+  numero_dni_acompanante      String?              @db.VarChar(20)
+  evento                      contingencia_eventos @relation(fields: [id_evento], references: [id_evento], onDelete: Cascade, onUpdate: NoAction, map: "fk_cont_persona_evento")
+
+  @@index([categoria_paciente], map: "idx_cont_persona_categoria")
+}
+
+model contingencia_diagnosticos {
+  id_diagnostico              Int                  @id @default(autoincrement())
+  id_evento                   Int                  @unique
+  reporte_pco                 String?              @db.VarChar(180)
+  reporte_cliente             String?              @db.VarChar(180)
+  diagnostico_presuntivo      String?              @db.VarChar(220)
+  sintomas_presentados        String?
+  zona_lesion                 String?              @db.VarChar(120)
+  nombre_personal_salud       String?              @db.VarChar(180)
+  tipo_declaracion_jurada     String?              @db.VarChar(20)
+  nro_declaracion_jurada      String?              @db.VarChar(80)
+  evento                      contingencia_eventos @relation(fields: [id_evento], references: [id_evento], onDelete: Cascade, onUpdate: NoAction, map: "fk_cont_diagnostico_evento")
+}
+
+model contingencia_cierres {
+  id_cierre                   Int                  @id @default(autoincrement())
+  id_evento                   Int                  @unique
+  breve_descripcion_hecho     String?
+  reserva_camaras             String?              @db.VarChar(120)
+  observacion                 String?
+  registro                    String?              @db.VarChar(120)
+  revision                    String?              @db.VarChar(120)
+  casos_sospechosos_covid_19  String?              @db.VarChar(120)
+  evento                      contingencia_eventos @relation(fields: [id_evento], references: [id_evento], onDelete: Cascade, onUpdate: NoAction, map: "fk_cont_cierre_evento")
+}
+
 /// Sin uso real: solo se le hace `.count()` desde `AreaRepository`/
 /// `EstacionRepository` (para bloquear borrar un área/estación "en uso"),
 /// pero nada en la aplicación crea filas acá, así que ese conteo siempre

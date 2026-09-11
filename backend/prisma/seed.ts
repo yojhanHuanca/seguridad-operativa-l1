@@ -4,6 +4,7 @@ import { CATALOGOS } from "./seed/catalogos-data.js";
 import { AREAS } from "./seed/areas-data.js";
 import { ROLES } from "./seed/roles-data.js";
 import { USUARIOS } from "./seed/usuarios-data.js";
+import { ContingenciaRepository } from "../src/modules/contingencias/contingencia.repository.js";
 
 // ── helpers ──────────────────────────────────────────────────────────────
 
@@ -310,6 +311,14 @@ async function seedEventoEjemplo() {
   console.log("  Evento 08/03/2012 · INGRESO A LA VÍA · GAM (sin código, no venía en el CSV)");
 }
 
+// ── 7. Catálogos de contingencias ───────────────────────────────────────
+
+async function seedContingenciaCatalogos() {
+  console.log("→ Catálogos de contingencias");
+  await ContingenciaRepository.ensureCatalogosIniciales();
+  console.log("  Catálogos base sincronizados");
+}
+
 // ── main ─────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -319,6 +328,7 @@ async function main() {
   await seedUsuarios();
   await seedCasoEjemplo();
   await seedEventoEjemplo();
+  await seedContingenciaCatalogos();
   console.log("\nSeed completado.");
 }
 
