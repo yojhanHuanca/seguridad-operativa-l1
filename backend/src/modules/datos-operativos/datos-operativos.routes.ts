@@ -3,11 +3,11 @@ import { requireRolesOrResponsable } from "../../middlewares/auth.middleware.js"
 import { DatosOperativosController } from "./datos-operativos.controller.js";
 
 const router = Router();
-const MONITOREO = requireRolesOrResponsable(["Monitorista"], ["Seguridad Operativa"]);
+const DATOS_OPERATIVOS = requireRolesOrResponsable(["Gestión de Planes de Contingencia", "Monitorista"], ["Seguridad Operativa"]);
 
-router.get("/", MONITOREO, DatosOperativosController.getAll);
-router.post("/", MONITOREO, DatosOperativosController.create);
-router.put("/:id", MONITOREO, DatosOperativosController.update);
-router.delete("/:id", MONITOREO, DatosOperativosController.remove);
+router.get("/", DATOS_OPERATIVOS, DatosOperativosController.getAll);
+router.post("/", DATOS_OPERATIVOS, DatosOperativosController.create);
+router.put("/:id", DATOS_OPERATIVOS, DatosOperativosController.update);
+router.delete("/:id", DATOS_OPERATIVOS, DatosOperativosController.remove);
 
 export default router;

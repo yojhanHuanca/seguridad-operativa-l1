@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ChevronsLeft, ChevronsRight, ClipboardList, History, Menu, type LucideIcon } from "lucide-react";
+import { ChevronsLeft, ChevronsRight, ClipboardList, Database, History, Menu, type LucideIcon } from "lucide-react";
 import { SessionExitButton } from "@/features/auth/SessionExitButton";
 import { AdminViewingBanner } from "@/features/auth/AdminViewingBanner";
 import { AdminPanelSwitcher } from "@/features/auth/AdminPanelSwitcher";
@@ -20,11 +20,13 @@ const COLLAPSE_KEY = "sigma-contingencias-sidebar-collapsed";
 const NAV: NavItem[] = [
   { to: "/contingencias/registro", label: "Registro", icon: ClipboardList },
   { to: "/contingencias/historial", label: "Historial", icon: History },
+  { to: "/contingencias/datos-operativos", label: "Datos Operativos", icon: Database },
 ];
 
 const TITLES: Record<string, { title: string; crumb: string }> = {
   "/contingencias/registro": { title: "Registro", crumb: "Inicio / Registro" },
   "/contingencias/historial": { title: "Historial", crumb: "Inicio / Historial" },
+  "/contingencias/datos-operativos": { title: "Datos Operativos", crumb: "Inicio / Datos Operativos" },
   "/contingencias/perfil": { title: "Mi perfil", crumb: "Inicio / Perfil" },
 };
 
@@ -32,7 +34,7 @@ function isActive(pathname: string, to: string) {
   if (to === "/contingencias/historial") {
     return pathname.startsWith(to) || pathname.startsWith("/contingencias/evento/") || pathname.startsWith("/contingencias/editar/");
   }
-  return pathname === to;
+  return to === "/contingencias/registro" ? pathname === to : pathname.startsWith(to);
 }
 
 function metaFor(pathname: string) {

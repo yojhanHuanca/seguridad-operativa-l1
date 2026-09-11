@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Database, Pencil, RefreshCw, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
-import { MonitoristaShell } from "@/components/layout/MonitoristaShell";
+import { ContingenciaShell } from "@/components/layout/ContingenciaShell";
 import { Card, CardHeader } from "@/design-system/primitives/Card";
 import { Button } from "@/design-system/primitives/Button";
 import { Field, Input } from "@/design-system/primitives/Input";
@@ -189,7 +189,7 @@ export function DatosOperativos() {
   };
 
   return (
-    <MonitoristaShell>
+    <ContingenciaShell>
       <div className="space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -371,6 +371,6 @@ export function DatosOperativos() {
           </Card>
         )}
       </div>
-    </MonitoristaShell>
+    </ContingenciaShell>
   );
 }
