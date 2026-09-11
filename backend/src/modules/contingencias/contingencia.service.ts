@@ -234,6 +234,7 @@ async function validarDto(dto: CreateContingenciaDto | UpdateContingenciaDto) {
 
 export class ContingenciaService {
   static async catalogos() {
+    await ContingenciaRepository.ensureCatalogosIniciales();
     const catalogos = await ContingenciaRepository.findCatalogos();
     return catalogos.map((catalogo) => ({ ...catalogo, items: itemsNormalizados(catalogo.codigo, catalogo.id_catalogo, catalogo.items) }));
   }
