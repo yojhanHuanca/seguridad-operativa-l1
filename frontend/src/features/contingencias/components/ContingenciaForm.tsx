@@ -351,8 +351,7 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
     return found;
   }
 
-  function submit(event: FormEvent) {
-    event.preventDefault();
+  function submitValues() {
     if (isSubmitting) return;
     const found = validate(CONTINGENCIA_FIELDS);
     setErrors(found);
@@ -363,6 +362,11 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
     }
     const { edad, estado, ...rest } = values;
     onSubmit({ ...rest, ...(edad !== "" ? { edad: Number(edad) } : {}), estado: estado as CreateContingenciaDto["estado"] });
+  }
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    submitValues();
   }
 
   function quickTime(name: FieldName, action: "now" | "plus5" | "na") {
@@ -426,7 +430,7 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
         </div>
         <div className="flex gap-2">
           <Button variant="outline" type="button" onClick={onCancel} disabled={isSubmitting}>Cancelar</Button>
-          <Button type="submit" disabled={isSubmitting}><Save className="h-4 w-4" />{isSubmitting ? "Guardando..." : "Finalizar registro"}</Button>
+          <Button type="button" onClick={submitValues} disabled={isSubmitting}><Save className="h-4 w-4" />{isSubmitting ? "Guardando..." : "Finalizar registro"}</Button>
         </div>
       </div>
 
@@ -548,7 +552,7 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
         <span className="text-xs text-ink-quiet">{completed}/{progressFields.length} campos del flujo actual completos.</span>
         <div className="flex gap-2">
           <Button variant="outline" type="button" onClick={onCancel} disabled={isSubmitting}>Cancelar</Button>
-          <Button type="submit" disabled={isSubmitting}><Save className="h-4 w-4" />{isSubmitting ? "Guardando..." : "Finalizar registro"}</Button>
+          <Button type="button" onClick={submitValues} disabled={isSubmitting}><Save className="h-4 w-4" />{isSubmitting ? "Guardando..." : "Finalizar registro"}</Button>
         </div>
       </div>
     </form>
