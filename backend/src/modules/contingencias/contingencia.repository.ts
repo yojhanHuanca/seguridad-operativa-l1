@@ -225,83 +225,128 @@ export class ContingenciaRepository {
     });
   }
 
+  private static async attachDetalles(eventos: Prisma.contingencia_eventosGetPayload<Record<string, never>>[]) {
+    const ids = eventos.map((evento) => evento.id_evento);
+    if (!ids.length) return [] as ContingenciaEventoCompleto[];
+
+    const [atenciones, traslados, personas, diagnosticos, cierres] = await Promise.all([
+      prisma.contingencia_atenciones.findMany({ where: { id_evento: { in: ids } } }),
+      prisma.contingencia_traslados.findMany({ where: { id_evento: { in: ids } } }),
+      prisma.contingencia_personas.findMany({ where: { id_evento: { in: ids } } }),
+      prisma.contingencia_diagnosticos.findMany({ where: { id_evento: { in: ids } } }),
+      prisma.contingencia_cierres.findMany({ where: { id_evento: { in: ids } } }),
+    ]);
+
+    const byEvento = <R extends { id_evento: number }>(rows: R[]) => new Map(rows.map((row) => [row.id_evento, row]));
+    const atencionPorEvento = byEvento(atenciones);
+    const trasladoPorEvento = byEvento(traslados);
+    const personaPorEvento = byEvento(personas);
+    const diagnosticoPorEvento = byEvento(diagnosticos);
+    const cierrePorEvento = byEvento(cierres);
+
+    return eventos.map((evento) => ({
+      ...evento,
+      atencion: atencionPorEvento.get(evento.id_evento) ?? null,
+      traslado: trasladoPorEvento.get(evento.id_evento) ?? null,
+      persona: personaPorEvento.get(evento.id_evento) ?? null,
+      diagnostico: diagnosticoPorEvento.get(evento.id_evento) ?? null,
+      cierre: cierrePorEvento.get(evento.id_evento) ?? null,
+    })) as ContingenciaEventoCompleto[];
+  }
+
   static async findAll(filtros: ContingenciaFiltros) {
+    await ensureSchemaInicial();
     const where = whereFor(filtros);
     const orderBy: Prisma.contingencia_eventosOrderByWithRelationInput[] = [
       { [filtros.sortBy ?? "fecha"]: filtros.sortDir ?? "desc" },
       { id_evento: "desc" },
     ];
-    const [items, total] = await prisma.$transaction([
+    const [eventos, total] = await prisma.$transaction([
       prisma.contingencia_eventos.findMany({
         where,
-        include: INCLUDE_EVENTO,
         orderBy,
         skip: (filtros.page - 1) * filtros.limit,
         take: filtros.limit,
       }),
       prisma.contingencia_eventos.count({ where }),
     ]);
-    return { items, total };
+    return { items: await ContingenciaRepository.attachDetalles(eventos), total };
   }
 
-  static findById(id_evento: number) {
-    return prisma.contingencia_eventos.findUnique({ where: { id_evento }, include: INCLUDE_EVENTO });
+  static async findById(id_evento: number) {
+    await ensureSchemaInicial();
+    const evento = await prisma.contingencia_eventos.findUnique({ where: { id_evento } });
+    if (!evento) return null;
+    const [completo] = await ContingenciaRepository.attachDetalles([evento]);
+    if (!completo) return null;
+    return completo;
   }
 
   static async create(dto: CreateContingenciaDto, actorId?: number) {
-    return prisma.$transaction(async (tx) => {
-      const evento = await tx.contingencia_eventos.create({
+    await ensureSchemaInicial();
+    const evento = await prisma.$transaction(async (tx) => {
+      const creado = await tx.contingencia_eventos.create({
         data: {
           ...eventoData(dto, actorId),
           created_by: actorId ?? null,
-          atencion: { create: atencionData(dto) },
-          traslado: { create: trasladoData(dto) },
-          persona: { create: personaData(dto) },
-          diagnostico: { create: diagnosticoData(dto) },
-          cierre: { create: cierreData(dto) },
         },
       });
 
+      await Promise.all([
+        tx.contingencia_atenciones.create({ data: { id_evento: creado.id_evento, ...atencionData(dto) } }),
+        tx.contingencia_traslados.create({ data: { id_evento: creado.id_evento, ...trasladoData(dto) } }),
+        tx.contingencia_personas.create({ data: { id_evento: creado.id_evento, ...personaData(dto) } }),
+        tx.contingencia_diagnosticos.create({ data: { id_evento: creado.id_evento, ...diagnosticoData(dto) } }),
+        tx.contingencia_cierres.create({ data: { id_evento: creado.id_evento, ...cierreData(dto) } }),
+      ]);
+
       return tx.contingencia_eventos.update({
-        where: { id_evento: evento.id_evento },
-        data: { codigo_evento: codigoEvento(evento.id_evento, evento.fecha) },
-        include: INCLUDE_EVENTO,
+        where: { id_evento: creado.id_evento },
+        data: { codigo_evento: codigoEvento(creado.id_evento, creado.fecha) },
       });
     });
+
+    const [completo] = await ContingenciaRepository.attachDetalles([evento]);
+    if (!completo) throw new Error("No se pudo registrar el evento");
+    return completo;
   }
 
   static async update(id_evento: number, dto: UpdateContingenciaDto, actorId?: number) {
-    await prisma.$transaction([
-      prisma.contingencia_eventos.update({ where: { id_evento }, data: eventoData(dto, actorId) }),
-      prisma.contingencia_atenciones.upsert({
-        where: { id_evento },
-        update: atencionData(dto),
-        create: { id_evento, ...atencionData(dto) },
-      }),
-      prisma.contingencia_traslados.upsert({
-        where: { id_evento },
-        update: trasladoData(dto),
-        create: { id_evento, ...trasladoData(dto) },
-      }),
-      prisma.contingencia_personas.upsert({
-        where: { id_evento },
-        update: personaData(dto),
-        create: { id_evento, ...personaData(dto) },
-      }),
-      prisma.contingencia_diagnosticos.upsert({
-        where: { id_evento },
-        update: diagnosticoData(dto),
-        create: { id_evento, ...diagnosticoData(dto) },
-      }),
-      prisma.contingencia_cierres.upsert({
-        where: { id_evento },
-        update: cierreData(dto),
-        create: { id_evento, ...cierreData(dto) },
-      }),
-    ]);
+    await ensureSchemaInicial();
+    await prisma.$transaction(async (tx) => {
+      await tx.contingencia_eventos.update({ where: { id_evento }, data: eventoData(dto, actorId) });
+      await Promise.all([
+        tx.contingencia_atenciones.upsert({
+          where: { id_evento },
+          update: atencionData(dto),
+          create: { id_evento, ...atencionData(dto) },
+        }),
+        tx.contingencia_traslados.upsert({
+          where: { id_evento },
+          update: trasladoData(dto),
+          create: { id_evento, ...trasladoData(dto) },
+        }),
+        tx.contingencia_personas.upsert({
+          where: { id_evento },
+          update: personaData(dto),
+          create: { id_evento, ...personaData(dto) },
+        }),
+        tx.contingencia_diagnosticos.upsert({
+          where: { id_evento },
+          update: diagnosticoData(dto),
+          create: { id_evento, ...diagnosticoData(dto) },
+        }),
+        tx.contingencia_cierres.upsert({
+          where: { id_evento },
+          update: cierreData(dto),
+          create: { id_evento, ...cierreData(dto) },
+        }),
+      ]);
+    });
     const actualizado = await ContingenciaRepository.findById(id_evento);
     if (!actualizado) throw new Error("Evento no encontrado");
     return actualizado;
   }
+
 
 }
