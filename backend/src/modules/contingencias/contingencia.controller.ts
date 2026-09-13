@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { Prisma } from "../../generated/prisma/client.js";
 import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
 import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 import { ContingenciaService } from "./contingencia.service.js";
@@ -7,6 +8,10 @@ function contingenciaErrorMessage(error: unknown, fallback: string) {
   if (error instanceof Error && error.name === "ZodError") {
     const issue = (error as { issues?: Array<{ message?: string }> }).issues?.[0];
     return issue?.message ?? fallback;
+  }
+  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2022") {
+    const column = typeof error.meta?.column === "string" ? error.meta.column : "desconocida";
+    return `Falta sincronizar la columna ${column} en la base de datos de Railway.`;
   }
   return safeErrorMessage(error, fallback);
 }
