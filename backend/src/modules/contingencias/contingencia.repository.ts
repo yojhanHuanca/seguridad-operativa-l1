@@ -59,7 +59,7 @@ function whereFor(filtros: ContingenciaFiltros): Prisma.contingencia_eventosWher
 }
 
 function codigoEvento(id: number, fecha: Date) {
-  return `PC-${fecha.getUTCFullYear()}-${String(id).padStart(4, "0")}`;
+  return String(id);
 }
 
 function eventoData(dto: CreateContingenciaDto | UpdateContingenciaDto, actorId?: number) {
