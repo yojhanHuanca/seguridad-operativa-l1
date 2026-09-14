@@ -10,5 +10,6 @@ router.get("/", CONTINGENCIAS, ContingenciaController.getAll);
 router.get("/:id", CONTINGENCIAS, ContingenciaController.getById);
 router.post("/", CONTINGENCIAS, ContingenciaController.create);
 router.put("/:id", CONTINGENCIAS, ContingenciaController.update);
+router.delete("/:id", CONTINGENCIAS, ContingenciaController.remove);
 
 export default router;

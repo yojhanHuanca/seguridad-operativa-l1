@@ -46,3 +46,14 @@ export function useUpdateContingencia() {
   });
 }
 
+export function useDeleteContingencia() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: contingenciasApi.remove,
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ["contingencias"] });
+      queryClient.removeQueries({ queryKey: ["contingencia", id] });
+    },
+  });
+}
+

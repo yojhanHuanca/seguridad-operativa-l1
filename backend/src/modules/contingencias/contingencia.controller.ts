@@ -61,4 +61,13 @@ export class ContingenciaController {
       return res.status(400).json(ApiResponse.error(contingenciaErrorMessage(error, "No se pudo actualizar el evento"), error));
     }
   }
+
+  static async remove(req: AuthenticatedRequest, res: Response) {
+    try {
+      const data = await ContingenciaService.remove(req.params.id, req.user);
+      return res.json(ApiResponse.success("Evento de contingencia eliminado correctamente", data));
+    } catch (error) {
+      return res.status(400).json(ApiResponse.error(contingenciaErrorMessage(error, "No se pudo eliminar el evento"), error));
+    }
+  }
 }

@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowDownWideNarrow, ChevronLeft, ChevronRight, RotateCcw, Search } from "lucide-react";
+import { toast } from "sonner";
 import { ContingenciaShell } from "@/components/layout/ContingenciaShell";
 import { Button } from "@/design-system/primitives/Button";
 import { Card } from "@/design-system/primitives/Card";
 import { Field, Input, Select } from "@/design-system/primitives/Input";
 import { ContingenciasTable } from "@/features/contingencias/components/ContingenciasTable";
-import { useContingencias } from "@/features/contingencias/hooks/useContingencias";
-import type { ContingenciaFiltros } from "@/features/contingencias/types";
+import { useContingencias, useDeleteContingencia } from "@/features/contingencias/hooks/useContingencias";
+import type { ContingenciaFiltros, ContingenciaListItem } from "@/features/contingencias/types";
 import { apiErrorMessage } from "@/lib/api";
 
 const PAGE_SIZE = 20;
@@ -25,10 +26,23 @@ export function Historial() {
     return () => clearTimeout(timer);
   }, [query]);
   const { data, isPending, error, refetch } = useContingencias({ search, desde, hasta, page, limit: PAGE_SIZE, sortBy, sortDir });
+  const deleteContingencia = useDeleteContingencia();
   const total = data?.total ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const reset = () => { setQuery(""); setSearch(""); setDesde(""); setHasta(""); setPage(1); };
   const hasFilters = Boolean(query || desde || hasta);
+
+  const handleDelete = (evento: ContingenciaListItem) => {
+    const codigo = evento.codigo_evento || `#${evento.id_evento}`;
+    const ok = window.confirm(`¿Eliminar el registro ${codigo}? Esta acción no se puede deshacer.`);
+    if (!ok) return;
+
+    deleteContingencia.mutate(evento.id_evento, {
+      onSuccess: () => toast.success(`Registro ${codigo} eliminado`),
+      onError: (e) => toast.error(apiErrorMessage(e, "No se pudo eliminar el registro")),
+    });
+  };
+
   return <ContingenciaShell>
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -54,7 +68,7 @@ export function Historial() {
       </Card>
 
       <Card padded={false} className="overflow-hidden">
-        {error ? <div role="alert" className="space-y-3 p-8 text-center"><p>{apiErrorMessage(error, "No se pudo cargar el historial.")}</p><Button variant="outline" onClick={() => refetch()}>Reintentar</Button></div> : <ContingenciasTable eventos={data?.items ?? []} isLoading={isPending} onView={(evento) => navigate("/contingencias/evento/" + evento.id_evento)} onEdit={(evento) => navigate("/contingencias/editar/" + evento.id_evento)} />}
+        {error ? <div role="alert" className="space-y-3 p-8 text-center"><p>{apiErrorMessage(error, "No se pudo cargar el historial.")}</p><Button variant="outline" onClick={() => refetch()}>Reintentar</Button></div> : <ContingenciasTable eventos={data?.items ?? []} isLoading={isPending} isDeleting={deleteContingencia.isPending} onView={(evento) => navigate("/contingencias/evento/" + evento.id_evento)} onEdit={(evento) => navigate("/contingencias/editar/" + evento.id_evento)} onDelete={handleDelete} />}
       </Card>
 
       {total > 0 && <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-ink-quiet"><p>{(page - 1) * PAGE_SIZE + 1} a {Math.min(page * PAGE_SIZE, total)} de {total}</p><div className="flex items-center gap-3"><Button variant="outline" aria-label="Página anterior" title="Página anterior" disabled={page <= 1} onClick={() => setPage(page - 1)}><ChevronLeft className="h-4 w-4" /></Button><span>Página {page} de {pages}</span><Button variant="outline" aria-label="Página siguiente" title="Página siguiente" disabled={page >= pages} onClick={() => setPage(page + 1)}><ChevronRight className="h-4 w-4" /></Button></div></div>}

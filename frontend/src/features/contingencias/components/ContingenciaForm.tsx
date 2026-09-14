@@ -1,4 +1,4 @@
-import { useMemo, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import {
   Ambulance,
   Ban,
@@ -10,9 +10,7 @@ import {
   HeartPulse,
   MapPin,
   Save,
-  Stethoscope,
   UserRound,
-  UsersRound,
 } from "lucide-react";
 import { Button } from "@/design-system/primitives/Button";
 import { Card, CardHeader } from "@/design-system/primitives/Card";
@@ -31,8 +29,9 @@ interface Props {
   isSubmitting?: boolean;
 }
 
-type FlowId = "solo_ae" | "spaa" | "ambulancia_spaa" | "ambulancia_terceros" | "sin_traslado";
+type FlowId = "spaa" | "ambulancia_spaa" | "ambulancia_terceros" | "sin_traslado";
 type FieldName = keyof CreateContingenciaDto;
+const FLOW_STORAGE_KEY = "contingencia-flow";
 
 const BASIC_FIELDS: FieldName[] = [
   "fecha",
@@ -42,22 +41,24 @@ const BASIC_FIELDS: FieldName[] = [
   "categoria_paciente",
   "lugar_exacto_evento",
   "quien_reporta",
+  "medio_comunicacion_primer_reporte",
   "estado_usuario_reportado",
   "acepta_atencion",
-];
-
-const SUPPORT_FIELDS: FieldName[] = [
-  "medio_comunicacion_primer_reporte",
   "atencion_inicial",
   "atencion_final",
   "nivel_inicial",
   "nivel_final",
+];
+
+const FIRST_AID_FIELDS: FieldName[] = [
   "estacion_partida_spaa",
   "medio_transporte_spaa",
   "trasladado_por",
+];
+
+const AMBULANCE_FIELDS: FieldName[] = [
   "estacion_partida_ambulancia",
   "estacion_llegada_ambulancia",
-  "centro_salud",
 ];
 
 const PERSON_FIELDS: FieldName[] = [
@@ -67,10 +68,19 @@ const PERSON_FIELDS: FieldName[] = [
   "edad",
   "tarjeta_cliente",
   "extranjero",
+];
+
+const TRAVEL_FIELDS: FieldName[] = [
+  "tipo_declaracion_jurada",
+  "nro_declaracion_jurada",
+  "breve_descripcion_hecho",
+  "extranjero",
   "estacion_origen_usuario",
   "estacion_destino_usuario",
   "acompanante",
   "numero_dni_acompanante",
+  "reserva_camaras",
+  "observacion",
 ];
 
 const DIAGNOSIS_FIELDS: FieldName[] = [
@@ -80,22 +90,21 @@ const DIAGNOSIS_FIELDS: FieldName[] = [
   "sintomas_presentados",
   "zona_lesion",
   "nombre_personal_salud",
-  "tipo_declaracion_jurada",
-  "nro_declaracion_jurada",
 ];
 
-const CLOSING_FIELDS: FieldName[] = [
-  "breve_descripcion_hecho",
-  "reserva_camaras",
-  "observacion",
+const ATTENTION_DETAILS_FIELDS: FieldName[] = [
+  ...PERSON_FIELDS,
+  ...DIAGNOSIS_FIELDS,
+  ...TRAVEL_FIELDS,
+];
+
+const MANAGER_FIELDS: FieldName[] = [
   "registro",
   "revision",
-  "casos_sospechosos_covid_19",
 ];
 
 const TIME_FIELDS: FieldName[] = [
   "hora_reporte",
-  "hora_termino_ae",
   "hora_llamado_pco_sppa",
   "hora_llegada_spaa",
   "hora_inicio_spaa",
@@ -112,7 +121,6 @@ const TIME_FIELDS: FieldName[] = [
 ];
 
 const TIMELINE_BY_FLOW: Record<FlowId, FieldName[]> = {
-  solo_ae: ["hora_reporte", "hora_termino_ae"],
   spaa: ["hora_reporte", "hora_llamado_pco_sppa", "hora_llegada_spaa", "hora_inicio_spaa", "hora_termino_atencion_inicio_traslado"],
   ambulancia_spaa: [
     "hora_reporte",
@@ -132,85 +140,64 @@ const TIMELINE_BY_FLOW: Record<FlowId, FieldName[]> = {
     "hora_llegada_ambulancia_terceros",
     "hora_inicio_traslado_ambulancia_terceros",
   ],
-  sin_traslado: ["hora_reporte", "hora_termino_ae"],
+  sin_traslado: ["hora_reporte"],
 };
 
 const FLOW_OPTIONS: { id: FlowId; label: string; icon: ReactNode }[] = [
-  { id: "solo_ae", label: "Solo AE", icon: <UsersRound className="h-4 w-4" /> },
   { id: "spaa", label: "SPAA", icon: <HeartPulse className="h-4 w-4" /> },
   { id: "ambulancia_spaa", label: "Ambulancia SPAA", icon: <Ambulance className="h-4 w-4" /> },
   { id: "ambulancia_terceros", label: "Ambulancia terceros", icon: <Ambulance className="h-4 w-4" /> },
   { id: "sin_traslado", label: "Sin traslado", icon: <Ban className="h-4 w-4" /> },
 ];
 
-const SUPPORT_FIELDS_BY_FLOW: Record<FlowId, FieldName[]> = {
-  solo_ae: [
-    "medio_comunicacion_primer_reporte",
-    "atencion_inicial",
-    "atencion_final",
-    "nivel_inicial",
-    "nivel_final",
-    "trasladado_por",
-  ],
-  spaa: [
-    "medio_comunicacion_primer_reporte",
-    "atencion_inicial",
-    "atencion_final",
-    "nivel_inicial",
-    "nivel_final",
-    "estacion_partida_spaa",
-    "medio_transporte_spaa",
-    "trasladado_por",
-  ],
-  ambulancia_spaa: SUPPORT_FIELDS,
-  ambulancia_terceros: [
-    "medio_comunicacion_primer_reporte",
-    "atencion_inicial",
-    "atencion_final",
-    "nivel_inicial",
-    "nivel_final",
-    "trasladado_por",
-    "estacion_llegada_ambulancia",
-    "centro_salud",
-  ],
-  sin_traslado: [
-    "medio_comunicacion_primer_reporte",
-    "atencion_inicial",
-    "atencion_final",
-    "nivel_inicial",
-    "nivel_final",
-    "trasladado_por",
-  ],
-};
+type FieldGroup = { title: string; description: string; fields: FieldName[] };
+type AccordionSection = { id: string; title: string; subtitle: string; icon: ReactNode; fields: FieldName[]; groups?: FieldGroup[] };
 
-const ACCORDIONS_BASE: { id: string; title: string; subtitle: string; icon: ReactNode; fields: FieldName[] }[] = [
+const ACCORDIONS_BASE: AccordionSection[] = [
   {
-    id: "support",
-    title: "Atención operativa",
-    subtitle: "Primer reporte, niveles, SPAA y traslado",
+    id: "firstAid",
+    title: "Soporte de primeros auxilios",
+    subtitle: "SPAA, medio de transporte y trasladado por",
     icon: <ClipboardList className="h-5 w-5" />,
-    fields: SUPPORT_FIELDS,
+    fields: FIRST_AID_FIELDS,
   },
   {
-    id: "person",
-    title: "Persona atendida",
-    subtitle: "Datos del pasajero, transeunte o colaborador",
+    id: "ambulance",
+    title: "Traslado ambulancia",
+    subtitle: "Estaciones de partida y llegada de la ambulancia",
+    icon: <Ambulance className="h-5 w-5" />,
+    fields: AMBULANCE_FIELDS,
+  },
+  {
+    id: "attentionData",
+    title: "Datos de la atención",
+    subtitle: "Persona, diagnóstico, declaración y observaciones",
     icon: <UserRound className="h-5 w-5" />,
-    fields: PERSON_FIELDS,
+    fields: ATTENTION_DETAILS_FIELDS,
+    groups: [
+      {
+        title: "Persona y categoría",
+        description: "Datos principales de la persona atendida. La categoría se selecciona arriba para activar reglas.",
+        fields: PERSON_FIELDS,
+      },
+      {
+        title: "Diagnóstico y atención",
+        description: "Reporte, diagnóstico, síntomas y personal de salud.",
+        fields: DIAGNOSIS_FIELDS,
+      },
+      {
+        title: "Declaración, recorrido y cierre",
+        description: "Mantiene el orden del Excel desde declaración jurada hasta observación.",
+        fields: TRAVEL_FIELDS,
+      },
+    ],
   },
   {
-    id: "diagnosis",
-    title: "Diagnóstico sugerido",
-    subtitle: "Reporte PCO, diagnóstico presuntivo y zona de lesión",
-    icon: <Stethoscope className="h-5 w-5" />,
-    fields: DIAGNOSIS_FIELDS,
-  },
-  {
-    id: "closing",
-    title: "Cierre y observaciones",
-    subtitle: "Descripción, cámaras, registro y revisión",
+    id: "manager",
+    title: "Gestor de atención",
+    subtitle: "Registro y revisión final",
     icon: <FileText className="h-5 w-5" />,
-    fields: CLOSING_FIELDS,
+    fields: MANAGER_FIELDS,
   },
 ];
 
@@ -257,21 +244,28 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
   const [values, setValues] = useState(() => formValues(initialData));
   const [errors, setErrors] = useState<Partial<ContingenciaFormValues>>({});
   const [notice, setNotice] = useState("");
-  const [flow, setFlow] = useState<FlowId>("spaa");
+  const [flow, setFlow] = useState<FlowId>(() => {
+    const saved = window.localStorage.getItem(FLOW_STORAGE_KEY);
+    return FLOW_OPTIONS.some((option) => option.id === saved) ? saved as FlowId : "spaa";
+  });
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    support: true,
-    person: false,
-    diagnosis: false,
-    closing: false,
+    firstAid: true,
+    ambulance: true,
+    attentionData: false,
+    manager: false,
   });
   const { data: catalogos, isPending, error, refetch } = useContingenciaCatalogos();
 
   const activeRules = CONTINGENCIA_RULES.filter((rule) => rule.applies(values));
   const timelineFields = TIMELINE_BY_FLOW[flow];
-  const accordions = useMemo(() => ACCORDIONS_BASE.map((section) => section.id === "support" ? { ...section, fields: SUPPORT_FIELDS_BY_FLOW[flow] } : section), [flow]);
-  const progressFields = useMemo(() => [...BASIC_FIELDS, ...timelineFields, ...SUPPORT_FIELDS_BY_FLOW[flow]], [flow, timelineFields]);
+  const accordions = useMemo(() => ACCORDIONS_BASE, []);
+  const progressFields = useMemo(() => [...BASIC_FIELDS, ...timelineFields, ...FIRST_AID_FIELDS, ...AMBULANCE_FIELDS], [timelineFields]);
   const completed = fieldCompletion(values, progressFields);
   const percent = Math.round((completed / progressFields.length) * 100);
+
+  useEffect(() => {
+    window.localStorage.setItem(FLOW_STORAGE_KEY, flow);
+  }, [flow]);
 
   function applyRules(next: ContingenciaFormValues, nextErrors: Partial<ContingenciaFormValues>) {
     let message = "";
@@ -310,7 +304,7 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
     const sameStation = catalogValue(catalogos, "estacion_de_partida_del_spaa", ["MISMA ESTACION", "MISMA ESTACIÓN"]);
     const updates: Partial<Record<FieldName, string>> = {};
 
-    if (nextFlow === "sin_traslado" || nextFlow === "solo_ae" || nextFlow === "spaa") {
+    if (nextFlow === "sin_traslado" || nextFlow === "spaa") {
       if (noTraslado) updates.trasladado_por = noTraslado;
       for (const name of [
         "estacion_partida_ambulancia",
@@ -324,7 +318,6 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
         "hora_llamado_ambulancia_tercero",
         "hora_llegada_ambulancia_terceros",
         "hora_inicio_traslado_ambulancia_terceros",
-        "centro_salud",
       ] as FieldName[]) updates[name] = "";
     }
     if (nextFlow === "ambulancia_spaa" && ambulanciaSpaa) updates.trasladado_por = ambulanciaSpaa;
@@ -426,7 +419,7 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
         <div>
           <p className="text-xs font-medium uppercase tracking-[0.08em] text-ink-quiet">Contingencias</p>
           <h1 className="text-2xl font-semibold text-ink">{initialData ? "Editar contingencia" : "Registrar contingencia"}</h1>
-          <p className="mt-1 text-sm text-ink-quiet">Carga rápida por flujo de atención para evitar campos innecesarios.</p>
+          <p className="mt-1 text-sm text-ink-quiet">Formulario ordenado según la hoja Base de datos del Excel.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" type="button" onClick={onCancel} disabled={isSubmitting}>Cancelar</Button>
@@ -438,7 +431,7 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
         <Card className="p-4 sm:p-5">
           <CardHeader
             title="Datos básicos"
-            subtitle="Información mínima para abrir el evento"
+            subtitle="Información inicial del evento y atención"
             icon={<MapPin className="h-4 w-4" />}
           />
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -458,10 +451,11 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
             </div>
             {activeRules.length ? (
               <div className="rounded-lg border border-critical/20 bg-critical/10 p-3 text-sm text-critical">
+                <p className="mb-1 text-xs font-semibold uppercase tracking-wide">Regla activa</p>
                 {activeRules.map((rule) => <p key={rule.code}>{rule.message}</p>)}
               </div>
             ) : (
-              <div className="rounded-lg border border-line bg-surface-2 p-3 text-sm text-ink-soft">Sin reglas condicionales activas.</div>
+              <div className="rounded-lg border border-line bg-surface-2 p-3 text-sm text-ink-soft">Selecciona la categoría para aplicar reglas condicionales.</div>
             )}
             {Object.keys(errors).length > 0 && <p role="alert" className="rounded-lg bg-critical/10 p-3 text-sm text-critical">Revisa los campos senalados antes de guardar.</p>}
             {notice && <p role="alert" className="rounded-lg bg-warning/10 p-3 text-sm text-ink">{notice}</p>}
@@ -471,7 +465,7 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
 
       <Card className="p-4 sm:p-5">
         <CardHeader title="Flujo de atención" subtitle="Selecciona el recorrido real del caso" icon={<HeartPulse className="h-4 w-4" />} />
-        <div className="grid overflow-hidden rounded-lg border border-line sm:grid-cols-2 xl:grid-cols-5">
+        <div className="grid overflow-hidden rounded-lg border border-line sm:grid-cols-2 xl:grid-cols-4">
           {FLOW_OPTIONS.map((option) => (
             <button
               key={option.id}
@@ -542,7 +536,26 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
                   <ChevronDown className={cn("h-4 w-4 transition-transform", open && "rotate-180")} />
                 </span>
               </button>
-              {open && <div className="grid gap-4 border-t border-line p-4 sm:grid-cols-2 sm:p-5 xl:grid-cols-3">{sectionFields.map((name) => renderField(field(name)))}</div>}
+              {open && (
+                <div className="space-y-5 border-t border-line p-4 sm:p-5">
+                  {(section.groups ?? [{ title: "", description: "", fields: sectionFields }]).map((group, groupIndex) => {
+                    const groupFields = group.fields.filter((name) => !TIME_FIELDS.includes(name));
+                    return (
+                      <div key={group.title || section.id} className={cn(groupIndex > 0 && "border-t border-line-soft pt-5")}>
+                        {group.title && (
+                          <div className="mb-3">
+                            <h4 className="text-sm font-semibold text-ink">{group.title}</h4>
+                            <p className="text-xs text-ink-quiet">{group.description}</p>
+                          </div>
+                        )}
+                        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                          {groupFields.map((name) => renderField(field(name)))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </Card>
           );
         })}

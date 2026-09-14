@@ -7,7 +7,7 @@ import { useContingencia } from "@/features/contingencias/hooks/useContingencias
 import { CONTINGENCIA_FIELDS, eventoToDto } from "@/features/contingencias/fields";
 import { apiErrorMessage } from "@/lib/api";
 
-const SECTIONS = ["Datos generales", "Reporte", "Atención", "Traslado", "Datos de la persona", "Diagnóstico", "Declaración jurada", "Descripción", "Observaciones", "Registro y revisión"];
+const SECTIONS = ["Datos generales", "Reporte", "Atención", "Traslado", "Datos de la atención", "Gestor de atención"];
 
 export function Detalle() {
   const navigate = useNavigate();

@@ -1,4 +1,4 @@
-import { CONTINGENCIA_CATALOGOS_POR_CAMPO, ESTACIONES_LINEA_1 } from "./contingencia.catalogos.js";
+import { CONTINGENCIA_CATALOGOS_INICIALES, CONTINGENCIA_CATALOGOS_POR_CAMPO, ESTACIONES_LINEA_1 } from "./contingencia.catalogos.js";
 import { ContingenciaRepository, type ContingenciaEventoCompleto } from "./contingencia.repository.js";
 import { validarReglasContingencia } from "./contingencia.rules.js";
 import {
@@ -57,6 +57,15 @@ function minutosEntre(inicio?: Date | null, fin?: Date | null) {
   if (!inicio || !fin) return null;
   return Math.round((fin.getTime() - inicio.getTime()) / 60_000);
 }
+
+const CATEGORIAS_PACIENTE = [
+  "Colaborador UNNA",
+  "Colaborador Tercero",
+  "Otro",
+  "Proveedor",
+  "Transeúnte",
+  "Pasajero",
+];
 
 function categoriaPaciente(value: string | null | undefined) {
   return value?.trim().toLowerCase() === "usuario" ? "Pasajero" : value;
@@ -144,21 +153,62 @@ function normalizarDto(dto: CreateContingenciaDto | UpdateContingenciaDto) {
 
 type CatalogoItem = Awaited<ReturnType<typeof ContingenciaRepository.findCatalogos>>[number]["items"][number];
 
+function completarItemsBase(codigo: string, idCatalogo: number, normalizados: CatalogoItem[]) {
+  const presentes = new Set(normalizados.map((item) => normalizarTexto(item.valor)));
+  const base = CONTINGENCIA_CATALOGOS_INICIALES.find((catalogo) => catalogo.codigo === codigo)?.items ?? [];
+  const faltantes = base
+    .map((valor) => valorCatalogoContingencia(codigo, valor))
+    .filter((valor): valor is string => Boolean(valor))
+    .filter((valor, index, all) => all.findIndex((other) => normalizarTexto(other) === normalizarTexto(valor)) === index)
+    .filter((valor) => !presentes.has(normalizarTexto(valor)));
+
+  return [
+    ...normalizados,
+    ...faltantes.map((valor, index) => ({
+      id_item: -1 - index,
+      id_catalogo: idCatalogo,
+      valor,
+      orden: normalizados.length + index + 1,
+      estado: true,
+      created_at: new Date(0),
+    })),
+  ];
+}
+
 function itemsNormalizados(codigo: string, idCatalogo: number, items: CatalogoItem[]) {
   const normalizados = items
     .map((item) => ({ ...item, valor: valorCatalogoContingencia(codigo, item.valor) }))
     .filter((item, index, all) => all.findIndex((other) => other.valor === item.valor) === index);
-  if (!CATALOGOS_ESTACION.includes(codigo)) return normalizados;
 
-  const presentes = new Set(normalizados.map((item) => normalizarTexto(item.valor)));
+  if (codigo === "categoria_de_paciente") {
+    const porValor = new Map(normalizados.map((item) => [normalizarTexto(item.valor), item]));
+    return CATEGORIAS_PACIENTE.map((valor, index) => {
+      const existente = porValor.get(normalizarTexto(valor));
+      return existente
+        ? { ...existente, valor, orden: index + 1 }
+        : {
+            id_item: -100 - index,
+            id_catalogo: idCatalogo,
+            valor,
+            orden: index + 1,
+            estado: true,
+            created_at: new Date(0),
+          };
+    });
+  }
+
+  const completos = completarItemsBase(codigo, idCatalogo, normalizados);
+  if (!CATALOGOS_ESTACION.includes(codigo)) return completos;
+
+  const presentes = new Set(completos.map((item) => normalizarTexto(item.valor)));
   const faltantes = ESTACIONES_LINEA_1.filter((estacion) => !presentes.has(normalizarTexto(estacion)));
   return [
-    ...normalizados,
-    ...faltantes.map((estacion, index) => ({
-      id_item: -1 - index,
+    ...completos,
+    ...faltantes.map((valor, index) => ({
+      id_item: -1000 - index,
       id_catalogo: idCatalogo,
-      valor: estacion,
-      orden: normalizados.length + index + 1,
+      valor,
+      orden: completos.length + index + 1,
       estado: true,
       created_at: new Date(0),
     })),
@@ -306,6 +356,25 @@ export class ContingenciaService {
       });
     }
     return serializar(actualizado);
+  }
+
+  static async remove(id: unknown, actor?: Actor) {
+    const idEvento = parseId(id);
+    const eliminado = await ContingenciaRepository.remove(idEvento);
+    if (!eliminado) throw new Error("Evento no encontrado");
+
+    if (actor) {
+      await AuditoriaService.registrar({
+        tabla: "contingencia_eventos",
+        id_registro: eliminado.id_evento,
+        accion: "eliminar",
+        descripcion: `Eliminó el evento de contingencia ${eliminado.codigo_evento ?? eliminado.id_evento}`,
+        usuario: actor.id_usuario,
+        antes: serializar(eliminado) as Record<string, unknown>,
+      });
+    }
+
+    return serializar(eliminado);
   }
 
 }

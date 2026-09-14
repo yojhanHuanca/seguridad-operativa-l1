@@ -47,4 +47,9 @@ export const contingenciasApi = {
     return data.data;
   },
 
+  async remove(id: string | number): Promise<ContingenciaEvento> {
+    const { data } = await api.delete(`/contingencias/${id}`);
+    return data.data;
+  },
+
 };

@@ -424,5 +424,24 @@ export class ContingenciaRepository {
     return actualizado;
   }
 
+  static async remove(id_evento: number) {
+    await ensureSchemaInicial();
+    const existente = await ContingenciaRepository.findById(id_evento);
+    if (!existente) return null;
+
+    await prisma.$transaction(async (tx) => {
+      await Promise.all([
+        tx.contingencia_atenciones.deleteMany({ where: { id_evento } }),
+        tx.contingencia_traslados.deleteMany({ where: { id_evento } }),
+        tx.contingencia_personas.deleteMany({ where: { id_evento } }),
+        tx.contingencia_diagnosticos.deleteMany({ where: { id_evento } }),
+        tx.contingencia_cierres.deleteMany({ where: { id_evento } }),
+      ]);
+      await tx.contingencia_eventos.delete({ where: { id_evento } });
+    });
+
+    return existente;
+  }
+
 
 }

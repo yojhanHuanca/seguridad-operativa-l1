@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Eye, FileText, Pencil } from "lucide-react";
+import { Eye, FileText, Pencil, Trash2 } from "lucide-react";
 import { Card } from "@/design-system/primitives/Card";
 import { EmptyState } from "@/design-system/primitives/Progress";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,8 @@ interface Props {
   isLoading?: boolean;
   onView: (evento: ContingenciaListItem) => void;
   onEdit: (evento: ContingenciaListItem) => void;
+  onDelete: (evento: ContingenciaListItem) => void;
+  isDeleting?: boolean;
 }
 
 type ContingenciaColumn = {
@@ -42,7 +44,7 @@ const COLUMNAS_CONTINGENCIA: ContingenciaColumn[] = [
   })),
 ];
 
-export function ContingenciasTable({ eventos, isLoading, onView, onEdit }: Props) {
+export function ContingenciasTable({ eventos, isLoading, onView, onEdit, onDelete, isDeleting = false }: Props) {
   const colSpan = COLUMNAS_CONTINGENCIA.length + 1;
 
   return (
@@ -121,6 +123,16 @@ export function ContingenciasTable({ eventos, isLoading, onView, onEdit }: Props
                         className="grid h-7 w-7 place-items-center rounded-lg text-ink-quiet transition-colors hover:bg-surface-2 hover:text-ink"
                       >
                         <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        title="Eliminar"
+                        aria-label={"Eliminar " + evento.codigo_evento}
+                        onClick={() => onDelete(evento)}
+                        disabled={isDeleting}
+                        className="grid h-7 w-7 place-items-center rounded-lg text-critical-ink transition-colors hover:bg-critical-soft disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
                   </td>
