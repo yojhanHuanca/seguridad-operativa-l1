@@ -146,6 +146,41 @@ export async function aplicarEncabezadoReporte(
   }
 }
 
+
+function textoCelda(value: unknown) {
+  return value == null ? "" : String(value);
+}
+
+function alturaPorTexto(text: string, width: number) {
+  if (!text) return 21;
+  const lines = text.split(/\r?\n/).reduce((total, line) => total + Math.max(1, Math.ceil(line.length / Math.max(12, width - 2))), 0);
+  return Math.min(120, Math.max(21, lines * 15 + 6));
+}
+
+function ajustarTablaAlContenido(sheet: Worksheet, totalColumnas: number) {
+  const widths = Array.from({ length: totalColumnas }, (_, index) => Math.max(14, sheet.getColumn(index + 1).width ?? 14));
+  for (let rowNumber = TABLE_HEADER_ROW + 1; rowNumber <= sheet.rowCount; rowNumber++) {
+    const row = sheet.getRow(rowNumber);
+    row.eachCell({ includeEmpty: false }, (cell, columnNumber) => {
+      const text = textoCelda(cell.value);
+      widths[columnNumber - 1] = Math.min(60, Math.max(widths[columnNumber - 1], Math.ceil(Math.min(text.length + 4, 60))));
+    });
+  }
+
+  widths.forEach((width, index) => {
+    sheet.getColumn(index + 1).width = width;
+  });
+
+  for (let rowNumber = TABLE_HEADER_ROW + 1; rowNumber <= sheet.rowCount; rowNumber++) {
+    const row = sheet.getRow(rowNumber);
+    let height = 21;
+    row.eachCell({ includeEmpty: false }, (cell, columnNumber) => {
+      height = Math.max(height, alturaPorTexto(textoCelda(cell.value), widths[columnNumber - 1] ?? 18));
+    });
+    row.height = height;
+  }
+}
+
 export function aplicarEstiloTabla(sheet: Worksheet, totalColumnas: number) {
   const headerRow = sheet.getRow(TABLE_HEADER_ROW);
   headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
@@ -174,6 +209,7 @@ export function aplicarEstiloTabla(sheet: Worksheet, totalColumnas: number) {
     }
   }
 
+  ajustarTablaAlContenido(sheet, totalColumnas);
   sheet.autoFilter = { from: { row: TABLE_HEADER_ROW, column: 1 }, to: { row: TABLE_HEADER_ROW, column: totalColumnas } };
 }
 

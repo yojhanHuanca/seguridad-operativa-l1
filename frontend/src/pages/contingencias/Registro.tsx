@@ -18,6 +18,7 @@ export function Registro() {
   const handleSubmit = (data: CreateContingenciaDto) => {
     createContingencia.mutate(data, {
       onSuccess: () => {
+        window.localStorage.removeItem("contingencia-draft");
         toast.success("Evento de contingencia registrado correctamente");
         setSuccess("ok");
       },

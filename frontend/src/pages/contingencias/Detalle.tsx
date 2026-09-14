@@ -28,7 +28,7 @@ export function Detalle() {
       </div>
       {isPending ? <Card className="p-10 text-center text-[13px] text-ink-quiet" role="status">Cargando evento...</Card> : error ? <Card role="alert" className="space-y-3 p-8 text-center"><p>{apiErrorMessage(error, "No se pudo obtener el evento.")}</p><Button variant="outline" onClick={() => refetch()}>Reintentar</Button></Card> : evento && values ? <Card className="p-5 sm:p-6">
         <div className="mb-6 flex flex-wrap items-center gap-3 border-b border-line pb-5">
-          <h2 className="text-xl font-semibold text-ink">{evento.codigo_evento}</h2>
+          <h2 className="text-xl font-semibold text-ink">Registro de contingencia</h2>
           <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-800">{evento.estado}</span>
           <p className="w-full text-sm text-ink-quiet">{evento.tipo_evento.trim()} · {evento.fecha} · {evento.hora_reporte}</p>
         </div>
@@ -50,3 +50,4 @@ export function Detalle() {
     </div>
   </ContingenciaShell>;
 }
+

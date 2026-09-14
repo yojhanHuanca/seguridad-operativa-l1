@@ -1,7 +1,6 @@
 import { ContingenciaRepository } from "../contingencias/contingencia.repository.js";
 import { ContingenciaService } from "../contingencias/contingencia.service.js";
 import type { CreateContingenciaDto } from "../contingencias/contingencia.types.js";
-import type { Actor } from "../../utils/actor.js";
 import type {
   ImportacionCasePreview,
   ImportacionIssue,
@@ -233,7 +232,7 @@ function rowToDto(row: ContingenciaRow): CreateContingenciaDto {
     registro: getFieldValue(row, "registro") || undefined,
     revision: getFieldValue(row, "revision") || undefined,
     casos_sospechosos_covid_19: getFieldValue(row, "casos_sospechosos_covid_19") || undefined,
-    estado: (getFieldValue(row, "estado") || "Registrado") as CreateContingenciaDto["estado"],
+    estado: (getFieldValue(row, "estado") || "Registrado") as "Registrado" | "Revisado" | "Cerrado",
   };
 }
 
@@ -395,7 +394,7 @@ async function importContingencias(filename: string, rows: ContingenciaRow[], us
 
   let importados = 0;
   const importErrors: ImportacionIssue[] = [];
-  const actor: Actor = { id_usuario: userId, correo: "importacion", rol: null, rol_nombre: "Admin" };
+  const actor = { id_usuario: userId, correo: "importacion", rol: null, rol_nombre: "Admin" };
 
   const lotes = Array.from({ length: Math.ceil(validRows.length / INSERT_CHUNK) }, (_, i) =>
     validRows.slice(i * INSERT_CHUNK, (i + 1) * INSERT_CHUNK)

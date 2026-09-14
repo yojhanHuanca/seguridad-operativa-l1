@@ -1,3 +1,5 @@
+export type ImportacionTipo = "casos" | "monitoreo" | "contingencias";
+
 export type ImportacionRowValue = string | number | boolean | null | undefined;
 
 export type ImportacionRow = Record<string, ImportacionRowValue>;

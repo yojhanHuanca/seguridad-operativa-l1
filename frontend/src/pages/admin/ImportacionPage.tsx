@@ -14,10 +14,44 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/design-system/primitives/Button";
 import { apiErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { useImportarCasos, useValidarImportacion } from "@/features/importacion/hooks/useImportacion";
-import type { ImportacionPayload, ImportacionPreview, ImportacionResult, ImportacionRow } from "@/features/importacion/types";
+import { useImportarRegistros, useValidarImportacion } from "@/features/importacion/hooks/useImportacion";
+import type { ImportacionPayload, ImportacionPreview, ImportacionResult, ImportacionRow, ImportacionTipo } from "@/features/importacion/types";
 
 const ACCEPTED_EXTENSIONS = [".csv", ".xlsx", ".xlsm"];
+
+const IMPORTACION_MODULOS: Record<ImportacionTipo, {
+  label: string;
+  description: string;
+  importButton: string;
+  requiredFallback: string;
+  optionalFallback: string;
+  detectedTitle: string;
+}> = {
+  casos: {
+    label: "Casos SOP",
+    description: "Carga controlada de casos SOP desde CSV, XLSX o XLSM.",
+    importButton: "Importar casos",
+    requiredFallback: "Código, Tipo, Estado, Fecha",
+    optionalFallback: "Título, Estación, Reportante, Área, Riesgo, Descripción, Procedencia, Tipo SOP, Subtipo SOP, Peligro, Consecuencias, ACR, Responsable de Hallazgo, Código Plan, Descripción Plan, Estado Plan, Fecha Plan, Fecha Reprogramada, Área Plan, Responsable Plan, Observaciones Plan",
+    detectedTitle: "Casos detectados",
+  },
+  monitoreo: {
+    label: "Monitorista",
+    description: "Carga eventos del panel de monitorista desde el Excel de lista de eventos.",
+    importButton: "Importar monitoreo",
+    requiredFallback: "Fecha, Hora de evento, Tipo de incidente operativo, Descripción del evento, Ubicación, Lugar de Incidente",
+    optionalFallback: "Año, Mes, Mes_1, Sem, Día, Rango horario, Tipo de vía, Dirección de vía, Modelo MR, Nro. MR, Nro. Carrera, Personal o falla Involucrado, Tipo Causa, Posible Causa, Información adicional, Cámara monitoreada, DEMORA",
+    detectedTitle: "Eventos detectados",
+  },
+  contingencias: {
+    label: "Contingencias",
+    description: "Carga registros del panel de contingencias desde la plantilla oficial de planes de contingencia.",
+    importButton: "Importar contingencias",
+    requiredFallback: "Fecha, Hora de Reporte, TIPO DE EVENTO, LUGAR DEL EVENTO, LUGAR EXACTO DEL EVENTO, CATEGORIA DE PACIENTE",
+    optionalFallback: "Datos generales del evento, Soporte de primeros auxilios, Trasalado ambulancia, Datos de la atención y Gestor de atención",
+    detectedTitle: "Contingencias detectadas",
+  },
+};
 
 interface ParsedFile {
   filename: string;
@@ -204,8 +238,10 @@ export function AdminImportacionPage() {
   const [preview, setPreview] = useState<ImportacionPreview | null>(null);
   const [result, setResult] = useState<ImportacionResult | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
-  const validar = useValidarImportacion();
-  const importar = useImportarCasos();
+  const [tipoImportacion, setTipoImportacion] = useState<ImportacionTipo>("casos");
+  const modulo = IMPORTACION_MODULOS[tipoImportacion];
+  const validar = useValidarImportacion(tipoImportacion);
+  const importar = useImportarRegistros(tipoImportacion);
 
   const payload = useMemo(() => payloadFromParsed(parsed), [parsed]);
   const pending = validar.isPending || importar.isPending;
@@ -214,6 +250,18 @@ export function AdminImportacionPage() {
     : importar.error
       ? apiErrorMessage(importar.error, "No se pudo importar el archivo")
       : null;
+
+  function cambiarTipoImportacion(tipo: ImportacionTipo) {
+    if (tipo === tipoImportacion) return;
+    setTipoImportacion(tipo);
+    setParsed(null);
+    setPreview(null);
+    setResult(null);
+    setParseError(null);
+    validar.reset();
+    importar.reset();
+    if (inputRef.current) inputRef.current.value = "";
+  }
 
   async function handleFileChange(file: File | undefined) {
     if (!file) return;
@@ -255,8 +303,27 @@ export function AdminImportacionPage() {
   return (
     <AdminShell>
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <p className="text-[12.5px] text-ink-quiet">Carga controlada de casos SOP desde CSV, XLSX o XLSM.</p>
+        <p className="text-[12.5px] text-ink-quiet">{modulo.description}</p>
         <ValidationBadge preview={preview} />
+      </div>
+
+      <div className="mt-5 grid gap-2 md:grid-cols-3">
+        {(Object.keys(IMPORTACION_MODULOS) as ImportacionTipo[]).map((tipo) => (
+          <button
+            key={tipo}
+            type="button"
+            onClick={() => cambiarTipoImportacion(tipo)}
+            className={cn(
+              "rounded-xl border px-4 py-3 text-left transition-all",
+              tipoImportacion === tipo
+                ? "border-brand-700 bg-brand-700 text-white shadow-sm"
+                : "border-line bg-white text-ink-soft hover:border-brand-200 hover:bg-brand-50"
+            )}
+          >
+            <span className="block text-sm font-semibold">{IMPORTACION_MODULOS[tipo].label}</span>
+            <span className={cn("mt-1 block text-xs", tipoImportacion === tipo ? "text-white/80" : "text-ink-quiet")}>Importar datos para este módulo</span>
+          </button>
+        ))}
       </div>
 
       <Card className="mt-5 gap-0 overflow-hidden rounded-lg border border-line bg-white p-0">
@@ -300,16 +367,15 @@ export function AdminImportacionPage() {
               </Button>
               <Button type="button" onClick={() => void handleImport()} disabled={!payload || !preview?.canImport || pending}>
                 {importar.isPending ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
-                Importar casos
+                {modulo.importButton}
               </Button>
             </div>
             <div className="mt-4 rounded-lg border border-line bg-surface p-3 text-[12px] text-ink-quiet">
               <p className="font-medium text-ink-soft">Columnas obligatorias</p>
-              <p className="mt-1">{preview?.requiredColumns.join(", ") ?? "Código, Tipo, Estado, Fecha"}</p>
+              <p className="mt-1">{preview?.requiredColumns.join(", ") ?? modulo.requiredFallback}</p>
               <p className="mt-3 font-medium text-ink-soft">Columnas opcionales reconocidas</p>
               <p className="mt-1">
-                {preview?.optionalColumns.join(", ") ??
-                  "Título, Estación, Reportante, Área, Riesgo, Descripción, Procedencia, Tipo SOP, Subtipo SOP, Peligro, Consecuencias, ACR, Responsable de Hallazgo, Código Plan, Descripción Plan, Estado Plan, Fecha Plan, Fecha Reprogramada, Área Plan, Responsable Plan, Observaciones Plan"}
+                {preview?.optionalColumns.join(", ") ?? modulo.optionalFallback}
               </p>
             </div>
           </div>
@@ -374,7 +440,7 @@ export function AdminImportacionPage() {
 
           <Card className="mt-5 overflow-hidden rounded-lg border border-line bg-white p-0">
             <div className="border-b border-line bg-surface px-4 py-3">
-              <p className="text-[13px] font-semibold text-ink">Casos detectados</p>
+              <p className="text-[13px] font-semibold text-ink">{modulo.detectedTitle}</p>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[980px] text-left text-[12.5px]">

@@ -32,6 +32,7 @@ interface Props {
 type FlowId = "spaa" | "ambulancia_spaa" | "ambulancia_terceros" | "sin_traslado";
 type FieldName = keyof CreateContingenciaDto;
 const FLOW_STORAGE_KEY = "contingencia-flow";
+const DRAFT_STORAGE_KEY = "contingencia-draft";
 
 const BASIC_FIELDS: FieldName[] = [
   "fecha",
@@ -67,7 +68,6 @@ const PERSON_FIELDS: FieldName[] = [
   "sexo",
   "edad",
   "tarjeta_cliente",
-  "extranjero",
 ];
 
 const TRAVEL_FIELDS: FieldName[] = [
@@ -240,8 +240,21 @@ function timelineLabel(label: string) {
   return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
 }
 
+function draftValues(initialData?: Partial<CreateContingenciaDto>) {
+  const base = formValues(initialData);
+  if (initialData) return base;
+  try {
+    const saved = window.localStorage.getItem(DRAFT_STORAGE_KEY);
+    if (!saved) return base;
+    const parsed = JSON.parse(saved) as Partial<ContingenciaFormValues>;
+    return { ...base, ...parsed };
+  } catch {
+    return base;
+  }
+}
+
 export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting = false }: Props) {
-  const [values, setValues] = useState(() => formValues(initialData));
+  const [values, setValues] = useState(() => draftValues(initialData));
   const [errors, setErrors] = useState<Partial<ContingenciaFormValues>>({});
   const [notice, setNotice] = useState("");
   const [flow, setFlow] = useState<FlowId>(() => {
@@ -266,6 +279,11 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
   useEffect(() => {
     window.localStorage.setItem(FLOW_STORAGE_KEY, flow);
   }, [flow]);
+
+  useEffect(() => {
+    if (initialData) return;
+    window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(values));
+  }, [initialData, values]);
 
   function applyRules(next: ContingenciaFormValues, nextErrors: Partial<ContingenciaFormValues>) {
     let message = "";
@@ -306,19 +324,6 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
 
     if (nextFlow === "sin_traslado" || nextFlow === "spaa") {
       if (noTraslado) updates.trasladado_por = noTraslado;
-      for (const name of [
-        "estacion_partida_ambulancia",
-        "estacion_llegada_ambulancia",
-        "hora_llamado_ambulancia",
-        "hora_llegada_estacion",
-        "hora_salida_centro_salud",
-        "hora_llegada_centro_medico",
-        "hora_retiro_centro_medico",
-        "hora_retorno_puesto",
-        "hora_llamado_ambulancia_tercero",
-        "hora_llegada_ambulancia_terceros",
-        "hora_inicio_traslado_ambulancia_terceros",
-      ] as FieldName[]) updates[name] = "";
     }
     if (nextFlow === "ambulancia_spaa" && ambulanciaSpaa) updates.trasladado_por = ambulanciaSpaa;
     if (nextFlow === "ambulancia_terceros" && terceros) updates.trasladado_por = terceros;
