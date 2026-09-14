@@ -11,4 +11,9 @@ const jsonImportacion = express.json({ limit: "64mb" });
 router.post("/casos/validar", jsonImportacion, requireRoles("Admin"), ImportacionController.validar);
 router.post("/casos/importar", jsonImportacion, requireRoles("Admin"), ImportacionController.importar);
 
+// Rutas para contingencias
+router.post("/contingencias/validar", jsonImportacion, requireRoles("Admin"), ImportacionController.validarContingencias);
+router.post("/contingencias/importar", jsonImportacion, requireRoles("Admin"), ImportacionController.importarContingencias);
+
+
 export default router;
