@@ -100,19 +100,7 @@ export interface ContingenciaCierre {
   casos_sospechosos_covid_19: string | null;
 }
 
-export interface ContingenciaListItem {
-  id_evento: number;
-  codigo_evento: string;
-  fecha: string;
-  hora_reporte: string | null;
-  quien_reporta: string | null;
-  tipo_evento: string;
-  lugar_evento: string;
-  lugar_exacto_evento: string;
-  estado: "Registrado" | "Revisado" | "Cerrado";
-  persona: { nombre_persona: string | null; dni: string | null; categoria_paciente: string | null } | null;
-  cierre: { registro: string | null; revision: string | null } | null;
-}
+export type ContingenciaListItem = ContingenciaEvento;
 
 export interface ContingenciaCatalogo {
   id_catalogo: number;
