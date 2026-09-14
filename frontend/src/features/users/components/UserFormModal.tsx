@@ -15,6 +15,7 @@ const STEPS = ["datos", "acceso"] as const;
 type Step = (typeof STEPS)[number];
 const STEP_LABELS: Record<Step, string> = { datos: "Datos personales", acceso: "Acceso y rol" };
 const ROLES_OCULTOS_ADMIN = new Set(["Reportante"]);
+const ROL_JEFE_AREA = "Jefe de Área";
 
 interface FormState {
   nombres: string;
@@ -108,8 +109,9 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
   const rolSeleccionado = rolesDisponibles.find((r) => String(r.id_rol) === form.id_rol);
   const nombreRolSeleccionado = rolSeleccionado?.nombre_rol ?? (isEdit && String(user?.id_rol) === form.id_rol ? user?.roles?.nombre_rol : undefined);
   const esSeguridadOperativa = nombreRolSeleccionado === "Seguridad Operativa";
+  const esJefeArea = nombreRolSeleccionado === ROL_JEFE_AREA;
   const datosValidos = form.nombres.trim() && form.apellidos.trim() && form.correo.trim();
-  const accesoValido = form.id_area && form.id_rol && (isEdit || form.password.trim().length >= 6);
+  const accesoValido = form.id_rol && (!esJefeArea || form.id_area) && (isEdit || form.password.trim().length >= 6);
 
   useEffect(() => {
     if (!open || esSeguridadOperativa) return;
@@ -127,6 +129,12 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
     return () => window.clearTimeout(timer);
   }, [esSeguridadOperativa, open]);
 
+  useEffect(() => {
+    if (!open || esJefeArea || !form.id_area) return;
+    const timer = window.setTimeout(() => set("id_area", ""), 0);
+    return () => window.clearTimeout(timer);
+  }, [esJefeArea, form.id_area, open]);
+
   const goNext = () => {
     if (!datosValidos) {
       setError("Completa nombres, apellidos y correo antes de continuar.");
@@ -140,7 +148,13 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
 
   const onSubmit = () => {
     if (!accesoValido) {
-      setError(isEdit ? "Selecciona área y rol." : "Selecciona área, rol y define una contraseña de al menos 6 caracteres.");
+      if (!form.id_rol) {
+        setError(isEdit ? "Selecciona un rol." : "Selecciona un rol y define una contraseña de al menos 6 caracteres.");
+      } else if (esJefeArea && !form.id_area) {
+        setError("Selecciona un área para el Jefe de Área.");
+      } else {
+        setError(isEdit ? "Completa los datos de acceso." : "Define una contraseña de al menos 6 caracteres.");
+      }
       return;
     }
     setError(null);
@@ -150,7 +164,7 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
       correo: form.correo.trim(),
       cargo: form.cargo.trim() || undefined,
       telefono: form.telefono.trim() || undefined,
-      id_area: Number(form.id_area),
+      id_area: esJefeArea ? Number(form.id_area) : null,
       id_rol: Number(form.id_rol),
       es_responsable: esSeguridadOperativa ? form.es_responsable : false,
       puede_reabrir_casos: esSeguridadOperativa ? form.puede_reabrir_casos : false,
@@ -270,9 +284,17 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
         ) : (
           <>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Área" required>
-                <Select value={form.id_area} onChange={(e) => set("id_area", e.target.value)} disabled={areas.isLoading}>
-                  <option value="">Selecciona un área…</option>
+              <Field
+                label="Área"
+                required={esJefeArea}
+                hint={esJefeArea ? "Obligatoria solo para Jefe de Área." : "No aplica para este rol."}
+              >
+                <Select
+                  value={esJefeArea ? form.id_area : ""}
+                  onChange={(e) => set("id_area", e.target.value)}
+                  disabled={areas.isLoading || !esJefeArea}
+                >
+                  <option value="">{esJefeArea ? "Selecciona un área…" : "No aplica"}</option>
                   {areas.data?.map((a) => (
                     <option key={a.id_area} value={a.id_area}>{a.nombre_area}</option>
                   ))}

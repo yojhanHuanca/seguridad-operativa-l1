@@ -35,7 +35,7 @@ export interface CreateUserInput {
   password: string;
   cargo?: string;
   telefono?: string;
-  id_area: number;
+  id_area?: number | null;
   id_rol: number;
   es_responsable?: boolean;
   puede_reabrir_casos?: boolean;
@@ -48,7 +48,7 @@ export interface UpdateUserInput {
   correo?: string;
   cargo?: string;
   telefono?: string;
-  id_area?: number;
+  id_area?: number | null;
   id_rol?: number;
   estado?: string;
   es_responsable?: boolean;
