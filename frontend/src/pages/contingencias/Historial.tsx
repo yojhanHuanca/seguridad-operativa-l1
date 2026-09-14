@@ -17,7 +17,6 @@ export function Historial() {
   const [search, setSearch] = useState("");
   const [desde, setDesde] = useState("");
   const [hasta, setHasta] = useState("");
-  const [estado, setEstado] = useState("");
   const [sortBy, setSortBy] = useState<ContingenciaFiltros["sortBy"]>("fecha");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
@@ -25,11 +24,11 @@ export function Historial() {
     const timer = setTimeout(() => { setSearch(query); setPage(1); }, 350);
     return () => clearTimeout(timer);
   }, [query]);
-  const { data, isPending, error, refetch } = useContingencias({ search, desde, hasta, estado, page, limit: PAGE_SIZE, sortBy, sortDir });
+  const { data, isPending, error, refetch } = useContingencias({ search, desde, hasta, page, limit: PAGE_SIZE, sortBy, sortDir });
   const total = data?.total ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const reset = () => { setQuery(""); setSearch(""); setDesde(""); setHasta(""); setEstado(""); setPage(1); };
-  const hasFilters = Boolean(query || desde || hasta || estado);
+  const reset = () => { setQuery(""); setSearch(""); setDesde(""); setHasta(""); setPage(1); };
+  const hasFilters = Boolean(query || desde || hasta);
   return <ContingenciaShell>
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -38,7 +37,7 @@ export function Historial() {
       </div>
 
       <Card className="p-3">
-        <div className="grid gap-3 lg:grid-cols-[1.4fr_0.7fr_0.7fr_0.8fr_0.8fr]">
+        <div className="grid gap-3 lg:grid-cols-[1.4fr_0.7fr_0.7fr_0.8fr]">
           <Field label="Buscar evento">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
@@ -47,8 +46,7 @@ export function Historial() {
           </Field>
           <Field label="Desde"><Input type="date" value={desde} max={hasta || undefined} onChange={(e) => { setDesde(e.target.value); setPage(1); }} /></Field>
           <Field label="Hasta"><Input type="date" value={hasta} min={desde || undefined} onChange={(e) => { setHasta(e.target.value); setPage(1); }} /></Field>
-          <Field label="Estado"><Select value={estado} onChange={(e) => { setEstado(e.target.value); setPage(1); }}><option value="">Todos</option><option>Registrado</option><option>Revisado</option><option>Cerrado</option></Select></Field>
-          <Field label="Ordenar por"><Select value={sortBy} onChange={(e) => { setSortBy(e.target.value as ContingenciaFiltros["sortBy"]); setPage(1); }}><option value="fecha">Fecha</option><option value="tipo_evento">Tipo de evento</option><option value="estado">Estado</option></Select></Field>
+          <Field label="Ordenar por"><Select value={sortBy} onChange={(e) => { setSortBy(e.target.value as ContingenciaFiltros["sortBy"]); setPage(1); }}><option value="fecha">Fecha</option><option value="tipo_evento">Tipo de evento</option></Select></Field>
         </div>
         <div className="mt-3 flex justify-end">
           <Button variant="outline" size="sm" onClick={() => { setSortDir(sortDir === "asc" ? "desc" : "asc"); setPage(1); }}><ArrowDownWideNarrow className="h-4 w-4" />{sortDir === "asc" ? "Ascendente" : "Descendente"}</Button>

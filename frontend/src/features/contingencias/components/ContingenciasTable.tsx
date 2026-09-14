@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { Eye, FileText, Pencil } from "lucide-react";
 import { Card } from "@/design-system/primitives/Card";
 import { EmptyState } from "@/design-system/primitives/Progress";
-import { Pill } from "@/design-system/primitives/Pill";
 import { cn } from "@/lib/utils";
 import { CONTINGENCIA_FIELDS, type ContingenciaField } from "../fields";
 import type { ContingenciaListItem } from "../types";
@@ -19,12 +18,6 @@ type ContingenciaColumn = {
   render: (evento: ContingenciaListItem) => ReactNode;
   nowrap?: boolean;
   className?: string;
-};
-
-const ESTADO_TONE: Record<ContingenciaListItem["estado"], "brand" | "warning" | "neutral"> = {
-  Registrado: "brand",
-  Revisado: "warning",
-  Cerrado: "neutral",
 };
 
 const value = (input: unknown) => input == null || input === "" ? "—" : String(input);
@@ -50,7 +43,7 @@ const COLUMNAS_CONTINGENCIA: ContingenciaColumn[] = [
 ];
 
 export function ContingenciasTable({ eventos, isLoading, onView, onEdit }: Props) {
-  const colSpan = COLUMNAS_CONTINGENCIA.length + 2;
+  const colSpan = COLUMNAS_CONTINGENCIA.length + 1;
 
   return (
     <Card padded={false} className="overflow-hidden">
@@ -71,7 +64,6 @@ export function ContingenciasTable({ eventos, isLoading, onView, onEdit }: Props
                   {col.header}
                 </th>
               ))}
-              <th className="whitespace-nowrap border-b border-line bg-surface px-3 py-2.5 font-semibold">Estado</th>
               <th className="sticky right-0 z-30 whitespace-nowrap border-b border-line bg-surface px-3 py-2.5 text-right font-semibold shadow-[-1px_0_0_var(--color-line)]">
                 Acciones
               </th>
@@ -110,9 +102,6 @@ export function ContingenciasTable({ eventos, isLoading, onView, onEdit }: Props
                       </td>
                     );
                   })}
-                  <td className="whitespace-nowrap border-b border-line-soft bg-white px-3 py-2.5 transition-colors group-hover:bg-surface/70">
-                    <Pill tone={ESTADO_TONE[evento.estado]} dot>{evento.estado}</Pill>
-                  </td>
                   <td className="sticky right-0 z-10 whitespace-nowrap border-b border-line-soft bg-white px-3 py-2.5 transition-colors group-hover:bg-surface/70">
                     <div className="flex items-center justify-end gap-1">
                       <button
