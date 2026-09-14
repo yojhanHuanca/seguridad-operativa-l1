@@ -13,11 +13,12 @@ interface Props {
   onEdit: (evento: ContingenciaListItem) => void;
   onDelete: (evento: ContingenciaListItem) => void;
   isDeleting?: boolean;
+  startIndex?: number;
 }
 
 type ContingenciaColumn = {
   header: string;
-  render: (evento: ContingenciaListItem) => ReactNode;
+  render: (evento: ContingenciaListItem, index: number) => ReactNode;
   nowrap?: boolean;
   className?: string;
 };
@@ -35,7 +36,7 @@ function fieldValue(evento: ContingenciaListItem, field: ContingenciaField) {
 }
 
 const COLUMNAS_CONTINGENCIA: ContingenciaColumn[] = [
-  { header: "Código", render: (evento) => evento.codigo_evento, nowrap: true, className: "font-semibold text-ink" },
+  { header: "N°", render: (_evento, index) => index + 1, nowrap: true, className: "font-semibold text-ink" },
   { header: "Mes", render: (evento) => evento.mes ?? "—", nowrap: true },
   ...CONTINGENCIA_FIELDS.map((field): ContingenciaColumn => ({
     header: field.label,
@@ -44,7 +45,7 @@ const COLUMNAS_CONTINGENCIA: ContingenciaColumn[] = [
   })),
 ];
 
-export function ContingenciasTable({ eventos, isLoading, onView, onEdit, onDelete, isDeleting = false }: Props) {
+export function ContingenciasTable({ eventos, isLoading, onView, onEdit, onDelete, isDeleting = false, startIndex = 0 }: Props) {
   const colSpan = COLUMNAS_CONTINGENCIA.length + 1;
 
   return (
@@ -85,10 +86,10 @@ export function ContingenciasTable({ eventos, isLoading, onView, onEdit, onDelet
                 </td>
               </tr>
             ) : (
-              eventos.map((evento) => (
+              eventos.map((evento, rowIndex) => (
                 <tr key={evento.id_evento} className="group">
                   {COLUMNAS_CONTINGENCIA.map((col, index) => {
-                    const rendered = col.render(evento);
+                    const rendered = col.render(evento, startIndex + rowIndex);
                     return (
                       <td
                         key={col.header}
@@ -109,7 +110,7 @@ export function ContingenciasTable({ eventos, isLoading, onView, onEdit, onDelet
                       <button
                         type="button"
                         title="Ver detalle"
-                        aria-label={"Ver detalle de " + evento.codigo_evento}
+                        aria-label={"Ver detalle del registro " + (startIndex + rowIndex + 1)}
                         onClick={() => onView(evento)}
                         className="grid h-7 w-7 place-items-center rounded-lg text-ink-quiet transition-colors hover:bg-surface-2 hover:text-ink"
                       >
@@ -118,7 +119,7 @@ export function ContingenciasTable({ eventos, isLoading, onView, onEdit, onDelet
                       <button
                         type="button"
                         title="Editar"
-                        aria-label={"Editar " + evento.codigo_evento}
+                        aria-label={"Editar registro " + (startIndex + rowIndex + 1)}
                         onClick={() => onEdit(evento)}
                         className="grid h-7 w-7 place-items-center rounded-lg text-ink-quiet transition-colors hover:bg-surface-2 hover:text-ink"
                       >
@@ -127,7 +128,7 @@ export function ContingenciasTable({ eventos, isLoading, onView, onEdit, onDelet
                       <button
                         type="button"
                         title="Eliminar"
-                        aria-label={"Eliminar " + evento.codigo_evento}
+                        aria-label={"Eliminar registro " + (startIndex + rowIndex + 1)}
                         onClick={() => onDelete(evento)}
                         disabled={isDeleting}
                         className="grid h-7 w-7 place-items-center rounded-lg text-critical-ink transition-colors hover:bg-critical-soft disabled:cursor-not-allowed disabled:opacity-50"
@@ -145,3 +146,5 @@ export function ContingenciasTable({ eventos, isLoading, onView, onEdit, onDelet
     </Card>
   );
 }
+
+
