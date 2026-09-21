@@ -158,6 +158,7 @@ function validateConfig(config: ConfiguracionGeneral): string | null {
 export function AdminConfiguracionPage() {
   const { data, isLoading, isError, refetch } = useConfiguracion();
   const updateConfiguracion = useUpdateConfiguracion();
+  const [editandoOperacion, setEditandoOperacion] = useState(false);
   const sourceKey = data ? `${data.meta.ultimaActualizacion ?? "sin-fecha"}:${JSON.stringify(data.numeracion)}` : "default";
   const [draft, setDraft] = useState<{ sourceKey: string; value: ConfiguracionGeneral }>(() => ({
     sourceKey: "default",
@@ -216,9 +217,16 @@ export function AdminConfiguracionPage() {
         },
       });
       toast.success("Configuración actualizada correctamente");
+      return true;
     } catch (error) {
       toast.error(apiErrorMessage(error, "No se pudo guardar la configuración"));
+      return false;
     }
+  };
+
+  const guardarOperacion = async () => {
+    const guardado = await handleSubmit();
+    if (guardado) setEditandoOperacion(false);
   };
 
   return (
@@ -333,6 +341,18 @@ export function AdminConfiguracionPage() {
               title="Parámetros operativos"
               description="Valores usados para estimar kilómetros comerciales en Datos Operativos. Los cambios aplican a nuevos registros y no recalculan el histórico."
             >
+              <div className="mb-4 flex justify-end gap-2">
+                {!editandoOperacion ? (
+                  <Button type="button" variant="outline" onClick={() => setEditandoOperacion(true)}>
+                    Editar
+                  </Button>
+                ) : (
+                  <Button type="button" onClick={guardarOperacion} disabled={updateConfiguracion.isPending || !dirty}>
+                    {updateConfiguracion.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    Guardar
+                  </Button>
+                )}
+              </div>
               <div className="grid gap-4 md:grid-cols-[minmax(0,280px)_minmax(0,1fr)] md:items-end">
                 <Field label="Kilómetros por carrera" hint="Valor de referencia de una carrera completa." required>
                   <div className="relative">
@@ -343,6 +363,7 @@ export function AdminConfiguracionPage() {
                       step="0.000001"
                       value={form.operacion.kmPorCarrera}
                       onChange={(event) => setOperacion("kmPorCarrera", Number(event.target.value) || 0)}
+                      disabled={!editandoOperacion}
                       className="pr-12"
                     />
                     <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-medium text-ink-faint">km</span>
