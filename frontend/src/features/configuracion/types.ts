@@ -14,6 +14,9 @@ export interface ConfiguracionGeneral {
     diasResponderPlanes: number;
     diasSolicitarProrroga: number;
   };
+  operacion: {
+    kmPorCarrera: number;
+  };
   meta: {
     ultimaActualizacion: string | null;
   };

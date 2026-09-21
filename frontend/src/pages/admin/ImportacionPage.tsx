@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import type { CellValue } from "exceljs";
+import { toast } from "sonner";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -282,6 +283,11 @@ export function AdminImportacionPage() {
     const imported = await importar.mutateAsync(payload);
     setResult(imported);
     setPreview(imported);
+    const totalImportados = imported.imported.eventos + imported.imported.casos + imported.imported.planes;
+    toast.success("Importación completada correctamente", {
+      description: `${totalImportados.toLocaleString("es-PE")} registro${totalImportados === 1 ? "" : "s"} de ${modulo.label} importado${totalImportados === 1 ? "" : "s"}. Los datos fueron guardados sin recalcularse.`,
+      duration: 6000,
+    });
   }
 
   return (

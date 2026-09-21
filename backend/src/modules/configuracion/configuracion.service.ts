@@ -25,6 +25,7 @@ const CONFIG_KEYS = {
   diasInvestigacion: "plazos.investigacion.dias",
   diasResponderPlanes: "plazos.planes.respuesta_dias",
   diasSolicitarProrroga: "plazos.prorroga.solicitud_dias",
+  kmPorCarrera: "operacion.km_por_carrera",
   ultimaActualizacion: "sistema.ultima_actualizacion",
 } as const;
 
@@ -38,6 +39,7 @@ const DEFAULT_VALUES: Record<string, string> = {
   [CONFIG_KEYS.diasInvestigacion]: "15",
   [CONFIG_KEYS.diasResponderPlanes]: "7",
   [CONFIG_KEYS.diasSolicitarProrroga]: "3",
+  [CONFIG_KEYS.kmPorCarrera]: "33.128331",
   [CONFIG_KEYS.ultimaActualizacion]: "2025-01-15T03:00:00.000Z",
 };
 
@@ -51,6 +53,7 @@ const DESCRIPTIONS: Record<string, string> = {
   [CONFIG_KEYS.diasInvestigacion]: "Días máximos de investigación.",
   [CONFIG_KEYS.diasResponderPlanes]: "Días para que el jefe de área responda planes.",
   [CONFIG_KEYS.diasSolicitarProrroga]: "Días máximos para solicitar una prórroga.",
+  [CONFIG_KEYS.kmPorCarrera]: "Kilómetros comerciales estimados por cada carrera de tren.",
   [CONFIG_KEYS.ultimaActualizacion]: "Fecha ISO de la última actualización manual de configuración.",
 };
 
@@ -73,6 +76,9 @@ export interface ConfiguracionGeneral {
     diasMaxInvestigacion: number;
     diasResponderPlanes: number;
     diasSolicitarProrroga: number;
+  };
+  operacion: {
+    kmPorCarrera: number;
   };
   meta: {
     ultimaActualizacion: string | null;
@@ -97,6 +103,13 @@ const numberField = (label: string, min: number, max: number) =>
     .min(min, `${label} debe ser mayor o igual a ${min}`)
     .max(max, `${label} no puede superar ${max}`);
 
+const decimalField = (label: string, min: number, max: number) =>
+  z.coerce
+    .number({ error: `${label} debe ser numérico` })
+    .finite(`${label} debe ser un número válido`)
+    .min(min, `${label} debe ser mayor o igual a ${min}`)
+    .max(max, `${label} no puede superar ${max}`);
+
 const configuracionSchema = z.object({
   sistema: z.object({
     nombre: z.string().trim().min(3, "El nombre del sistema debe tener al menos 3 caracteres").max(150),
@@ -113,11 +126,19 @@ const configuracionSchema = z.object({
     diasResponderPlanes: numberField("Los días para responder planes", 1, 365),
     diasSolicitarProrroga: numberField("Los días para solicitar prórroga", 1, 365),
   }),
+  operacion: z.object({
+    kmPorCarrera: decimalField("Los kilómetros por carrera", 0.01, 100),
+  }),
 });
 
 function parseNumber(value: string | undefined, fallback: number): number {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed >= 0 ? Math.floor(parsed) : fallback;
+}
+
+function parseDecimal(value: string | undefined, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
 }
 
 function sanitizePrefix(value: string, label: string): string {
@@ -160,6 +181,9 @@ function mapToConfiguracion(values: Map<string, string>, secuenciaExpedientes: n
       diasResponderPlanes: parseNumber(values.get(CONFIG_KEYS.diasResponderPlanes), Number(defaultValue(CONFIG_KEYS.diasResponderPlanes))),
       diasSolicitarProrroga: parseNumber(values.get(CONFIG_KEYS.diasSolicitarProrroga), Number(defaultValue(CONFIG_KEYS.diasSolicitarProrroga))),
     },
+    operacion: {
+      kmPorCarrera: parseDecimal(values.get(CONFIG_KEYS.kmPorCarrera), Number(defaultValue(CONFIG_KEYS.kmPorCarrera))),
+    },
     meta: {
       ultimaActualizacion: values.get(CONFIG_KEYS.ultimaActualizacion) || defaultValue(CONFIG_KEYS.ultimaActualizacion) || null,
     },
@@ -177,6 +201,7 @@ function payloadToEntries(config: ConfiguracionGeneral) {
     [CONFIG_KEYS.diasInvestigacion, String(config.plazos.diasMaxInvestigacion)],
     [CONFIG_KEYS.diasResponderPlanes, String(config.plazos.diasResponderPlanes)],
     [CONFIG_KEYS.diasSolicitarProrroga, String(config.plazos.diasSolicitarProrroga)],
+    [CONFIG_KEYS.kmPorCarrera, String(config.operacion.kmPorCarrera)],
     [CONFIG_KEYS.ultimaActualizacion, config.meta.ultimaActualizacion ?? new Date().toISOString()],
   ] as const;
 }
@@ -275,6 +300,7 @@ export class ConfiguracionService {
         secuenciaPlanes: parsed.numeracion.secuenciaPlanes,
       },
       plazos: parsed.plazos,
+      operacion: parsed.operacion,
       meta: {
         ultimaActualizacion: new Date().toISOString(),
       },
@@ -297,11 +323,13 @@ export class ConfiguracionService {
         sistema: previous.sistema,
         numeracion: previous.numeracion,
         plazos: previous.plazos,
+        operacion: previous.operacion,
       },
       {
         sistema: saved.sistema,
         numeracion: saved.numeracion,
         plazos: saved.plazos,
+        operacion: saved.operacion,
       }
     );
 

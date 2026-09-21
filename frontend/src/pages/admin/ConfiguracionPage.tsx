@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react";
-import { AlertCircle, CalendarClock, CheckCircle2, Hash, Loader2, RotateCcw, Save, Settings2 } from "lucide-react";
+import { AlertCircle, CalendarClock, CheckCircle2, Hash, Loader2, RotateCcw, Save, Settings2, TramFront } from "lucide-react";
 import { toast } from "sonner";
 import { AdminShell } from "@/components/layout/AdminShell";
 import { Button } from "@/design-system/primitives/Button";
@@ -26,6 +26,9 @@ const DEFAULT_CONFIG: ConfiguracionGeneral = {
     diasResponderPlanes: 7,
     diasSolicitarProrroga: 3,
   },
+  operacion: {
+    kmPorCarrera: 33.128331,
+  },
   meta: {
     ultimaActualizacion: null,
   },
@@ -48,6 +51,7 @@ function cloneConfig(config: ConfiguracionGeneral): ConfiguracionGeneral {
     sistema: { ...config.sistema },
     numeracion: { ...config.numeracion },
     plazos: { ...config.plazos },
+    operacion: { ...config.operacion },
     meta: { ...config.meta },
   };
 }
@@ -58,11 +62,13 @@ function sameConfig(a: ConfiguracionGeneral, b: ConfiguracionGeneral) {
       sistema: a.sistema,
       numeracion: a.numeracion,
       plazos: a.plazos,
+      operacion: a.operacion,
     }) ===
     JSON.stringify({
       sistema: b.sistema,
       numeracion: b.numeracion,
       plazos: b.plazos,
+      operacion: b.operacion,
     })
   );
 }
@@ -169,6 +175,9 @@ function validateConfig(config: ConfiguracionGeneral): string | null {
   if (config.plazos.diasSolicitarProrroga > config.plazos.diasResponderPlanes) {
     return "El plazo para solicitar prórroga no debe superar el plazo de respuesta del plan.";
   }
+  if (!Number.isFinite(config.operacion.kmPorCarrera) || config.operacion.kmPorCarrera <= 0) {
+    return "Los kilómetros por carrera deben ser mayores que cero.";
+  }
   return null;
 }
 
@@ -205,6 +214,13 @@ export function AdminConfiguracionPage() {
     setDraft((current) => {
       const base = current.sourceKey === sourceKey ? current.value : cloneConfig(data ?? DEFAULT_CONFIG);
       return { sourceKey, value: { ...base, plazos: { ...base.plazos, [key]: value } } };
+    });
+  };
+
+  const setOperacion = (key: keyof ConfiguracionGeneral["operacion"], value: number) => {
+    setDraft((current) => {
+      const base = current.sourceKey === sourceKey ? current.value : cloneConfig(data ?? DEFAULT_CONFIG);
+      return { sourceKey, value: { ...base, operacion: { ...base.operacion, [key]: value } } };
     });
   };
 
@@ -371,6 +387,36 @@ export function AdminConfiguracionPage() {
                 />
               </div>
             </Section>
+
+            <Section
+              icon={<TramFront className="h-4.5 w-4.5" />}
+              title="Parámetros operativos"
+              description="Valores usados para estimar kilómetros comerciales en Datos Operativos. Los cambios aplican a nuevos registros y no recalculan el histórico."
+            >
+              <div className="grid gap-4 md:grid-cols-[minmax(0,280px)_minmax(0,1fr)] md:items-end">
+                <Field label="Kilómetros por carrera" hint="Valor de referencia de una carrera completa." required>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      min="0.01"
+                      max="100"
+                      step="0.000001"
+                      value={form.operacion.kmPorCarrera}
+                      onChange={(event) => setOperacion("kmPorCarrera", Number(event.target.value) || 0)}
+                      className="pr-12"
+                    />
+                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-medium text-ink-faint">km</span>
+                  </div>
+                </Field>
+                <div className="rounded-lg border border-brand-100 bg-brand-50/50 px-3 py-3 text-[12px] text-brand-900">
+                  <p className="font-semibold">¿Cómo se utiliza?</p>
+                  <p className="mt-1 leading-relaxed">
+                    Al ingresar las carreras, el sistema calculará automáticamente: carreras × {form.operacion.kmPorCarrera || 0} km.
+                    El resultado seguirá siendo editable por el usuario.
+                  </p>
+                </div>
+              </div>
+            </Section>
           </div>
 
           <aside className="rounded-xl border border-line bg-white p-4">
@@ -380,6 +426,11 @@ export function AdminConfiguracionPage() {
                 <p className="text-[11px] font-medium uppercase text-ink-faint">Sistema</p>
                 <p className="mt-1 text-[13px] font-semibold text-ink">{form.sistema.nombre}</p>
                 <p className="mt-0.5 text-[12px] text-ink-quiet">Versión {form.sistema.version}</p>
+              </div>
+              <div className="rounded-lg bg-surface px-3 py-3">
+                <p className="text-[11px] font-medium uppercase text-ink-faint">Operación</p>
+                <p className="mt-1 text-[12.5px] text-ink-soft">Km por carrera: <span className="font-mono font-semibold text-brand-700">{form.operacion.kmPorCarrera}</span> km</p>
+                <p className="mt-1 text-[12px] text-ink-quiet">Usado en nuevos datos operativos.</p>
               </div>
               <div className="rounded-lg bg-surface px-3 py-3">
                 <p className="text-[11px] font-medium uppercase text-ink-faint">Numeración</p>

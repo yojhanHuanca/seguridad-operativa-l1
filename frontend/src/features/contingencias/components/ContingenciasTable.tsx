@@ -36,7 +36,7 @@ function fieldValue(evento: ContingenciaListItem, field: ContingenciaField) {
 }
 
 const COLUMNAS_CONTINGENCIA: ContingenciaColumn[] = [
-  { header: "N°", render: (_evento, index) => index + 1, nowrap: true, className: "font-semibold text-ink" },
+  { header: "N°", render: (evento) => evento.id_evento, nowrap: true, className: "font-semibold text-ink" },
   { header: "Mes", render: (evento) => evento.mes ?? "—", nowrap: true },
   ...CONTINGENCIA_FIELDS.map((field): ContingenciaColumn => ({
     header: field.label,

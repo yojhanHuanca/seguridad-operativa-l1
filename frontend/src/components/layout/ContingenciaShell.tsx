@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ChevronsLeft, ChevronsRight, ClipboardList, Database, History, Menu, type LucideIcon } from "lucide-react";
+import { ChevronsLeft, ChevronsRight, ClipboardList, Database, History, Menu, Plus, type LucideIcon } from "lucide-react";
 import { SessionExitButton } from "@/features/auth/SessionExitButton";
 import { AdminViewingBanner } from "@/features/auth/AdminViewingBanner";
 import { AdminPanelSwitcher } from "@/features/auth/AdminPanelSwitcher";
@@ -20,12 +20,14 @@ const COLLAPSE_KEY = "sigma-contingencias-sidebar-collapsed";
 const NAV: NavItem[] = [
   { to: "/contingencias/registro", label: "Registro", icon: ClipboardList },
   { to: "/contingencias/historial", label: "Historial", icon: History },
+  { to: "/contingencias/indicadores", label: "Indicadores", icon: Plus },
   { to: "/contingencias/datos-operativos", label: "Datos Operativos", icon: Database },
 ];
 
 const TITLES: Record<string, { title: string; crumb: string }> = {
   "/contingencias/registro": { title: "Registro", crumb: "Inicio / Registro" },
   "/contingencias/historial": { title: "Historial", crumb: "Inicio / Historial" },
+  "/contingencias/indicadores": { title: "Indicadores", crumb: "Inicio / Indicadores" },
   "/contingencias/datos-operativos": { title: "Datos Operativos", crumb: "Inicio / Datos Operativos" },
   "/contingencias/perfil": { title: "Mi perfil", crumb: "Inicio / Perfil" },
 };

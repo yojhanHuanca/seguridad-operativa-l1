@@ -1,7 +1,7 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Database, Pencil, RefreshCw, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
-import { ContingenciaShell } from "@/components/layout/ContingenciaShell";
+import { MonitoristaShell } from "@/components/layout/MonitoristaShell";
 import { Card, CardHeader } from "@/design-system/primitives/Card";
 import { Button } from "@/design-system/primitives/Button";
 import { Field, Input } from "@/design-system/primitives/Input";
@@ -13,8 +13,11 @@ import {
   type DatoOperativo,
   type DatosOperativosInput,
 } from "@/features/datos-operativos/hooks/useDatosOperativos";
+import { useCatalogs } from "@/features/reports/hooks/useCatalogs";
+import { useConfiguracion } from "@/features/configuracion/hooks/useConfiguracion";
 import { apiErrorMessage } from "@/lib/api";
 import { formatDate } from "@/lib/format";
+import { stationNamesFromCatalog } from "@/lib/stations";
 
 const POR_PAGINA = 25;
 type CampoNumerico = "qty_carreras" | "qty_pasajeros" | "km_comercial" | "km_no_comercial" | "paradas_estacion";
@@ -36,7 +39,8 @@ function fechaHoyInput() {
   return `${anio}-${mes}-${dia}`;
 }
 
-const ESTACIONES_LINEA_1 = 26;
+const ESTACIONES_LINEA_1_FALLBACK = 26;
+const KM_POR_CARRERA_FALLBACK = 33.128331;
 
 function decimalesPara(campo: CampoNumerico) {
   return campo === "km_comercial" || campo === "km_no_comercial" ? 2 : 0;
@@ -86,6 +90,14 @@ export function DatosOperativos() {
   const [formulario, setFormulario] = useState<FormularioDatosOperativos>(formularioVacio);
   const [editando, setEditando] = useState<DatoOperativo | null>(null);
   const [eliminando, setEliminando] = useState<DatoOperativo | null>(null);
+  const { byName: catalogosPorNombre, isSuccess: catalogosListos } = useCatalogs();
+  const { data: configuracion } = useConfiguracion();
+
+  const estacionesCatalogo = catalogosPorNombre.get("Lugar de Incidente")?.catalogo_detalle ?? [];
+  const cantidadEstaciones = catalogosListos
+    ? stationNamesFromCatalog(estacionesCatalogo).length
+    : ESTACIONES_LINEA_1_FALLBACK;
+  const kmPorCarrera = configuracion?.operacion.kmPorCarrera ?? KM_POR_CARRERA_FALLBACK;
 
   const filtros = { desde: desde || undefined, hasta: hasta || undefined, page: pagina, limit: POR_PAGINA };
   const { data, isLoading, isFetching, refetch } = useDatosOperativos(filtros);
@@ -96,6 +108,19 @@ export function DatosOperativos() {
   const totalPaginas = Math.max(1, Math.ceil((data?.total ?? 0) / POR_PAGINA));
   const paginaActual = Math.min(pagina, totalPaginas);
   const guardando = crear.isPending || actualizar.isPending;
+
+  useEffect(() => {
+    if (editando || formulario.qty_carreras.trim() === "") return;
+    const carreras = convertirNumero(formulario.qty_carreras);
+    if (!Number.isFinite(carreras) || carreras < 0) return;
+    const paradasEstimadas = String(Math.round(carreras * cantidadEstaciones));
+    const kmComercialEstimado = formatearEntradaNumerica(String(Math.round(carreras * kmPorCarrera)), 0);
+    setFormulario((actual) => ({
+      ...actual,
+      paradas_estacion: formatearEntradaNumerica(paradasEstimadas, 0),
+      km_comercial: kmComercialEstimado,
+    }));
+  }, [cantidadEstaciones, editando, formulario.qty_carreras, kmPorCarrera]);
 
   const limpiarFormulario = () => {
     setFormulario(formularioVacio());
@@ -120,11 +145,12 @@ export function DatosOperativos() {
     const carreras = convertirNumero(valorFormateado);
     if (valorFormateado.trim() !== "" && Number.isFinite(carreras) && carreras >= 0) {
       // Las paradas se estiman por carrera; el Km comercial se registra con el valor real del día.
-      const paradasEstimadas = String(Math.round(carreras * ESTACIONES_LINEA_1));
+      const paradasEstimadas = String(Math.round(carreras * cantidadEstaciones));
       setFormulario((actual) => ({
         ...actual,
         qty_carreras: valorFormateado,
         paradas_estacion: formatearEntradaNumerica(paradasEstimadas, 0),
+        km_comercial: formatearEntradaNumerica(String(Math.round(carreras * kmPorCarrera)), 0),
         km_no_comercial: actual.km_no_comercial === "" ? "0" : actual.km_no_comercial,
       }));
     } else {
@@ -189,7 +215,7 @@ export function DatosOperativos() {
   };
 
   return (
-    <ContingenciaShell>
+    <MonitoristaShell>
       <div className="space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -209,6 +235,9 @@ export function DatosOperativos() {
             icon={<Database className="h-4 w-4" />}
             action={
               <div className="flex items-center gap-2">
+                <span className="hidden rounded-md border border-brand-100 bg-brand-50 px-2.5 py-1.5 text-[11.5px] font-medium text-brand-800 sm:inline-flex">
+                  {kmPorCarrera} km por carrera
+                </span>
                 {editando && (
                   <Button variant="ghost" size="sm" onClick={limpiarFormulario}>
                     <X className="h-4 w-4" /> Cancelar
@@ -251,7 +280,7 @@ export function DatosOperativos() {
                 required
               />
             </Field>
-            <Field label="Km comercial" hint="Ingresa el valor real correspondiente a la fecha" required>
+            <Field label="Km comercial" hint={`Auto: carreras × ${kmPorCarrera} km (editable si hubo variante)`} required>
               <Input
                 type="text"
                 inputMode="decimal"
@@ -275,7 +304,7 @@ export function DatosOperativos() {
                 required
               />
             </Field>
-            <Field label="Paradas en estación" hint="Auto: carreras × 26 estaciones (editable si hubo variante)" required>
+            <Field label="Paradas en estación" hint={`Auto: carreras × ${cantidadEstaciones} estaciones activas (editable si hubo variante)`} required>
               <Input
                 type="text"
                 inputMode="numeric"
@@ -371,6 +400,6 @@ export function DatosOperativos() {
           </Card>
         )}
       </div>
-    </ContingenciaShell>
+    </MonitoristaShell>
   );
 }

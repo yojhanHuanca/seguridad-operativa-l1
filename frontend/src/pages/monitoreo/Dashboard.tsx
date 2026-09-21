@@ -152,6 +152,7 @@ export function Dashboard() {
           onEdit={(e) => navigate(`/monitoreo/editar/${e.id_evento}`)}
           onDelete={setBorrando}
           onAsignar={setAsignando}
+          showNumero
         />
 
         {filtrados.length > RECIENTES && (

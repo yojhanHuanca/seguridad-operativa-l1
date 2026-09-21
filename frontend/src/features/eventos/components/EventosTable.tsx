@@ -26,6 +26,7 @@ export function EventosTable({
   onEdit,
   onDelete,
   onAsignar,
+  showNumero = false,
 }: {
   eventos: EventoListItem[];
   columns: EventoColumn[];
@@ -39,8 +40,9 @@ export function EventosTable({
   onDelete?: (evento: EventoListItem) => void;
   /** Seguridad Operativa toma el evento y abre el hallazgo (caso SOP) desde acá mismo. */
   onAsignar?: (evento: EventoListItem) => void;
+  showNumero?: boolean;
 }) {
-  const colSpan = columns.length + (showEstado ? 2 : 1);
+  const colSpan = columns.length + (showEstado ? 2 : 1) + (showNumero ? 1 : 0);
 
   return (
     <Card padded={false} className="overflow-hidden">
@@ -53,6 +55,7 @@ export function EventosTable({
         >
           <thead className="sticky top-0 z-20">
             <tr className="border-b border-line bg-surface text-[10.5px] uppercase tracking-wide text-ink-quiet">
+              {showNumero && <th className="sticky left-0 z-30 whitespace-nowrap border-b border-line bg-surface px-3 py-2.5 font-semibold shadow-[1px_0_0_var(--color-line)]">N°</th>}
               {columns.map((col, index) => (
                 <th
                   key={col.header}
@@ -83,9 +86,10 @@ export function EventosTable({
                   <EmptyState icon={<FileText className="h-5 w-5" />} title={emptyTitle} description={emptyDescription} className="border-0 bg-transparent py-10" />
                 </td>
               </tr>
-            ) : (
+              ) : (
               eventos.map((evento) => (
                 <tr key={evento.id_evento} className="group">
+                  {showNumero && <td className="sticky left-0 z-10 whitespace-nowrap border-b border-line-soft bg-white px-3 py-2.5 font-semibold text-ink shadow-[1px_0_0_var(--color-line-soft)] group-hover:bg-surface/70">{evento.id_evento}</td>}
                   {columns.map((col, index) => {
                     const value = col.render(evento);
                     return (
@@ -94,7 +98,7 @@ export function EventosTable({
                         className={cn(
                           "border-b border-line-soft bg-white px-3 py-2.5 align-top text-ink-soft transition-colors group-hover:bg-surface/70",
                           col.nowrap ? "whitespace-nowrap" : "max-w-[280px]",
-                          index === 0 && "sticky left-0 z-10 bg-white shadow-[1px_0_0_var(--color-line-soft)] group-hover:bg-surface/70",
+                          index === 0 && !showNumero && "sticky left-0 z-10 bg-white shadow-[1px_0_0_var(--color-line-soft)] group-hover:bg-surface/70",
                           col.className
                         )}
                         title={!col.nowrap && typeof value === "string" ? value : undefined}

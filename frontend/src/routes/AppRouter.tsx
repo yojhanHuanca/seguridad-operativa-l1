@@ -38,6 +38,7 @@ const MonitoreoPerfilPage = lazyNamed(() => import("@/pages/monitoreo/Perfil"), 
 const DatosOperativosPage = lazyNamed(() => import("@/pages/monitoreo/DatosOperativos"), "DatosOperativos");
 const ContingenciaRegistroPage = lazyNamed(() => import("@/pages/contingencias/Registro"), "Registro");
 const ContingenciaHistorialPage = lazyNamed(() => import("@/pages/contingencias/Historial"), "Historial");
+const ContingenciaIndicadoresPage = lazyNamed(() => import("@/pages/contingencias/Indicadores"), "Indicadores");
 const ContingenciaDetallePage = lazyNamed(() => import("@/pages/contingencias/Detalle"), "Detalle");
 const ContingenciaEditarPage = lazyNamed(() => import("@/pages/contingencias/Editar"), "Editar");
 const ContingenciaPerfilPage = lazyNamed(() => import("@/pages/contingencias/Perfil"), "Perfil");
@@ -106,13 +107,14 @@ export function AppRouter() {
           <Route path="/monitoreo/editar/:id" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoEditarPage /></ProtectedRoute>} />
           <Route path="/monitoreo/reportes" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoReportesPage /></ProtectedRoute>} />
           <Route path="/monitoreo/indicadores" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoIndicadoresPage /></ProtectedRoute>} />
+          <Route path="/monitoreo/datos-operativos" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><DatosOperativosPage /></ProtectedRoute>} />
           <Route path="/monitoreo/perfil" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoPerfilPage /></ProtectedRoute>} />
-          <Route path="/monitoreo/datos-operativos" element={<Navigate to="/contingencias/datos-operativos" replace />} />
 
           {/* Gestión de Planes de Contingencia */}
           <Route path="/contingencias" element={<Navigate to="/contingencias/registro" replace />} />
           <Route path="/contingencias/registro" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaRegistroPage /></ProtectedRoute>} />
           <Route path="/contingencias/historial" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaHistorialPage /></ProtectedRoute>} />
+          <Route path="/contingencias/indicadores" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaIndicadoresPage /></ProtectedRoute>} />
           <Route path="/contingencias/datos-operativos" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><DatosOperativosPage /></ProtectedRoute>} />
           <Route path="/contingencias/evento/:id" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaDetallePage /></ProtectedRoute>} />
           <Route path="/contingencias/editar/:id" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaEditarPage /></ProtectedRoute>} />

@@ -169,6 +169,7 @@ export function Historial() {
           onEdit={(e) => navigate(`/monitoreo/editar/${e.id_evento}`)}
           onDelete={setBorrando}
           onAsignar={setAsignando}
+          showNumero
         />
 
         {total > 0 && (
