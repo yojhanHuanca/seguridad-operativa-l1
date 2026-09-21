@@ -97,7 +97,7 @@ export function DatosOperativos() {
   const cantidadEstaciones = catalogosListos
     ? stationNamesFromCatalog(estacionesCatalogo).length
     : ESTACIONES_LINEA_1_FALLBACK;
-  const kmPorCarrera = configuracion?.operacion.kmPorCarrera ?? KM_POR_CARRERA_FALLBACK;
+  const kmPorCarrera = configuracion?.operacion?.kmPorCarrera ?? KM_POR_CARRERA_FALLBACK;
 
   const filtros = { desde: desde || undefined, hasta: hasta || undefined, page: pagina, limit: POR_PAGINA };
   const { data, isLoading, isFetching, refetch } = useDatosOperativos(filtros);
