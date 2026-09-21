@@ -107,8 +107,8 @@ export function AppRouter() {
           <Route path="/monitoreo/editar/:id" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoEditarPage /></ProtectedRoute>} />
           <Route path="/monitoreo/reportes" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoReportesPage /></ProtectedRoute>} />
           <Route path="/monitoreo/indicadores" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoIndicadoresPage /></ProtectedRoute>} />
-          <Route path="/monitoreo/datos-operativos" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><DatosOperativosPage /></ProtectedRoute>} />
           <Route path="/monitoreo/perfil" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoPerfilPage /></ProtectedRoute>} />
+          <Route path="/monitoreo/datos-operativos" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><DatosOperativosPage /></ProtectedRoute>} />
 
           {/* Gestión de Planes de Contingencia */}
           <Route path="/contingencias" element={<Navigate to="/contingencias/registro" replace />} />
