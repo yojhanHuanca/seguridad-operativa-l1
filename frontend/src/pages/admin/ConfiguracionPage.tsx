@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react";
-import { AlertCircle, CalendarClock, CheckCircle2, Hash, Loader2, RotateCcw, Save, Settings2, TramFront } from "lucide-react";
+import { AlertCircle, CheckCircle2, Hash, Loader2, RotateCcw, Save, Settings2, TramFront } from "lucide-react";
 import { toast } from "sonner";
 import { AdminShell } from "@/components/layout/AdminShell";
 import { Button } from "@/design-system/primitives/Button";
@@ -130,34 +130,6 @@ function NumberField({
   );
 }
 
-function DaysField({
-  label,
-  value,
-  onChange,
-  hint,
-}: {
-  label: string;
-  value: number;
-  onChange: (value: number) => void;
-  hint: string;
-}) {
-  return (
-    <Field label={label} hint={hint}>
-      <div className="relative">
-        <Input
-          type="number"
-          min={1}
-          max={365}
-          value={Number.isFinite(value) ? value : 1}
-          onChange={(event) => onChange(Math.max(1, Number(event.target.value) || 1))}
-          className="pr-14"
-        />
-        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-medium text-ink-faint">días</span>
-      </div>
-    </Field>
-  );
-}
-
 function PatternBox({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-line-soft bg-surface px-3 py-2.5">
@@ -172,9 +144,6 @@ function validateConfig(config: ConfiguracionGeneral): string | null {
   if (!config.sistema.version.trim()) return "La versión es obligatoria.";
   if (config.numeracion.prefijoExpedientes.length < 2) return "El prefijo de expedientes debe tener al menos 2 caracteres.";
   if (config.numeracion.prefijoPlanes.length < 2) return "El prefijo de planes debe tener al menos 2 caracteres.";
-  if (config.plazos.diasSolicitarProrroga > config.plazos.diasResponderPlanes) {
-    return "El plazo para solicitar prórroga no debe superar el plazo de respuesta del plan.";
-  }
   if (!Number.isFinite(config.operacion.kmPorCarrera) || config.operacion.kmPorCarrera <= 0) {
     return "Los kilómetros por carrera deben ser mayores que cero.";
   }
@@ -207,13 +176,6 @@ export function AdminConfiguracionPage() {
     setDraft((current) => {
       const base = current.sourceKey === sourceKey ? current.value : cloneConfig(data ?? DEFAULT_CONFIG);
       return { sourceKey, value: { ...base, numeracion: { ...base.numeracion, [key]: value } } };
-    });
-  };
-
-  const setPlazo = (key: keyof ConfiguracionGeneral["plazos"], value: number) => {
-    setDraft((current) => {
-      const base = current.sourceKey === sourceKey ? current.value : cloneConfig(data ?? DEFAULT_CONFIG);
-      return { sourceKey, value: { ...base, plazos: { ...base.plazos, [key]: value } } };
     });
   };
 
@@ -362,33 +324,6 @@ export function AdminConfiguracionPage() {
             </Section>
 
             <Section
-              icon={<CalendarClock className="h-4.5 w-4.5" />}
-              title="Plazos y tiempos"
-              description="Define límites operativos para investigación, respuesta del área y solicitud de ampliaciones."
-            >
-              <div className="grid gap-4 md:grid-cols-3">
-                <DaysField
-                  label="Días máx. de investigación"
-                  value={form.plazos.diasMaxInvestigacion}
-                  onChange={(value) => setPlazo("diasMaxInvestigacion", value)}
-                  hint="Tiempo límite para completar la investigación."
-                />
-                <DaysField
-                  label="Días para responder planes"
-                  value={form.plazos.diasResponderPlanes}
-                  onChange={(value) => setPlazo("diasResponderPlanes", value)}
-                  hint="Plazo del jefe de área para aceptar o rechazar."
-                />
-                <DaysField
-                  label="Días para solicitar prórroga"
-                  value={form.plazos.diasSolicitarProrroga}
-                  onChange={(value) => setPlazo("diasSolicitarProrroga", value)}
-                  hint="Ventana máxima para pedir ampliación."
-                />
-              </div>
-            </Section>
-
-            <Section
               icon={<TramFront className="h-4.5 w-4.5" />}
               title="Parámetros operativos"
               description="Valores usados para estimar kilómetros comerciales en Datos Operativos. Los cambios aplican a nuevos registros y no recalculan el histórico."
@@ -442,12 +377,6 @@ export function AdminConfiguracionPage() {
                   Planes: <span className="font-mono font-semibold text-brand-700">{form.numeracion.prefijoPlanes}</span> · secuencia{" "}
                   <span className="font-mono font-semibold text-ink">{form.numeracion.secuenciaPlanes}</span>
                 </p>
-              </div>
-              <div className="rounded-lg bg-surface px-3 py-3">
-                <p className="text-[11px] font-medium uppercase text-ink-faint">Plazos</p>
-                <p className="mt-1 text-[12.5px] text-ink-soft">Investigación: {form.plazos.diasMaxInvestigacion} días</p>
-                <p className="mt-1 text-[12.5px] text-ink-soft">Respuesta de planes: {form.plazos.diasResponderPlanes} días</p>
-                <p className="mt-1 text-[12.5px] text-ink-soft">Solicitud de prórroga: {form.plazos.diasSolicitarProrroga} días</p>
               </div>
             </div>
             <div className="mt-4 rounded-lg border border-line-soft px-3 py-3 text-[12px] text-ink-quiet">

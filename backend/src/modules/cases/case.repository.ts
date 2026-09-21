@@ -124,8 +124,6 @@ const ACTOR_SO = "Seguridad Operativa";
 
 /** Día calendario de una columna @db.Date, que siempre llega en medianoche UTC. */
 const diaISO = (d: Date) => d.toISOString().slice(0, 10);
-const MS_DIA = 86_400_000;
-const sumarDias = (d: Date, dias: number) => new Date(d.getTime() + dias * MS_DIA);
 
 /** Estados de `estado_hallazgo` en los que un caso puede tener un plan con plazo vigente. */
 const VENCIDO_ESTADOS = ["Plan de Acción", "Ejecución", "Prórroga Solicitada", "Verificación"];
@@ -1493,21 +1491,14 @@ export class CaseRepository {
     });
     if (!plan) throw new Error(`El plan ${id_plan} no existe`);
 
-    const configuracion = await ConfiguracionService.get();
     const fechaVigente = planDeadline(plan);
     const fechaPedida = new Date(`${dto.nueva_fecha}T00:00:00.000Z`);
-    const fechaMaxima = sumarDias(fechaVigente, configuracion.plazos.diasSolicitarProrroga);
 
     if (Number.isNaN(fechaPedida.getTime())) {
       throw new Error("La nueva fecha de prórroga no es válida");
     }
     if (fechaPedida.getTime() <= fechaVigente.getTime()) {
       throw new Error(`La nueva fecha debe ser posterior al plazo vigente (${diaISO(fechaVigente)})`);
-    }
-    if (fechaPedida.getTime() > fechaMaxima.getTime()) {
-      throw new Error(
-        `La prórroga no puede superar ${configuracion.plazos.diasSolicitarProrroga} día(s) adicionales. Fecha máxima: ${diaISO(fechaMaxima)}`
-      );
     }
 
     const estado = await CaseRepository.findEstado("Prórroga Solicitada");

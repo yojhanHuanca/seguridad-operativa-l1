@@ -5,11 +5,9 @@ import { Button } from "@/design-system/primitives/Button";
 import { Modal } from "@/design-system/primitives/Modal";
 import { Field, Input, Textarea } from "@/design-system/primitives/Input";
 import { shortPlanCode } from "@/features/cases/lib/planLabels";
-import { useConfiguracion } from "@/features/configuracion/hooks/useConfiguracion";
 import { useRequestPlanExtension } from "@/features/plans/hooks/usePlans";
 import { planDeadline } from "@/features/plans/lib/planDeadline";
 import { apiErrorMessage } from "@/lib/api";
-import { formatDate } from "@/lib/format";
 import type { PlanItem } from "@/features/plans/types";
 import { ACTOR } from "./constants";
 
@@ -25,13 +23,10 @@ function addDays(value: string, days: number) {
 
 export function ExtensionModal({ plan, open, onClose }: { plan: PlanItem; open: boolean; onClose: () => void }) {
   const requestExt = useRequestPlanExtension();
-  const { data: configuracion } = useConfiguracion();
-  const diasProrroga = configuracion?.plazos.diasSolicitarProrroga ?? 7;
   const plazoVigente = soloFecha(planDeadline(plan));
   const fechaMinima = addDays(plazoVigente, 1);
-  const fechaMaxima = addDays(plazoVigente, diasProrroga);
-  const sugerida = fechaMaxima;
-  const draftKey = `${plan.id_plan}:${plazoVigente}:${diasProrroga}`;
+  const sugerida = fechaMinima;
+  const draftKey = `${plan.id_plan}:${plazoVigente}`;
   const [draftFecha, setDraftFecha] = useState<{ key: string; value: string }>(() => ({ key: draftKey, value: sugerida }));
   const nuevaFecha = draftFecha.key === draftKey ? draftFecha.value : sugerida;
   const [justificacion, setJustificacion] = useState("");
@@ -72,12 +67,11 @@ export function ExtensionModal({ plan, open, onClose }: { plan: PlanItem; open: 
       <Field
         label="Nueva fecha propuesta"
         required
-        hint={`Máximo permitido: ${formatDate(fechaMaxima)} (${diasProrroga} día(s) adicionales al plazo vigente).`}
+        hint="Proponga la fecha que necesita y explique el motivo de la ampliación."
       >
         <Input
           type="date"
           min={fechaMinima}
-          max={fechaMaxima}
           value={nuevaFecha}
           onChange={(e) => setDraftFecha({ key: draftKey, value: e.target.value })}
         />
