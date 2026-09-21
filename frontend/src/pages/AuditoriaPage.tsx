@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight, History, LogIn, PlusCircle, Search, ShieldAlert, Trash2, UserCog, UserRound } from "lucide-react";
 import { AdminShell } from "@/components/layout/AdminShell";
+import { LoadingState } from "@/components/feedback/LoadingState";
 import { Button } from "@/design-system/primitives/Button";
 import { Input } from "@/design-system/primitives/Input";
 import { Card } from "@/components/ui/card";
@@ -314,7 +315,7 @@ export function AuditoriaPanelContent() {
       </div>
 
       {isLoading ? (
-        <Card className="mt-4 p-8 text-center text-[13px] text-ink-quiet">Cargando...</Card>
+        <Card className="mt-4"><LoadingState label="Cargando auditoría" compact /></Card>
       ) : registros.length === 0 ? (
         <Card className="mt-4 flex flex-col items-center gap-2 border-dashed p-9 text-center">
           <History className="h-7 w-7 text-ink-faint" />

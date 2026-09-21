@@ -4,6 +4,7 @@ import { Database, Pencil, RefreshCw, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { ContingenciaShell } from "@/components/layout/ContingenciaShell";
 import { MonitoristaShell } from "@/components/layout/MonitoristaShell";
+import { LoadingState } from "@/components/feedback/LoadingState";
 import { Card, CardHeader } from "@/design-system/primitives/Card";
 import { Button } from "@/design-system/primitives/Button";
 import { Field, Input } from "@/design-system/primitives/Input";
@@ -358,7 +359,7 @@ export function DatosOperativos() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-line-soft">
-                {isLoading && <tr><td colSpan={7} className="px-5 py-10 text-center text-ink-quiet">Cargando datos...</td></tr>}
+                {isLoading && <tr><td colSpan={7}><LoadingState label="Cargando datos operativos" compact /></td></tr>}
                 {!isLoading && data?.items.length === 0 && <tr><td colSpan={7} className="px-5 py-10 text-center text-ink-quiet">No hay datos operativos para mostrar.</td></tr>}
                 {!isLoading && data?.items.map((dato) => (
                   <tr key={dato.id_dato_operativo} className="text-ink-soft hover:bg-surface/60">

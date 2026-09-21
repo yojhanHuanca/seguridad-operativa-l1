@@ -2,6 +2,7 @@ import { useState } from "react";
 import { TrainFront, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { AdminShell } from "@/components/layout/AdminShell";
+import { LoadingState } from "@/components/feedback/LoadingState";
 import { cn } from "@/lib/utils";
 import { apiErrorMessage } from "@/lib/api";
 import { UnitEditModal } from "@/features/catalogs/components/UnitEditModal";
@@ -136,7 +137,7 @@ export function AdminMaterialRodantePage() {
       </div>
 
       {loadingGroups || loadingNumero ? (
-        <p className="p-8 text-center text-[13px] text-ink-quiet">Cargando...</p>
+        <LoadingState label="Cargando material rodante" compact />
       ) : (
         <UnitGridCard
           title={tab === "series" ? "Trenes (Series)" : "Vehículos Auxiliares"}

@@ -1,5 +1,6 @@
 import { lazy, Suspense, type ComponentType } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { LoadingState } from "@/components/feedback/LoadingState";
 import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
 
 function lazyNamed(loader: () => Promise<Record<string, unknown>>, exportName: string) {
@@ -53,11 +54,7 @@ const AdminImportacionPage = lazyNamed(() => import("@/pages/admin/ImportacionPa
 const NotFoundPage = lazyNamed(() => import("@/pages/NotFound"), "NotFoundPage");
 
 function PageFallback() {
-  return (
-    <div className="grid min-h-screen place-items-center bg-surface px-6 text-[13px] font-medium text-ink-quiet">
-      Cargando...
-    </div>
-  );
+  return <LoadingState label="Preparando tu espacio de trabajo" className="min-h-screen bg-surface px-6" />;
 }
 
 export function AppRouter() {
