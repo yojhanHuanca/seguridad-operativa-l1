@@ -73,6 +73,7 @@ const configuracion = {
   sistema: { nombre: 'SMS L1', version: '1.0.0' },
   numeracion: { prefijoExpedientes: 'SOP', secuenciaExpedientes: 56, prefijoPlanes: 'PLA', secuenciaPlanes: 28 },
   plazos: { diasMaxInvestigacion: 15, diasResponderPlanes: 7, diasSolicitarProrroga: 3 },
+  operacion: { kmPorCarrera: 33.128331 },
   meta: { ultimaActualizacion: now },
 };
 

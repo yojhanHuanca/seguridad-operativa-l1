@@ -2,7 +2,6 @@ import { type ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Building2,
-  ChevronDown,
   ChevronsLeft,
   ChevronsRight,
   Cog,
@@ -20,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { SessionExitButton } from "@/features/auth/SessionExitButton";
 import { AdminPanelSwitcher } from "@/features/auth/AdminPanelSwitcher";
 import { nombreSistema, useConfiguracion } from "@/features/configuracion/hooks/useConfiguracion";
+import { useAuth } from "@/features/auth/auth";
 
 interface NavItem {
   to: string;
@@ -38,6 +38,15 @@ const ITEMS: NavItem[] = [
   { to: "/admin/importacion", label: "Importación Histórica", icon: FileSpreadsheet },
 ];
 
+const NAV_GROUPS = [
+  { label: "Administración", items: ITEMS.slice(0, 3) },
+  { label: "Operación", items: ITEMS.slice(3) },
+  { label: "Sistema", items: [
+    { to: "/admin/configuracion", label: "Configuración", icon: Cog },
+    { to: "/admin/auditoria", label: "Auditoría", icon: History },
+  ] },
+];
+
 const TITLES: Record<string, string> = {
   "/admin/usuarios": "Gestión de usuarios",
   "/admin/roles": "Roles y accesos",
@@ -47,10 +56,12 @@ const TITLES: Record<string, string> = {
   "/admin/importacion": "Importación histórica",
   "/admin/auditoria": "Auditoría",
   "/admin/configuracion": "Configuración",
+  "/admin/perfil": "Mi perfil",
 };
 
 function SidebarContent({ collapsed, onNavigate, systemName }: { collapsed: boolean; onNavigate?: () => void; systemName: string }) {
   const location = useLocation();
+  const { user } = useAuth();
 
   return (
     <>
@@ -73,54 +84,33 @@ function SidebarContent({ collapsed, onNavigate, systemName }: { collapsed: bool
         </Link>
       </div>
 
-      <nav className="scrollbar-none flex-1 overflow-y-auto px-3 py-4">
-        {!collapsed && <p className="mb-3 px-2 text-[10px] font-semibold uppercase text-ink-faint">Gestión de usuarios</p>}
-        <div className="rounded-lg bg-surface px-2 py-2">
-          <div className={cn("mb-1 flex h-8 items-center gap-3 px-1 text-[13px] font-semibold text-ink", collapsed && "justify-center")}>
-            <Cog className="h-4.5 w-4.5 text-brand-700" />
-            {!collapsed && <><span className="flex-1">Gestión</span><ChevronDown className="h-3.5 w-3.5 text-ink-faint" /></>}
+      <nav aria-label="Navegación de administración" className="scrollbar-none flex-1 space-y-5 overflow-y-auto px-3 py-5">
+        {NAV_GROUPS.map((group) => (
+          <div key={group.label}>
+            {!collapsed && <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-ink-soft">{group.label}</p>}
+            <div className="space-y-1">
+              {group.items.map((item) => {
+                const active = location.pathname === item.to;
+                return <Link key={item.to} to={item.to} onClick={onNavigate} title={collapsed ? item.label : undefined} aria-label={collapsed ? item.label : undefined} aria-current={active ? "page" : undefined}
+                  className={cn("flex min-h-10 items-center gap-3 rounded-lg px-3 text-[12.5px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-brand-700", collapsed && "justify-center px-0", active ? "bg-brand-50 font-semibold text-brand-900 ring-1 ring-inset ring-brand-200" : "text-ink-soft hover:bg-surface hover:text-ink")}>
+                  <item.icon className={cn("h-4 w-4 shrink-0", active ? "text-brand-700" : "text-ink-quiet")} />
+                  {!collapsed && <span className="min-w-0 flex-1 truncate">{item.label}</span>}
+                  {active && !collapsed && <span className="h-1.5 w-1.5 rounded-full bg-brand-700" />}
+                </Link>;
+              })}
+            </div>
           </div>
-          <div className={cn("space-y-0.5", !collapsed && "ml-3 border-l border-line pl-2")}>
-          {ITEMS.map((item) => {
-            const active = location.pathname === item.to;
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                onClick={onNavigate}
-                title={collapsed ? item.label : undefined}
-                className={cn(
-                  "flex min-h-10 items-center gap-3 rounded-lg px-2.5 text-[12.5px] font-medium transition-colors",
-                  collapsed && "justify-center px-0",
-                  active ? "bg-brand-50 font-semibold text-brand-800 ring-1 ring-inset ring-brand-600" : "text-ink-soft hover:bg-white hover:text-ink"
-                )}
-              >
-                <item.icon className={cn("h-4 w-4 shrink-0", active ? "text-brand-700" : "text-ink-faint")} />
-                {!collapsed && <span className="min-w-0 flex-1 truncate">{item.label}</span>}
-              </Link>
-            );
-          })}
-          </div>
-        </div>
-
-        <Link to="/admin/configuracion" onClick={onNavigate} className="flex h-10 items-center gap-3 rounded-lg px-2.5 text-[12.5px] font-medium text-ink-soft hover:bg-surface hover:text-ink">
-          <Cog className="h-4 w-4 text-ink-faint" />
-                {!collapsed && <span className="flex-1">Configuración</span>}
-        </Link>
-        <div className="my-3 border-t border-line-soft" />
-        <Link to="/admin/auditoria" onClick={onNavigate} className="flex h-10 items-center gap-3 rounded-lg px-2.5 text-[12.5px] font-medium text-ink-soft hover:bg-surface hover:text-ink">
-          <History className="h-4 w-4 text-ink-faint" />{!collapsed && <span>Auditoría</span>}
-        </Link>
+        ))}
       </nav>
 
       {!collapsed && (
         <div className="shrink-0 border-t border-line-soft p-3">
           <SessionExitButton withLabel className="mb-3 w-full justify-start" />
           <Link to="/admin/perfil" onClick={onNavigate} className="flex items-center gap-3 rounded-2xl bg-surface px-3 py-3 transition-colors hover:bg-surface-2">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-700 text-[13px] font-bold text-white">A</div>
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-700 text-[13px] font-bold text-white">{user?.nombre?.charAt(0).toUpperCase() || "A"}</div>
             <div className="min-w-0 leading-tight">
-              <p className="truncate text-[13px] font-semibold text-ink">Administrador</p>
-              <p className="mt-0.5 truncate text-[11.5px] text-ink-quiet">Acceso Total</p>
+              <p className="truncate text-[13px] font-semibold text-ink">{user?.nombre || "Administrador"}</p>
+              <p className="mt-0.5 truncate text-[11.5px] text-ink-quiet">Administrador</p>
             </div>
           </Link>
         </div>
@@ -147,7 +137,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       <aside
         className={cn(
           "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-line bg-white transition-[width] duration-200 md:flex",
-          collapsed ? "w-[64px]" : "w-[296px]"
+          collapsed ? "w-[64px]" : "w-[256px]"
         )}
       >
         <SidebarContent collapsed={collapsed} systemName={systemName} />
