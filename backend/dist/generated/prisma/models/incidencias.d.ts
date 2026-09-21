@@ -2,7 +2,14 @@ import type * as runtime from "@prisma/client/runtime/library";
 import type * as Prisma from "../internal/prismaNamespace.js";
 /**
  * Model incidencias
- *
+ * Sin uso real: solo se le hace `.count()` desde `AreaRepository`/
+ * `EstacionRepository` (para bloquear borrar un área/estación "en uso"),
+ * pero nada en la aplicación crea filas acá, así que ese conteo siempre
+ * da 0. Es el diseño genérico original de "incidente" — reemplazado por
+ * `casos_sop` y su propio árbol (`anexos_caso`, `investigacion_caso`,
+ * `planes_accion` con sus campos `prorroga_*`). `evidencias`,
+ * `investigaciones` y `solicitudes_prorroga` son sus satélites, igual de
+ * sin uso.
  */
 export type incidenciasModel = runtime.Types.Result.DefaultSelection<Prisma.$incidenciasPayload>;
 export type AggregateIncidencias = {

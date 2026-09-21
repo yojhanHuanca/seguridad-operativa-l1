@@ -2,7 +2,12 @@ import type * as runtime from "@prisma/client/runtime/library";
 import type * as Prisma from "../internal/prismaNamespace.js";
 /**
  * Model dashboards
- *
+ * Sin uso: junto con `dashboard_indicadores`, era un dashboard armable por
+ * el usuario (elegir qué indicadores mostrar y en qué orden). El producto
+ * terminó siendo pantallas fijas por rol (`IndicadoresPage`, `KpisPage`,
+ * `Dashboard` de Monitoreo), que sí usan `indicadores`/`historial_indicadores`
+ * directamente — esas dos SÍ están en uso, solo el "armador" de dashboards
+ * quedó sin construir.
  */
 export type dashboardsModel = runtime.Types.Result.DefaultSelection<Prisma.$dashboardsPayload>;
 export type AggregateDashboards = {

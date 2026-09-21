@@ -2,7 +2,12 @@ import type * as runtime from "@prisma/client/runtime/library";
 import type * as Prisma from "../internal/prismaNamespace.js";
 /**
  * Model bitacora
- *
+ * Sin uso: ninguna ruta lee ni escribe esta tabla. Es un diseño de auditoría
+ * genérica anterior al módulo actual, reemplazado por `auditoria`
+ * (misma idea — usuario/tabla/acción/fecha —, pero es la que sí usa
+ * `AuditoriaService` en cada acción real del sistema). Se documenta en vez
+ * de borrarse porque la tabla vive también en producción (Railway) y
+ * eliminarla ahí requiere un paso manual aparte.
  */
 export type bitacoraModel = runtime.Types.Result.DefaultSelection<Prisma.$bitacoraPayload>;
 export type AggregateBitacora = {

@@ -12,8 +12,18 @@ export class PushRepository {
             create: { usuario: id_usuario, endpoint: sub.endpoint, p256dh: sub.keys.p256dh, auth: sub.keys.auth },
         });
     }
-    static async eliminar(endpoint) {
-        await prisma.push_subscriptions.deleteMany({ where: { endpoint } });
+    /**
+     * `id_usuario` es opcional a propósito: cuando lo llama el usuario desde
+     * `/push/unsubscribe` va con su propio id, para que no pueda borrar la
+     * suscripción de otro con solo adivinar/copiar un endpoint ajeno. Cuando lo
+     * llama `PushService.enviarAUsuarios` para autolimpiar un endpoint que el
+     * navegador ya rechazó (404/410), no hace falta —ese endpoint salió de
+     * `listarPorUsuarios`, no de un body de cliente.
+     */
+    static async eliminar(endpoint, id_usuario) {
+        await prisma.push_subscriptions.deleteMany({
+            where: { endpoint, ...(id_usuario != null ? { usuario: id_usuario } : {}) },
+        });
     }
     static async listarPorUsuarios(ids) {
         if (ids.length === 0)

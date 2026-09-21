@@ -2,7 +2,10 @@ import type * as runtime from "@prisma/client/runtime/library";
 import type * as Prisma from "../internal/prismaNamespace.js";
 /**
  * Model logs_sistema
- *
+ * Sin uso: log de aplicación genérico. Los errores del servidor se
+ * registran con `console.error` (ver `safeErrorMessage` en
+ * `utils/ApiResponse.ts`) y las acciones de negocio quedan en `auditoria`,
+ * no acá.
  */
 export type logs_sistemaModel = runtime.Types.Result.DefaultSelection<Prisma.$logs_sistemaPayload>;
 export type AggregateLogs_sistema = {

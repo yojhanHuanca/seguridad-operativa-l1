@@ -21,14 +21,14 @@ export declare class CaseService {
                 eventos_operativos: {
                     catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: {
                         nombre: string;
-                    } | null;
+                    };
                     catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: {
                         nombre: string;
                         id_detalle: number;
                     };
                     catalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalle: {
                         nombre: string;
-                    } | null;
+                    };
                 } & {
                     estado: number | null;
                     created_at: Date | null;
@@ -71,183 +71,11 @@ export declare class CaseService {
                     usuarios: {
                         id_usuario: number;
                         nombre: string;
-                        cargo: string | null;
-                    } | null;
-                    catalogo_detalle: {
-                        nombre: string;
-                    } | null;
-                } & {
-                    estado: number | null;
-                    fecha_inicio: Date | null;
-                    fecha_fin: Date | null;
-                    created_at: Date | null;
-                    descripcion: string;
-                    id_plan: number;
-                    responsable: number | null;
-                    id_actividad: number;
-                    porcentaje: import("@prisma/client/runtime/library").Decimal | null;
-                })[];
-                areas: {
-                    id_area: number;
-                    nombre_area: string;
-                };
-                usuarios: {
-                    id_usuario: number;
-                    nombre: string;
-                    cargo: string | null;
-                };
-                catalogo_detalle: {
-                    nombre: string;
-                };
-            } & {
-                estado: number;
-                id_area: number;
-                created_at: Date | null;
-                descripcion: string;
-                id_caso: number;
-                dias_abierto: number | null;
-                fecha_plan: Date;
-                fecha_reprogramada: Date | null;
-                observaciones: string | null;
-                updated_at: Date | null;
-                id_plan: number;
-                codigo_plan: string;
-                responsable: number;
-                prorroga_motivo: string | null;
-                prorroga_fecha: Date | null;
-                prorroga_estado: string | null;
-                prorroga_fecha_sol: Date | null;
-            })[];
-            areas: {
-                id_area: number;
-                nombre_area: string;
-            } | null;
-            catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
-                nombre: string;
-                color: string | null;
-            };
-            catalogo_detalle_casos_sop_procedenciaTocatalogo_detalle: {
-                nombre: string;
-            };
-            usuarios_casos_sop_responsable_hallazgoTousuarios: {
-                id_usuario: number;
-                nombre: string;
-                cargo: string | null;
-            } | null;
-            catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: {
-                nombre: string;
-                id_detalle: number;
-                codigo: string | null;
-                orden: number | null;
-            } | null;
-            catalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalle: {
-                nombre: string;
-            } | null;
-            catalogo_detalle_casos_sop_tipoTocatalogo_detalle: {
-                nombre: string;
-            };
-            catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle: {
-                nombre: string;
-            };
-        } & {
-            created_at: Date | null;
-            descripcion: string;
-            id_caso: number;
-            codigo_sop: string;
-            titulo: string | null;
-            nombre_reportante: string | null;
-            correo_reportante: string | null;
-            telefono_reportante: string | null;
-            fecha_hallazgo: Date;
-            fecha_evento: Date | null;
-            estado_hallazgo: number;
-            dias_abierto: number | null;
-            procedencia: number;
-            tipo: number;
-            responsable_hallazgo: number | null;
-            tipo_sop: number;
-            subtipo_sop: number | null;
-            peligro: string | null;
-            consecuencia: string | null;
-            descripcion_evento: string | null;
-            clasificacion: string | null;
-            analisis_riesgo: number | null;
-            acr: string | null;
-            area_responsable: number | null;
-            responsable_plan: number | null;
-            estado_plan: number | null;
-            fecha_plan: Date | null;
-            fecha_reprogramada: Date | null;
-            dias_abierto_plan: number | null;
-            observaciones: string | null;
-            created_by: number | null;
-            updated_at: Date | null;
-        })[];
-        total: undefined;
-    } | {
-        data: ({
-            anexos_caso: {
-                id_anexo: number;
-            }[];
-            evento_caso: ({
-                eventos_operativos: {
-                    catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: {
-                        nombre: string;
-                    } | null;
-                    catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: {
-                        nombre: string;
-                        id_detalle: number;
+                        cargo: string;
                     };
-                    catalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalle: {
-                        nombre: string;
-                    } | null;
-                } & {
-                    estado: number | null;
-                    created_at: Date | null;
-                    descripcion: string | null;
-                    fecha: Date;
-                    updated_at: Date | null;
-                    id_evento: number;
-                    codigo_evento: string | null;
-                    hora: Date | null;
-                    anio: number | null;
-                    mes: number | null;
-                    semana: number | null;
-                    dia: string | null;
-                    rango_horario: number | null;
-                    tipo_incidente: number;
-                    ubicacion: number | null;
-                    tipo_via: number | null;
-                    direccion_via: number | null;
-                    lugar_incidente: number | null;
-                    modelo_mr: number | null;
-                    numero_mr: number | null;
-                    numero_carrera: string | null;
-                    personal_involucrado: number | null;
-                    tipo_causa: number | null;
-                    posible_causa: number | null;
-                    informacion_adicional: string | null;
-                    camara_monitoreada: string | null;
-                    demora: import("@prisma/client/runtime/library").Decimal | null;
-                    usuario_registra: number | null;
-                };
-            } & {
-                usuario: number | null;
-                id_caso: number;
-                id_evento: number;
-                id: number;
-                fecha_conversion: Date | null;
-            })[];
-            planes_accion: ({
-                actividades_plan: ({
-                    usuarios: {
-                        id_usuario: number;
-                        nombre: string;
-                        cargo: string | null;
-                    } | null;
                     catalogo_detalle: {
                         nombre: string;
-                    } | null;
+                    };
                 } & {
                     estado: number | null;
                     fecha_inicio: Date | null;
@@ -266,7 +94,7 @@ export declare class CaseService {
                 usuarios: {
                     id_usuario: number;
                     nombre: string;
-                    cargo: string | null;
+                    cargo: string;
                 };
                 catalogo_detalle: {
                     nombre: string;
@@ -293,10 +121,10 @@ export declare class CaseService {
             areas: {
                 id_area: number;
                 nombre_area: string;
-            } | null;
+            };
             catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
                 nombre: string;
-                color: string | null;
+                color: string;
             };
             catalogo_detalle_casos_sop_procedenciaTocatalogo_detalle: {
                 nombre: string;
@@ -304,17 +132,17 @@ export declare class CaseService {
             usuarios_casos_sop_responsable_hallazgoTousuarios: {
                 id_usuario: number;
                 nombre: string;
-                cargo: string | null;
-            } | null;
+                cargo: string;
+            };
             catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: {
                 nombre: string;
                 id_detalle: number;
-                codigo: string | null;
-                orden: number | null;
-            } | null;
+                codigo: string;
+                orden: number;
+            };
             catalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalle: {
                 nombre: string;
-            } | null;
+            };
             catalogo_detalle_casos_sop_tipoTocatalogo_detalle: {
                 nombre: string;
             };
@@ -363,113 +191,119 @@ export declare class CaseService {
     static listPlans(query: {
         area?: string;
         codigo?: string;
-    }, actor?: Actor): Promise<({
-        actividades_plan: ({
-            seguimientos: ({
+        vencidos?: string;
+        page?: string;
+        limit?: string;
+    }, actor?: Actor): Promise<{
+        data: ({
+            actividades_plan: ({
+                seguimientos: ({
+                    usuarios: {
+                        id_usuario: number;
+                        nombre: string;
+                        cargo: string;
+                    };
+                } & {
+                    usuario: number | null;
+                    fecha: Date | null;
+                    comentario: string | null;
+                    id_actividad: number;
+                    porcentaje: import("@prisma/client/runtime/library").Decimal | null;
+                    id_seguimiento: number;
+                })[];
                 usuarios: {
                     id_usuario: number;
                     nombre: string;
-                    cargo: string | null;
-                } | null;
+                    cargo: string;
+                };
+                catalogo_detalle: {
+                    nombre: string;
+                };
             } & {
-                usuario: number | null;
-                fecha: Date | null;
-                comentario: string | null;
+                estado: number | null;
+                fecha_inicio: Date | null;
+                fecha_fin: Date | null;
+                created_at: Date | null;
+                descripcion: string;
+                id_plan: number;
+                responsable: number | null;
                 id_actividad: number;
                 porcentaje: import("@prisma/client/runtime/library").Decimal | null;
-                id_seguimiento: number;
             })[];
+            areas: {
+                id_area: number;
+                nombre_area: string;
+            };
             usuarios: {
                 id_usuario: number;
                 nombre: string;
-                cargo: string | null;
-            } | null;
+                cargo: string;
+            };
+            casos_sop: {
+                anexos_caso: {
+                    id_anexo: number;
+                    nombre_archivo: string;
+                    ruta_archivo: string;
+                    tipo_archivo: string;
+                    peso: import("@prisma/client/runtime/library").Decimal;
+                    fecha_subida: Date;
+                }[];
+                investigacion_caso: {
+                    observaciones: string;
+                    hallazgos: string;
+                    causa_raiz: string;
+                    conclusiones: string;
+                };
+                timeline_caso: {
+                    fecha: Date;
+                    titulo: string;
+                    id_evento: number;
+                    detalle: string;
+                    kind: string;
+                    actor: string;
+                    actor_rol: string;
+                }[];
+                descripcion: string;
+                id_caso: number;
+                codigo_sop: string;
+                titulo: string;
+                fecha_hallazgo: Date;
+                fecha_evento: Date;
+                catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
+                    nombre: string;
+                };
+                catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: {
+                    nombre: string;
+                    codigo: string;
+                };
+                catalogo_detalle_casos_sop_tipoTocatalogo_detalle: {
+                    nombre: string;
+                };
+            };
             catalogo_detalle: {
                 nombre: string;
-            } | null;
+            };
         } & {
-            estado: number | null;
-            fecha_inicio: Date | null;
-            fecha_fin: Date | null;
+            estado: number;
+            id_area: number;
             created_at: Date | null;
             descripcion: string;
-            id_plan: number;
-            responsable: number | null;
-            id_actividad: number;
-            porcentaje: import("@prisma/client/runtime/library").Decimal | null;
-        })[];
-        areas: {
-            id_area: number;
-            nombre_area: string;
-        };
-        usuarios: {
-            id_usuario: number;
-            nombre: string;
-            cargo: string | null;
-        };
-        casos_sop: {
-            anexos_caso: {
-                id_anexo: number;
-                nombre_archivo: string | null;
-                ruta_archivo: string | null;
-                tipo_archivo: string | null;
-                peso: import("@prisma/client/runtime/library").Decimal | null;
-                fecha_subida: Date | null;
-            }[];
-            investigacion_caso: {
-                observaciones: string | null;
-                hallazgos: string;
-                causa_raiz: string;
-                conclusiones: string;
-            } | null;
-            timeline_caso: {
-                fecha: Date | null;
-                titulo: string;
-                id_evento: number;
-                detalle: string | null;
-                kind: string;
-                actor: string;
-                actor_rol: string;
-            }[];
-            descripcion: string;
             id_caso: number;
-            codigo_sop: string;
-            titulo: string | null;
-            fecha_hallazgo: Date;
-            fecha_evento: Date | null;
-            catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
-                nombre: string;
-            };
-            catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: {
-                nombre: string;
-                codigo: string | null;
-            } | null;
-            catalogo_detalle_casos_sop_tipoTocatalogo_detalle: {
-                nombre: string;
-            };
-        };
-        catalogo_detalle: {
-            nombre: string;
-        };
-    } & {
-        estado: number;
-        id_area: number;
-        created_at: Date | null;
-        descripcion: string;
-        id_caso: number;
-        dias_abierto: number | null;
-        fecha_plan: Date;
-        fecha_reprogramada: Date | null;
-        observaciones: string | null;
-        updated_at: Date | null;
-        id_plan: number;
-        codigo_plan: string;
-        responsable: number;
-        prorroga_motivo: string | null;
-        prorroga_fecha: Date | null;
-        prorroga_estado: string | null;
-        prorroga_fecha_sol: Date | null;
-    })[]>;
+            dias_abierto: number | null;
+            fecha_plan: Date;
+            fecha_reprogramada: Date | null;
+            observaciones: string | null;
+            updated_at: Date | null;
+            id_plan: number;
+            codigo_plan: string;
+            responsable: number;
+            prorroga_motivo: string | null;
+            prorroga_fecha: Date | null;
+            prorroga_estado: string | null;
+            prorroga_fecha_sol: Date | null;
+        })[];
+        total: number | undefined;
+    }>;
     /**
      * Expediente completo. Un Jefe de Área solo abre los casos que le competen:
      * los de su área o aquellos donde tiene un plan asignado — el mismo criterio
@@ -494,38 +328,38 @@ export declare class CaseService {
             eventos_operativos: {
                 catalogo_detalle_eventos_operativos_direccion_viaTocatalogo_detalle: {
                     nombre: string;
-                } | null;
+                };
                 catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: {
                     nombre: string;
-                } | null;
+                };
                 catalogo_detalle_eventos_operativos_modelo_mrTocatalogo_detalle: {
                     nombre: string;
-                } | null;
+                };
                 catalogo_detalle_eventos_operativos_numero_mrTocatalogo_detalle: {
                     nombre: string;
-                } | null;
+                };
                 catalogo_detalle_eventos_operativos_personal_involucradoTocatalogo_detalle: {
                     nombre: string;
-                } | null;
+                };
                 catalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalle: {
                     nombre: string;
-                } | null;
+                };
                 catalogo_detalle_eventos_operativos_rango_horarioTocatalogo_detalle: {
                     nombre: string;
-                } | null;
+                };
                 catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: {
                     nombre: string;
                     id_detalle: number;
                 };
                 catalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalle: {
                     nombre: string;
-                } | null;
+                };
                 catalogo_detalle_eventos_operativos_tipo_viaTocatalogo_detalle: {
                     nombre: string;
-                } | null;
+                };
                 catalogo_detalle_eventos_operativos_ubicacionTocatalogo_detalle: {
                     nombre: string;
-                } | null;
+                };
             } & {
                 estado: number | null;
                 created_at: Date | null;
@@ -563,12 +397,12 @@ export declare class CaseService {
             id: number;
             fecha_conversion: Date | null;
         })[];
-        investigacion_caso: ({
+        investigacion_caso: {
             usuarios: {
                 id_usuario: number;
                 nombre: string;
-                cargo: string | null;
-            } | null;
+                cargo: string;
+            };
         } & {
             created_at: Date | null;
             id_caso: number;
@@ -579,15 +413,15 @@ export declare class CaseService {
             causa_raiz: string;
             conclusiones: string;
             investigador: number | null;
-        }) | null;
+        };
         planes_accion: ({
             actividades_plan: ({
                 seguimientos: ({
                     usuarios: {
                         id_usuario: number;
                         nombre: string;
-                        cargo: string | null;
-                    } | null;
+                        cargo: string;
+                    };
                 } & {
                     usuario: number | null;
                     fecha: Date | null;
@@ -599,11 +433,11 @@ export declare class CaseService {
                 usuarios: {
                     id_usuario: number;
                     nombre: string;
-                    cargo: string | null;
-                } | null;
+                    cargo: string;
+                };
                 catalogo_detalle: {
                     nombre: string;
-                } | null;
+                };
             } & {
                 estado: number | null;
                 fecha_inicio: Date | null;
@@ -622,7 +456,7 @@ export declare class CaseService {
             usuarios: {
                 id_usuario: number;
                 nombre: string;
-                cargo: string | null;
+                cargo: string;
             };
             catalogo_detalle: {
                 nombre: string;
@@ -649,7 +483,7 @@ export declare class CaseService {
         areas: {
             id_area: number;
             nombre_area: string;
-        } | null;
+        };
         timeline_caso: {
             fecha: Date | null;
             id_caso: number;
@@ -672,33 +506,33 @@ export declare class CaseService {
         }[];
         catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
             nombre: string;
-            color: string | null;
+            color: string;
         };
         catalogo_detalle_casos_sop_estado_planTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_casos_sop_procedenciaTocatalogo_detalle: {
             nombre: string;
         };
         usuarios_casos_sop_responsable_hallazgoTousuarios: {
             id_usuario: number;
             nombre: string;
-            cargo: string | null;
-        } | null;
+            cargo: string;
+        };
         usuarios_casos_sop_responsable_planTousuarios: {
             id_usuario: number;
             nombre: string;
-            cargo: string | null;
-        } | null;
+            cargo: string;
+        };
         catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: {
             nombre: string;
             id_detalle: number;
-            codigo: string | null;
-            orden: number | null;
-        } | null;
+            codigo: string;
+            orden: number;
+        };
         catalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_casos_sop_tipoTocatalogo_detalle: {
             nombre: string;
         };
@@ -739,7 +573,7 @@ export declare class CaseService {
         created_by: number | null;
         updated_at: Date | null;
     }>;
-    static approve(codigo: string): Promise<{
+    static approve(codigo: string, actor?: Actor): Promise<{
         created_at: Date | null;
         descripcion: string;
         id_caso: number;
@@ -773,7 +607,7 @@ export declare class CaseService {
         created_by: number | null;
         updated_at: Date | null;
     }>;
-    static addObservation(codigo: string, rawBody: unknown): Promise<{
+    static addObservation(codigo: string, rawBody: unknown, actor?: Actor): Promise<{
         created_at: Date | null;
         descripcion: string;
         id_caso: number;
@@ -807,7 +641,7 @@ export declare class CaseService {
         created_by: number | null;
         updated_at: Date | null;
     }>;
-    static evaluate(codigo: string, rawBody: unknown): Promise<{
+    static evaluate(codigo: string, rawBody: unknown, actor?: Actor): Promise<{
         created_at: Date | null;
         descripcion: string;
         id_caso: number;
@@ -877,7 +711,7 @@ export declare class CaseService {
         demora: import("@prisma/client/runtime/library").Decimal | null;
         usuario_registra: number | null;
     }>;
-    static reject(codigo: string, rawBody: unknown): Promise<{
+    static reject(codigo: string, rawBody: unknown, actor?: Actor): Promise<{
         created_at: Date | null;
         descripcion: string;
         id_caso: number;
@@ -911,7 +745,7 @@ export declare class CaseService {
         created_by: number | null;
         updated_at: Date | null;
     }>;
-    static requestInfo(codigo: string, rawBody: unknown): Promise<{
+    static requestInfo(codigo: string, rawBody: unknown, actor?: Actor): Promise<{
         id_caso: number;
         mensaje: string;
         id_solicitud: number;
@@ -921,7 +755,8 @@ export declare class CaseService {
         fecha_solicitud: Date | null;
         fecha_respuesta: Date | null;
     }>;
-    static respondInfo(codigo: string, idSolicitud: string, rawBody: unknown): Promise<{
+    /** SO registra a mano una respuesta que recibió por otro medio; firma con su propio usuario, no como "Reportante". */
+    static respondInfo(codigo: string, idSolicitud: string, rawBody: unknown, actor?: Actor): Promise<{
         id_caso: number;
         mensaje: string;
         id_solicitud: number;
@@ -931,7 +766,7 @@ export declare class CaseService {
         fecha_solicitud: Date | null;
         fecha_respuesta: Date | null;
     }>;
-    static saveInvestigation(codigo: string, rawBody: unknown): Promise<{
+    static saveInvestigation(codigo: string, rawBody: unknown, actor?: Actor): Promise<{
         created_at: Date | null;
         id_caso: number;
         observaciones: string | null;
@@ -942,7 +777,7 @@ export declare class CaseService {
         conclusiones: string;
         investigador: number | null;
     }>;
-    static createPlan(codigo: string, rawBody: unknown): Promise<{
+    static createPlan(codigo: string, rawBody: unknown, actor?: Actor): Promise<{
         estado: number;
         id_area: number;
         created_at: Date | null;
@@ -961,26 +796,8 @@ export declare class CaseService {
         prorroga_estado: string | null;
         prorroga_fecha_sol: Date | null;
     }>;
-    static createPlans(codigo: string, rawBody: unknown): Promise<{
-        estado: number;
-        id_area: number;
-        created_at: Date | null;
-        descripcion: string;
-        id_caso: number;
-        dias_abierto: number | null;
-        fecha_plan: Date;
-        fecha_reprogramada: Date | null;
-        observaciones: string | null;
-        updated_at: Date | null;
-        id_plan: number;
-        codigo_plan: string;
-        responsable: number;
-        prorroga_motivo: string | null;
-        prorroga_fecha: Date | null;
-        prorroga_estado: string | null;
-        prorroga_fecha_sol: Date | null;
-    }[]>;
-    static updatePlan(idPlan: string, rawBody: unknown): Promise<{
+    static createPlans(codigo: string, rawBody: unknown, actor?: Actor): Promise<any[]>;
+    static updatePlan(idPlan: string, rawBody: unknown, actor?: Actor): Promise<{
         estado: number;
         id_area: number;
         created_at: Date | null;
@@ -999,7 +816,7 @@ export declare class CaseService {
         prorroga_estado: string | null;
         prorroga_fecha_sol: Date | null;
     }>;
-    static closeCase(codigo: string, rawBody: unknown): Promise<{
+    static closeCase(codigo: string, rawBody: unknown, actor?: Actor): Promise<{
         created_at: Date | null;
         descripcion: string;
         id_caso: number;
@@ -1034,7 +851,7 @@ export declare class CaseService {
         updated_at: Date | null;
     }>;
     /** SO arranca la Ejecución con los planes ya aceptados, sin esperar al resto. */
-    static startExecution(codigo: string): Promise<{
+    static startExecution(codigo: string, actor?: Actor): Promise<{
         created_at: Date | null;
         descripcion: string;
         id_caso: number;
@@ -1105,8 +922,8 @@ export declare class CaseService {
         prorroga_fecha: Date | null;
         prorroga_estado: string | null;
         prorroga_fecha_sol: Date | null;
-    } | null>;
-    static reviewFinalPlanById(idPlan: string, rawBody: unknown): Promise<{
+    }>;
+    static reviewFinalPlanById(idPlan: string, rawBody: unknown, actor?: Actor): Promise<{
         estado: number;
         id_area: number;
         created_at: Date | null;
@@ -1144,7 +961,7 @@ export declare class CaseService {
         prorroga_estado: string | null;
         prorroga_fecha_sol: Date | null;
     }>;
-    static reviewExtensionByPlan(idPlan: string, rawBody: unknown): Promise<{
+    static reviewExtensionByPlan(idPlan: string, rawBody: unknown, actor?: Actor): Promise<{
         estado: number;
         id_area: number;
         created_at: Date | null;
@@ -1163,7 +980,7 @@ export declare class CaseService {
         prorroga_estado: string | null;
         prorroga_fecha_sol: Date | null;
     }>;
-    static sendToVerification(codigo: string): Promise<{
+    static sendToVerification(codigo: string, actor?: Actor): Promise<{
         created_at: Date | null;
         descripcion: string;
         id_caso: number;
@@ -1197,7 +1014,7 @@ export declare class CaseService {
         created_by: number | null;
         updated_at: Date | null;
     }>;
-    static keepPending(codigo: string, rawBody: unknown): Promise<{
+    static keepPending(codigo: string, rawBody: unknown, actor?: Actor): Promise<{
         created_at: Date | null;
         descripcion: string;
         id_caso: number;
@@ -1231,7 +1048,7 @@ export declare class CaseService {
         created_by: number | null;
         updated_at: Date | null;
     }>;
-    static reopenCase(codigo: string, rawBody: unknown): Promise<{
+    static reopenCase(codigo: string, rawBody: unknown, actor?: Actor): Promise<{
         created_at: Date | null;
         descripcion: string;
         id_caso: number;
@@ -1265,7 +1082,7 @@ export declare class CaseService {
         created_by: number | null;
         updated_at: Date | null;
     }>;
-    static rollbackStage(codigo: string, rawBody: unknown): Promise<{
+    static rollbackStage(codigo: string, rawBody: unknown, actor?: Actor): Promise<{
         created_at: Date | null;
         descripcion: string;
         id_caso: number;
@@ -1319,7 +1136,7 @@ export declare class CaseService {
         id_actividad: number;
         porcentaje: import("@prisma/client/runtime/library").Decimal | null;
     }>;
-    static reviewExtension(codigo: string, rawBody: unknown): Promise<{
+    static reviewExtension(codigo: string, rawBody: unknown, actor?: Actor): Promise<{
         created_at: Date | null;
         descripcion: string;
         id_caso: number;
@@ -1353,7 +1170,14 @@ export declare class CaseService {
         created_by: number | null;
         updated_at: Date | null;
     }>;
-    static addComment(codigo: string, rawBody: unknown): Promise<{
+    /**
+     * El comentario es a nivel de expediente (no de un plan puntual), así que
+     * la propiedad se valida con el mismo criterio que abrir el caso
+     * (`getByCodigo`): un Jefe de Área comenta si el caso es de su área o si
+     * tiene un plan propio ahí. Antes no había ningún chequeo — cualquier Jefe
+     * podía comentar en el timeline de un caso ajeno con solo el código.
+     */
+    static addComment(codigo: string, rawBody: unknown, actor?: Actor): Promise<{
         fecha: Date | null;
         id_caso: number;
         titulo: string;
@@ -1377,7 +1201,7 @@ export declare class CaseService {
     static removePlanEvidence(idPlan: string, idAnexo: string, _rawBody: unknown, actor?: Actor): Promise<{
         id_anexo: number;
     }>;
-    static addEvidence(codigo: string, files: UploadedFile[]): Promise<{
+    static addEvidence(codigo: string, files: UploadedFile[], actor?: Actor): Promise<{
         id_caso: number;
         id_anexo: number;
         nombre_archivo: string | null;

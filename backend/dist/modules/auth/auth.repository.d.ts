@@ -1,13 +1,13 @@
 export declare class AuthRepository {
-    static findByEmail(correo: string): Promise<({
+    static findByEmail(correo: string): Promise<{
         areas: {
             id_area: number;
             nombre_area: string;
-        } | null;
+        };
         roles: {
             id_rol: number;
             nombre_rol: string;
-        } | null;
+        };
     } & {
         id_usuario: number;
         codigo_usuario: string;
@@ -25,7 +25,7 @@ export declare class AuthRepository {
         puede_rechazar_reportes: boolean;
         id_area: number | null;
         id_rol: number | null;
-    }) | null>;
+    }>;
     static updateUltimoAcceso(id_usuario: number): Promise<{
         id_usuario: number;
         codigo_usuario: string;
@@ -74,7 +74,7 @@ export declare class AuthRepository {
         used_at: Date | null;
         created_at: Date;
         id_reset: number;
-    } | null>;
+    }>;
     static marcarPasswordResetUsado(id_reset: number): Promise<{
         usuario: number;
         token_hash: string;

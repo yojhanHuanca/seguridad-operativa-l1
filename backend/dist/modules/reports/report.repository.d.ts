@@ -1,119 +1,11 @@
 import type { CreateReportDto, UploadedFile } from "./report.types.js";
 export declare class ReportRepository {
-    static findAll(): Promise<({
-        anexos_caso: {
-            id_anexo: number;
-        }[];
-        evento_caso: ({
-            eventos_operativos: {
-                catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: {
-                    nombre: string;
-                } | null;
-                catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: {
-                    nombre: string;
-                };
-            } & {
-                estado: number | null;
-                created_at: Date | null;
-                descripcion: string | null;
-                fecha: Date;
-                updated_at: Date | null;
-                id_evento: number;
-                codigo_evento: string | null;
-                hora: Date | null;
-                anio: number | null;
-                mes: number | null;
-                semana: number | null;
-                dia: string | null;
-                rango_horario: number | null;
-                tipo_incidente: number;
-                ubicacion: number | null;
-                tipo_via: number | null;
-                direccion_via: number | null;
-                lugar_incidente: number | null;
-                modelo_mr: number | null;
-                numero_mr: number | null;
-                numero_carrera: string | null;
-                personal_involucrado: number | null;
-                tipo_causa: number | null;
-                posible_causa: number | null;
-                informacion_adicional: string | null;
-                camara_monitoreada: string | null;
-                demora: import("@prisma/client/runtime/library").Decimal | null;
-                usuario_registra: number | null;
-            };
-        } & {
-            usuario: number | null;
-            id_caso: number;
-            id_evento: number;
-            id: number;
-            fecha_conversion: Date | null;
-        })[];
-        areas: {
-            nombre_area: string;
-        } | null;
-        solicitudes_informacion: {
-            mensaje: string;
-            id_solicitud: number;
-            respuesta: string | null;
-            respondida: boolean;
-            fecha_solicitud: Date | null;
-            fecha_respuesta: Date | null;
-        }[];
-        catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
-            nombre: string;
-            color: string | null;
-        };
-        catalogo_detalle_casos_sop_tipoTocatalogo_detalle: {
-            nombre: string;
-        };
-        catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle: {
-            nombre: string;
-        };
-    } & {
-        created_at: Date | null;
-        descripcion: string;
-        id_caso: number;
-        codigo_sop: string;
-        titulo: string | null;
-        fecha_hallazgo: Date;
-        fecha_evento: Date | null;
-        estado_hallazgo: number;
-        dias_abierto: number | null;
-        procedencia: number;
-        tipo: number;
-        responsable_hallazgo: number | null;
-        tipo_sop: number;
-        subtipo_sop: number | null;
-        peligro: string | null;
-        consecuencia: string | null;
-        descripcion_evento: string | null;
-        clasificacion: string | null;
-        analisis_riesgo: number | null;
-        acr: string | null;
-        area_responsable: number | null;
-        responsable_plan: number | null;
-        estado_plan: number | null;
-        fecha_plan: Date | null;
-        fecha_reprogramada: Date | null;
-        dias_abierto_plan: number | null;
-        observaciones: string | null;
-        created_by: number | null;
-        updated_at: Date | null;
-    })[]>;
     /**
-     * "Mis reportes" del trabajador: solo los casos que él mismo registró.
-     *
-     * `page`/`limit` son opcionales y deben venir juntos — sin ellos se
-     * comporta exactamente igual que antes (trae todo). Eso es a propósito:
-     * `ReportanteShell` (badge), `ReportanteHomePage` (resumen) y
-     * `NotificationsPage` (solicitudes de información completas) siguen
-     * llamando esto sin paginar porque necesitan el listado entero para sus
-     * propios cálculos — solo `MyReportsPage` manda `page`/`limit`.
+     * Listado para Seguridad Operativa/Admin: antes siempre traía todos los
+     * casos sin límite. `page`/`limit` son opcionales y deben venir juntos —
+     * sin ellos se comporta exactamente igual que antes (trae todo).
      */
-    static findAllByCreator(id_usuario: number, opts?: {
-        filter?: "activos" | "pendientes_info" | "cerrados";
-        search?: string;
+    static findAll(opts?: {
         page?: number;
         limit?: number;
     }): Promise<{
@@ -125,7 +17,7 @@ export declare class ReportRepository {
                 eventos_operativos: {
                     catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: {
                         nombre: string;
-                    } | null;
+                    };
                     catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: {
                         nombre: string;
                     };
@@ -168,18 +60,18 @@ export declare class ReportRepository {
             })[];
             areas: {
                 nombre_area: string;
-            } | null;
+            };
             solicitudes_informacion: {
                 mensaje: string;
                 id_solicitud: number;
-                respuesta: string | null;
+                respuesta: string;
                 respondida: boolean;
-                fecha_solicitud: Date | null;
-                fecha_respuesta: Date | null;
+                fecha_solicitud: Date;
+                fecha_respuesta: Date;
             }[];
             catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
                 nombre: string;
-                color: string | null;
+                color: string;
             };
             catalogo_detalle_casos_sop_tipoTocatalogo_detalle: {
                 nombre: string;
@@ -218,8 +110,24 @@ export declare class ReportRepository {
             created_by: number | null;
             updated_at: Date | null;
         })[];
-        total: undefined;
-    } | {
+        total: number | undefined;
+    }>;
+    /**
+     * "Mis reportes" del trabajador: solo los casos que él mismo registró.
+     *
+     * `page`/`limit` son opcionales y deben venir juntos — sin ellos se
+     * comporta exactamente igual que antes (trae todo). Eso es a propósito:
+     * `ReportanteShell` (badge), `ReportanteHomePage` (resumen) y
+     * `NotificationsPage` (solicitudes de información completas) siguen
+     * llamando esto sin paginar porque necesitan el listado entero para sus
+     * propios cálculos — solo `MyReportsPage` manda `page`/`limit`.
+     */
+    static findAllByCreator(id_usuario: number, opts?: {
+        filter?: "activos" | "pendientes_info" | "cerrados";
+        search?: string;
+        page?: number;
+        limit?: number;
+    }): Promise<{
         data: ({
             anexos_caso: {
                 id_anexo: number;
@@ -228,7 +136,7 @@ export declare class ReportRepository {
                 eventos_operativos: {
                     catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: {
                         nombre: string;
-                    } | null;
+                    };
                     catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: {
                         nombre: string;
                     };
@@ -271,18 +179,18 @@ export declare class ReportRepository {
             })[];
             areas: {
                 nombre_area: string;
-            } | null;
+            };
             solicitudes_informacion: {
                 mensaje: string;
                 id_solicitud: number;
-                respuesta: string | null;
+                respuesta: string;
                 respondida: boolean;
-                fecha_solicitud: Date | null;
-                fecha_respuesta: Date | null;
+                fecha_solicitud: Date;
+                fecha_respuesta: Date;
             }[];
             catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
                 nombre: string;
-                color: string | null;
+                color: string;
             };
             catalogo_detalle_casos_sop_tipoTocatalogo_detalle: {
                 nombre: string;
@@ -323,7 +231,7 @@ export declare class ReportRepository {
         })[];
         total: number;
     }>;
-    static findByCodigo(codigo_sop: string): Promise<({
+    static findByCodigo(codigo_sop: string): Promise<{
         anexos_caso: {
             id_anexo: number;
         }[];
@@ -331,7 +239,7 @@ export declare class ReportRepository {
             eventos_operativos: {
                 catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: {
                     nombre: string;
-                } | null;
+                };
                 catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: {
                     nombre: string;
                 };
@@ -374,18 +282,18 @@ export declare class ReportRepository {
         })[];
         areas: {
             nombre_area: string;
-        } | null;
+        };
         solicitudes_informacion: {
             mensaje: string;
             id_solicitud: number;
-            respuesta: string | null;
+            respuesta: string;
             respondida: boolean;
-            fecha_solicitud: Date | null;
-            fecha_respuesta: Date | null;
+            fecha_solicitud: Date;
+            fecha_respuesta: Date;
         }[];
         catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
             nombre: string;
-            color: string | null;
+            color: string;
         };
         catalogo_detalle_casos_sop_tipoTocatalogo_detalle: {
             nombre: string;
@@ -423,7 +331,7 @@ export declare class ReportRepository {
         observaciones: string | null;
         created_by: number | null;
         updated_at: Date | null;
-    }) | null>;
+    }>;
     static findPublicByCodigo(codigo_sop: string): Promise<{
         anexos_caso: {
             id_anexo: number;
@@ -432,7 +340,7 @@ export declare class ReportRepository {
             eventos_operativos: {
                 catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: {
                     nombre: string;
-                } | null;
+                };
                 catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: {
                     nombre: string;
                 };
@@ -440,25 +348,25 @@ export declare class ReportRepository {
         }[];
         areas: {
             nombre_area: string;
-        } | null;
-        created_at: Date | null;
+        };
+        created_at: Date;
         solicitudes_informacion: {
             mensaje: string;
             id_solicitud: number;
-            respuesta: string | null;
+            respuesta: string;
             respondida: boolean;
-            fecha_solicitud: Date | null;
-            fecha_respuesta: Date | null;
+            fecha_solicitud: Date;
+            fecha_respuesta: Date;
         }[];
         descripcion: string;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
+        titulo: string;
         fecha_hallazgo: Date;
-        fecha_evento: Date | null;
+        fecha_evento: Date;
         catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
             nombre: string;
-            color: string | null;
+            color: string;
         };
         catalogo_detalle_casos_sop_tipoTocatalogo_detalle: {
             nombre: string;
@@ -466,7 +374,7 @@ export declare class ReportRepository {
         catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle: {
             nombre: string;
         };
-    } | null>;
+    }>;
     /** Evidencia adjuntada después de creado el caso — misma forma que al crear el reporte. */
     static agregarEvidencias(id_caso: number, archivos: UploadedFile[]): Promise<void>;
     static findCatalogoDetalle(catalogoNombre: string, valorNombre: string): Promise<{
@@ -479,8 +387,8 @@ export declare class ReportRepository {
         codigo: string | null;
         orden: number | null;
         color: string | null;
-    } | null>;
-    static findCatalogoDetalleById(id_detalle: number): Promise<({
+    }>;
+    static findCatalogoDetalleById(id_detalle: number): Promise<{
         catalogos: {
             nombre: string;
         };
@@ -494,7 +402,7 @@ export declare class ReportRepository {
         codigo: string | null;
         orden: number | null;
         color: string | null;
-    }) | null>;
+    }>;
     static createFullReport(dto: CreateReportDto, archivos: UploadedFile[], id_usuario_creador?: number): Promise<{
         caso: {
             created_at: Date | null;

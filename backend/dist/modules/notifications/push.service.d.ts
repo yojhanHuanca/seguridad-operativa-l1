@@ -6,7 +6,7 @@ export interface PushPayload {
 export declare class PushService {
     static readonly habilitado: boolean;
     static suscribir(id_usuario: number, sub: SuscripcionPush): Promise<void>;
-    static desuscribir(endpoint: string): Promise<void>;
+    static desuscribir(endpoint: string, id_usuario: number): Promise<void>;
     /**
      * Best-effort: nunca lanza, igual que NotificationRepository.emitir (del
      * que se llama siempre, sin esperar la promesa). Si el navegador ya no

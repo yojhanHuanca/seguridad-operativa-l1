@@ -4,17 +4,17 @@ export declare class UserRepository {
         id_usuario: number;
         codigo_usuario: string;
         nombre: string;
-        cargo: string | null;
-        estado: string | null;
+        cargo: string;
+        estado: string;
         es_responsable: boolean;
-        id_area: number | null;
-        id_rol: number | null;
+        id_area: number;
+        id_rol: number;
         areas: {
             nombre_area: string;
-        } | null;
+        };
         roles: {
             nombre_rol: string;
-        } | null;
+        };
     }[]>;
     /**
      * `page`/`limit` son opcionales y deben venir juntos — sin ellos se
@@ -33,21 +33,21 @@ export declare class UserRepository {
             codigo_usuario: string;
             correo: string;
             nombre: string;
-            cargo: string | null;
-            telefono: string | null;
-            estado: string | null;
-            ultimo_acceso: Date | null;
+            cargo: string;
+            telefono: string;
+            estado: string;
+            ultimo_acceso: Date;
             es_responsable: boolean;
             puede_reabrir_casos: boolean;
             puede_rechazar_reportes: boolean;
-            id_area: number | null;
-            id_rol: number | null;
+            id_area: number;
+            id_rol: number;
             areas: {
                 nombre_area: string;
-            } | null;
+            };
             roles: {
                 nombre_rol: string;
-            } | null;
+            };
         }[];
         total: number | undefined;
     }>;
@@ -72,32 +72,32 @@ export declare class UserRepository {
         codigo_usuario: string;
         correo: string;
         nombre: string;
-        cargo: string | null;
-        telefono: string | null;
-        estado: string | null;
-        fecha_ingreso: Date | null;
-        ultimo_acceso: Date | null;
+        cargo: string;
+        telefono: string;
+        estado: string;
+        fecha_ingreso: Date;
+        ultimo_acceso: Date;
         es_responsable: boolean;
         puede_reabrir_casos: boolean;
         puede_rechazar_reportes: boolean;
-        id_area: number | null;
-        id_rol: number | null;
+        id_area: number;
+        id_rol: number;
         areas: {
             id_area: number;
             nombre_area: string;
-        } | null;
+        };
         roles: {
             id_rol: number;
             nombre_rol: string;
-        } | null;
-    } | null>;
+        };
+    }>;
     static createWithGeneratedCode(data: {
         nombre: string;
         correo: string;
         password_hash: string;
         cargo?: string | null;
         telefono?: string | null;
-        id_area: number;
+        id_area?: number | null;
         id_rol: number;
         es_responsable?: boolean;
         puede_reabrir_casos?: boolean;
@@ -107,24 +107,24 @@ export declare class UserRepository {
         codigo_usuario: string;
         correo: string;
         nombre: string;
-        cargo: string | null;
-        telefono: string | null;
-        estado: string | null;
-        fecha_ingreso: Date | null;
-        ultimo_acceso: Date | null;
+        cargo: string;
+        telefono: string;
+        estado: string;
+        fecha_ingreso: Date;
+        ultimo_acceso: Date;
         es_responsable: boolean;
         puede_reabrir_casos: boolean;
         puede_rechazar_reportes: boolean;
-        id_area: number | null;
-        id_rol: number | null;
+        id_area: number;
+        id_rol: number;
         areas: {
             id_area: number;
             nombre_area: string;
-        } | null;
+        };
         roles: {
             id_rol: number;
             nombre_rol: string;
-        } | null;
+        };
     }>;
     static findByEmail(email: string): Promise<{
         id_usuario: number;
@@ -143,13 +143,13 @@ export declare class UserRepository {
         puede_rechazar_reportes: boolean;
         id_area: number | null;
         id_rol: number | null;
-    } | null>;
+    }>;
     static update(id: number, data: {
         nombre?: string;
         correo?: string;
         cargo?: string | null;
         telefono?: string | null;
-        id_area?: number;
+        id_area?: number | null;
         id_rol?: number;
         estado?: string;
         es_responsable?: boolean;
@@ -161,24 +161,24 @@ export declare class UserRepository {
         codigo_usuario: string;
         correo: string;
         nombre: string;
-        cargo: string | null;
-        telefono: string | null;
-        estado: string | null;
-        fecha_ingreso: Date | null;
-        ultimo_acceso: Date | null;
+        cargo: string;
+        telefono: string;
+        estado: string;
+        fecha_ingreso: Date;
+        ultimo_acceso: Date;
         es_responsable: boolean;
         puede_reabrir_casos: boolean;
         puede_rechazar_reportes: boolean;
-        id_area: number | null;
-        id_rol: number | null;
+        id_area: number;
+        id_rol: number;
         areas: {
             id_area: number;
             nombre_area: string;
-        } | null;
+        };
         roles: {
             id_rol: number;
             nombre_rol: string;
-        } | null;
+        };
     }>;
 }
 //# sourceMappingURL=users.repository.d.ts.map

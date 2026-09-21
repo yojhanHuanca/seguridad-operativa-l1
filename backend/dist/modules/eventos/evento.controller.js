@@ -1,6 +1,6 @@
 import { EventoService } from "./evento.service.js";
 import { IndicadoresEventosService } from "./indicadores.service.js";
-import { ApiResponse } from "../../utils/ApiResponse.js";
+import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 export class EventoController {
     static async getIndicadores(req, res) {
         try {
@@ -17,7 +17,7 @@ export class EventoController {
             return res.json(ApiResponse.success("Datos del mes guardados correctamente", data));
         }
         catch (error) {
-            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "No se pudieron guardar los datos del mes", error));
+            return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "No se pudieron guardar los datos del mes"), error));
         }
     }
     static async getAll(req, res) {
@@ -47,25 +47,25 @@ export class EventoController {
             return res.json(ApiResponse.success("Evento obtenido correctamente", evento));
         }
         catch (error) {
-            return res.status(404).json(ApiResponse.error(error instanceof Error ? error.message : "Evento no encontrado", error));
+            return res.status(404).json(ApiResponse.error(safeErrorMessage(error, "Evento no encontrado"), error));
         }
     }
     static async create(req, res) {
         try {
-            const evento = await EventoService.createEvento(req.body, req.user?.id_usuario);
+            const evento = await EventoService.createEvento(req.body, req.user);
             return res.status(201).json(ApiResponse.success("Evento registrado correctamente", evento));
         }
         catch (error) {
-            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al registrar el evento", error));
+            return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "Error al registrar el evento"), error));
         }
     }
     static async update(req, res) {
         try {
-            const evento = await EventoService.updateEvento(Number(req.params.id), req.body);
+            const evento = await EventoService.updateEvento(Number(req.params.id), req.body, req.user);
             return res.json(ApiResponse.success("Evento actualizado correctamente", evento));
         }
         catch (error) {
-            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al actualizar el evento", error));
+            return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "Error al actualizar el evento"), error));
         }
     }
     static async getAsignados(req, res) {
@@ -83,16 +83,16 @@ export class EventoController {
             return res.json(ApiResponse.success(`Evento asignado a ${resultado.nombre}`, resultado));
         }
         catch (error) {
-            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al asignar el evento", error));
+            return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "Error al asignar el evento"), error));
         }
     }
     static async remove(req, res) {
         try {
-            await EventoService.deleteEvento(Number(req.params.id));
+            await EventoService.deleteEvento(Number(req.params.id), req.user);
             return res.json(ApiResponse.success("Evento eliminado correctamente", null));
         }
         catch (error) {
-            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al eliminar el evento", error));
+            return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "Error al eliminar el evento"), error));
         }
     }
 }

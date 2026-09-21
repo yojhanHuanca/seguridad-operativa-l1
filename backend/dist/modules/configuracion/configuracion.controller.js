@@ -1,16 +1,20 @@
 import { z } from "zod";
 import { ConfiguracionService } from "./configuracion.service.js";
-import { ApiResponse } from "../../utils/ApiResponse.js";
+import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 function errorMessage(error, fallback) {
     if (error instanceof z.ZodError) {
         return error.issues[0]?.message ?? fallback;
     }
-    return error instanceof Error ? error.message : fallback;
+    return safeErrorMessage(error, fallback);
 }
 export class ConfiguracionController {
     static async publica(_req, res) {
         try {
             const configuracion = await ConfiguracionService.publica();
+            res.set({
+                'Cache-Control': 'public, max-age=300, stale-while-revalidate=600',
+                'CDN-Cache-Control': 'public, max-age=300',
+            });
             return res.json(ApiResponse.success("Identidad del sistema obtenida correctamente", configuracion));
         }
         catch (error) {

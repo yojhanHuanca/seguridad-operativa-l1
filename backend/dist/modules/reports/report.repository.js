@@ -108,12 +108,28 @@ const CONTACTO_REPORTANTE_OCULTO = {
     telefono_reportante: true,
 };
 export class ReportRepository {
-    static async findAll() {
-        return prisma.casos_sop.findMany({
-            orderBy: { created_at: "desc" },
-            include: LIST_INCLUDE,
-            omit: CONTACTO_REPORTANTE_OCULTO,
-        });
+    /**
+     * Listado para Seguridad Operativa/Admin: antes siempre traía todos los
+     * casos sin límite. `page`/`limit` son opcionales y deben venir juntos —
+     * sin ellos se comporta exactamente igual que antes (trae todo).
+     */
+    static async findAll(opts) {
+        const orderBy = { created_at: "desc" };
+        if (!opts?.page || !opts?.limit) {
+            const data = await prisma.casos_sop.findMany({ orderBy, include: LIST_INCLUDE, omit: CONTACTO_REPORTANTE_OCULTO });
+            return { data, total: undefined };
+        }
+        const [data, total] = await Promise.all([
+            prisma.casos_sop.findMany({
+                orderBy,
+                include: LIST_INCLUDE,
+                omit: CONTACTO_REPORTANTE_OCULTO,
+                skip: (opts.page - 1) * opts.limit,
+                take: opts.limit,
+            }),
+            prisma.casos_sop.count(),
+        ]);
+        return { data, total };
     }
     /**
      * "Mis reportes" del trabajador: solo los casos que él mismo registró.

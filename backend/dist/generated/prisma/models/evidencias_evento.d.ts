@@ -2,7 +2,9 @@ import type * as runtime from "@prisma/client/runtime/library";
 import type * as Prisma from "../internal/prismaNamespace.js";
 /**
  * Model evidencias_evento
- *
+ * Sin uso: adjuntos de `eventos_operativos` (el evento original que da
+ * origen a un caso). La evidencia real de un caso vive en `anexos_caso`,
+ * no acá.
  */
 export type evidencias_eventoModel = runtime.Types.Result.DefaultSelection<Prisma.$evidencias_eventoPayload>;
 export type AggregateEvidencias_evento = {

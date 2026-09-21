@@ -2,7 +2,8 @@ import type * as runtime from "@prisma/client/runtime/library";
 import type * as Prisma from "../internal/prismaNamespace.js";
 /**
  * Model dashboard_indicadores
- *
+ * Sin uso: diseño de un dashboard configurable (elegir indicadores y
+ * acomodarlos en un layout). Ver la nota en `dashboards`.
  */
 export type dashboard_indicadoresModel = runtime.Types.Result.DefaultSelection<Prisma.$dashboard_indicadoresPayload>;
 export type AggregateDashboard_indicadores = {

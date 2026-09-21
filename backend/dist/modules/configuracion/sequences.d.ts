@@ -16,6 +16,7 @@ type DbClient = typeof prisma | Prisma.TransactionClient;
  * usuario), así que interpolarlas en el SQL es seguro.
  */
 export declare const SEQ_CASOS_SOP = "casos_sop_secuencia_seq";
+export declare const SEQ_EVENTOS_MONITOREO = "eventos_monitoreo_secuencia_seq";
 export declare function ensureSequence(client: DbClient, name: string): Promise<void>;
 /** Nunca retrocede: si `minValue` es menor o igual al valor actual, no hace nada. */
 export declare function advanceSequenceAtLeast(client: DbClient, name: string, minValue: number): Promise<void>;

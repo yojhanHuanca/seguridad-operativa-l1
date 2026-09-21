@@ -3,7 +3,7 @@ import prisma from "../../lib/prisma.js";
 import { AuditoriaService, diffCampos } from "../auditoria/auditoria.service.js";
 import { buildCodigoPlan, codigoPlanSequenceForCase } from "./codigo-plan.js";
 import { codigoSopSequence } from "./codigo-sop.js";
-import { SEQ_CASOS_SOP, advanceSequenceAtLeast, currentSequenceValue, ensureSequence, nextSequenceValue, } from "./sequences.js";
+import { SEQ_CASOS_SOP, SEQ_EVENTOS_MONITOREO, advanceSequenceAtLeast, currentSequenceValue, ensureSequence, nextSequenceValue, } from "./sequences.js";
 const CONFIG_KEYS = {
     sistemaNombre: "sistema.nombre",
     sistemaVersion: "sistema.version",
@@ -14,6 +14,7 @@ const CONFIG_KEYS = {
     diasInvestigacion: "plazos.investigacion.dias",
     diasResponderPlanes: "plazos.planes.respuesta_dias",
     diasSolicitarProrroga: "plazos.prorroga.solicitud_dias",
+    kmPorCarrera: "operacion.km_por_carrera",
     ultimaActualizacion: "sistema.ultima_actualizacion",
 };
 const DEFAULT_VALUES = {
@@ -26,6 +27,7 @@ const DEFAULT_VALUES = {
     [CONFIG_KEYS.diasInvestigacion]: "15",
     [CONFIG_KEYS.diasResponderPlanes]: "7",
     [CONFIG_KEYS.diasSolicitarProrroga]: "3",
+    [CONFIG_KEYS.kmPorCarrera]: "33.128331",
     [CONFIG_KEYS.ultimaActualizacion]: "2025-01-15T03:00:00.000Z",
 };
 const DESCRIPTIONS = {
@@ -38,6 +40,7 @@ const DESCRIPTIONS = {
     [CONFIG_KEYS.diasInvestigacion]: "Días máximos de investigación.",
     [CONFIG_KEYS.diasResponderPlanes]: "Días para que el jefe de área responda planes.",
     [CONFIG_KEYS.diasSolicitarProrroga]: "Días máximos para solicitar una prórroga.",
+    [CONFIG_KEYS.kmPorCarrera]: "Kilómetros comerciales estimados por cada carrera de tren.",
     [CONFIG_KEYS.ultimaActualizacion]: "Fecha ISO de la última actualización manual de configuración.",
 };
 function defaultValue(key) {
@@ -46,6 +49,11 @@ function defaultValue(key) {
 const numberField = (label, min, max) => z.coerce
     .number({ error: `${label} debe ser numérico` })
     .int(`${label} debe ser un número entero`)
+    .min(min, `${label} debe ser mayor o igual a ${min}`)
+    .max(max, `${label} no puede superar ${max}`);
+const decimalField = (label, min, max) => z.coerce
+    .number({ error: `${label} debe ser numérico` })
+    .finite(`${label} debe ser un número válido`)
     .min(min, `${label} debe ser mayor o igual a ${min}`)
     .max(max, `${label} no puede superar ${max}`);
 const configuracionSchema = z.object({
@@ -64,10 +72,17 @@ const configuracionSchema = z.object({
         diasResponderPlanes: numberField("Los días para responder planes", 1, 365),
         diasSolicitarProrroga: numberField("Los días para solicitar prórroga", 1, 365),
     }),
+    operacion: z.object({
+        kmPorCarrera: decimalField("Los kilómetros por carrera", 0.01, 100),
+    }),
 });
 function parseNumber(value, fallback) {
     const parsed = Number(value);
     return Number.isFinite(parsed) && parsed >= 0 ? Math.floor(parsed) : fallback;
+}
+function parseDecimal(value, fallback) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 function sanitizePrefix(value, label) {
     const prefix = value.trim().replace(/\s+/g, "-").toUpperCase();
@@ -104,6 +119,9 @@ function mapToConfiguracion(values, secuenciaExpedientes, secuenciaPlanes) {
             diasResponderPlanes: parseNumber(values.get(CONFIG_KEYS.diasResponderPlanes), Number(defaultValue(CONFIG_KEYS.diasResponderPlanes))),
             diasSolicitarProrroga: parseNumber(values.get(CONFIG_KEYS.diasSolicitarProrroga), Number(defaultValue(CONFIG_KEYS.diasSolicitarProrroga))),
         },
+        operacion: {
+            kmPorCarrera: parseDecimal(values.get(CONFIG_KEYS.kmPorCarrera), Number(defaultValue(CONFIG_KEYS.kmPorCarrera))),
+        },
         meta: {
             ultimaActualizacion: values.get(CONFIG_KEYS.ultimaActualizacion) || defaultValue(CONFIG_KEYS.ultimaActualizacion) || null,
         },
@@ -120,6 +138,7 @@ function payloadToEntries(config) {
         [CONFIG_KEYS.diasInvestigacion, String(config.plazos.diasMaxInvestigacion)],
         [CONFIG_KEYS.diasResponderPlanes, String(config.plazos.diasResponderPlanes)],
         [CONFIG_KEYS.diasSolicitarProrroga, String(config.plazos.diasSolicitarProrroga)],
+        [CONFIG_KEYS.kmPorCarrera, String(config.operacion.kmPorCarrera)],
         [CONFIG_KEYS.ultimaActualizacion, config.meta.ultimaActualizacion ?? new Date().toISOString()],
     ];
 }
@@ -170,12 +189,17 @@ function nextPlanCodes(codigoSop, prefix, cantidad, codigosExistentes) {
     return codigos;
 }
 export class ConfiguracionService {
+    static cache = null;
+    static CACHE_TTL = 5 * 60 * 1000; // 5 min
     static async readValues(client = prisma) {
         const rows = await client.configuracion.findMany({
             where: { nombre: { in: Object.values(CONFIG_KEYS) } },
             select: { nombre: true, valor: true },
         });
         return rowsToMap(rows);
+    }
+    static invalidateCache() {
+        ConfiguracionService.cache = null;
     }
     static async get(client = prisma) {
         const values = await ConfiguracionService.readValues(client);
@@ -186,11 +210,17 @@ export class ConfiguracionService {
         return mapToConfiguracion(values, secuenciaCasos, secuenciaPlanes);
     }
     static async publica(client = prisma) {
+        const now = Date.now();
+        if (ConfiguracionService.cache && ConfiguracionService.cache.expires > now) {
+            return ConfiguracionService.cache.data;
+        }
         const values = await ConfiguracionService.readValues(client);
-        return {
+        const data = {
             nombre: values.get(CONFIG_KEYS.sistemaNombre) || defaultValue(CONFIG_KEYS.sistemaNombre),
             version: values.get(CONFIG_KEYS.sistemaVersion) || defaultValue(CONFIG_KEYS.sistemaVersion),
         };
+        ConfiguracionService.cache = { data, expires: now + ConfiguracionService.CACHE_TTL };
+        return data;
     }
     static async update(rawBody, audit = {}) {
         const parsed = configuracionSchema.parse(rawBody);
@@ -206,6 +236,7 @@ export class ConfiguracionService {
                 secuenciaPlanes: parsed.numeracion.secuenciaPlanes,
             },
             plazos: parsed.plazos,
+            operacion: parsed.operacion,
             meta: {
                 ultimaActualizacion: new Date().toISOString(),
             },
@@ -225,10 +256,12 @@ export class ConfiguracionService {
             sistema: previous.sistema,
             numeracion: previous.numeracion,
             plazos: previous.plazos,
+            operacion: previous.operacion,
         }, {
             sistema: saved.sistema,
             numeracion: saved.numeracion,
             plazos: saved.plazos,
+            operacion: saved.operacion,
         });
         await AuditoriaService.registrar({
             tabla: "configuracion",
@@ -240,6 +273,7 @@ export class ConfiguracionService {
             antes: diff?.antes ?? null,
             despues: diff?.despues ?? null,
         });
+        ConfiguracionService.invalidateCache();
         return saved;
     }
     static async nextCodigoExpediente(client, fecha) {
@@ -248,6 +282,16 @@ export class ConfiguracionService {
         const prefix = sanitizePrefix(values.get(CONFIG_KEYS.expedientePrefijo) || defaultValue(CONFIG_KEYS.expedientePrefijo), "El prefijo de expedientes");
         const sequence = await nextSequenceValue(client, SEQ_CASOS_SOP);
         return `${prefix} ${padSequence(sequence)}-${year}`;
+    }
+    /**
+     * Código único global para un evento de monitoreo (EVT 00042-2026), por la
+     * misma secuencia atómica de Postgres que ya usa `nextCodigoExpediente` —
+     * antes `codigo_evento` se dejaba `null` siempre, sin ninguna generación.
+     */
+    static async nextCodigoEvento(client, fecha) {
+        const year = fecha.getUTCFullYear();
+        const sequence = await nextSequenceValue(client, SEQ_EVENTOS_MONITOREO);
+        return `EVT ${padSequence(sequence)}-${year}`;
     }
     static async nextCodigosPlan(client, codigoSop, cantidad) {
         if (cantidad <= 0)
@@ -290,6 +334,7 @@ export class ConfiguracionService {
      */
     static async bootstrapSequences(client = prisma) {
         await ensureSequence(client, SEQ_CASOS_SOP);
+        await ensureSequence(client, SEQ_EVENTOS_MONITOREO);
         const values = await ConfiguracionService.readValues(client);
         const prefix = sanitizePrefix(values.get(CONFIG_KEYS.expedientePrefijo) || defaultValue(CONFIG_KEYS.expedientePrefijo), "El prefijo de expedientes");
         const configuradoCasos = parseNumber(values.get(CONFIG_KEYS.expedienteSecuencia), 0);

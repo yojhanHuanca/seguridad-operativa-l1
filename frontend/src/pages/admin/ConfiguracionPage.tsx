@@ -8,6 +8,7 @@ import { useConfiguracion, useUpdateConfiguracion } from "@/features/configuraci
 import { ConfigurationDiff, ConfigurationHistory } from "@/features/configuracion/ConfigurationHistory";
 import { cleanPrefix, configChanges, configErrors, normalizeConfig } from "@/features/configuracion/presentation";
 import type { ConfiguracionGeneral } from "@/features/configuracion/types";
+import { ConfigurationResponseError } from "@/features/configuracion/response";
 import { apiErrorMessage } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -91,7 +92,7 @@ function ConfigurationEditor({ saved }: { saved: ConfiguracionGeneral }) {
       discard();
       toast.success("Configuración actualizada correctamente");
     } catch (error) {
-      toast.error(apiErrorMessage(error, "No se pudo guardar la configuración. Tus cambios siguen disponibles."));
+      toast.error(error instanceof ConfigurationResponseError ? error.message : apiErrorMessage(error, "No se pudo guardar la configuración. Tus cambios siguen disponibles."));
     }
   }
 

@@ -310,6 +310,105 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
         omit: OmitOpts;
     }>;
     /**
+     * `prisma.datos_operativos`: Exposes CRUD operations for the **datos_operativos** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more Datos_operativos
+      * const datos_operativos = await prisma.datos_operativos.findMany()
+      * ```
+      */
+    get datos_operativos(): Prisma.datos_operativosDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    /**
+     * `prisma.contingencia_catalogos`: Exposes CRUD operations for the **contingencia_catalogos** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more Contingencia_catalogos
+      * const contingencia_catalogos = await prisma.contingencia_catalogos.findMany()
+      * ```
+      */
+    get contingencia_catalogos(): Prisma.contingencia_catalogosDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    /**
+     * `prisma.contingencia_catalogo_items`: Exposes CRUD operations for the **contingencia_catalogo_items** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more Contingencia_catalogo_items
+      * const contingencia_catalogo_items = await prisma.contingencia_catalogo_items.findMany()
+      * ```
+      */
+    get contingencia_catalogo_items(): Prisma.contingencia_catalogo_itemsDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    /**
+     * `prisma.contingencia_eventos`: Exposes CRUD operations for the **contingencia_eventos** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more Contingencia_eventos
+      * const contingencia_eventos = await prisma.contingencia_eventos.findMany()
+      * ```
+      */
+    get contingencia_eventos(): Prisma.contingencia_eventosDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    /**
+     * `prisma.contingencia_atenciones`: Exposes CRUD operations for the **contingencia_atenciones** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more Contingencia_atenciones
+      * const contingencia_atenciones = await prisma.contingencia_atenciones.findMany()
+      * ```
+      */
+    get contingencia_atenciones(): Prisma.contingencia_atencionesDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    /**
+     * `prisma.contingencia_traslados`: Exposes CRUD operations for the **contingencia_traslados** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more Contingencia_traslados
+      * const contingencia_traslados = await prisma.contingencia_traslados.findMany()
+      * ```
+      */
+    get contingencia_traslados(): Prisma.contingencia_trasladosDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    /**
+     * `prisma.contingencia_personas`: Exposes CRUD operations for the **contingencia_personas** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more Contingencia_personas
+      * const contingencia_personas = await prisma.contingencia_personas.findMany()
+      * ```
+      */
+    get contingencia_personas(): Prisma.contingencia_personasDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    /**
+     * `prisma.contingencia_diagnosticos`: Exposes CRUD operations for the **contingencia_diagnosticos** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more Contingencia_diagnosticos
+      * const contingencia_diagnosticos = await prisma.contingencia_diagnosticos.findMany()
+      * ```
+      */
+    get contingencia_diagnosticos(): Prisma.contingencia_diagnosticosDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    /**
+     * `prisma.contingencia_cierres`: Exposes CRUD operations for the **contingencia_cierres** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more Contingencia_cierres
+      * const contingencia_cierres = await prisma.contingencia_cierres.findMany()
+      * ```
+      */
+    get contingencia_cierres(): Prisma.contingencia_cierresDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    /**
      * `prisma.incidencias`: Exposes CRUD operations for the **incidencias** model.
       * Example usage:
       * ```ts

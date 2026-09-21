@@ -1,6 +1,6 @@
 import { ZodError } from "zod";
 import { UsersService } from "./users.service.js";
-import { ApiResponse } from "../../utils/ApiResponse.js";
+import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 function isZodError(error) {
     return error instanceof ZodError;
 }
@@ -48,7 +48,7 @@ export class UsersController {
                 return res.status(400).json(ApiResponse.error("ID de usuario inválido", error.flatten().fieldErrors));
             }
             const status = error instanceof Error && error.message === "Usuario no encontrado" ? 404 : 500;
-            return res.status(status).json(ApiResponse.error(error instanceof Error ? error.message : "Error al obtener el usuario", error));
+            return res.status(status).json(ApiResponse.error(safeErrorMessage(error, "Error al obtener el usuario"), error));
         }
     }
     static async create(req, res) {
@@ -60,7 +60,7 @@ export class UsersController {
             if (isZodError(error)) {
                 return res.status(400).json(ApiResponse.error("Datos del usuario inválidos", error.flatten().fieldErrors));
             }
-            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al crear el usuario", error));
+            return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "Error al crear el usuario"), error));
         }
     }
     static async update(req, res) {
@@ -73,7 +73,7 @@ export class UsersController {
                 return res.status(400).json(ApiResponse.error("Datos del usuario inválidos", error.flatten().fieldErrors));
             }
             const status = error instanceof Error && error.message === "Usuario no encontrado" ? 404 : 400;
-            return res.status(status).json(ApiResponse.error(error instanceof Error ? error.message : "Error al actualizar el usuario", error));
+            return res.status(status).json(ApiResponse.error(safeErrorMessage(error, "Error al actualizar el usuario"), error));
         }
     }
 }

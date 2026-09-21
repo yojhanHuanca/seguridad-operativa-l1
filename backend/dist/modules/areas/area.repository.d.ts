@@ -6,7 +6,7 @@ export declare class AreaRepository {
     static findByNombre(nombre_area: string): Promise<{
         id_area: number;
         nombre_area: string;
-    } | null>;
+    }>;
     static create(nombre_area: string): Promise<{
         id_area: number;
         nombre_area: string;

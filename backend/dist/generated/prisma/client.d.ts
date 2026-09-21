@@ -41,7 +41,12 @@ export type areas = Prisma.areasModel;
 export type auditoria = Prisma.auditoriaModel;
 /**
  * Model bitacora
- *
+ * Sin uso: ninguna ruta lee ni escribe esta tabla. Es un diseño de auditoría
+ * genérica anterior al módulo actual, reemplazado por `auditoria`
+ * (misma idea — usuario/tabla/acción/fecha —, pero es la que sí usa
+ * `AuditoriaService` en cada acción real del sistema). Se documenta en vez
+ * de borrarse porque la tabla vive también en producción (Railway) y
+ * eliminarla ahí requiere un paso manual aparte.
  */
 export type bitacora = Prisma.bitacoraModel;
 /**
@@ -66,12 +71,18 @@ export type catalogos = Prisma.catalogosModel;
 export type configuracion = Prisma.configuracionModel;
 /**
  * Model dashboard_indicadores
- *
+ * Sin uso: diseño de un dashboard configurable (elegir indicadores y
+ * acomodarlos en un layout). Ver la nota en `dashboards`.
  */
 export type dashboard_indicadores = Prisma.dashboard_indicadoresModel;
 /**
  * Model dashboards
- *
+ * Sin uso: junto con `dashboard_indicadores`, era un dashboard armable por
+ * el usuario (elegir qué indicadores mostrar y en qué orden). El producto
+ * terminó siendo pantallas fijas por rol (`IndicadoresPage`, `KpisPage`,
+ * `Dashboard` de Monitoreo), que sí usan `indicadores`/`historial_indicadores`
+ * directamente — esas dos SÍ están en uso, solo el "armador" de dashboards
+ * quedó sin construir.
  */
 export type dashboards = Prisma.dashboardsModel;
 /**
@@ -100,12 +111,15 @@ export type eventos_operativos = Prisma.eventos_operativosModel;
 export type eventos_monitoreo = Prisma.eventos_monitoreoModel;
 /**
  * Model evidencias
- *
+ * Sin uso: adjuntos de `incidencias` (ver la nota ahí). La evidencia real de
+ * un caso vive en `anexos_caso`.
  */
 export type evidencias = Prisma.evidenciasModel;
 /**
  * Model evidencias_evento
- *
+ * Sin uso: adjuntos de `eventos_operativos` (el evento original que da
+ * origen a un caso). La evidencia real de un caso vive en `anexos_caso`,
+ * no acá.
  */
 export type evidencias_evento = Prisma.evidencias_eventoModel;
 /**
@@ -114,8 +128,65 @@ export type evidencias_evento = Prisma.evidencias_eventoModel;
  */
 export type historial_indicadores = Prisma.historial_indicadoresModel;
 /**
- * Model incidencias
+ * Model datos_operativos
+ * Valores diarios de operación que alimentan los indicadores y conservan el
+ * mismo nivel de detalle de la base histórica del cliente.
+ */
+export type datos_operativos = Prisma.datos_operativosModel;
+/**
+ * Model contingencia_catalogos
+ * Catálogos propios del módulo de Planes de Contingencia. Nacen del Excel
+ * "PLANTILLA PLANES DE CONTINGENCIA 2026.xlsx" y se guardan separados de los
+ * catálogos SOP/Monitoreo para no mezclar dominios.
+ */
+export type contingencia_catalogos = Prisma.contingencia_catalogosModel;
+/**
+ * Model contingencia_catalogo_items
  *
+ */
+export type contingencia_catalogo_items = Prisma.contingencia_catalogo_itemsModel;
+/**
+ * Model contingencia_eventos
+ * Registro principal del perfil Gestión de Planes de Contingencia. Conserva
+ * la granularidad del Excel, pero dividido en relaciones 1:1 para que el
+ * formulario pueda leerse por secciones.
+ */
+export type contingencia_eventos = Prisma.contingencia_eventosModel;
+/**
+ * Model contingencia_atenciones
+ *
+ */
+export type contingencia_atenciones = Prisma.contingencia_atencionesModel;
+/**
+ * Model contingencia_traslados
+ *
+ */
+export type contingencia_traslados = Prisma.contingencia_trasladosModel;
+/**
+ * Model contingencia_personas
+ *
+ */
+export type contingencia_personas = Prisma.contingencia_personasModel;
+/**
+ * Model contingencia_diagnosticos
+ *
+ */
+export type contingencia_diagnosticos = Prisma.contingencia_diagnosticosModel;
+/**
+ * Model contingencia_cierres
+ *
+ */
+export type contingencia_cierres = Prisma.contingencia_cierresModel;
+/**
+ * Model incidencias
+ * Sin uso real: solo se le hace `.count()` desde `AreaRepository`/
+ * `EstacionRepository` (para bloquear borrar un área/estación "en uso"),
+ * pero nada en la aplicación crea filas acá, así que ese conteo siempre
+ * da 0. Es el diseño genérico original de "incidente" — reemplazado por
+ * `casos_sop` y su propio árbol (`anexos_caso`, `investigacion_caso`,
+ * `planes_accion` con sus campos `prorroga_*`). `evidencias`,
+ * `investigaciones` y `solicitudes_prorroga` son sus satélites, igual de
+ * sin uso.
  */
 export type incidencias = Prisma.incidenciasModel;
 /**
@@ -138,12 +209,16 @@ export type timeline_caso = Prisma.timeline_casoModel;
 export type investigacion_caso = Prisma.investigacion_casoModel;
 /**
  * Model investigaciones
- *
+ * Sin uso: investigación de `incidencias` (ver la nota ahí). La
+ * investigación real de un caso vive en `investigacion_caso`.
  */
 export type investigaciones = Prisma.investigacionesModel;
 /**
  * Model logs_sistema
- *
+ * Sin uso: log de aplicación genérico. Los errores del servidor se
+ * registran con `console.error` (ver `safeErrorMessage` en
+ * `utils/ApiResponse.ts`) y las acciones de negocio quedan en `auditoria`,
+ * no acá.
  */
 export type logs_sistema = Prisma.logs_sistemaModel;
 /**
@@ -169,12 +244,15 @@ export type push_subscriptions = Prisma.push_subscriptionsModel;
 export type planes_accion = Prisma.planes_accionModel;
 /**
  * Model reporte_detalle
- *
+ * Sin uso: fila de detalle de `reporte_estadistico` (ver la nota ahí).
  */
 export type reporte_detalle = Prisma.reporte_detalleModel;
 /**
  * Model reporte_estadistico
- *
+ * Sin uso: diseño de un reporte estadístico que se generaba y se guardaba
+ * en la base. El export real (`ReportExportPage` + `exportarCombinadoExcel`)
+ * arma el Excel al vuelo desde `casos_sop` cada vez, sin persistir un
+ * registro de "reporte" acá.
  */
 export type reporte_estadistico = Prisma.reporte_estadisticoModel;
 /**
@@ -199,7 +277,10 @@ export type sesiones = Prisma.sesionesModel;
 export type solicitudes_informacion = Prisma.solicitudes_informacionModel;
 /**
  * Model solicitudes_prorroga
- *
+ * Sin uso: prórroga de `incidencias` (ver la nota ahí). La prórroga real de
+ * un plan de acción vive en los campos `prorroga_*` de `planes_accion`
+ * (`prorroga_motivo`, `prorroga_fecha`, `prorroga_estado`,
+ * `prorroga_fecha_sol`), no en una tabla aparte.
  */
 export type solicitudes_prorroga = Prisma.solicitudes_prorrogaModel;
 /**

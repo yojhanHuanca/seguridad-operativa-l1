@@ -1,21 +1,15 @@
 import { cn } from "@/lib/utils";
 
-// El archivo real (public/logo-linea1.png) es de 1536×1024, o sea 3:2 —
-// no es cuadrado. Antes este componente forzaba una caja `size × size`, así que
-// `object-contain` encogía el logo hasta caber en el lado corto y dejaba el
-// resto en blanco: con size=110 el logo se veía a 110×73 y sobraban 37 px
-// muertos dentro del propio <img>, más el alto que la cabecera reservaba para
-// ellos. Ahora `size` es el ALTO real del logo y el ancho sale del aspecto.
 const ASPECTO = 1536 / 1024;
 
 interface LogoProps {
-  /** Alto del logo en px. El ancho se deriva del aspecto real de la imagen. */
   size?: number;
   className?: string;
   withWordmark?: boolean;
   wordmark?: string;
   subtitle?: string;
   tone?: "light" | "dark";
+  priority?: boolean;
 }
 
 export function Logo({
@@ -25,6 +19,7 @@ export function Logo({
   wordmark = "SMS L1",
   subtitle = "Seguridad Operativa · Metro de Lima",
   tone = "dark",
+  priority = false,
 }: LogoProps) {
   const width = Math.round(size * ASPECTO);
 
@@ -37,6 +32,9 @@ export function Logo({
         height={size}
         className="shrink-0"
         style={{ width, height: size }}
+        fetchPriority={priority ? "high" : "auto"}
+        decoding="async"
+        loading={priority ? "eager" : "lazy"}
       />
       {withWordmark && (
         <div className="min-w-0 leading-tight">

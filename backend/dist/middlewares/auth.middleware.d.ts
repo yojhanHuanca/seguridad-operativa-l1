@@ -19,7 +19,7 @@ export interface AuthTokenPayload {
 export interface AuthenticatedRequest extends Request {
     user?: AuthTokenPayload;
 }
-export declare const verifyToken: (req: AuthenticatedRequest, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const verifyToken: (req: AuthenticatedRequest, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>>>;
 /**
  * Autenticación opcional para endpoints públicos que pueden beneficiarse de
  * una sesión válida, pero no deben exigirla. Si no hay token, sigue como
@@ -27,7 +27,7 @@ export declare const verifyToken: (req: AuthenticatedRequest, res: Response, nex
  * el QR por sesiones vencidas guardadas en el navegador.
  */
 export declare const optionalVerifyToken: (req: AuthenticatedRequest, _res: Response, next: NextFunction) => Promise<void>;
-export declare const requireRoles: (...roles: string[]) => (req: AuthenticatedRequest, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined;
+export declare const requireRoles: (...roles: string[]) => (req: AuthenticatedRequest, res: Response, next: NextFunction) => Response<any, Record<string, any>>;
 /**
  * Deja pasar a los roles listados en `roles` sin condición, o a los listados
  * en `responsableRoles` solo si además tienen el flag `es_responsable` (ej.

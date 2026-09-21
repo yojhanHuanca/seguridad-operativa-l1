@@ -1,5 +1,5 @@
 import { ProfileService } from "./profile.service.js";
-import { ApiResponse } from "../../utils/ApiResponse.js";
+import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 export class ProfileController {
     static async getMe(req, res) {
         try {
@@ -7,7 +7,7 @@ export class ProfileController {
             return res.json(ApiResponse.success("Perfil obtenido correctamente", user));
         }
         catch (error) {
-            return res.status(404).json(ApiResponse.error(error instanceof Error ? error.message : "Perfil no encontrado"));
+            return res.status(404).json(ApiResponse.error(safeErrorMessage(error, "Perfil no encontrado")));
         }
     }
     static async updateMe(req, res) {
@@ -17,7 +17,7 @@ export class ProfileController {
             return res.json(ApiResponse.success("Perfil actualizado correctamente", user));
         }
         catch (error) {
-            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "No se pudo actualizar el perfil"));
+            return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "No se pudo actualizar el perfil")));
         }
     }
     static async uploadFoto(req, res) {
@@ -30,7 +30,7 @@ export class ProfileController {
             return res.json(ApiResponse.success("Foto de perfil actualizada", user));
         }
         catch (error) {
-            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "No se pudo subir la foto"));
+            return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "No se pudo subir la foto")));
         }
     }
     static async changePassword(req, res) {
@@ -43,7 +43,7 @@ export class ProfileController {
             return res.json(ApiResponse.success("Contraseña actualizada correctamente"));
         }
         catch (error) {
-            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "No se pudo cambiar la contraseña"));
+            return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "No se pudo cambiar la contraseña")));
         }
     }
     static async getActividad(req, res) {
@@ -52,7 +52,7 @@ export class ProfileController {
             return res.json(ApiResponse.success("Actividad obtenida correctamente", actividad));
         }
         catch (error) {
-            return res.status(500).json(ApiResponse.error(error instanceof Error ? error.message : "No se pudo obtener la actividad"));
+            return res.status(500).json(ApiResponse.error(safeErrorMessage(error, "No se pudo obtener la actividad")));
         }
     }
 }

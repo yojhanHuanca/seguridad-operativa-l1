@@ -1,6 +1,6 @@
 import { ZodError } from "zod";
 import { NotificationService } from "./notification.service.js";
-import { ApiResponse } from "../../utils/ApiResponse.js";
+import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 /** Misma convención que case.controller: valida el parámetro de ruta. */
 function param(req, name) {
     const value = req.params[name];
@@ -13,7 +13,7 @@ function fallo(res, error, mensaje) {
     if (error instanceof ZodError) {
         return res.status(400).json(ApiResponse.error("Datos inválidos", error.issues));
     }
-    return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : mensaje));
+    return res.status(400).json(ApiResponse.error(safeErrorMessage(error, mensaje)));
 }
 export class NotificationController {
     static async list(req, res) {

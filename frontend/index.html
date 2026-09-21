@@ -7,9 +7,46 @@
     <link rel="manifest" href="/manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SMS L1 · Seguridad Operativa</title>
+    <link rel="preconnect" href="https://seguridad-operativa-l1.onrender.com" crossorigin />
+    <link rel="preload" as="image" href="/logo-linea1.png" fetchpriority="high" />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="skeleton-screen">
+        <header class="skeleton-header">
+          <div class="skeleton-logo"></div>
+          <div class="skeleton-title">SMS L1 · Seguridad Operativa</div>
+        </header>
+        <main class="skeleton-main">
+          <div class="skeleton-hero">
+            <div class="skeleton-text-large"></div>
+            <div class="skeleton-text-medium"></div>
+            <div class="skeleton-button"></div>
+          </div>
+          <div class="skeleton-stats">
+            <div class="skeleton-stat"></div>
+            <div class="skeleton-stat"></div>
+            <div class="skeleton-stat"></div>
+            <div class="skeleton-stat"></div>
+          </div>
+        </main>
+      </div>
+      <style>
+        .skeleton-screen { min-height: 100vh; background: #fff; display: flex; flex-direction: column; }
+        .skeleton-header { padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid #e5e7eb; }
+        .skeleton-logo { width: 48px; height: 32px; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; }
+        .skeleton-title { font-size: 1.25rem; font-weight: 700; color: #1f2937; }
+        .skeleton-main { flex: 1; padding: 3rem 1.5rem; max-width: 1240px; margin: 0 auto; width: 100%; }
+        .skeleton-hero { text-align: center; margin-bottom: 3rem; }
+        .skeleton-text-large { height: 3rem; width: 60%; margin: 0 auto 1rem; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+        .skeleton-text-medium { height: 1.5rem; width: 40%; margin: 0 auto 1.5rem; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; }
+        .skeleton-button { height: 3rem; width: 14rem; margin: 0 auto; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+        .skeleton-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+        .skeleton-stat { height: 6rem; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 12px; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        @media (max-width: 768px) { .skeleton-stats { grid-template-columns: repeat(2, 1fr); } }
+      </style>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

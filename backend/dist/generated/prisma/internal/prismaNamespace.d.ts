@@ -271,6 +271,15 @@ export declare const ModelName: {
     readonly evidencias: "evidencias";
     readonly evidencias_evento: "evidencias_evento";
     readonly historial_indicadores: "historial_indicadores";
+    readonly datos_operativos: "datos_operativos";
+    readonly contingencia_catalogos: "contingencia_catalogos";
+    readonly contingencia_catalogo_items: "contingencia_catalogo_items";
+    readonly contingencia_eventos: "contingencia_eventos";
+    readonly contingencia_atenciones: "contingencia_atenciones";
+    readonly contingencia_traslados: "contingencia_traslados";
+    readonly contingencia_personas: "contingencia_personas";
+    readonly contingencia_diagnosticos: "contingencia_diagnosticos";
+    readonly contingencia_cierres: "contingencia_cierres";
     readonly incidencias: "incidencias";
     readonly indicadores: "indicadores";
     readonly timeline_caso: "timeline_caso";
@@ -302,7 +311,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         omit: GlobalOmitOptions;
     };
     meta: {
-        modelProps: "actividades_plan" | "anexos_caso" | "areas" | "auditoria" | "bitacora" | "casos_sop" | "catalogo_detalle" | "catalogos" | "configuracion" | "dashboard_indicadores" | "dashboards" | "estaciones" | "evento_caso" | "eventos_operativos" | "eventos_monitoreo" | "evidencias" | "evidencias_evento" | "historial_indicadores" | "incidencias" | "indicadores" | "timeline_caso" | "investigacion_caso" | "investigaciones" | "logs_sistema" | "metas_indicadores" | "notificaciones" | "push_subscriptions" | "planes_accion" | "reporte_detalle" | "reporte_estadistico" | "roles" | "seguimientos" | "sesiones" | "solicitudes_informacion" | "solicitudes_prorroga" | "usuarios" | "password_resets";
+        modelProps: "actividades_plan" | "anexos_caso" | "areas" | "auditoria" | "bitacora" | "casos_sop" | "catalogo_detalle" | "catalogos" | "configuracion" | "dashboard_indicadores" | "dashboards" | "estaciones" | "evento_caso" | "eventos_operativos" | "eventos_monitoreo" | "evidencias" | "evidencias_evento" | "historial_indicadores" | "datos_operativos" | "contingencia_catalogos" | "contingencia_catalogo_items" | "contingencia_eventos" | "contingencia_atenciones" | "contingencia_traslados" | "contingencia_personas" | "contingencia_diagnosticos" | "contingencia_cierres" | "incidencias" | "indicadores" | "timeline_caso" | "investigacion_caso" | "investigaciones" | "logs_sistema" | "metas_indicadores" | "notificaciones" | "push_subscriptions" | "planes_accion" | "reporte_detalle" | "reporte_estadistico" | "roles" | "seguimientos" | "sesiones" | "solicitudes_informacion" | "solicitudes_prorroga" | "usuarios" | "password_resets";
         txIsolationLevel: TransactionIsolationLevel;
     };
     model: {
@@ -1635,6 +1644,672 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
                 count: {
                     args: Prisma.historial_indicadoresCountArgs<ExtArgs>;
                     result: runtime.Types.Utils.Optional<Prisma.Historial_indicadoresCountAggregateOutputType> | number;
+                };
+            };
+        };
+        datos_operativos: {
+            payload: Prisma.$datos_operativosPayload<ExtArgs>;
+            fields: Prisma.datos_operativosFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.datos_operativosFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$datos_operativosPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.datos_operativosFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$datos_operativosPayload>;
+                };
+                findFirst: {
+                    args: Prisma.datos_operativosFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$datos_operativosPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.datos_operativosFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$datos_operativosPayload>;
+                };
+                findMany: {
+                    args: Prisma.datos_operativosFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$datos_operativosPayload>[];
+                };
+                create: {
+                    args: Prisma.datos_operativosCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$datos_operativosPayload>;
+                };
+                createMany: {
+                    args: Prisma.datos_operativosCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.datos_operativosCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$datos_operativosPayload>[];
+                };
+                delete: {
+                    args: Prisma.datos_operativosDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$datos_operativosPayload>;
+                };
+                update: {
+                    args: Prisma.datos_operativosUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$datos_operativosPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.datos_operativosDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.datos_operativosUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.datos_operativosUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$datos_operativosPayload>[];
+                };
+                upsert: {
+                    args: Prisma.datos_operativosUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$datos_operativosPayload>;
+                };
+                aggregate: {
+                    args: Prisma.Datos_operativosAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateDatos_operativos>;
+                };
+                groupBy: {
+                    args: Prisma.datos_operativosGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Datos_operativosGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.datos_operativosCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Datos_operativosCountAggregateOutputType> | number;
+                };
+            };
+        };
+        contingencia_catalogos: {
+            payload: Prisma.$contingencia_catalogosPayload<ExtArgs>;
+            fields: Prisma.contingencia_catalogosFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.contingencia_catalogosFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogosPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.contingencia_catalogosFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogosPayload>;
+                };
+                findFirst: {
+                    args: Prisma.contingencia_catalogosFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogosPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.contingencia_catalogosFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogosPayload>;
+                };
+                findMany: {
+                    args: Prisma.contingencia_catalogosFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogosPayload>[];
+                };
+                create: {
+                    args: Prisma.contingencia_catalogosCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogosPayload>;
+                };
+                createMany: {
+                    args: Prisma.contingencia_catalogosCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.contingencia_catalogosCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogosPayload>[];
+                };
+                delete: {
+                    args: Prisma.contingencia_catalogosDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogosPayload>;
+                };
+                update: {
+                    args: Prisma.contingencia_catalogosUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogosPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.contingencia_catalogosDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.contingencia_catalogosUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.contingencia_catalogosUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogosPayload>[];
+                };
+                upsert: {
+                    args: Prisma.contingencia_catalogosUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogosPayload>;
+                };
+                aggregate: {
+                    args: Prisma.Contingencia_catalogosAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateContingencia_catalogos>;
+                };
+                groupBy: {
+                    args: Prisma.contingencia_catalogosGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Contingencia_catalogosGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.contingencia_catalogosCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Contingencia_catalogosCountAggregateOutputType> | number;
+                };
+            };
+        };
+        contingencia_catalogo_items: {
+            payload: Prisma.$contingencia_catalogo_itemsPayload<ExtArgs>;
+            fields: Prisma.contingencia_catalogo_itemsFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.contingencia_catalogo_itemsFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogo_itemsPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.contingencia_catalogo_itemsFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogo_itemsPayload>;
+                };
+                findFirst: {
+                    args: Prisma.contingencia_catalogo_itemsFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogo_itemsPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.contingencia_catalogo_itemsFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogo_itemsPayload>;
+                };
+                findMany: {
+                    args: Prisma.contingencia_catalogo_itemsFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogo_itemsPayload>[];
+                };
+                create: {
+                    args: Prisma.contingencia_catalogo_itemsCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogo_itemsPayload>;
+                };
+                createMany: {
+                    args: Prisma.contingencia_catalogo_itemsCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.contingencia_catalogo_itemsCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogo_itemsPayload>[];
+                };
+                delete: {
+                    args: Prisma.contingencia_catalogo_itemsDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogo_itemsPayload>;
+                };
+                update: {
+                    args: Prisma.contingencia_catalogo_itemsUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogo_itemsPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.contingencia_catalogo_itemsDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.contingencia_catalogo_itemsUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.contingencia_catalogo_itemsUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogo_itemsPayload>[];
+                };
+                upsert: {
+                    args: Prisma.contingencia_catalogo_itemsUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_catalogo_itemsPayload>;
+                };
+                aggregate: {
+                    args: Prisma.Contingencia_catalogo_itemsAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateContingencia_catalogo_items>;
+                };
+                groupBy: {
+                    args: Prisma.contingencia_catalogo_itemsGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Contingencia_catalogo_itemsGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.contingencia_catalogo_itemsCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Contingencia_catalogo_itemsCountAggregateOutputType> | number;
+                };
+            };
+        };
+        contingencia_eventos: {
+            payload: Prisma.$contingencia_eventosPayload<ExtArgs>;
+            fields: Prisma.contingencia_eventosFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.contingencia_eventosFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_eventosPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.contingencia_eventosFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_eventosPayload>;
+                };
+                findFirst: {
+                    args: Prisma.contingencia_eventosFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_eventosPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.contingencia_eventosFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_eventosPayload>;
+                };
+                findMany: {
+                    args: Prisma.contingencia_eventosFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_eventosPayload>[];
+                };
+                create: {
+                    args: Prisma.contingencia_eventosCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_eventosPayload>;
+                };
+                createMany: {
+                    args: Prisma.contingencia_eventosCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.contingencia_eventosCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_eventosPayload>[];
+                };
+                delete: {
+                    args: Prisma.contingencia_eventosDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_eventosPayload>;
+                };
+                update: {
+                    args: Prisma.contingencia_eventosUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_eventosPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.contingencia_eventosDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.contingencia_eventosUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.contingencia_eventosUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_eventosPayload>[];
+                };
+                upsert: {
+                    args: Prisma.contingencia_eventosUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_eventosPayload>;
+                };
+                aggregate: {
+                    args: Prisma.Contingencia_eventosAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateContingencia_eventos>;
+                };
+                groupBy: {
+                    args: Prisma.contingencia_eventosGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Contingencia_eventosGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.contingencia_eventosCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Contingencia_eventosCountAggregateOutputType> | number;
+                };
+            };
+        };
+        contingencia_atenciones: {
+            payload: Prisma.$contingencia_atencionesPayload<ExtArgs>;
+            fields: Prisma.contingencia_atencionesFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.contingencia_atencionesFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_atencionesPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.contingencia_atencionesFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_atencionesPayload>;
+                };
+                findFirst: {
+                    args: Prisma.contingencia_atencionesFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_atencionesPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.contingencia_atencionesFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_atencionesPayload>;
+                };
+                findMany: {
+                    args: Prisma.contingencia_atencionesFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_atencionesPayload>[];
+                };
+                create: {
+                    args: Prisma.contingencia_atencionesCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_atencionesPayload>;
+                };
+                createMany: {
+                    args: Prisma.contingencia_atencionesCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.contingencia_atencionesCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_atencionesPayload>[];
+                };
+                delete: {
+                    args: Prisma.contingencia_atencionesDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_atencionesPayload>;
+                };
+                update: {
+                    args: Prisma.contingencia_atencionesUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_atencionesPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.contingencia_atencionesDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.contingencia_atencionesUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.contingencia_atencionesUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_atencionesPayload>[];
+                };
+                upsert: {
+                    args: Prisma.contingencia_atencionesUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_atencionesPayload>;
+                };
+                aggregate: {
+                    args: Prisma.Contingencia_atencionesAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateContingencia_atenciones>;
+                };
+                groupBy: {
+                    args: Prisma.contingencia_atencionesGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Contingencia_atencionesGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.contingencia_atencionesCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Contingencia_atencionesCountAggregateOutputType> | number;
+                };
+            };
+        };
+        contingencia_traslados: {
+            payload: Prisma.$contingencia_trasladosPayload<ExtArgs>;
+            fields: Prisma.contingencia_trasladosFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.contingencia_trasladosFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_trasladosPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.contingencia_trasladosFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_trasladosPayload>;
+                };
+                findFirst: {
+                    args: Prisma.contingencia_trasladosFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_trasladosPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.contingencia_trasladosFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_trasladosPayload>;
+                };
+                findMany: {
+                    args: Prisma.contingencia_trasladosFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_trasladosPayload>[];
+                };
+                create: {
+                    args: Prisma.contingencia_trasladosCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_trasladosPayload>;
+                };
+                createMany: {
+                    args: Prisma.contingencia_trasladosCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.contingencia_trasladosCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_trasladosPayload>[];
+                };
+                delete: {
+                    args: Prisma.contingencia_trasladosDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_trasladosPayload>;
+                };
+                update: {
+                    args: Prisma.contingencia_trasladosUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_trasladosPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.contingencia_trasladosDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.contingencia_trasladosUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.contingencia_trasladosUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_trasladosPayload>[];
+                };
+                upsert: {
+                    args: Prisma.contingencia_trasladosUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_trasladosPayload>;
+                };
+                aggregate: {
+                    args: Prisma.Contingencia_trasladosAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateContingencia_traslados>;
+                };
+                groupBy: {
+                    args: Prisma.contingencia_trasladosGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Contingencia_trasladosGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.contingencia_trasladosCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Contingencia_trasladosCountAggregateOutputType> | number;
+                };
+            };
+        };
+        contingencia_personas: {
+            payload: Prisma.$contingencia_personasPayload<ExtArgs>;
+            fields: Prisma.contingencia_personasFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.contingencia_personasFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_personasPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.contingencia_personasFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_personasPayload>;
+                };
+                findFirst: {
+                    args: Prisma.contingencia_personasFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_personasPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.contingencia_personasFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_personasPayload>;
+                };
+                findMany: {
+                    args: Prisma.contingencia_personasFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_personasPayload>[];
+                };
+                create: {
+                    args: Prisma.contingencia_personasCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_personasPayload>;
+                };
+                createMany: {
+                    args: Prisma.contingencia_personasCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.contingencia_personasCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_personasPayload>[];
+                };
+                delete: {
+                    args: Prisma.contingencia_personasDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_personasPayload>;
+                };
+                update: {
+                    args: Prisma.contingencia_personasUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_personasPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.contingencia_personasDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.contingencia_personasUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.contingencia_personasUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_personasPayload>[];
+                };
+                upsert: {
+                    args: Prisma.contingencia_personasUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_personasPayload>;
+                };
+                aggregate: {
+                    args: Prisma.Contingencia_personasAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateContingencia_personas>;
+                };
+                groupBy: {
+                    args: Prisma.contingencia_personasGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Contingencia_personasGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.contingencia_personasCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Contingencia_personasCountAggregateOutputType> | number;
+                };
+            };
+        };
+        contingencia_diagnosticos: {
+            payload: Prisma.$contingencia_diagnosticosPayload<ExtArgs>;
+            fields: Prisma.contingencia_diagnosticosFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.contingencia_diagnosticosFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_diagnosticosPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.contingencia_diagnosticosFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_diagnosticosPayload>;
+                };
+                findFirst: {
+                    args: Prisma.contingencia_diagnosticosFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_diagnosticosPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.contingencia_diagnosticosFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_diagnosticosPayload>;
+                };
+                findMany: {
+                    args: Prisma.contingencia_diagnosticosFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_diagnosticosPayload>[];
+                };
+                create: {
+                    args: Prisma.contingencia_diagnosticosCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_diagnosticosPayload>;
+                };
+                createMany: {
+                    args: Prisma.contingencia_diagnosticosCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.contingencia_diagnosticosCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_diagnosticosPayload>[];
+                };
+                delete: {
+                    args: Prisma.contingencia_diagnosticosDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_diagnosticosPayload>;
+                };
+                update: {
+                    args: Prisma.contingencia_diagnosticosUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_diagnosticosPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.contingencia_diagnosticosDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.contingencia_diagnosticosUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.contingencia_diagnosticosUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_diagnosticosPayload>[];
+                };
+                upsert: {
+                    args: Prisma.contingencia_diagnosticosUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_diagnosticosPayload>;
+                };
+                aggregate: {
+                    args: Prisma.Contingencia_diagnosticosAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateContingencia_diagnosticos>;
+                };
+                groupBy: {
+                    args: Prisma.contingencia_diagnosticosGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Contingencia_diagnosticosGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.contingencia_diagnosticosCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Contingencia_diagnosticosCountAggregateOutputType> | number;
+                };
+            };
+        };
+        contingencia_cierres: {
+            payload: Prisma.$contingencia_cierresPayload<ExtArgs>;
+            fields: Prisma.contingencia_cierresFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.contingencia_cierresFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_cierresPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.contingencia_cierresFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_cierresPayload>;
+                };
+                findFirst: {
+                    args: Prisma.contingencia_cierresFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_cierresPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.contingencia_cierresFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_cierresPayload>;
+                };
+                findMany: {
+                    args: Prisma.contingencia_cierresFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_cierresPayload>[];
+                };
+                create: {
+                    args: Prisma.contingencia_cierresCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_cierresPayload>;
+                };
+                createMany: {
+                    args: Prisma.contingencia_cierresCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.contingencia_cierresCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_cierresPayload>[];
+                };
+                delete: {
+                    args: Prisma.contingencia_cierresDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_cierresPayload>;
+                };
+                update: {
+                    args: Prisma.contingencia_cierresUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_cierresPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.contingencia_cierresDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.contingencia_cierresUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.contingencia_cierresUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_cierresPayload>[];
+                };
+                upsert: {
+                    args: Prisma.contingencia_cierresUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$contingencia_cierresPayload>;
+                };
+                aggregate: {
+                    args: Prisma.Contingencia_cierresAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateContingencia_cierres>;
+                };
+                groupBy: {
+                    args: Prisma.contingencia_cierresGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Contingencia_cierresGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.contingencia_cierresCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.Contingencia_cierresCountAggregateOutputType> | number;
                 };
             };
         };
@@ -3313,6 +3988,131 @@ export declare const Historial_indicadoresScalarFieldEnum: {
     readonly observacion: "observacion";
 };
 export type Historial_indicadoresScalarFieldEnum = (typeof Historial_indicadoresScalarFieldEnum)[keyof typeof Historial_indicadoresScalarFieldEnum];
+export declare const Datos_operativosScalarFieldEnum: {
+    readonly id_dato_operativo: "id_dato_operativo";
+    readonly fecha: "fecha";
+    readonly qty_carreras: "qty_carreras";
+    readonly qty_pasajeros: "qty_pasajeros";
+    readonly km_comercial: "km_comercial";
+    readonly km_no_comercial: "km_no_comercial";
+    readonly paradas_estacion: "paradas_estacion";
+    readonly created_at: "created_at";
+    readonly updated_at: "updated_at";
+};
+export type Datos_operativosScalarFieldEnum = (typeof Datos_operativosScalarFieldEnum)[keyof typeof Datos_operativosScalarFieldEnum];
+export declare const Contingencia_catalogosScalarFieldEnum: {
+    readonly id_catalogo: "id_catalogo";
+    readonly codigo: "codigo";
+    readonly nombre: "nombre";
+    readonly hoja_excel: "hoja_excel";
+    readonly columna_excel: "columna_excel";
+    readonly estado: "estado";
+    readonly created_at: "created_at";
+};
+export type Contingencia_catalogosScalarFieldEnum = (typeof Contingencia_catalogosScalarFieldEnum)[keyof typeof Contingencia_catalogosScalarFieldEnum];
+export declare const Contingencia_catalogo_itemsScalarFieldEnum: {
+    readonly id_item: "id_item";
+    readonly id_catalogo: "id_catalogo";
+    readonly valor: "valor";
+    readonly orden: "orden";
+    readonly estado: "estado";
+    readonly created_at: "created_at";
+};
+export type Contingencia_catalogo_itemsScalarFieldEnum = (typeof Contingencia_catalogo_itemsScalarFieldEnum)[keyof typeof Contingencia_catalogo_itemsScalarFieldEnum];
+export declare const Contingencia_eventosScalarFieldEnum: {
+    readonly id_evento: "id_evento";
+    readonly codigo_evento: "codigo_evento";
+    readonly fecha: "fecha";
+    readonly hora_reporte: "hora_reporte";
+    readonly mes: "mes";
+    readonly tipo_evento: "tipo_evento";
+    readonly lugar_evento: "lugar_evento";
+    readonly lugar_exacto_evento: "lugar_exacto_evento";
+    readonly quien_reporta: "quien_reporta";
+    readonly medio_comunicacion_primer_reporte: "medio_comunicacion_primer_reporte";
+    readonly estado_usuario_reportado: "estado_usuario_reportado";
+    readonly acepta_atencion: "acepta_atencion";
+    readonly atencion_inicial: "atencion_inicial";
+    readonly atencion_final: "atencion_final";
+    readonly nivel_inicial: "nivel_inicial";
+    readonly nivel_final: "nivel_final";
+    readonly hora_termino_ae: "hora_termino_ae";
+    readonly estado: "estado";
+    readonly created_by: "created_by";
+    readonly updated_by: "updated_by";
+    readonly created_at: "created_at";
+    readonly updated_at: "updated_at";
+};
+export type Contingencia_eventosScalarFieldEnum = (typeof Contingencia_eventosScalarFieldEnum)[keyof typeof Contingencia_eventosScalarFieldEnum];
+export declare const Contingencia_atencionesScalarFieldEnum: {
+    readonly id_atencion: "id_atencion";
+    readonly id_evento: "id_evento";
+    readonly hora_llamado_pco_sppa: "hora_llamado_pco_sppa";
+    readonly hora_llegada_spaa: "hora_llegada_spaa";
+    readonly hora_inicio_spaa: "hora_inicio_spaa";
+    readonly hora_termino_atencion_inicio_traslado: "hora_termino_atencion_inicio_traslado";
+    readonly estacion_partida_spaa: "estacion_partida_spaa";
+    readonly medio_transporte_spaa: "medio_transporte_spaa";
+    readonly trasladado_por: "trasladado_por";
+};
+export type Contingencia_atencionesScalarFieldEnum = (typeof Contingencia_atencionesScalarFieldEnum)[keyof typeof Contingencia_atencionesScalarFieldEnum];
+export declare const Contingencia_trasladosScalarFieldEnum: {
+    readonly id_traslado: "id_traslado";
+    readonly id_evento: "id_evento";
+    readonly estacion_partida_ambulancia: "estacion_partida_ambulancia";
+    readonly estacion_llegada_ambulancia: "estacion_llegada_ambulancia";
+    readonly hora_llamado_ambulancia: "hora_llamado_ambulancia";
+    readonly hora_llegada_estacion: "hora_llegada_estacion";
+    readonly hora_salida_centro_salud: "hora_salida_centro_salud";
+    readonly hora_llegada_centro_medico: "hora_llegada_centro_medico";
+    readonly hora_retiro_centro_medico: "hora_retiro_centro_medico";
+    readonly hora_retorno_puesto: "hora_retorno_puesto";
+    readonly hora_llamado_ambulancia_tercero: "hora_llamado_ambulancia_tercero";
+    readonly hora_llegada_ambulancia_terceros: "hora_llegada_ambulancia_terceros";
+    readonly hora_inicio_traslado_ambulancia_terceros: "hora_inicio_traslado_ambulancia_terceros";
+    readonly centro_salud: "centro_salud";
+};
+export type Contingencia_trasladosScalarFieldEnum = (typeof Contingencia_trasladosScalarFieldEnum)[keyof typeof Contingencia_trasladosScalarFieldEnum];
+export declare const Contingencia_personasScalarFieldEnum: {
+    readonly id_persona: "id_persona";
+    readonly id_evento: "id_evento";
+    readonly nombre_persona: "nombre_persona";
+    readonly dni: "dni";
+    readonly sexo: "sexo";
+    readonly edad: "edad";
+    readonly tarjeta_cliente: "tarjeta_cliente";
+    readonly categoria_paciente: "categoria_paciente";
+    readonly extranjero: "extranjero";
+    readonly estacion_origen_usuario: "estacion_origen_usuario";
+    readonly estacion_destino_usuario: "estacion_destino_usuario";
+    readonly acompanante: "acompanante";
+    readonly numero_dni_acompanante: "numero_dni_acompanante";
+};
+export type Contingencia_personasScalarFieldEnum = (typeof Contingencia_personasScalarFieldEnum)[keyof typeof Contingencia_personasScalarFieldEnum];
+export declare const Contingencia_diagnosticosScalarFieldEnum: {
+    readonly id_diagnostico: "id_diagnostico";
+    readonly id_evento: "id_evento";
+    readonly reporte_pco: "reporte_pco";
+    readonly reporte_cliente: "reporte_cliente";
+    readonly diagnostico_presuntivo: "diagnostico_presuntivo";
+    readonly sintomas_presentados: "sintomas_presentados";
+    readonly zona_lesion: "zona_lesion";
+    readonly nombre_personal_salud: "nombre_personal_salud";
+    readonly tipo_declaracion_jurada: "tipo_declaracion_jurada";
+    readonly nro_declaracion_jurada: "nro_declaracion_jurada";
+};
+export type Contingencia_diagnosticosScalarFieldEnum = (typeof Contingencia_diagnosticosScalarFieldEnum)[keyof typeof Contingencia_diagnosticosScalarFieldEnum];
+export declare const Contingencia_cierresScalarFieldEnum: {
+    readonly id_cierre: "id_cierre";
+    readonly id_evento: "id_evento";
+    readonly breve_descripcion_hecho: "breve_descripcion_hecho";
+    readonly reserva_camaras: "reserva_camaras";
+    readonly observacion: "observacion";
+    readonly registro: "registro";
+    readonly revision: "revision";
+    readonly casos_sospechosos_covid_19: "casos_sospechosos_covid_19";
+};
+export type Contingencia_cierresScalarFieldEnum = (typeof Contingencia_cierresScalarFieldEnum)[keyof typeof Contingencia_cierresScalarFieldEnum];
 export declare const IncidenciasScalarFieldEnum: {
     readonly id_incidencia: "id_incidencia";
     readonly codigo_incidencia: "codigo_incidencia";
@@ -3725,6 +4525,15 @@ export type GlobalOmitConfig = {
     evidencias?: Prisma.evidenciasOmit;
     evidencias_evento?: Prisma.evidencias_eventoOmit;
     historial_indicadores?: Prisma.historial_indicadoresOmit;
+    datos_operativos?: Prisma.datos_operativosOmit;
+    contingencia_catalogos?: Prisma.contingencia_catalogosOmit;
+    contingencia_catalogo_items?: Prisma.contingencia_catalogo_itemsOmit;
+    contingencia_eventos?: Prisma.contingencia_eventosOmit;
+    contingencia_atenciones?: Prisma.contingencia_atencionesOmit;
+    contingencia_traslados?: Prisma.contingencia_trasladosOmit;
+    contingencia_personas?: Prisma.contingencia_personasOmit;
+    contingencia_diagnosticos?: Prisma.contingencia_diagnosticosOmit;
+    contingencia_cierres?: Prisma.contingencia_cierresOmit;
     incidencias?: Prisma.incidenciasOmit;
     indicadores?: Prisma.indicadoresOmit;
     timeline_caso?: Prisma.timeline_casoOmit;

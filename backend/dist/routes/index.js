@@ -16,12 +16,14 @@ import dashboardRoutes from "../modules/dashboard/dashboard.routes.js";
 import auditoriaRoutes from "../modules/auditoria/auditoria.routes.js";
 import importacionRoutes from "../modules/importacion/importacion.routes.js";
 import configuracionRoutes from "../modules/configuracion/configuracion.routes.js";
+import datosOperativosRoutes from "../modules/datos-operativos/datos-operativos.routes.js";
+import contingenciasRoutes from "../modules/contingencias/contingencia.routes.js";
 import { ConfiguracionController } from "../modules/configuracion/configuracion.controller.js";
 import { AuthController } from "../modules/auth/auth.controller.js";
 import { optionalVerifyToken, verifyToken } from "../middlewares/auth.middleware.js";
 import { CatalogController } from "../modules/catalogs/catalog.controller.js";
 import { ReportController } from "../modules/reports/report.controller.js";
-import { uploadEvidencia } from "../middlewares/upload.middleware.js";
+import { uploadEvidencia, verificarContenidoEvidencia } from "../middlewares/upload.middleware.js";
 import { publicReportRateLimit } from "../middlewares/loginRateLimit.middleware.js";
 const router = Router();
 router.get("/", (_req, res) => {
@@ -37,12 +39,12 @@ router.use("/auth", authRoutes);
 // reporte y los catálogos que llenan sus selects (tipo, ubicación, etc.) —
 // todo lo demás de /reports y /catalogs sigue exigiendo sesión más abajo.
 router.get("/catalogs", CatalogController.getAll);
-router.post("/reports", publicReportRateLimit, optionalVerifyToken, uploadEvidencia.array("evidencia", 10), ReportController.create);
+router.post("/reports", publicReportRateLimit, optionalVerifyToken, uploadEvidencia.array("evidencia", 10), verificarContenidoEvidencia, ReportController.create);
 // El código real del caso hace de "llave" de seguimiento: quien reportó sin
 // cuenta lo usa para consultar su estado después, sin loguearse.
 router.get("/reports/consulta/:codigo", ReportController.getByCodigo);
 // Responder una solicitud de información sin cuenta: mismo código como llave.
-router.post("/reports/consulta/:codigo/responder-info", publicReportRateLimit, uploadEvidencia.array("evidencia", 10), ReportController.responderInfo);
+router.post("/reports/consulta/:codigo/responder-info", publicReportRateLimit, uploadEvidencia.array("evidencia", 10), verificarContenidoEvidencia, ReportController.responderInfo);
 router.get("/configuracion/publica", ConfiguracionController.publica);
 router.use(verifyToken);
 router.use("/users", usersRoutes);
@@ -61,6 +63,8 @@ router.use("/dashboard", dashboardRoutes);
 router.use("/auditoria", auditoriaRoutes);
 router.use("/importacion", importacionRoutes);
 router.use("/configuracion", configuracionRoutes);
+router.use("/datos-operativos", datosOperativosRoutes);
+router.use("/contingencias", contingenciasRoutes);
 router.get("/", AuthController.home);
 export default router;
 //# sourceMappingURL=index.js.map

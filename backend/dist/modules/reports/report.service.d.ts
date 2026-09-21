@@ -104,7 +104,7 @@ export declare class ReportService {
                 eventos_operativos: {
                     catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: {
                         nombre: string;
-                    } | null;
+                    };
                     catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: {
                         nombre: string;
                     };
@@ -147,18 +147,18 @@ export declare class ReportService {
             })[];
             areas: {
                 nombre_area: string;
-            } | null;
+            };
             solicitudes_informacion: {
                 mensaje: string;
                 id_solicitud: number;
-                respuesta: string | null;
+                respuesta: string;
                 respondida: boolean;
-                fecha_solicitud: Date | null;
-                fecha_respuesta: Date | null;
+                fecha_solicitud: Date;
+                fecha_respuesta: Date;
             }[];
             catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
                 nombre: string;
-                color: string | null;
+                color: string;
             };
             catalogo_detalle_casos_sop_tipoTocatalogo_detalle: {
                 nombre: string;
@@ -224,7 +224,7 @@ export declare class ReportService {
             eventos_operativos: {
                 catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle: {
                     nombre: string;
-                } | null;
+                };
                 catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle: {
                     nombre: string;
                 };
@@ -232,25 +232,25 @@ export declare class ReportService {
         }[];
         areas: {
             nombre_area: string;
-        } | null;
-        created_at: Date | null;
+        };
+        created_at: Date;
         solicitudes_informacion: {
             mensaje: string;
             id_solicitud: number;
-            respuesta: string | null;
+            respuesta: string;
             respondida: boolean;
-            fecha_solicitud: Date | null;
-            fecha_respuesta: Date | null;
+            fecha_solicitud: Date;
+            fecha_respuesta: Date;
         }[];
         descripcion: string;
         id_caso: number;
         codigo_sop: string;
-        titulo: string | null;
+        titulo: string;
         fecha_hallazgo: Date;
-        fecha_evento: Date | null;
+        fecha_evento: Date;
         catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: {
             nombre: string;
-            color: string | null;
+            color: string;
         };
         catalogo_detalle_casos_sop_tipoTocatalogo_detalle: {
             nombre: string;

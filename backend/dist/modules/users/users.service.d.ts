@@ -12,21 +12,21 @@ export declare class UsersService {
             codigo_usuario: string;
             correo: string;
             nombre: string;
-            cargo: string | null;
-            telefono: string | null;
-            estado: string | null;
-            ultimo_acceso: Date | null;
+            cargo: string;
+            telefono: string;
+            estado: string;
+            ultimo_acceso: Date;
             es_responsable: boolean;
             puede_reabrir_casos: boolean;
             puede_rechazar_reportes: boolean;
-            id_area: number | null;
-            id_rol: number | null;
+            id_area: number;
+            id_rol: number;
             areas: {
                 nombre_area: string;
-            } | null;
+            };
             roles: {
                 nombre_rol: string;
-            } | null;
+            };
         }[];
         total: number | undefined;
     }>;
@@ -50,89 +50,89 @@ export declare class UsersService {
         id_usuario: number;
         codigo_usuario: string;
         nombre: string;
-        cargo: string | null;
-        estado: string | null;
+        cargo: string;
+        estado: string;
         es_responsable: boolean;
-        id_area: number | null;
-        id_rol: number | null;
+        id_area: number;
+        id_rol: number;
         areas: {
             nombre_area: string;
-        } | null;
+        };
         roles: {
             nombre_rol: string;
-        } | null;
+        };
     }[]>;
     static getUserById(rawId: unknown): Promise<{
         id_usuario: number;
         codigo_usuario: string;
         correo: string;
         nombre: string;
-        cargo: string | null;
-        telefono: string | null;
-        estado: string | null;
-        fecha_ingreso: Date | null;
-        ultimo_acceso: Date | null;
+        cargo: string;
+        telefono: string;
+        estado: string;
+        fecha_ingreso: Date;
+        ultimo_acceso: Date;
         es_responsable: boolean;
         puede_reabrir_casos: boolean;
         puede_rechazar_reportes: boolean;
-        id_area: number | null;
-        id_rol: number | null;
+        id_area: number;
+        id_rol: number;
         areas: {
             id_area: number;
             nombre_area: string;
-        } | null;
+        };
         roles: {
             id_rol: number;
             nombre_rol: string;
-        } | null;
-    } | null>;
+        };
+    }>;
     static createUser(rawBody: unknown, actor?: Actor, ip?: string | null): Promise<{
         id_usuario: number;
         codigo_usuario: string;
         correo: string;
         nombre: string;
-        cargo: string | null;
-        telefono: string | null;
-        estado: string | null;
-        fecha_ingreso: Date | null;
-        ultimo_acceso: Date | null;
+        cargo: string;
+        telefono: string;
+        estado: string;
+        fecha_ingreso: Date;
+        ultimo_acceso: Date;
         es_responsable: boolean;
         puede_reabrir_casos: boolean;
         puede_rechazar_reportes: boolean;
-        id_area: number | null;
-        id_rol: number | null;
+        id_area: number;
+        id_rol: number;
         areas: {
             id_area: number;
             nombre_area: string;
-        } | null;
+        };
         roles: {
             id_rol: number;
             nombre_rol: string;
-        } | null;
+        };
     }>;
     static updateUser(rawId: unknown, rawBody: unknown, actor?: Actor, ip?: string | null): Promise<{
         id_usuario: number;
         codigo_usuario: string;
         correo: string;
         nombre: string;
-        cargo: string | null;
-        telefono: string | null;
-        estado: string | null;
-        fecha_ingreso: Date | null;
-        ultimo_acceso: Date | null;
+        cargo: string;
+        telefono: string;
+        estado: string;
+        fecha_ingreso: Date;
+        ultimo_acceso: Date;
         es_responsable: boolean;
         puede_reabrir_casos: boolean;
         puede_rechazar_reportes: boolean;
-        id_area: number | null;
-        id_rol: number | null;
+        id_area: number;
+        id_rol: number;
         areas: {
             id_area: number;
             nombre_area: string;
-        } | null;
+        };
         roles: {
             id_rol: number;
             nombre_rol: string;
-        } | null;
+        };
     }>;
 }
 //# sourceMappingURL=users.service.d.ts.map

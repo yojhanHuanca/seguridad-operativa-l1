@@ -6,7 +6,7 @@ export declare class EstacionRepository {
     static findByNombre(nombre_estacion: string): Promise<{
         id_estacion: number;
         nombre_estacion: string;
-    } | null>;
+    }>;
     static create(nombre_estacion: string): Promise<{
         id_estacion: number;
         nombre_estacion: string;

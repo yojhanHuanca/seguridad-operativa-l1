@@ -1,5 +1,5 @@
 import { EstacionService } from "./estacion.service.js";
-import { ApiResponse } from "../../utils/ApiResponse.js";
+import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 export class EstacionController {
     static async getAll(_req, res) {
         try {
@@ -16,7 +16,7 @@ export class EstacionController {
             return res.status(201).json(ApiResponse.success("Estación creada correctamente", estacion));
         }
         catch (error) {
-            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al crear la estación"));
+            return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "Error al crear la estación")));
         }
     }
     static async update(req, res) {
@@ -26,7 +26,7 @@ export class EstacionController {
             return res.json(ApiResponse.success("Estación actualizada correctamente", estacion));
         }
         catch (error) {
-            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al actualizar la estación"));
+            return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "Error al actualizar la estación")));
         }
     }
     static async remove(req, res) {
@@ -36,7 +36,7 @@ export class EstacionController {
             return res.json(ApiResponse.success("Estación eliminada correctamente"));
         }
         catch (error) {
-            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al eliminar la estación"));
+            return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "Error al eliminar la estación")));
         }
     }
 }

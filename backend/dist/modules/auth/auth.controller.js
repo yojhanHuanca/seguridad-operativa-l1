@@ -1,4 +1,4 @@
-import { ApiResponse } from "../../utils/ApiResponse.js";
+import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 import { AuthService } from "./auth.service.js";
 export class AuthController {
     static async login(req, res) {
@@ -59,7 +59,7 @@ export class AuthController {
             return res.status(200).json(ApiResponse.success("Contraseña actualizada. Ya puedes iniciar sesión."));
         }
         catch (error) {
-            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "No se pudo restablecer la contraseña", error));
+            return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "No se pudo restablecer la contraseña"), error));
         }
     }
     static async logout(req, res) {
@@ -77,7 +77,7 @@ export class AuthController {
             return res.status(200).json(ApiResponse.success("Auth service status", result));
         }
         catch (error) {
-            return res.status(500).json(ApiResponse.error(error instanceof Error ? error.message : "Error interno", error));
+            return res.status(500).json(ApiResponse.error(safeErrorMessage(error, "Error interno"), error));
         }
     }
 }

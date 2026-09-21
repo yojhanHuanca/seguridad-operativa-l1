@@ -150,7 +150,7 @@ export class UserRepository {
                     password_hash: data.password_hash,
                     cargo: data.cargo ?? null,
                     telefono: data.telefono ?? null,
-                    id_area: data.id_area,
+                    id_area: data.id_area ?? null,
                     id_rol: data.id_rol,
                     es_responsable: data.es_responsable ?? false,
                     puede_reabrir_casos: data.puede_reabrir_casos ?? false,

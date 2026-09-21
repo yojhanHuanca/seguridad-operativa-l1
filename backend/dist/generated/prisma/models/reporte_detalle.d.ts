@@ -2,7 +2,7 @@ import type * as runtime from "@prisma/client/runtime/library";
 import type * as Prisma from "../internal/prismaNamespace.js";
 /**
  * Model reporte_detalle
- *
+ * Sin uso: fila de detalle de `reporte_estadistico` (ver la nota ahí).
  */
 export type reporte_detalleModel = runtime.Types.Result.DefaultSelection<Prisma.$reporte_detallePayload>;
 export type AggregateReporte_detalle = {

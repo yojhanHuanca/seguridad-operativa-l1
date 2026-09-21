@@ -4,20 +4,20 @@ export declare class ProfileService {
         codigo_usuario: string;
         correo: string;
         nombre: string;
-        cargo: string | null;
-        telefono: string | null;
-        estado: string | null;
-        fecha_ingreso: Date | null;
-        foto_url: string | null;
-        ultimo_acceso: Date | null;
-        id_area: number | null;
-        id_rol: number | null;
+        cargo: string;
+        telefono: string;
+        estado: string;
+        fecha_ingreso: Date;
+        foto_url: string;
+        ultimo_acceso: Date;
+        id_area: number;
+        id_rol: number;
         areas: {
             nombre_area: string;
-        } | null;
+        };
         roles: {
             nombre_rol: string;
-        } | null;
+        };
     }>;
     static updateContact(id_usuario: number, data: {
         telefono?: string | null;
@@ -27,20 +27,20 @@ export declare class ProfileService {
         codigo_usuario: string;
         correo: string;
         nombre: string;
-        cargo: string | null;
-        telefono: string | null;
-        estado: string | null;
-        fecha_ingreso: Date | null;
-        foto_url: string | null;
-        ultimo_acceso: Date | null;
-        id_area: number | null;
-        id_rol: number | null;
+        cargo: string;
+        telefono: string;
+        estado: string;
+        fecha_ingreso: Date;
+        foto_url: string;
+        ultimo_acceso: Date;
+        id_area: number;
+        id_rol: number;
         areas: {
             nombre_area: string;
-        } | null;
+        };
         roles: {
             nombre_rol: string;
-        } | null;
+        };
     }>;
     static changePassword(id_usuario: number, actual: string, nueva: string): Promise<void>;
     static getActividad(id_usuario: number, rol_nombre: string): Promise<{

@@ -1,5 +1,5 @@
 import { AreaService } from "./area.service.js";
-import { ApiResponse } from "../../utils/ApiResponse.js";
+import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 export class AreaController {
     static async getAll(_req, res) {
         try {
@@ -16,7 +16,7 @@ export class AreaController {
             return res.status(201).json(ApiResponse.success("Área creada correctamente", area));
         }
         catch (error) {
-            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al crear el área"));
+            return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "Error al crear el área")));
         }
     }
     static async update(req, res) {
@@ -26,7 +26,7 @@ export class AreaController {
             return res.json(ApiResponse.success("Área actualizada correctamente", area));
         }
         catch (error) {
-            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al actualizar el área"));
+            return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "Error al actualizar el área")));
         }
     }
     static async remove(req, res) {
@@ -36,7 +36,7 @@ export class AreaController {
             return res.json(ApiResponse.success("Área eliminada correctamente"));
         }
         catch (error) {
-            return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : "Error al eliminar el área"));
+            return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "Error al eliminar el área")));
         }
     }
 }

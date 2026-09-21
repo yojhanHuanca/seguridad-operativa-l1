@@ -6,12 +6,21 @@ import { AuditoriaService, diffCampos } from "../auditoria/auditoria.service.js"
 /** Campos sensibles que nunca deben llegar al registro de auditoría en texto plano. */
 const CAMPOS_SENSIBLES = new Set(["password", "password_hash"]);
 const ROL_SEGURIDAD_OPERATIVA = "Seguridad Operativa";
+const ROL_JEFE_AREA = "Jefe de Área";
 const PERMISOS_ESPECIALES = ["es_responsable", "puede_reabrir_casos", "puede_rechazar_reportes"];
 function paraAuditoria(usuario) {
     return Object.fromEntries(Object.entries(usuario).filter(([key]) => !CAMPOS_SENSIBLES.has(key)));
 }
 function sinIndefinidos(obj) {
     return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
+}
+function areaSoloParaJefeArea(data, nombreRol, areaActual) {
+    if (nombreRol !== ROL_JEFE_AREA)
+        return { ...data, id_area: null };
+    const idArea = data.id_area ?? areaActual ?? null;
+    if (!idArea)
+        throw new Error("El rol Jefe de Área requiere un área asignada");
+    return { ...data, id_area: idArea };
 }
 function permisosSoloParaSO(data, nombreRol) {
     if (nombreRol === ROL_SEGURIDAD_OPERATIVA)
@@ -64,9 +73,10 @@ export class UsersService {
         // Hash de la contraseña
         const password_hash = await BcryptHelper.hash(data.password);
         const rol = await RoleRepository.findById(data.id_rol);
-        // Crear el ususario
+        const dataNormalizada = areaSoloParaJefeArea(data, rol?.nombre_rol);
+        // Crear el usuario
         const creado = await UserRepository.createWithGeneratedCode(sinIndefinidos(permisosSoloParaSO({
-            ...data,
+            ...dataNormalizada,
             password_hash,
         }, rol?.nombre_rol)));
         if (actor) {
@@ -100,8 +110,9 @@ export class UsersService {
         const { password, ...rest } = data;
         const password_hash = password ? await BcryptHelper.hash(password) : undefined;
         const rolDestino = rest.id_rol ? await RoleRepository.findById(rest.id_rol) : usuario.roles;
+        const dataNormalizada = areaSoloParaJefeArea(rest, rolDestino?.nombre_rol, usuario.id_area);
         const actualizado = await UserRepository.update(id, sinIndefinidos(permisosSoloParaSO({
-            ...rest,
+            ...dataNormalizada,
             ...(password_hash ? { password_hash } : {}),
         }, rolDestino?.nombre_rol)));
         if (actor) {

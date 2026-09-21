@@ -1,4 +1,4 @@
-import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiResponse, safeErrorMessage } from "../utils/ApiResponse.js";
 /** Manejador de errores global de Express — red de seguridad para cualquier
  * error que un controlador no haya capturado (o un `next(err)` explícito).
  * La mayoría de rutas ya atrapan sus propios errores; este middleware evita
@@ -12,7 +12,12 @@ export function errorMiddleware(err, _req, res, _next) {
     const status = err && typeof err === "object" && "status" in err && typeof err.status === "number"
         ? err.status
         : 500;
-    const message = err instanceof Error ? err.message : "Error interno del servidor";
+    // El error 400 del body-parser (JSON mal formado) es información segura y
+    // útil para el cliente, aunque técnicamente sea un SyntaxError; cualquier
+    // otro caso (500) pasa por el mismo saneo que usan los controladores.
+    const message = status === 400 && err instanceof Error
+        ? err.message
+        : safeErrorMessage(err, "Error interno del servidor");
     res.status(status).json(ApiResponse.error(message));
 }
 //# sourceMappingURL=error.middleware.js.map

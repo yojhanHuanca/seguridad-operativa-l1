@@ -1,7 +1,7 @@
 import type { CreateEventoDto, UpdateEventoDto } from "./evento.types.js";
 export declare const ESTADOS_EVENTO: readonly ["Registrado", "En investigación", "Cerrado"];
 export declare class EventoRepository {
-    static findCatalogoDetalleById(id_detalle: number): Promise<({
+    static findCatalogoDetalleById(id_detalle: number): Promise<{
         catalogos: {
             nombre: string;
         };
@@ -15,7 +15,7 @@ export declare class EventoRepository {
         codigo: string | null;
         orden: number | null;
         color: string | null;
-    }) | null>;
+    }>;
     /**
      * `page`/`limit` son opcionales y deben venir juntos — sin ellos se
      * comporta exactamente igual que antes (trae todo). Eso es a propósito:
@@ -34,49 +34,49 @@ export declare class EventoRepository {
         data: ({
             casos_sop: {
                 codigo_sop: string;
-            } | null;
+            };
             catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle: {
                 nombre: string;
-            } | null;
+            };
             catalogo_detalle_eventos_monitoreo_lugar_incidenteTocatalogo_detalle: {
                 nombre: string;
-                codigo: string | null;
-            } | null;
+                codigo: string;
+            };
             catalogo_detalle_eventos_monitoreo_modelo_mrTocatalogo_detalle: {
                 nombre: string;
-            } | null;
+            };
             catalogo_detalle_eventos_monitoreo_numero_mrTocatalogo_detalle: {
                 nombre: string;
-            } | null;
+            };
             catalogo_detalle_eventos_monitoreo_personal_involucradoTocatalogo_detalle: {
                 nombre: string;
-            } | null;
+            };
             catalogo_detalle_eventos_monitoreo_posible_causaTocatalogo_detalle: {
                 nombre: string;
-            } | null;
+            };
             catalogo_detalle_eventos_monitoreo_rango_horarioTocatalogo_detalle: {
                 nombre: string;
-            } | null;
+            };
             catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle: {
                 nombre: string;
             };
             catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle: {
                 nombre: string;
-            } | null;
+            };
             catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle: {
                 nombre: string;
-            } | null;
+            };
             catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle: {
                 nombre: string;
-            } | null;
+            };
             usuarios_eventos_monitoreo_usuario_registraTousuarios: {
                 nombre: string;
-            } | null;
+            };
             usuarios_eventos_monitoreo_asignado_aTousuarios: {
                 id_usuario: number;
                 nombre: string;
-                cargo: string | null;
-            } | null;
+                cargo: string;
+            };
         } & {
             estado: string;
             created_at: Date | null;
@@ -118,52 +118,52 @@ export declare class EventoRepository {
         enInvestigacion: number;
         cerrados: number;
     }>;
-    static findById(id_evento: number): Promise<({
+    static findById(id_evento: number): Promise<{
         casos_sop: {
             codigo_sop: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_lugar_incidenteTocatalogo_detalle: {
             nombre: string;
-            codigo: string | null;
-        } | null;
+            codigo: string;
+        };
         catalogo_detalle_eventos_monitoreo_modelo_mrTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_numero_mrTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_personal_involucradoTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_posible_causaTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_rango_horarioTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle: {
             nombre: string;
         };
         catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         usuarios_eventos_monitoreo_usuario_registraTousuarios: {
             nombre: string;
-        } | null;
+        };
         usuarios_eventos_monitoreo_asignado_aTousuarios: {
             id_usuario: number;
             nombre: string;
-            cargo: string | null;
-        } | null;
+            cargo: string;
+        };
     } & {
         estado: string;
         created_at: Date | null;
@@ -195,54 +195,54 @@ export declare class EventoRepository {
         usuario_registra: number | null;
         asignado_a: number | null;
         id_caso_creado: number | null;
-    }) | null>;
+    }>;
     /** Eventos que le asignaron a esta persona de Seguridad Operativa, para su bandeja. */
     static findByAsignado(id_usuario: number): Promise<({
         casos_sop: {
             codigo_sop: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_lugar_incidenteTocatalogo_detalle: {
             nombre: string;
-            codigo: string | null;
-        } | null;
+            codigo: string;
+        };
         catalogo_detalle_eventos_monitoreo_modelo_mrTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_numero_mrTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_personal_involucradoTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_posible_causaTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_rango_horarioTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle: {
             nombre: string;
         };
         catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         usuarios_eventos_monitoreo_usuario_registraTousuarios: {
             nombre: string;
-        } | null;
+        };
         usuarios_eventos_monitoreo_asignado_aTousuarios: {
             id_usuario: number;
             nombre: string;
-            cargo: string | null;
-        } | null;
+            cargo: string;
+        };
     } & {
         estado: string;
         created_at: Date | null;
@@ -307,7 +307,9 @@ export declare class EventoRepository {
         asignado_a: number | null;
         id_caso_creado: number | null;
     }>;
-    static create(dto: CreateEventoDto, actor?: number): Promise<{
+    static create(dto: CreateEventoDto, actor?: number, options?: {
+        preserveImportedValues?: boolean;
+    }): Promise<{
         estado: string;
         created_at: Date | null;
         descripcion: string | null;

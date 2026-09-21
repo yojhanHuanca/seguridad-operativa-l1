@@ -111,6 +111,38 @@ test('error de carga no ofrece valores por defecto para guardar', async ({ page 
   await expect(page.getByRole('button', { name: 'Revisar cambios' })).toHaveCount(0);
 });
 
+test('compatibilidad con configuración anterior sin parámetros operativos', async ({ page }) => {
+  await mockApi(page);
+  await loginAs(page, 'Admin');
+  const runtimeErrors: string[] = [];
+  page.on('pageerror', error => runtimeErrors.push(error.message));
+  const legacy: Partial<typeof initial> = structuredClone(initial);
+  delete legacy.operacion;
+  await page.route('**/api/configuracion', route => route.fulfill({ json: { success: true, data: legacy } }));
+  await page.goto('/admin/configuracion');
+  await expect(page.getByRole('heading', { name: 'Centro de configuración' })).toBeVisible();
+  await page.getByRole('tab', { name: 'Operación' }).click();
+  await expect(page.getByLabel('Kilómetros por carrera')).toHaveValue('33.128331');
+  expect(runtimeErrors).toEqual([]);
+});
+
+test('respuesta incompleta al guardar no rompe los paneles ni pierde el borrador', async ({ page }) => {
+  await setup(page);
+  const runtimeErrors: string[] = [];
+  page.on('pageerror', error => runtimeErrors.push(error.message));
+  await page.route('**/api/configuracion', route => route.fulfill({ json: {
+    success: true,
+    data: route.request().method() === 'PATCH' ? { updated: true } : initial,
+  } }));
+  await page.getByLabel('Nombre del sistema', { exact: false }).fill('Nombre pendiente');
+  await page.getByRole('button', { name: 'Revisar cambios' }).click();
+  await page.getByRole('button', { name: 'Confirmar y guardar' }).click();
+  await expect(page.getByText(/El servidor devolvió una configuración incompleta/)).toBeVisible();
+  await page.getByRole('button', { name: 'Volver a editar' }).click();
+  await expect(page.getByLabel('Nombre del sistema', { exact: false })).toHaveValue('Nombre pendiente');
+  expect(runtimeErrors).toEqual([]);
+});
+
 test('diseño adaptable y navegación por teclado', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await setup(page);

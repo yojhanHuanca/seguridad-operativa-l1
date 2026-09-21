@@ -4,6 +4,7 @@ import { ESTADOS_EVENTO, asignarEventoSchema, createEventoSchema, updateEventoSc
 import { UserRepository } from "../users/users.repository.js";
 import { NotificationRepository } from "../notifications/notification.repository.js";
 import { esAdmin } from "../../utils/actor.js";
+import { AuditoriaService } from "../auditoria/auditoria.service.js";
 /** Cada campo opcional que sí venga tiene que apuntar al catálogo que le corresponde. */
 const CATALOGOS_POR_CAMPO = {
     id_tipo_incidente: "Tipo de incidente operativo",
@@ -59,15 +60,50 @@ export class EventoService {
     static async createEvento(rawBody, actor) {
         const dto = createEventoSchema.parse(rawBody);
         await validarCatalogos(dto);
-        return EventoRepository.create(dto, actor);
+        const creado = await EventoRepository.create(dto, actor?.id_usuario);
+        if (actor) {
+            await AuditoriaService.registrar({
+                tabla: "eventos_monitoreo",
+                id_registro: creado.id_evento,
+                accion: "crear",
+                descripcion: `Registró el evento ${creado.codigo_evento ?? creado.id_evento}`,
+                usuario: actor.id_usuario,
+                despues: creado,
+            });
+        }
+        return creado;
     }
-    static async updateEvento(id, rawBody) {
+    static async updateEvento(id, rawBody, actor) {
         const dto = updateEventoSchema.parse(rawBody);
         await validarCatalogos(dto);
-        return EventoRepository.update(id, dto);
+        const antes = await EventoRepository.findById(id);
+        const actualizado = await EventoRepository.update(id, dto);
+        if (actor) {
+            await AuditoriaService.registrar({
+                tabla: "eventos_monitoreo",
+                id_registro: id,
+                accion: "editar",
+                descripcion: `Editó el evento ${actualizado.codigo_evento ?? id}`,
+                usuario: actor.id_usuario,
+                antes: antes,
+                despues: actualizado,
+            });
+        }
+        return actualizado;
     }
-    static async deleteEvento(id) {
-        return EventoRepository.remove(id);
+    static async deleteEvento(id, actor) {
+        const eliminado = await EventoRepository.remove(id);
+        if (actor) {
+            await AuditoriaService.registrar({
+                tabla: "eventos_monitoreo",
+                id_registro: id,
+                accion: "eliminar",
+                descripcion: `Eliminó el evento ${eliminado.codigo_evento ?? id}`,
+                usuario: actor.id_usuario,
+                antes: eliminado,
+            });
+        }
+        return eliminado;
     }
     /** Bandeja de eventos asignados a una persona de Seguridad Operativa. */
     /**

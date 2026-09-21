@@ -1,7 +1,7 @@
 import { ZodError } from "zod";
 import { CaseService, PlanAjenoError } from "./case.service.js";
 import { TransicionInvalidaError } from "./case.workflow.js";
-import { ApiResponse } from "../../utils/ApiResponse.js";
+import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 import { AuditoriaService } from "../auditoria/auditoria.service.js";
 function handleError(res, error, fallback) {
     if (error instanceof ZodError) {
@@ -15,7 +15,7 @@ function handleError(res, error, fallback) {
     if (error instanceof PlanAjenoError) {
         return res.status(403).json(ApiResponse.error(error.message));
     }
-    return res.status(400).json(ApiResponse.error(error instanceof Error ? error.message : fallback, error));
+    return res.status(400).json(ApiResponse.error(safeErrorMessage(error, fallback), error));
 }
 /**
  * Deja el rastro de una acción sobre un caso o un plan de acción. Va acá y
@@ -69,8 +69,11 @@ export class CaseController {
     }
     static async getPlans(req, res) {
         try {
-            const planes = await CaseService.listPlans(req.query, req.user);
-            return res.json(ApiResponse.success("Planes obtenidos correctamente", planes));
+            const { data, total } = await CaseService.listPlans(req.query, req.user);
+            const body = ApiResponse.success("Planes obtenidos correctamente", data);
+            // `total` solo viene cuando la petición mandó page+limit; si no, la
+            // respuesta es idéntica a la de siempre (sin este campo de más).
+            return res.json(total !== undefined ? { ...body, meta: { total } } : body);
         }
         catch (error) {
             return res.status(500).json(ApiResponse.error("Error al obtener los planes", error));
@@ -82,12 +85,12 @@ export class CaseController {
             return res.json(ApiResponse.success("Caso obtenido correctamente", caso));
         }
         catch (error) {
-            return res.status(404).json(ApiResponse.error(error instanceof Error ? error.message : "Caso no encontrado", error));
+            return res.status(404).json(ApiResponse.error(safeErrorMessage(error, "Caso no encontrado"), error));
         }
     }
     static async approve(req, res) {
         try {
-            const caso = await CaseService.approve(param(req, "codigo"));
+            const caso = await CaseService.approve(param(req, "codigo"), req.user);
             await auditarCaso(req, "casos_sop", `Aprobó el reporte ${caso.codigo_sop}, pasó a Evaluación`, caso.id_caso);
             return res.json(ApiResponse.success("Reporte aprobado, pasó a Evaluación", caso));
         }
@@ -97,7 +100,7 @@ export class CaseController {
     }
     static async addObservation(req, res) {
         try {
-            const caso = await CaseService.addObservation(param(req, "codigo"), req.body);
+            const caso = await CaseService.addObservation(param(req, "codigo"), req.body, req.user);
             return res.status(201).json(ApiResponse.success("Observación registrada", caso));
         }
         catch (error) {
@@ -115,7 +118,7 @@ export class CaseController {
     }
     static async evaluate(req, res) {
         try {
-            const caso = await CaseService.evaluate(param(req, "codigo"), req.body);
+            const caso = await CaseService.evaluate(param(req, "codigo"), req.body, req.user);
             await auditarCaso(req, "casos_sop", `Evaluó el caso ${caso.codigo_sop} (riesgo, clasificación)`, caso.id_caso);
             return res.json(ApiResponse.success("Caso evaluado correctamente", caso));
         }
@@ -125,7 +128,7 @@ export class CaseController {
     }
     static async reject(req, res) {
         try {
-            const caso = await CaseService.reject(param(req, "codigo"), req.body);
+            const caso = await CaseService.reject(param(req, "codigo"), req.body, req.user);
             await auditarCaso(req, "casos_sop", `Rechazó el caso ${caso.codigo_sop}`, caso.id_caso);
             return res.json(ApiResponse.success("Caso rechazado", caso));
         }
@@ -135,7 +138,7 @@ export class CaseController {
     }
     static async requestInfo(req, res) {
         try {
-            const solicitud = await CaseService.requestInfo(param(req, "codigo"), req.body);
+            const solicitud = await CaseService.requestInfo(param(req, "codigo"), req.body, req.user);
             return res.status(201).json(ApiResponse.success("Solicitud de información enviada", solicitud));
         }
         catch (error) {
@@ -144,7 +147,7 @@ export class CaseController {
     }
     static async respondInfo(req, res) {
         try {
-            const solicitud = await CaseService.respondInfo(param(req, "codigo"), param(req, "idSolicitud"), req.body);
+            const solicitud = await CaseService.respondInfo(param(req, "codigo"), param(req, "idSolicitud"), req.body, req.user);
             return res.json(ApiResponse.success("Solicitud respondida", solicitud));
         }
         catch (error) {
@@ -154,7 +157,7 @@ export class CaseController {
     static async saveInvestigation(req, res) {
         try {
             const codigo = param(req, "codigo");
-            const investigacion = await CaseService.saveInvestigation(codigo, req.body);
+            const investigacion = await CaseService.saveInvestigation(codigo, req.body, req.user);
             await auditarCaso(req, "casos_sop", `Guardó la investigación del caso ${codigo}`, investigacion.id_caso);
             return res.json(ApiResponse.success("Investigación guardada, caso pasó a Plan de Acción", investigacion));
         }
@@ -164,7 +167,7 @@ export class CaseController {
     }
     static async createPlan(req, res) {
         try {
-            const plan = await CaseService.createPlan(param(req, "codigo"), req.body);
+            const plan = await CaseService.createPlan(param(req, "codigo"), req.body, req.user);
             return res.status(201).json(ApiResponse.success("Plan de acción creado y enviado", plan));
         }
         catch (error) {
@@ -174,7 +177,7 @@ export class CaseController {
     static async createPlans(req, res) {
         try {
             const codigo = param(req, "codigo");
-            const planes = await CaseService.createPlans(codigo, req.body);
+            const planes = await CaseService.createPlans(codigo, req.body, req.user);
             await auditarCaso(req, "planes_accion", `Creó ${planes.length} plan(es) de acción para el caso ${codigo}`, planes[0]?.id_caso);
             return res.status(201).json(ApiResponse.success("Planes de acción creados y enviados", planes));
         }
@@ -184,7 +187,7 @@ export class CaseController {
     }
     static async close(req, res) {
         try {
-            const caso = await CaseService.closeCase(param(req, "codigo"), req.body);
+            const caso = await CaseService.closeCase(param(req, "codigo"), req.body, req.user);
             await auditarCaso(req, "casos_sop", `Cerró el caso ${caso.codigo_sop}`, caso.id_caso);
             return res.json(ApiResponse.success("Caso cerrado correctamente", caso));
         }
@@ -217,7 +220,7 @@ export class CaseController {
     static async reviewFinalPlanById(req, res) {
         try {
             const idPlan = param(req, "idPlan");
-            const plan = await CaseService.reviewFinalPlanById(idPlan, req.body);
+            const plan = await CaseService.reviewFinalPlanById(idPlan, req.body, req.user);
             const decision = req.body?.decision ?? "";
             await auditarCaso(req, "planes_accion", `Revisión final del plan ${plan.codigo_plan ?? idPlan}: ${decision}`, plan.id_plan);
             return res.json(ApiResponse.success("Revisión final del plan registrada", plan));
@@ -240,7 +243,7 @@ export class CaseController {
     static async reviewExtensionByPlan(req, res) {
         try {
             const idPlan = param(req, "idPlan");
-            const plan = await CaseService.reviewExtensionByPlan(idPlan, req.body);
+            const plan = await CaseService.reviewExtensionByPlan(idPlan, req.body, req.user);
             const decision = req.body?.decision ?? "";
             await auditarCaso(req, "planes_accion", `Resolvió la ampliación de plazo del plan ${plan.codigo_plan ?? idPlan}: ${decision}`, plan.id_plan);
             return res.json(ApiResponse.success("Solicitud de ampliación del plan resuelta", plan));
@@ -251,7 +254,7 @@ export class CaseController {
     }
     static async startExecution(req, res) {
         try {
-            const caso = await CaseService.startExecution(param(req, "codigo"));
+            const caso = await CaseService.startExecution(param(req, "codigo"), req.user);
             return res.json(ApiResponse.success("El caso pasó a Ejecución", caso));
         }
         catch (error) {
@@ -260,7 +263,7 @@ export class CaseController {
     }
     static async sendToVerification(req, res) {
         try {
-            const caso = await CaseService.sendToVerification(param(req, "codigo"));
+            const caso = await CaseService.sendToVerification(param(req, "codigo"), req.user);
             return res.json(ApiResponse.success("Expediente enviado a Verificación", caso));
         }
         catch (error) {
@@ -269,7 +272,7 @@ export class CaseController {
     }
     static async keepPending(req, res) {
         try {
-            const caso = await CaseService.keepPending(param(req, "codigo"), req.body);
+            const caso = await CaseService.keepPending(param(req, "codigo"), req.body, req.user);
             return res.json(ApiResponse.success("Caso mantenido pendiente en Verificación", caso));
         }
         catch (error) {
@@ -278,7 +281,7 @@ export class CaseController {
     }
     static async reopen(req, res) {
         try {
-            const caso = await CaseService.reopenCase(param(req, "codigo"), req.body);
+            const caso = await CaseService.reopenCase(param(req, "codigo"), req.body, req.user);
             await auditarCaso(req, "casos_sop", `Reabrió el caso ${caso.codigo_sop}`, caso.id_caso);
             return res.json(ApiResponse.success("Caso reabierto", caso));
         }
@@ -289,7 +292,7 @@ export class CaseController {
     static async rollbackStage(req, res) {
         try {
             const codigo = param(req, "codigo");
-            const caso = await CaseService.rollbackStage(codigo, req.body);
+            const caso = await CaseService.rollbackStage(codigo, req.body, req.user);
             const motivo = req.body?.motivo ?? "";
             await auditarCaso(req, "casos_sop", `Retrocedió de etapa el caso ${codigo}: ${motivo}`, caso.id_caso);
             return res.json(ApiResponse.success("Caso retrocedido de etapa", caso));
@@ -300,7 +303,7 @@ export class CaseController {
     }
     static async updatePlan(req, res) {
         try {
-            const plan = await CaseService.updatePlan(param(req, "idPlan"), req.body);
+            const plan = await CaseService.updatePlan(param(req, "idPlan"), req.body, req.user);
             return res.json(ApiResponse.success("Plan de acción actualizado", plan));
         }
         catch (error) {
@@ -318,7 +321,7 @@ export class CaseController {
     }
     static async reviewExtension(req, res) {
         try {
-            const caso = await CaseService.reviewExtension(param(req, "codigo"), req.body);
+            const caso = await CaseService.reviewExtension(param(req, "codigo"), req.body, req.user);
             return res.json(ApiResponse.success("Solicitud de ampliación resuelta", caso));
         }
         catch (error) {
@@ -327,7 +330,7 @@ export class CaseController {
     }
     static async addComment(req, res) {
         try {
-            const timeline = await CaseService.addComment(param(req, "codigo"), req.body);
+            const timeline = await CaseService.addComment(param(req, "codigo"), req.body, req.user);
             return res.status(201).json(ApiResponse.success("Comentario agregado", timeline));
         }
         catch (error) {
@@ -360,7 +363,7 @@ export class CaseController {
                 mimetype: f.mimetype,
                 size: f.size,
             }));
-            const anexos = await CaseService.addEvidence(param(req, "codigo"), files);
+            const anexos = await CaseService.addEvidence(param(req, "codigo"), files, req.user);
             return res.status(201).json(ApiResponse.success("Evidencia adjuntada correctamente", anexos));
         }
         catch (error) {

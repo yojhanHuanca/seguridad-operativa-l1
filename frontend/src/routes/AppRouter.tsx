@@ -1,7 +1,7 @@
 import { lazy, Suspense, type ComponentType } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { LoadingState } from "@/components/feedback/LoadingState";
 import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
+import { Indicadores } from "@/pages/monitoreo/Indicadores";
 
 function lazyNamed(loader: () => Promise<Record<string, unknown>>, exportName: string) {
   return lazy(async () => ({ default: (await loader())[exportName] as ComponentType }));
@@ -39,7 +39,6 @@ const MonitoreoPerfilPage = lazyNamed(() => import("@/pages/monitoreo/Perfil"), 
 const DatosOperativosPage = lazyNamed(() => import("@/pages/monitoreo/DatosOperativos"), "DatosOperativos");
 const ContingenciaRegistroPage = lazyNamed(() => import("@/pages/contingencias/Registro"), "Registro");
 const ContingenciaHistorialPage = lazyNamed(() => import("@/pages/contingencias/Historial"), "Historial");
-const ContingenciaIndicadoresPage = lazyNamed(() => import("@/pages/contingencias/Indicadores"), "Indicadores");
 const ContingenciaDetallePage = lazyNamed(() => import("@/pages/contingencias/Detalle"), "Detalle");
 const ContingenciaEditarPage = lazyNamed(() => import("@/pages/contingencias/Editar"), "Editar");
 const ContingenciaPerfilPage = lazyNamed(() => import("@/pages/contingencias/Perfil"), "Perfil");
@@ -54,7 +53,11 @@ const AdminImportacionPage = lazyNamed(() => import("@/pages/admin/ImportacionPa
 const NotFoundPage = lazyNamed(() => import("@/pages/NotFound"), "NotFoundPage");
 
 function PageFallback() {
-  return <LoadingState label="Preparando tu espacio de trabajo" className="min-h-screen bg-surface px-6" />;
+  return (
+    <div className="grid min-h-screen place-items-center bg-surface px-6 text-[13px] font-medium text-ink-quiet">
+      Cargando...
+    </div>
+  );
 }
 
 export function AppRouter() {
@@ -105,13 +108,13 @@ export function AppRouter() {
           <Route path="/monitoreo/reportes" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoReportesPage /></ProtectedRoute>} />
           <Route path="/monitoreo/indicadores" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoIndicadoresPage /></ProtectedRoute>} />
           <Route path="/monitoreo/perfil" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoPerfilPage /></ProtectedRoute>} />
-          <Route path="/monitoreo/datos-operativos" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><DatosOperativosPage /></ProtectedRoute>} />
+          <Route path="/monitoreo/datos-operativos" element={<Navigate to="/contingencias/datos-operativos" replace />} />
 
           {/* Gestión de Planes de Contingencia */}
           <Route path="/contingencias" element={<Navigate to="/contingencias/registro" replace />} />
           <Route path="/contingencias/registro" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaRegistroPage /></ProtectedRoute>} />
           <Route path="/contingencias/historial" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaHistorialPage /></ProtectedRoute>} />
-          <Route path="/contingencias/indicadores" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaIndicadoresPage /></ProtectedRoute>} />
+          <Route path="/contingencias/Indicadores" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><Indicadores /></ProtectedRoute>} />
           <Route path="/contingencias/datos-operativos" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><DatosOperativosPage /></ProtectedRoute>} />
           <Route path="/contingencias/evento/:id" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaDetallePage /></ProtectedRoute>} />
           <Route path="/contingencias/editar/:id" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaEditarPage /></ProtectedRoute>} />

@@ -2,11 +2,11 @@ export declare class CatalogService {
     static getAllGroups(): Promise<({
         catalogo_detalle: {
             nombre: string;
-            descripcion: string | null;
+            descripcion: string;
             id_detalle: number;
-            codigo: string | null;
-            orden: number | null;
-            color: string | null;
+            codigo: string;
+            orden: number;
+            color: string;
         }[];
     } & {
         nombre: string;
@@ -19,12 +19,12 @@ export declare class CatalogService {
     static getGroupForAdmin(id_catalogo: number): Promise<{
         catalogo_detalle: {
             nombre: string;
-            estado: boolean | null;
-            descripcion: string | null;
+            estado: boolean;
+            descripcion: string;
             id_detalle: number;
-            codigo: string | null;
-            orden: number | null;
-            color: string | null;
+            codigo: string;
+            orden: number;
+            color: string;
         }[];
     } & {
         nombre: string;

@@ -2,7 +2,10 @@ import type * as runtime from "@prisma/client/runtime/library";
 import type * as Prisma from "../internal/prismaNamespace.js";
 /**
  * Model reporte_estadistico
- *
+ * Sin uso: diseño de un reporte estadístico que se generaba y se guardaba
+ * en la base. El export real (`ReportExportPage` + `exportarCombinadoExcel`)
+ * arma el Excel al vuelo desde `casos_sop` cada vez, sin persistir un
+ * registro de "reporte" acá.
  */
 export type reporte_estadisticoModel = runtime.Types.Result.DefaultSelection<Prisma.$reporte_estadisticoPayload>;
 export type AggregateReporte_estadistico = {

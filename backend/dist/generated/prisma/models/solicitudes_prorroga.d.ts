@@ -2,7 +2,10 @@ import type * as runtime from "@prisma/client/runtime/library";
 import type * as Prisma from "../internal/prismaNamespace.js";
 /**
  * Model solicitudes_prorroga
- *
+ * Sin uso: prórroga de `incidencias` (ver la nota ahí). La prórroga real de
+ * un plan de acción vive en los campos `prorroga_*` de `planes_accion`
+ * (`prorroga_motivo`, `prorroga_fecha`, `prorroga_estado`,
+ * `prorroga_fecha_sol`), no en una tabla aparte.
  */
 export type solicitudes_prorrogaModel = runtime.Types.Result.DefaultSelection<Prisma.$solicitudes_prorrogaPayload>;
 export type AggregateSolicitudes_prorroga = {

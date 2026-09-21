@@ -11,49 +11,49 @@ export declare class EventoService {
         data: ({
             casos_sop: {
                 codigo_sop: string;
-            } | null;
+            };
             catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle: {
                 nombre: string;
-            } | null;
+            };
             catalogo_detalle_eventos_monitoreo_lugar_incidenteTocatalogo_detalle: {
                 nombre: string;
-                codigo: string | null;
-            } | null;
+                codigo: string;
+            };
             catalogo_detalle_eventos_monitoreo_modelo_mrTocatalogo_detalle: {
                 nombre: string;
-            } | null;
+            };
             catalogo_detalle_eventos_monitoreo_numero_mrTocatalogo_detalle: {
                 nombre: string;
-            } | null;
+            };
             catalogo_detalle_eventos_monitoreo_personal_involucradoTocatalogo_detalle: {
                 nombre: string;
-            } | null;
+            };
             catalogo_detalle_eventos_monitoreo_posible_causaTocatalogo_detalle: {
                 nombre: string;
-            } | null;
+            };
             catalogo_detalle_eventos_monitoreo_rango_horarioTocatalogo_detalle: {
                 nombre: string;
-            } | null;
+            };
             catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle: {
                 nombre: string;
             };
             catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle: {
                 nombre: string;
-            } | null;
+            };
             catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle: {
                 nombre: string;
-            } | null;
+            };
             catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle: {
                 nombre: string;
-            } | null;
+            };
             usuarios_eventos_monitoreo_usuario_registraTousuarios: {
                 nombre: string;
-            } | null;
+            };
             usuarios_eventos_monitoreo_asignado_aTousuarios: {
                 id_usuario: number;
                 nombre: string;
-                cargo: string | null;
-            } | null;
+                cargo: string;
+            };
         } & {
             estado: string;
             created_at: Date | null;
@@ -97,49 +97,49 @@ export declare class EventoService {
     static getEventoById(id: number): Promise<{
         casos_sop: {
             codigo_sop: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_lugar_incidenteTocatalogo_detalle: {
             nombre: string;
-            codigo: string | null;
-        } | null;
+            codigo: string;
+        };
         catalogo_detalle_eventos_monitoreo_modelo_mrTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_numero_mrTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_personal_involucradoTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_posible_causaTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_rango_horarioTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle: {
             nombre: string;
         };
         catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         usuarios_eventos_monitoreo_usuario_registraTousuarios: {
             nombre: string;
-        } | null;
+        };
         usuarios_eventos_monitoreo_asignado_aTousuarios: {
             id_usuario: number;
             nombre: string;
-            cargo: string | null;
-        } | null;
+            cargo: string;
+        };
     } & {
         estado: string;
         created_at: Date | null;
@@ -172,7 +172,7 @@ export declare class EventoService {
         asignado_a: number | null;
         id_caso_creado: number | null;
     }>;
-    static createEvento(rawBody: unknown, actor?: number): Promise<{
+    static createEvento(rawBody: unknown, actor?: Actor): Promise<{
         estado: string;
         created_at: Date | null;
         descripcion: string | null;
@@ -204,7 +204,7 @@ export declare class EventoService {
         asignado_a: number | null;
         id_caso_creado: number | null;
     }>;
-    static updateEvento(id: number, rawBody: unknown): Promise<{
+    static updateEvento(id: number, rawBody: unknown, actor?: Actor): Promise<{
         estado: string;
         created_at: Date | null;
         descripcion: string | null;
@@ -236,7 +236,7 @@ export declare class EventoService {
         asignado_a: number | null;
         id_caso_creado: number | null;
     }>;
-    static deleteEvento(id: number): Promise<{
+    static deleteEvento(id: number, actor?: Actor): Promise<{
         estado: string;
         created_at: Date | null;
         descripcion: string | null;
@@ -277,49 +277,49 @@ export declare class EventoService {
     static getAsignados(id_usuario: number, actor?: Actor): Promise<({
         casos_sop: {
             codigo_sop: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_direccion_viaTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_lugar_incidenteTocatalogo_detalle: {
             nombre: string;
-            codigo: string | null;
-        } | null;
+            codigo: string;
+        };
         catalogo_detalle_eventos_monitoreo_modelo_mrTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_numero_mrTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_personal_involucradoTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_posible_causaTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_rango_horarioTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle: {
             nombre: string;
         };
         catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_tipo_viaTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle: {
             nombre: string;
-        } | null;
+        };
         usuarios_eventos_monitoreo_usuario_registraTousuarios: {
             nombre: string;
-        } | null;
+        };
         usuarios_eventos_monitoreo_asignado_aTousuarios: {
             id_usuario: number;
             nombre: string;
-            cargo: string | null;
-        } | null;
+            cargo: string;
+        };
     } & {
         estado: string;
         created_at: Date | null;

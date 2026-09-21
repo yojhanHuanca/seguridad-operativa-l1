@@ -57,6 +57,15 @@ export const ModelName = {
     evidencias: 'evidencias',
     evidencias_evento: 'evidencias_evento',
     historial_indicadores: 'historial_indicadores',
+    datos_operativos: 'datos_operativos',
+    contingencia_catalogos: 'contingencia_catalogos',
+    contingencia_catalogo_items: 'contingencia_catalogo_items',
+    contingencia_eventos: 'contingencia_eventos',
+    contingencia_atenciones: 'contingencia_atenciones',
+    contingencia_traslados: 'contingencia_traslados',
+    contingencia_personas: 'contingencia_personas',
+    contingencia_diagnosticos: 'contingencia_diagnosticos',
+    contingencia_cierres: 'contingencia_cierres',
     incidencias: 'incidencias',
     indicadores: 'indicadores',
     timeline_caso: 'timeline_caso',
@@ -302,6 +311,122 @@ export const Historial_indicadoresScalarFieldEnum = {
     fecha: 'fecha',
     valor: 'valor',
     observacion: 'observacion'
+};
+export const Datos_operativosScalarFieldEnum = {
+    id_dato_operativo: 'id_dato_operativo',
+    fecha: 'fecha',
+    qty_carreras: 'qty_carreras',
+    qty_pasajeros: 'qty_pasajeros',
+    km_comercial: 'km_comercial',
+    km_no_comercial: 'km_no_comercial',
+    paradas_estacion: 'paradas_estacion',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+};
+export const Contingencia_catalogosScalarFieldEnum = {
+    id_catalogo: 'id_catalogo',
+    codigo: 'codigo',
+    nombre: 'nombre',
+    hoja_excel: 'hoja_excel',
+    columna_excel: 'columna_excel',
+    estado: 'estado',
+    created_at: 'created_at'
+};
+export const Contingencia_catalogo_itemsScalarFieldEnum = {
+    id_item: 'id_item',
+    id_catalogo: 'id_catalogo',
+    valor: 'valor',
+    orden: 'orden',
+    estado: 'estado',
+    created_at: 'created_at'
+};
+export const Contingencia_eventosScalarFieldEnum = {
+    id_evento: 'id_evento',
+    codigo_evento: 'codigo_evento',
+    fecha: 'fecha',
+    hora_reporte: 'hora_reporte',
+    mes: 'mes',
+    tipo_evento: 'tipo_evento',
+    lugar_evento: 'lugar_evento',
+    lugar_exacto_evento: 'lugar_exacto_evento',
+    quien_reporta: 'quien_reporta',
+    medio_comunicacion_primer_reporte: 'medio_comunicacion_primer_reporte',
+    estado_usuario_reportado: 'estado_usuario_reportado',
+    acepta_atencion: 'acepta_atencion',
+    atencion_inicial: 'atencion_inicial',
+    atencion_final: 'atencion_final',
+    nivel_inicial: 'nivel_inicial',
+    nivel_final: 'nivel_final',
+    hora_termino_ae: 'hora_termino_ae',
+    estado: 'estado',
+    created_by: 'created_by',
+    updated_by: 'updated_by',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+};
+export const Contingencia_atencionesScalarFieldEnum = {
+    id_atencion: 'id_atencion',
+    id_evento: 'id_evento',
+    hora_llamado_pco_sppa: 'hora_llamado_pco_sppa',
+    hora_llegada_spaa: 'hora_llegada_spaa',
+    hora_inicio_spaa: 'hora_inicio_spaa',
+    hora_termino_atencion_inicio_traslado: 'hora_termino_atencion_inicio_traslado',
+    estacion_partida_spaa: 'estacion_partida_spaa',
+    medio_transporte_spaa: 'medio_transporte_spaa',
+    trasladado_por: 'trasladado_por'
+};
+export const Contingencia_trasladosScalarFieldEnum = {
+    id_traslado: 'id_traslado',
+    id_evento: 'id_evento',
+    estacion_partida_ambulancia: 'estacion_partida_ambulancia',
+    estacion_llegada_ambulancia: 'estacion_llegada_ambulancia',
+    hora_llamado_ambulancia: 'hora_llamado_ambulancia',
+    hora_llegada_estacion: 'hora_llegada_estacion',
+    hora_salida_centro_salud: 'hora_salida_centro_salud',
+    hora_llegada_centro_medico: 'hora_llegada_centro_medico',
+    hora_retiro_centro_medico: 'hora_retiro_centro_medico',
+    hora_retorno_puesto: 'hora_retorno_puesto',
+    hora_llamado_ambulancia_tercero: 'hora_llamado_ambulancia_tercero',
+    hora_llegada_ambulancia_terceros: 'hora_llegada_ambulancia_terceros',
+    hora_inicio_traslado_ambulancia_terceros: 'hora_inicio_traslado_ambulancia_terceros',
+    centro_salud: 'centro_salud'
+};
+export const Contingencia_personasScalarFieldEnum = {
+    id_persona: 'id_persona',
+    id_evento: 'id_evento',
+    nombre_persona: 'nombre_persona',
+    dni: 'dni',
+    sexo: 'sexo',
+    edad: 'edad',
+    tarjeta_cliente: 'tarjeta_cliente',
+    categoria_paciente: 'categoria_paciente',
+    extranjero: 'extranjero',
+    estacion_origen_usuario: 'estacion_origen_usuario',
+    estacion_destino_usuario: 'estacion_destino_usuario',
+    acompanante: 'acompanante',
+    numero_dni_acompanante: 'numero_dni_acompanante'
+};
+export const Contingencia_diagnosticosScalarFieldEnum = {
+    id_diagnostico: 'id_diagnostico',
+    id_evento: 'id_evento',
+    reporte_pco: 'reporte_pco',
+    reporte_cliente: 'reporte_cliente',
+    diagnostico_presuntivo: 'diagnostico_presuntivo',
+    sintomas_presentados: 'sintomas_presentados',
+    zona_lesion: 'zona_lesion',
+    nombre_personal_salud: 'nombre_personal_salud',
+    tipo_declaracion_jurada: 'tipo_declaracion_jurada',
+    nro_declaracion_jurada: 'nro_declaracion_jurada'
+};
+export const Contingencia_cierresScalarFieldEnum = {
+    id_cierre: 'id_cierre',
+    id_evento: 'id_evento',
+    breve_descripcion_hecho: 'breve_descripcion_hecho',
+    reserva_camaras: 'reserva_camaras',
+    observacion: 'observacion',
+    registro: 'registro',
+    revision: 'revision',
+    casos_sospechosos_covid_19: 'casos_sospechosos_covid_19'
 };
 export const IncidenciasScalarFieldEnum = {
     id_incidencia: 'id_incidencia',

@@ -14,6 +14,7 @@ import prisma from "../../lib/prisma.js";
  * usuario), así que interpolarlas en el SQL es seguro.
  */
 export const SEQ_CASOS_SOP = "casos_sop_secuencia_seq";
+export const SEQ_EVENTOS_MONITOREO = "eventos_monitoreo_secuencia_seq";
 export async function ensureSequence(client, name) {
     await client.$executeRawUnsafe(`CREATE SEQUENCE IF NOT EXISTS "${name}"`);
 }

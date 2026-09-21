@@ -4,7 +4,6 @@ import {
   Activity,
   ChevronsLeft,
   ChevronsRight,
-  Database,
   ExternalLink,
   Gauge,
   History,
@@ -52,7 +51,6 @@ const SECTIONS: NavSection[] = [
     title: "Análisis",
     items: [
       { to: "/monitoreo/indicadores", label: "Indicadores", icon: Gauge },
-      { to: "/monitoreo/datos-operativos", label: "Datos Operativos", icon: Database },
       { to: "/monitoreo/reportes", label: "Reportes", icon: Activity },
     ],
   },
@@ -65,7 +63,6 @@ const TITLES: Record<string, { title: string; crumb: string }> = {
   "/monitoreo/nuevo": { title: "Registrar evento", crumb: "Inicio / Registrar evento" },
   "/monitoreo/historial": { title: "Historial de eventos", crumb: "Inicio / Historial" },
   "/monitoreo/indicadores": { title: "Indicadores", crumb: "Inicio / Indicadores" },
-  "/monitoreo/datos-operativos": { title: "Datos Operativos", crumb: "Inicio / Datos Operativos" },
   "/monitoreo/reportes": { title: "Reportes", crumb: "Inicio / Reportes" },
 };
 

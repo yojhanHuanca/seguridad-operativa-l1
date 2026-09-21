@@ -401,9 +401,6 @@ export type solicitudes_informacionUncheckedUpdateManyWithoutCasos_sopNestedInpu
     updateMany?: Prisma.solicitudes_informacionUpdateManyWithWhereWithoutCasos_sopInput | Prisma.solicitudes_informacionUpdateManyWithWhereWithoutCasos_sopInput[];
     deleteMany?: Prisma.solicitudes_informacionScalarWhereInput | Prisma.solicitudes_informacionScalarWhereInput[];
 };
-export type BoolFieldUpdateOperationsInput = {
-    set?: boolean;
-};
 export type solicitudes_informacionCreateWithoutCasos_sopInput = {
     mensaje: string;
     respuesta?: string | null;

@@ -260,12 +260,19 @@ function nextPlanCodes(codigoSop: string, prefix: string, cantidad: number, codi
 }
 
 export class ConfiguracionService {
+  private static cache: { data: ConfiguracionPublica; expires: number } | null = null;
+  private static readonly CACHE_TTL = 5 * 60 * 1000; // 5 min
+
   private static async readValues(client: DbClient = prisma) {
     const rows = await client.configuracion.findMany({
       where: { nombre: { in: Object.values(CONFIG_KEYS) } },
       select: { nombre: true, valor: true },
     });
     return rowsToMap(rows);
+  }
+
+  static invalidateCache() {
+    ConfiguracionService.cache = null;
   }
 
   static async get(client: DbClient = prisma): Promise<ConfiguracionGeneral> {
@@ -279,11 +286,17 @@ export class ConfiguracionService {
   }
 
   static async publica(client: DbClient = prisma): Promise<ConfiguracionPublica> {
+    const now = Date.now();
+    if (ConfiguracionService.cache && ConfiguracionService.cache.expires > now) {
+      return ConfiguracionService.cache.data;
+    }
     const values = await ConfiguracionService.readValues(client);
-    return {
+    const data = {
       nombre: values.get(CONFIG_KEYS.sistemaNombre) || defaultValue(CONFIG_KEYS.sistemaNombre),
       version: values.get(CONFIG_KEYS.sistemaVersion) || defaultValue(CONFIG_KEYS.sistemaVersion),
     };
+    ConfiguracionService.cache = { data, expires: now + ConfiguracionService.CACHE_TTL };
+    return data;
   }
 
   static async update(rawBody: unknown, audit: ConfiguracionAuditContext = {}) {
@@ -343,6 +356,8 @@ export class ConfiguracionService {
       antes: diff?.antes ?? null,
       despues: diff?.despues ?? null,
     });
+
+    ConfiguracionService.invalidateCache();
 
     return saved;
   }

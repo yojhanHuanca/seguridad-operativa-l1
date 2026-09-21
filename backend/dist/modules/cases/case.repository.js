@@ -100,8 +100,6 @@ const DETAIL_INCLUDE = {
 const ACTOR_SO = "Seguridad Operativa";
 /** Día calendario de una columna @db.Date, que siempre llega en medianoche UTC. */
 const diaISO = (d) => d.toISOString().slice(0, 10);
-const MS_DIA = 86_400_000;
-const sumarDias = (d, dias) => new Date(d.getTime() + dias * MS_DIA);
 /** Estados de `estado_hallazgo` en los que un caso puede tener un plan con plazo vigente. */
 const VENCIDO_ESTADOS = ["Plan de Acción", "Ejecución", "Prórroga Solicitada", "Verificación"];
 /**
@@ -134,11 +132,11 @@ export class CaseRepository {
             },
         });
     }
-    static async addComment(id_caso, texto) {
+    static async addComment(id_caso, texto, actor = ACTOR_SO, actor_rol = "seguridad") {
         await CaseRepository.pushTimeline(prisma, id_caso, {
             kind: "comentario",
-            actor: ACTOR_SO,
-            actor_rol: "seguridad",
+            actor,
+            actor_rol,
             titulo: "Comentario agregado al expediente",
             detalle: texto,
         });
@@ -361,71 +359,112 @@ export class CaseRepository {
      * `codigo_sop` opcional acota a los planes de un solo caso — la usa
      * `PlanDetail.tsx` en vez de traer toda el área y filtrar en el navegador.
      */
+    /**
+     * "Vencido" no es un `estado` literal del plan —hay que traer los planes y
+     * calcular el plazo en JS, misma regla que `vencidoCaseIds` de arriba y que
+     * `planDeadline`/`planVencido` del frontend— así que se resuelve en dos
+     * pasos en vez de un solo `where`.
+     */
+    static async vencidoPlanIds(area) {
+        const where = {};
+        if (area)
+            where.id_area = area;
+        const planes = await prisma.planes_accion.findMany({
+            where,
+            select: {
+                id_plan: true,
+                fecha_plan: true,
+                fecha_reprogramada: true,
+                catalogo_detalle: { select: { nombre: true } },
+                actividades_plan: { select: { fecha_fin: true } },
+            },
+        });
+        const ahora = new Date();
+        return planes.filter((p) => planVencido(p, ahora)).map((p) => p.id_plan);
+    }
     static async findPlansByArea(opts) {
         const where = {};
         if (opts?.id_area)
             where.id_area = opts.id_area;
         if (opts?.codigo_sop)
             where.casos_sop = { codigo_sop: opts.codigo_sop };
-        return prisma.planes_accion.findMany({
-            where,
-            orderBy: { created_at: "desc" },
-            include: {
-                areas: { select: { id_area: true, nombre_area: true } },
-                usuarios: { select: { id_usuario: true, nombre: true, cargo: true } },
-                catalogo_detalle: { select: { nombre: true } },
-                actividades_plan: {
-                    orderBy: { id_actividad: "asc" },
-                    include: {
-                        usuarios: { select: { id_usuario: true, nombre: true, cargo: true } },
-                        catalogo_detalle: { select: { nombre: true } },
-                        seguimientos: {
-                            orderBy: { fecha: "desc" },
-                            include: { usuarios: { select: { id_usuario: true, nombre: true, cargo: true } } },
-                        },
+        if (opts?.vencidos)
+            where.id_plan = { in: await CaseRepository.vencidoPlanIds(opts.id_area) };
+        const orderBy = { created_at: "desc" };
+        const include = {
+            areas: { select: { id_area: true, nombre_area: true } },
+            usuarios: { select: { id_usuario: true, nombre: true, cargo: true } },
+            catalogo_detalle: { select: { nombre: true } },
+            actividades_plan: {
+                orderBy: { id_actividad: "asc" },
+                include: {
+                    usuarios: { select: { id_usuario: true, nombre: true, cargo: true } },
+                    catalogo_detalle: { select: { nombre: true } },
+                    seguimientos: {
+                        orderBy: { fecha: "desc" },
+                        include: { usuarios: { select: { id_usuario: true, nombre: true, cargo: true } } },
                     },
                 },
-                casos_sop: {
-                    select: {
-                        id_caso: true,
-                        codigo_sop: true,
-                        titulo: true,
-                        descripcion: true,
-                        fecha_hallazgo: true,
-                        fecha_evento: true,
-                        catalogo_detalle_casos_sop_tipoTocatalogo_detalle: { select: { nombre: true } },
-                        catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { select: { nombre: true } },
-                        catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: { select: { codigo: true, nombre: true } },
-                        // `observaciones` es opcional en el formulario de SO, pero el jefe
-                        // debe poder leerla: es donde van las recomendaciones.
-                        investigacion_caso: { select: { causa_raiz: true, hallazgos: true, conclusiones: true, observaciones: true } },
-                        timeline_caso: {
-                            orderBy: { fecha: "desc" },
-                            select: {
-                                id_evento: true,
-                                kind: true,
-                                actor: true,
-                                actor_rol: true,
-                                titulo: true,
-                                detalle: true,
-                                fecha: true,
-                            },
+            },
+            casos_sop: {
+                select: {
+                    id_caso: true,
+                    codigo_sop: true,
+                    titulo: true,
+                    descripcion: true,
+                    fecha_hallazgo: true,
+                    fecha_evento: true,
+                    catalogo_detalle_casos_sop_tipoTocatalogo_detalle: { select: { nombre: true } },
+                    catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { select: { nombre: true } },
+                    catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: { select: { codigo: true, nombre: true } },
+                    // `observaciones` es opcional en el formulario de SO, pero el jefe
+                    // debe poder leerla: es donde van las recomendaciones.
+                    investigacion_caso: { select: { causa_raiz: true, hallazgos: true, conclusiones: true, observaciones: true } },
+                    timeline_caso: {
+                        orderBy: { fecha: "desc" },
+                        select: {
+                            id_evento: true,
+                            kind: true,
+                            actor: true,
+                            actor_rol: true,
+                            titulo: true,
+                            detalle: true,
+                            fecha: true,
                         },
-                        anexos_caso: {
-                            orderBy: { fecha_subida: "desc" },
-                            select: {
-                                id_anexo: true,
-                                nombre_archivo: true,
-                                ruta_archivo: true,
-                                tipo_archivo: true,
-                                peso: true,
-                                fecha_subida: true,
-                            },
+                    },
+                    anexos_caso: {
+                        orderBy: { fecha_subida: "desc" },
+                        select: {
+                            id_anexo: true,
+                            nombre_archivo: true,
+                            ruta_archivo: true,
+                            tipo_archivo: true,
+                            peso: true,
+                            fecha_subida: true,
                         },
                     },
                 },
             },
-        });
+        };
+        // Mismo criterio que `findAll` de casos: sin page/limit se comporta
+        // exactamente igual que antes (trae todo, sin contar de más). Antes este
+        // endpoint (GET /cases/planes) siempre devolvía el listado completo, sin
+        // ninguna opción de acotarlo.
+        if (!opts?.page || !opts?.limit) {
+            const data = await prisma.planes_accion.findMany({ where, orderBy, include });
+            return { data, total: undefined };
+        }
+        const [data, total] = await Promise.all([
+            prisma.planes_accion.findMany({
+                where,
+                orderBy,
+                include,
+                skip: (opts.page - 1) * opts.limit,
+                take: opts.limit,
+            }),
+            prisma.planes_accion.count({ where }),
+        ]);
+        return { data, total };
     }
     static async findBasicByCodigo(codigo_sop) {
         return prisma.casos_sop.findUnique({
@@ -512,20 +551,20 @@ export class CaseRepository {
             throw new Error(`Falta el estado "${nombre}" en el catálogo "Estado Actividad"`);
         return estado;
     }
-    static async approve(id_caso) {
+    static async approve(id_caso, actor = ACTOR_SO) {
         const estado = await CaseRepository.findEstado("Evaluación");
         return prisma.$transaction(async (tx) => {
             const caso = await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estado.id_detalle } });
             await CaseRepository.pushTimeline(tx, id_caso, {
                 kind: "aprobado",
-                actor: ACTOR_SO,
+                actor,
                 actor_rol: "seguridad",
                 titulo: "Reporte aprobado — pasa a Evaluación",
             });
             return caso;
         });
     }
-    static async addObservation(id_caso, texto) {
+    static async addObservation(id_caso, texto, actor = ACTOR_SO) {
         const caso = await prisma.casos_sop.findUniqueOrThrow({ where: { id_caso }, select: { observaciones: true } });
         const fecha = new Date().toLocaleString("es-PE", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
         const nueva = `[${fecha}] ${texto}`;
@@ -534,7 +573,7 @@ export class CaseRepository {
             const actualizado = await tx.casos_sop.update({ where: { id_caso }, data: { observaciones } });
             await CaseRepository.pushTimeline(tx, id_caso, {
                 kind: "comentario",
-                actor: ACTOR_SO,
+                actor,
                 actor_rol: "seguridad",
                 titulo: "Observación de revisión registrada",
                 detalle: texto,
@@ -584,7 +623,7 @@ export class CaseRepository {
             return actualizado;
         });
     }
-    static async evaluate(id_caso, dto) {
+    static async evaluate(id_caso, dto, actor = ACTOR_SO) {
         const destino = dto.requiere_investigacion ? "Investigación" : "Plan de Acción";
         const estado = await CaseRepository.findEstado(destino);
         return prisma.$transaction(async (tx) => {
@@ -604,7 +643,7 @@ export class CaseRepository {
             });
             await CaseRepository.pushTimeline(tx, id_caso, {
                 kind: dto.requiere_investigacion ? "investigacion" : "derivado",
-                actor: ACTOR_SO,
+                actor,
                 actor_rol: "seguridad",
                 titulo: `Caso evaluado — pasa a ${destino}`,
                 detalle: `Clasificación: ${dto.clasificacion}.`,
@@ -612,7 +651,7 @@ export class CaseRepository {
             return caso;
         });
     }
-    static async reject(id_caso, dto) {
+    static async reject(id_caso, dto, actor = ACTOR_SO) {
         const estado = await CaseRepository.findEstado("Rechazado");
         return prisma.$transaction(async (tx) => {
             const caso = await tx.casos_sop.update({
@@ -621,7 +660,7 @@ export class CaseRepository {
             });
             await CaseRepository.pushTimeline(tx, id_caso, {
                 kind: "rechazado",
-                actor: ACTOR_SO,
+                actor,
                 actor_rol: "seguridad",
                 titulo: "Reporte rechazado",
                 detalle: dto.motivo ?? null,
@@ -629,7 +668,7 @@ export class CaseRepository {
             return caso;
         });
     }
-    static async requestInfo(id_caso, estadoActualNombre, dto) {
+    static async requestInfo(id_caso, estadoActualNombre, dto, actor = ACTOR_SO) {
         const estadoPausa = await CaseRepository.findEstado("Pendiente de Información");
         const caso = await prisma.casos_sop.findUniqueOrThrow({
             where: { id_caso },
@@ -653,7 +692,7 @@ export class CaseRepository {
             await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estadoPausa.id_detalle } });
             await CaseRepository.pushTimeline(tx, id_caso, {
                 kind: "info_solicitada",
-                actor: ACTOR_SO,
+                actor,
                 actor_rol: "seguridad",
                 titulo: "Información adicional solicitada al reportante",
                 detalle: dto.mensaje,
@@ -690,7 +729,14 @@ export class CaseRepository {
             return solicitud;
         });
     }
-    static async respondInfo(id_caso, id_solicitud, dto) {
+    /**
+     * La respuesta la deja el reportante (flujo público, sin sesión) casi
+     * siempre; SO también puede registrarla a mano desde su panel cuando la
+     * recibe por otro medio. Por eso el actor/rol por defecto es el reportante
+     * y solo cambia cuando `CaseService.respondInfo` (ruta autenticada de SO)
+     * pasa explícitamente el usuario real de la sesión.
+     */
+    static async respondInfo(id_caso, id_solicitud, dto, actor = "Reportante", actor_rol = "reportante") {
         const solicitud = await prisma.solicitudes_informacion.findUnique({ where: { id_solicitud } });
         if (!solicitud || solicitud.id_caso !== id_caso)
             throw new Error("La solicitud de información no existe para este caso");
@@ -704,8 +750,8 @@ export class CaseRepository {
             await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estadoDestino.id_detalle } });
             await CaseRepository.pushTimeline(tx, id_caso, {
                 kind: "info_recibida",
-                actor: ACTOR_SO,
-                actor_rol: "seguridad",
+                actor,
+                actor_rol,
                 titulo: `Información recibida — vuelve a ${estadoDestino.nombre}`,
                 detalle: dto.respuesta ?? null,
             });
@@ -718,7 +764,7 @@ export class CaseRepository {
             return actualizada;
         });
     }
-    static async saveInvestigation(id_caso, dto) {
+    static async saveInvestigation(id_caso, dto, actor = ACTOR_SO) {
         const estado = await CaseRepository.findEstado("Plan de Acción");
         return prisma.$transaction(async (tx) => {
             // La descripción del evento se escribió en Evaluación; acá solo se
@@ -747,7 +793,7 @@ export class CaseRepository {
             await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estado.id_detalle } });
             await CaseRepository.pushTimeline(tx, id_caso, {
                 kind: "investigacion",
-                actor: ACTOR_SO,
+                actor,
                 actor_rol: "seguridad",
                 titulo: "Investigación registrada — pasa a Plan de Acción",
                 detalle: `Causa raíz: ${dto.causa_raiz}`,
@@ -808,7 +854,7 @@ export class CaseRepository {
             }
         });
     }
-    static async createPlan(id_caso, codigo_sop, dto) {
+    static async createPlan(id_caso, codigo_sop, dto, actor = ACTOR_SO) {
         // El caso NO pasa a Ejecución al crear el plan: queda en "Plan de Acción"
         // con el plan en estado "Enviado", esperando que el Jefe del Área lo
         // acepte (acceptPlan). Recién ahí arranca la Ejecución — mismo flujo que
@@ -848,7 +894,7 @@ export class CaseRepository {
             await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estadoCasoPlan.id_detalle } });
             await CaseRepository.pushTimeline(tx, id_caso, {
                 kind: "plan_propuesto",
-                actor: ACTOR_SO,
+                actor,
                 actor_rol: "seguridad",
                 titulo: "Plan de Acción enviado a Jefe de Área",
                 detalle: `${codigo_plan} · pendiente de aceptación por el área responsable.`,
@@ -864,7 +910,7 @@ export class CaseRepository {
         void CaseRepository.avisarPlanesAsignados([plan.id_plan]);
         return plan;
     }
-    static async createPlans(id_caso, codigo_sop, dtos) {
+    static async createPlans(id_caso, codigo_sop, dtos, actor = ACTOR_SO) {
         if (dtos.length === 0)
             throw new Error("Agregue al menos un plan de acción");
         const [estadoPlanEnviado, estadoCasoPlan, estadoActividadPendiente] = await Promise.all([
@@ -906,7 +952,7 @@ export class CaseRepository {
                 }
                 await CaseRepository.pushTimeline(tx, id_caso, {
                     kind: "plan_propuesto",
-                    actor: ACTOR_SO,
+                    actor,
                     actor_rol: "seguridad",
                     titulo: "Plan de Acción enviado a Jefe de Área",
                     detalle: `${codigo_plan} · pendiente de aceptación por el área responsable.`,
@@ -935,7 +981,7 @@ export class CaseRepository {
      * "Modificar" se perdiera lo ya cargado, especialmente estados, avances y
      * seguimientos registrados sobre la actividad.
      */
-    static async updatePlan(id_plan, dto) {
+    static async updatePlan(id_plan, dto, actor = ACTOR_SO) {
         const estadoActPendiente = await CaseRepository.findEstadoActividad("Pendiente");
         return prisma.$transaction(async (tx) => {
             const actividadesActuales = await tx.actividades_plan.findMany({
@@ -996,7 +1042,7 @@ export class CaseRepository {
             }
             await CaseRepository.pushTimeline(tx, plan.id_caso, {
                 kind: "plan_ajustado",
-                actor: ACTOR_SO,
+                actor,
                 actor_rol: "seguridad",
                 titulo: "Plan de Acción modificado",
                 detalle: `${plan.codigo_plan} · ${dto.actividades.length} actividad(es).`,
@@ -1018,7 +1064,7 @@ export class CaseRepository {
      * Los planes que siguen sin aceptar NO se tocan: se quedan en "Enviado" y su
      * jefe los puede aceptar después, ya con el caso en Ejecución.
      */
-    static async startExecution(id_caso) {
+    static async startExecution(id_caso, actor = ACTOR_SO) {
         const [estadoEjecucion, estadoPlanAceptado, estadoPlanEnEjecucion, estadoPlanFinalizado, estadoPlanCerrado] = await Promise.all([
             CaseRepository.findEstado("Ejecución"),
             CaseRepository.findEstadoPlan("Aceptado"),
@@ -1046,7 +1092,7 @@ export class CaseRepository {
             });
             await CaseRepository.pushTimeline(tx, id_caso, {
                 kind: "seguimiento",
-                actor: ACTOR_SO,
+                actor,
                 actor_rol: "seguridad",
                 titulo: "Ejecución iniciada por Seguridad Operativa",
                 detalle: pendientes > 0
@@ -1175,7 +1221,7 @@ export class CaseRepository {
         });
     }
     /** SO revisa un plan finalizado: lo cierra o lo devuelve al área sin afectar a otros planes. */
-    static async reviewFinalPlanById(id_plan, decision, nota) {
+    static async reviewFinalPlanById(id_plan, decision, nota, actor = ACTOR_SO) {
         const plan = await prisma.planes_accion.findUnique({
             where: { id_plan },
             select: {
@@ -1246,7 +1292,7 @@ export class CaseRepository {
             }
             await CaseRepository.pushTimeline(tx, plan.id_caso, {
                 kind: "seguimiento",
-                actor: ACTOR_SO,
+                actor,
                 actor_rol: "seguridad",
                 titulo: aprobado
                     ? `Plan de acción cerrado por Seguridad Operativa — ${plan.codigo_plan}`
@@ -1292,18 +1338,13 @@ export class CaseRepository {
         });
         if (!plan)
             throw new Error(`El plan ${id_plan} no existe`);
-        const configuracion = await ConfiguracionService.get();
         const fechaVigente = planDeadline(plan);
         const fechaPedida = new Date(`${dto.nueva_fecha}T00:00:00.000Z`);
-        const fechaMaxima = sumarDias(fechaVigente, configuracion.plazos.diasSolicitarProrroga);
         if (Number.isNaN(fechaPedida.getTime())) {
             throw new Error("La nueva fecha de prórroga no es válida");
         }
         if (fechaPedida.getTime() <= fechaVigente.getTime()) {
             throw new Error(`La nueva fecha debe ser posterior al plazo vigente (${diaISO(fechaVigente)})`);
-        }
-        if (fechaPedida.getTime() > fechaMaxima.getTime()) {
-            throw new Error(`La prórroga no puede superar ${configuracion.plazos.diasSolicitarProrroga} día(s) adicionales. Fecha máxima: ${diaISO(fechaMaxima)}`);
         }
         const estado = await CaseRepository.findEstado("Prórroga Solicitada");
         return prisma.$transaction(async (tx) => {
@@ -1341,7 +1382,7 @@ export class CaseRepository {
      * que pidió el área: la solicitud del Jefe es una propuesta, no un plazo
      * que se acepte tal cual. Sin `fecha_aprobada` vale la fecha propuesta.
      */
-    static async reviewExtensionByPlan(id_plan, decision, nota, fecha_aprobada = null) {
+    static async reviewExtensionByPlan(id_plan, decision, nota, fecha_aprobada = null, actor = ACTOR_SO) {
         const plan = await prisma.planes_accion.findUnique({
             where: { id_plan },
             select: {
@@ -1406,7 +1447,7 @@ export class CaseRepository {
                     : `${plan.codigo_plan}: aprobada al ${diaISO(fechaFinal)}, según lo pedido por el área.`;
             await CaseRepository.pushTimeline(tx, plan.id_caso, {
                 kind: "ampliacion",
-                actor: ACTOR_SO,
+                actor,
                 actor_rol: "seguridad",
                 titulo: decision === "rechazada"
                     ? `Ampliación de plazo rechazada — ${plan.codigo_plan}`
@@ -1431,7 +1472,7 @@ export class CaseRepository {
         });
     }
     /** SO confirma que ya no queda ejecución abierta y mueve el expediente a Verificación. */
-    static async sendToVerification(id_caso) {
+    static async sendToVerification(id_caso, actor = ACTOR_SO) {
         const estadoVerificacion = await CaseRepository.findEstado("Verificación");
         return prisma.$transaction(async (tx) => {
             const planes = await tx.planes_accion.findMany({
@@ -1463,7 +1504,7 @@ export class CaseRepository {
             });
             await CaseRepository.pushTimeline(tx, id_caso, {
                 kind: "seguimiento",
-                actor: ACTOR_SO,
+                actor,
                 actor_rol: "seguridad",
                 titulo: "Expediente enviado a Verificación",
                 detalle: "Todos los planes de acción quedaron listos para validación final por Seguridad Operativa.",
@@ -1505,7 +1546,7 @@ export class CaseRepository {
     }
     /** ETAPA 5 — el Jefe del Área solicita ampliación de plazo. */
     /** ETAPA 5 — SO aprueba o rechaza la prórroga; el caso vuelve a Ejecución. */
-    static async reviewExtension(id_caso, decision, nota) {
+    static async reviewExtension(id_caso, decision, nota, actor = ACTOR_SO) {
         const estado = await CaseRepository.findEstado("Ejecución");
         return prisma.$transaction(async (tx) => {
             const planes = await tx.planes_accion.findMany({
@@ -1525,7 +1566,7 @@ export class CaseRepository {
             const caso = await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estado.id_detalle } });
             await CaseRepository.pushTimeline(tx, id_caso, {
                 kind: "ampliacion",
-                actor: ACTOR_SO,
+                actor,
                 actor_rol: "seguridad",
                 titulo: decision === "aprobada" ? "Ampliación de plazo aprobada" : "Ampliación de plazo rechazada",
                 detalle: nota,
@@ -1534,13 +1575,13 @@ export class CaseRepository {
         });
     }
     /** ETAPA 6 — SO deja constancia y conserva el expediente en Verificación. */
-    static async keepPending(id_caso, motivo) {
+    static async keepPending(id_caso, motivo, actor = ACTOR_SO) {
         const estado = await CaseRepository.findEstado("Verificación");
         return prisma.$transaction(async (tx) => {
             const caso = await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estado.id_detalle } });
             await CaseRepository.pushTimeline(tx, id_caso, {
                 kind: "seguimiento",
-                actor: ACTOR_SO,
+                actor,
                 actor_rol: "seguridad",
                 titulo: "Caso mantenido pendiente en Verificación",
                 detalle: motivo ?? "Seguridad Operativa mantiene el expediente pendiente de verificación.",
@@ -1549,13 +1590,13 @@ export class CaseRepository {
         });
     }
     /** ETAPA 7 — reabrir un caso cerrado hacia la etapa que SO necesita corregir. */
-    static async reopenCase(id_caso, motivo, destino = "Verificación") {
+    static async reopenCase(id_caso, motivo, destino = "Verificación", actor = ACTOR_SO) {
         const estado = await CaseRepository.findEstado(destino);
         return prisma.$transaction(async (tx) => {
             const caso = await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estado.id_detalle } });
             await CaseRepository.pushTimeline(tx, id_caso, {
                 kind: "reapertura",
-                actor: ACTOR_SO,
+                actor,
                 actor_rol: "seguridad",
                 titulo: `Caso reabierto a ${destino}`,
                 detalle: motivo ? `${motivo} · Etapa destino: ${destino}.` : `El caso vuelve a ${destino}.`,
@@ -1564,7 +1605,7 @@ export class CaseRepository {
         });
     }
     /** Retroceso controlado entre etapas activas, sin borrar datos del expediente. */
-    static async rollbackStage(id_caso, estadoActualNombre, destinoNombre, motivo) {
+    static async rollbackStage(id_caso, estadoActualNombre, destinoNombre, motivo, actor = ACTOR_SO) {
         const permitidos = {
             Investigación: ["Evaluación"],
             "Plan de Acción": ["Investigación"],
@@ -1581,7 +1622,7 @@ export class CaseRepository {
             });
             await CaseRepository.pushTimeline(tx, id_caso, {
                 kind: "retroceso",
-                actor: ACTOR_SO,
+                actor,
                 actor_rol: "seguridad",
                 titulo: `Retroceso de etapa — vuelve a ${destinoNombre}`,
                 detalle: `Desde ${estadoActualNombre}. Motivo: ${motivo}`,
@@ -1589,7 +1630,7 @@ export class CaseRepository {
             return caso;
         });
     }
-    static async closeCase(id_caso, nota) {
+    static async closeCase(id_caso, nota, actor = ACTOR_SO) {
         const [estado, estadoPlanCerrado] = await Promise.all([
             CaseRepository.findEstado("Cerrado"),
             CaseRepository.findEstadoPlan("Cerrado"),
@@ -1605,7 +1646,7 @@ export class CaseRepository {
             const caso = await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estado.id_detalle } });
             await CaseRepository.pushTimeline(tx, id_caso, {
                 kind: "cierre",
-                actor: ACTOR_SO,
+                actor,
                 actor_rol: "seguridad",
                 titulo: "Caso cerrado",
                 detalle: nota ?? "Cierre del caso. Historial completo generado y archivado.",

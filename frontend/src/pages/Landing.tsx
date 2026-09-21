@@ -197,7 +197,7 @@ function Navbar({ systemName }: { systemName: string }) {
       <div className="mx-auto flex h-[76px] max-w-[1240px] items-center justify-between px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2.5">
           <motion.div whileHover={{ scale: 1.06, rotate: -4 }} whileTap={{ scale: 0.94 }} transition={SPRING_SNAPPY}>
-            <Logo size={48} withWordmark={false} />
+            <Logo size={48} withWordmark={false} priority />
           </motion.div>
           <span className={cn("font-display text-[16px] font-bold tracking-tight transition-colors", scrolled ? "text-ink" : "text-white")}>
             {systemName}

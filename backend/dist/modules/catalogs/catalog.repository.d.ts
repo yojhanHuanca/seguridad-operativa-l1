@@ -2,11 +2,11 @@ export declare class CatalogRepository {
     static findAllGroups(): Promise<({
         catalogo_detalle: {
             nombre: string;
-            descripcion: string | null;
+            descripcion: string;
             id_detalle: number;
-            codigo: string | null;
-            orden: number | null;
-            color: string | null;
+            codigo: string;
+            orden: number;
+            color: string;
         }[];
     } & {
         nombre: string;
@@ -16,15 +16,15 @@ export declare class CatalogRepository {
         id_catalogo: number;
         codigo: string;
     })[]>;
-    static findGroupWithAllDetalle(id_catalogo: number): Promise<({
+    static findGroupWithAllDetalle(id_catalogo: number): Promise<{
         catalogo_detalle: {
             nombre: string;
-            estado: boolean | null;
-            descripcion: string | null;
+            estado: boolean;
+            descripcion: string;
             id_detalle: number;
-            codigo: string | null;
-            orden: number | null;
-            color: string | null;
+            codigo: string;
+            orden: number;
+            color: string;
         }[];
     } & {
         nombre: string;
@@ -33,8 +33,8 @@ export declare class CatalogRepository {
         descripcion: string | null;
         id_catalogo: number;
         codigo: string;
-    }) | null>;
-    static findDetalleById(id_detalle: number): Promise<({
+    }>;
+    static findDetalleById(id_detalle: number): Promise<{
         catalogos: {
             nombre: string;
         };
@@ -48,7 +48,7 @@ export declare class CatalogRepository {
         codigo: string | null;
         orden: number | null;
         color: string | null;
-    }) | null>;
+    }>;
     static findDetalleByNombre(id_catalogo: number, nombre: string): Promise<{
         nombre: string;
         estado: boolean | null;
@@ -59,7 +59,7 @@ export declare class CatalogRepository {
         codigo: string | null;
         orden: number | null;
         color: string | null;
-    } | null>;
+    }>;
     static createDetalle(id_catalogo: number, nombre: string): Promise<{
         nombre: string;
         estado: boolean | null;

@@ -4,24 +4,24 @@ export declare class ProfileRepository {
         codigo_usuario: string;
         correo: string;
         nombre: string;
-        cargo: string | null;
-        telefono: string | null;
-        estado: string | null;
-        fecha_ingreso: Date | null;
-        foto_url: string | null;
-        ultimo_acceso: Date | null;
-        id_area: number | null;
-        id_rol: number | null;
+        cargo: string;
+        telefono: string;
+        estado: string;
+        fecha_ingreso: Date;
+        foto_url: string;
+        ultimo_acceso: Date;
+        id_area: number;
+        id_rol: number;
         areas: {
             nombre_area: string;
-        } | null;
+        };
         roles: {
             nombre_rol: string;
-        } | null;
-    } | null>;
+        };
+    }>;
     static findPasswordHash(id_usuario: number): Promise<{
-        password_hash: string | null;
-    } | null>;
+        password_hash: string;
+    }>;
     static updateContact(id_usuario: number, data: {
         telefono?: string | null;
         foto_url?: string | null;
@@ -30,20 +30,20 @@ export declare class ProfileRepository {
         codigo_usuario: string;
         correo: string;
         nombre: string;
-        cargo: string | null;
-        telefono: string | null;
-        estado: string | null;
-        fecha_ingreso: Date | null;
-        foto_url: string | null;
-        ultimo_acceso: Date | null;
-        id_area: number | null;
-        id_rol: number | null;
+        cargo: string;
+        telefono: string;
+        estado: string;
+        fecha_ingreso: Date;
+        foto_url: string;
+        ultimo_acceso: Date;
+        id_area: number;
+        id_rol: number;
         areas: {
             nombre_area: string;
-        } | null;
+        };
         roles: {
             nombre_rol: string;
-        } | null;
+        };
     }>;
     static updatePassword(id_usuario: number, password_hash: string): Promise<{
         id_usuario: number;

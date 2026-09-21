@@ -76,16 +76,15 @@ export class ReportService {
      * Área y Admin ven todos los casos porque los tienen que gestionar.
      */
     static async listReports(actor, query) {
+        const page = Number(query?.page);
+        const limit = Number(query?.limit);
+        const paginar = Number.isInteger(page) && page > 0 && Number.isInteger(limit) && limit > 0;
         if (!esReportante(actor)) {
-            const data = await ReportRepository.findAll();
-            return { data, total: undefined };
+            return ReportRepository.findAll(paginar ? { page, limit } : undefined);
         }
         const filter = query?.filter === "activos" || query?.filter === "pendientes_info" || query?.filter === "cerrados"
             ? query.filter
             : undefined;
-        const page = Number(query?.page);
-        const limit = Number(query?.limit);
-        const paginar = Number.isInteger(page) && page > 0 && Number.isInteger(limit) && limit > 0;
         return ReportRepository.findAllByCreator(actor.id_usuario, {
             ...(filter ? { filter } : {}),
             ...(query?.search ? { search: query.search } : {}),

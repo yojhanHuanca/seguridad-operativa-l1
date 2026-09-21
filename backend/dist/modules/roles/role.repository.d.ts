@@ -6,6 +6,6 @@ export declare class RoleRepository {
     static findById(id: number): Promise<{
         id_rol: number;
         nombre_rol: string;
-    } | null>;
+    }>;
 }
 //# sourceMappingURL=role.repository.d.ts.map

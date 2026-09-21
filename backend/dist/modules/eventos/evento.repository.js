@@ -1,4 +1,5 @@
 import prisma from "../../lib/prisma.js";
+import { ConfiguracionService } from "../configuracion/configuracion.service.js";
 const DIAS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 export const ESTADOS_EVENTO = ["Registrado", "En investigación", "Cerrado"];
 /** Día calendario 1-7 de la semana ISO-ish, más el nombre en español. */
@@ -127,7 +128,7 @@ export class EventoRepository {
     static async asignar(id_evento, id_usuario) {
         return prisma.eventos_monitoreo.update({ where: { id_evento }, data: { asignado_a: id_usuario } });
     }
-    static async create(dto, actor) {
+    static async create(dto, actor, options) {
         const match = dto.fecha.match(/^(\d{4})-(\d{2})-(\d{2})$/);
         if (!match)
             throw new Error("Fecha inválida");
@@ -143,20 +144,22 @@ export class EventoRepository {
         if (dto.id_rango_horario != null) {
             rango_horario = dto.id_rango_horario;
         }
-        else {
+        else if (!options?.preserveImportedValues) {
             const rango = await prisma.catalogo_detalle.findFirst({
                 where: { nombre: rangoHorarioLabel(dto.hora), catalogos: { nombre: "Rango horario" } },
             });
             rango_horario = rango?.id_detalle ?? null;
         }
+        const codigo_evento = await ConfiguracionService.nextCodigoEvento(prisma, fecha);
         return prisma.eventos_monitoreo.create({
             data: {
+                codigo_evento,
                 fecha,
                 hora,
-                anio: dto.anio ?? year,
-                mes: dto.mes ?? month,
-                semana: dto.semana ?? semanaDelAnio(fecha),
-                dia: dto.dia ?? diaSemana(fecha),
+                anio: options?.preserveImportedValues ? (dto.anio ?? null) : (dto.anio ?? year),
+                mes: options?.preserveImportedValues ? (dto.mes ?? null) : (dto.mes ?? month),
+                semana: options?.preserveImportedValues ? (dto.semana ?? null) : (dto.semana ?? semanaDelAnio(fecha)),
+                dia: options?.preserveImportedValues ? (dto.dia ?? null) : (dto.dia ?? diaSemana(fecha)),
                 rango_horario,
                 tipo_incidente: dto.id_tipo_incidente,
                 usuario_registra: actor ?? null,

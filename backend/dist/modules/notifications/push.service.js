@@ -16,10 +16,10 @@ export class PushService {
         }
         await PushRepository.guardar(id_usuario, sub);
     }
-    static async desuscribir(endpoint) {
+    static async desuscribir(endpoint, id_usuario) {
         if (!endpoint)
             throw new Error("Falta el endpoint");
-        await PushRepository.eliminar(endpoint);
+        await PushRepository.eliminar(endpoint, id_usuario);
     }
     /**
      * Best-effort: nunca lanza, igual que NotificationRepository.emitir (del

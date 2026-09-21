@@ -15,6 +15,10 @@ export class ConfiguracionController {
   static async publica(_req: Request, res: Response) {
     try {
       const configuracion = await ConfiguracionService.publica();
+      res.set({
+        'Cache-Control': 'public, max-age=300, stale-while-revalidate=600',
+        'CDN-Cache-Control': 'public, max-age=300',
+      });
       return res.json(ApiResponse.success("Identidad del sistema obtenida correctamente", configuracion));
     } catch (error) {
       return res.status(500).json(ApiResponse.error("Error al obtener la identidad del sistema", error));

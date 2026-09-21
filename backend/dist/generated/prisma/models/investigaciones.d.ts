@@ -2,7 +2,8 @@ import type * as runtime from "@prisma/client/runtime/library";
 import type * as Prisma from "../internal/prismaNamespace.js";
 /**
  * Model investigaciones
- *
+ * Sin uso: investigación de `incidencias` (ver la nota ahí). La
+ * investigación real de un caso vive en `investigacion_caso`.
  */
 export type investigacionesModel = runtime.Types.Result.DefaultSelection<Prisma.$investigacionesPayload>;
 export type AggregateInvestigaciones = {

@@ -17,6 +17,9 @@ export interface ConfiguracionGeneral {
         diasResponderPlanes: number;
         diasSolicitarProrroga: number;
     };
+    operacion: {
+        kmPorCarrera: number;
+    };
     meta: {
         ultimaActualizacion: string | null;
     };
@@ -31,11 +34,20 @@ export interface ConfiguracionPublica {
     version: string;
 }
 export declare class ConfiguracionService {
+    private static cache;
+    private static readonly CACHE_TTL;
     private static readValues;
+    static invalidateCache(): void;
     static get(client?: DbClient): Promise<ConfiguracionGeneral>;
     static publica(client?: DbClient): Promise<ConfiguracionPublica>;
     static update(rawBody: unknown, audit?: ConfiguracionAuditContext): Promise<ConfiguracionGeneral>;
     static nextCodigoExpediente(client: DbClient, fecha: Date): Promise<string>;
+    /**
+     * Código único global para un evento de monitoreo (EVT 00042-2026), por la
+     * misma secuencia atómica de Postgres que ya usa `nextCodigoExpediente` —
+     * antes `codigo_evento` se dejaba `null` siempre, sin ninguna generación.
+     */
+    static nextCodigoEvento(client: DbClient, fecha: Date): Promise<string>;
     static nextCodigosPlan(client: DbClient, codigoSop: string, cantidad: number): Promise<string[]>;
     /**
      * Códigos de plan para muchos casos de una sola vez, para la importación

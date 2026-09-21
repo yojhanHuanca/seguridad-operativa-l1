@@ -1,10 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { useLocation } from "react-router-dom";
 import { Database, Pencil, RefreshCw, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { ContingenciaShell } from "@/components/layout/ContingenciaShell";
-import { MonitoristaShell } from "@/components/layout/MonitoristaShell";
-import { LoadingState } from "@/components/feedback/LoadingState";
 import { Card, CardHeader } from "@/design-system/primitives/Card";
 import { Button } from "@/design-system/primitives/Button";
 import { Field, Input } from "@/design-system/primitives/Input";
@@ -21,6 +18,8 @@ import { useConfiguracion } from "@/features/configuracion/hooks/useConfiguracio
 import { apiErrorMessage } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { stationNamesFromCatalog } from "@/lib/stations";
+import { MonitoristaShell } from "@/components/layout/MonitoristaShell";
+
 
 const POR_PAGINA = 25;
 type CampoNumerico = "qty_carreras" | "qty_pasajeros" | "km_comercial" | "km_no_comercial" | "paradas_estacion";
@@ -87,7 +86,6 @@ function fechaInput(fecha: string) {
 }
 
 export function DatosOperativos() {
-  const location = useLocation();
   const [desde, setDesde] = useState("");
   const [hasta, setHasta] = useState("");
   const [pagina, setPagina] = useState(1);
@@ -101,7 +99,7 @@ export function DatosOperativos() {
   const cantidadEstaciones = catalogosListos
     ? stationNamesFromCatalog(estacionesCatalogo).length
     : ESTACIONES_LINEA_1_FALLBACK;
-  const kmPorCarrera = configuracion?.operacion?.kmPorCarrera ?? KM_POR_CARRERA_FALLBACK;
+  const kmPorCarrera = configuracion?.operacion.kmPorCarrera ?? KM_POR_CARRERA_FALLBACK;
 
   const filtros = { desde: desde || undefined, hasta: hasta || undefined, page: pagina, limit: POR_PAGINA };
   const { data, isLoading, isFetching, refetch } = useDatosOperativos(filtros);
@@ -112,7 +110,6 @@ export function DatosOperativos() {
   const totalPaginas = Math.max(1, Math.ceil((data?.total ?? 0) / POR_PAGINA));
   const paginaActual = Math.min(pagina, totalPaginas);
   const guardando = crear.isPending || actualizar.isPending;
-  const Shell = location.pathname.startsWith("/contingencias") ? ContingenciaShell : MonitoristaShell;
 
   useEffect(() => {
     if (editando || formulario.qty_carreras.trim() === "") return;
@@ -220,7 +217,7 @@ export function DatosOperativos() {
   };
 
   return (
-    <Shell>
+    <ContingenciaShell>
       <div className="space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -359,7 +356,7 @@ export function DatosOperativos() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-line-soft">
-                {isLoading && <tr><td colSpan={7}><LoadingState label="Cargando datos operativos" compact /></td></tr>}
+                {isLoading && <tr><td colSpan={7} className="px-5 py-10 text-center text-ink-quiet">Cargando datos...</td></tr>}
                 {!isLoading && data?.items.length === 0 && <tr><td colSpan={7} className="px-5 py-10 text-center text-ink-quiet">No hay datos operativos para mostrar.</td></tr>}
                 {!isLoading && data?.items.map((dato) => (
                   <tr key={dato.id_dato_operativo} className="text-ink-soft hover:bg-surface/60">
@@ -405,6 +402,6 @@ export function DatosOperativos() {
           </Card>
         )}
       </div>
-    </Shell>
+    </ContingenciaShell>
   );
 }
