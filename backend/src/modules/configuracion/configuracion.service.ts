@@ -138,7 +138,7 @@ function parseNumber(value: string | undefined, fallback: number): number {
 
 function parseDecimal(value: string | undefined, fallback: number): number {
   const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 function sanitizePrefix(value: string, label: string): string {

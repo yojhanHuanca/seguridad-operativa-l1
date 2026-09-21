@@ -51,7 +51,12 @@ function cloneConfig(config: ConfiguracionGeneral): ConfiguracionGeneral {
     sistema: { ...config.sistema },
     numeracion: { ...config.numeracion },
     plazos: { ...config.plazos },
-    operacion: { ...config.operacion },
+    operacion: {
+      ...config.operacion,
+      kmPorCarrera: Number.isFinite(config.operacion?.kmPorCarrera) && config.operacion.kmPorCarrera > 0
+        ? config.operacion.kmPorCarrera
+        : 33.128331,
+    },
     meta: { ...config.meta },
   };
 }
