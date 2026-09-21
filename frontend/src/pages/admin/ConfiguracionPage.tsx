@@ -341,20 +341,23 @@ export function AdminConfiguracionPage() {
               title="Parámetros operativos"
               description="Valores usados para estimar kilómetros comerciales en Datos Operativos. Los cambios aplican a nuevos registros y no recalculan el histórico."
             >
-              <div className="mb-4 flex justify-end gap-2">
-                {!editandoOperacion ? (
-                  <Button type="button" variant="outline" onClick={() => setEditandoOperacion(true)}>
-                    Editar
-                  </Button>
-                ) : (
-                  <Button type="button" onClick={guardarOperacion} disabled={updateConfiguracion.isPending || !dirty}>
-                    {updateConfiguracion.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                    Guardar
-                  </Button>
-                )}
-              </div>
               <div className="grid gap-4 md:grid-cols-[minmax(0,280px)_minmax(0,1fr)] md:items-end">
-                <Field label="Kilómetros por carrera" hint="Valor de referencia de una carrera completa." required>
+                <div>
+                  <div className="mb-1.5 flex items-center justify-between gap-2">
+                    <span className="text-[12px] font-medium text-ink-soft">
+                      Kilómetros por carrera <span className="text-critical">*</span>
+                    </span>
+                    {!editandoOperacion ? (
+                      <Button type="button" variant="outline" size="sm" className="h-7 px-2.5 text-[11px]" onClick={() => setEditandoOperacion(true)}>
+                        Editar
+                      </Button>
+                    ) : (
+                      <Button type="button" size="sm" className="h-7 px-2.5 text-[11px]" onClick={guardarOperacion} disabled={updateConfiguracion.isPending || !dirty}>
+                        {updateConfiguracion.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                        Guardar
+                      </Button>
+                    )}
+                  </div>
                   <div className="relative">
                     <Input
                       type="number"
@@ -368,7 +371,8 @@ export function AdminConfiguracionPage() {
                     />
                     <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-medium text-ink-faint">km</span>
                   </div>
-                </Field>
+                  <span className="mt-1.5 block text-[11.5px] text-ink-faint">Valor de referencia de una carrera completa.</span>
+                </div>
                 <div className="rounded-lg border border-brand-100 bg-brand-50/50 px-3 py-3 text-[12px] text-brand-900">
                   <p className="font-semibold">¿Cómo se utiliza?</p>
                   <p className="mt-1 leading-relaxed">
