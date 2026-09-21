@@ -62,12 +62,12 @@ function codigoEvento(id: number, fecha: Date) {
   return String(id);
 }
 
-function eventoData(dto: CreateContingenciaDto | UpdateContingenciaDto, actorId?: number) {
+function eventoData(dto: CreateContingenciaDto | UpdateContingenciaDto, actorId?: number, options?: { preserveImportedValues?: boolean }) {
   const fecha = new Date(`${dto.fecha}T00:00:00.000Z`);
   return {
     fecha,
     hora_reporte: timeOrNull(dto.hora_reporte),
-    mes: fecha.getUTCMonth() + 1,
+    mes: options?.preserveImportedValues ? null : fecha.getUTCMonth() + 1,
     tipo_evento: dto.tipo_evento,
     lugar_evento: dto.lugar_evento,
     lugar_exacto_evento: dto.lugar_exacto_evento,
@@ -358,12 +358,12 @@ export class ContingenciaRepository {
     return completo;
   }
 
-  static async create(dto: CreateContingenciaDto, actorId?: number) {
+  static async create(dto: CreateContingenciaDto, actorId?: number, options?: { preserveImportedValues?: boolean }) {
     await ensureSchemaInicial();
     const evento = await prisma.$transaction(async (tx) => {
       const creado = await tx.contingencia_eventos.create({
         data: {
-          ...eventoData(dto, actorId),
+          ...eventoData(dto, actorId, options),
           created_by: actorId ?? null,
         },
       });

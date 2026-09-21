@@ -153,7 +153,7 @@ export class EventoRepository {
     return prisma.eventos_monitoreo.update({ where: { id_evento }, data: { asignado_a: id_usuario } });
   }
 
-  static async create(dto: CreateEventoDto, actor?: number) {
+  static async create(dto: CreateEventoDto, actor?: number, options?: { preserveImportedValues?: boolean }) {
     const match = dto.fecha.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (!match) throw new Error("Fecha inválida");
     const year = Number(match[1]);
@@ -168,7 +168,7 @@ export class EventoRepository {
     let rango_horario: number | null = null;
     if (dto.id_rango_horario != null) {
       rango_horario = dto.id_rango_horario;
-    } else {
+    } else if (!options?.preserveImportedValues) {
       const rango = await prisma.catalogo_detalle.findFirst({
         where: { nombre: rangoHorarioLabel(dto.hora), catalogos: { nombre: "Rango horario" } },
       });
@@ -182,10 +182,10 @@ export class EventoRepository {
         codigo_evento,
         fecha,
         hora,
-        anio: dto.anio ?? year,
-        mes: dto.mes ?? month,
-        semana: dto.semana ?? semanaDelAnio(fecha),
-        dia: dto.dia ?? diaSemana(fecha),
+        anio: options?.preserveImportedValues ? (dto.anio ?? null) : (dto.anio ?? year),
+        mes: options?.preserveImportedValues ? (dto.mes ?? null) : (dto.mes ?? month),
+        semana: options?.preserveImportedValues ? (dto.semana ?? null) : (dto.semana ?? semanaDelAnio(fecha)),
+        dia: options?.preserveImportedValues ? (dto.dia ?? null) : (dto.dia ?? diaSemana(fecha)),
         rango_horario,
         tipo_incidente: dto.id_tipo_incidente,
         usuario_registra: actor ?? null,

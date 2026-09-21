@@ -1,6 +1,5 @@
 import { ContingenciaRepository } from "../contingencias/contingencia.repository.js";
-import { ContingenciaService } from "../contingencias/contingencia.service.js";
-import type { CreateContingenciaDto } from "../contingencias/contingencia.types.js";
+import { createContingenciaSchema, type CreateContingenciaDto } from "../contingencias/contingencia.types.js";
 import type {
   ImportacionCasePreview,
   ImportacionIssue,
@@ -12,6 +11,7 @@ import type {
 interface ContingenciaRow extends ImportacionRow {}
 
 const INSERT_CHUNK = 500;
+const MAX_CONCURRENT = 10;
 
 function normalizeText(value: string): string {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 120);
@@ -25,9 +25,9 @@ function cleanCell(value: unknown): string {
 
 function getCell(row: ContingenciaRow, aliases: readonly string[]): string {
   for (const [key, value] of Object.entries(row)) {
-    if (normalizeText(key) === normalizeText(aliases.join(" "))) return cleanCell(value);
+    const normalizedKey = normalizeText(key);
     for (const alias of aliases) {
-      if (normalizeText(key) === normalizeText(alias)) return cleanCell(value);
+      if (normalizedKey === normalizeText(alias)) return cleanCell(value);
     }
   }
   return "";
@@ -46,7 +46,7 @@ function requiredIssue(row: number, field: string, value: string): ImportacionIs
 }
 
 function maxLengthIssue(row: number, field: string, value: string, max: number): ImportacionIssue {
-  return { row, field, severity: "error", message: `El campo "${field}" supera el máximo de ${max} caracteres.`, value: value };
+  return { row, field, severity: "error", message: `El campo "${field}" supera el máximo de ${max} caracteres.`, value };
 }
 
 function parseDate(value: string): Date | null {
@@ -90,7 +90,7 @@ const ALIASES: Record<string, readonly string[]> = {
   hora_llamado_pco_sppa: ["HORA DE LLAMADO DEL PCO AL SPAA", "hora_llamado_pco_sppa", "Hora de llamado del PCO al SPAA"],
   hora_llegada_spaa: ["HORA DE LLEGADA DEL SPAA", "hora_llegada_spaa", "Hora de llegada del SPAA"],
   hora_inicio_spaa: ["HORA DE INICIO DEL SPAA", "hora_inicio_spaa", "Hora de inicio del SPAA"],
-  hora_termino_atencion_inicio_traslado: ["HORA DE TERMINO DE ATENCIÓN / INICIO DE TRASLADO", "hora_termino_atencion_inicio_traslado", "Hora de término de atención / inicio de traslado"],
+  hora_termino_atencion_inicio_traslado: ["HORA DE TERMINO DE ATENCIÓN / INICIO DE TRASLADO", "HORA DE TERMINO POR AE", "hora_termino_atencion_inicio_traslado", "Hora de término de atención / inicio de traslado"],
   estacion_partida_spaa: ["ESTACIÓN DE PARTIDA DEL SPAA", "estacion_de_partida_del_spaa", "Estación de partida del SPAA"],
   medio_transporte_spaa: ["MEDIO DE TRANSPORTE DEL SPAA", "medio_de_transporte_del_spaa", "Medio de transporte del SPAA"],
   trasladado_por: ["TRASLADADO POR", "trasladado_por", "Trasladado por"],
@@ -106,8 +106,8 @@ const ALIASES: Record<string, readonly string[]> = {
   hora_llegada_ambulancia_terceros: ["HORA DE LLEGADA DE AMBULANCIA DE TERCEROS", "hora_llegada_ambulancia_terceros", "Hora de llegada de ambulancia de terceros"],
   hora_inicio_traslado_ambulancia_terceros: ["HORA DE INICIO DE TRASLADO DE AMBULANCIA DE TERCEROS", "hora_inicio_traslado_ambulancia_terceros", "Hora de inicio de traslado de ambulancia de terceros"],
   centro_salud: ["CENTRO DE SALUD", "centro_salud", "Centro de salud"],
-  nombre_persona: ["NOMBRE DEL PASAJERO O TRANSEÚNTE", "nombre_persona", "Nombre del pasajero o transeúnte"],
-  dni: ["DNI", "dni", "D.N.I."],
+  nombre_persona: ["NOMBRE DEL PASAJERO O TRANSEÚNTE", "Nombre del Cliente", "nombre_persona", "Nombre del pasajero o transeúnte"],
+  dni: ["DNI", "DNI CLIENTE", "dni", "D.N.I."],
   sexo: ["SEXO", "sexo", "Sexo"],
   edad: ["EDAD", "edad", "Edad"],
   tarjeta_cliente: ["TARJETA CLIENTE", "tarjeta_cliente", "Tarjeta cliente"],
@@ -129,14 +129,14 @@ const ALIASES: Record<string, readonly string[]> = {
   estado: ["ESTADO", "estado", "Estado"],
   extranjero: ["EXTRANJERO", "extranjero", "Extranjero"],
   estacion_origen_usuario: ["ESTACIÓN DE ORIGEN DEL USUARIO", "estacion_de_origen_del_usuario", "Estación de origen del usuario"],
-  estacion_destino_usuario: ["ESTACIÓN DE DESTINO DEL USUARIO", "estacion_de_destino_del_usuario", "Estación de destino del usuario"],
+  estacion_destino_usuario: ["ESTACIÓN DE DESTINO DEL USUARIO", "ESTACION DE DESTINO DEL USURIO", "estacion_de_destino_del_usuario", "Estación de destino del usuario"],
   acompanante: ["ACOMPLEÑANTE", "acompanante", "Acompañante"],
   numero_dni_acompanante: ["NÚMERO DE DNI DEL ACOMPLEÑANTE", "numero_dni_acompanante", "Número de DNI del acompañante"],
 };
 
 const REQUIRED_COLUMNS: string[] = [
   "Fecha", "Hora de Reporte", "TIPO DE EVENTO", "LUGAR DEL EVENTO",
-  "LUGAR EXACTO DEL EVENTO", "CATEGORIA DE PACIENTE",
+  "LUGAR EXACTO DEL EVENTO", "Quién reporta",
 ];
 
 const ALL_COLUMNS: string[] = [
@@ -191,7 +191,6 @@ function rowToDto(row: ContingenciaRow): CreateContingenciaDto {
     hora_llamado_pco_sppa: parseTime(getFieldValue(row, "hora_llamado_pco_sppa")) ?? undefined,
     hora_llegada_spaa: parseTime(getFieldValue(row, "hora_llegada_spaa")) ?? undefined,
     hora_inicio_spaa: parseTime(getFieldValue(row, "hora_inicio_spaa")) ?? undefined,
-    hora_termino_atencion_inicio_traslado: parseTime(getFieldValue(row, "hora_termino_atencion_inicio_traslado")) ?? undefined,
     estacion_partida_spaa: getFieldValue(row, "estacion_partida_spaa") || undefined,
     medio_transporte_spaa: getFieldValue(row, "medio_transporte_spaa") || undefined,
     trasladado_por: getFieldValue(row, "trasladado_por") || undefined,
@@ -236,33 +235,35 @@ function rowToDto(row: ContingenciaRow): CreateContingenciaDto {
   };
 }
 
-function findDuplicates(rows: ContingenciaRow[], existingCodes: Set<string>): Set<number> {
+function findDuplicates(rows: ContingenciaRow[]): Set<number> {
   const duplicateRows = new Set<number>();
-  const seenCodes = new Set<string>();
+  const seenRows = new Set<string>();
   rows.forEach((row, index) => {
     if (isEmptyRow(row)) return;
-    const codigo = (getFieldValue(row, "tipo_evento") + "-" + getFieldValue(row, "fecha")).toLowerCase().trim();
-    if (existingCodes.has(codigo) || seenCodes.has(codigo)) {
-      duplicateRows.add(index + 2);
-    }
-    seenCodes.add(codigo);
+    const signature = Object.keys(ALIASES).map((field) => normalizeText(getFieldValue(row, field))).join("|");
+    if (seenRows.has(signature)) duplicateRows.add(index + 2);
+    seenRows.add(signature);
   });
   return duplicateRows;
 }
 
-async function getExistingCodes(): Promise<Set<string>> {
-  const eventos = await ContingenciaRepository.findAll({ page: 1, limit: 10000, sortBy: "fecha", sortDir: "desc" });
-  return new Set(eventos.items.map((e) => e.codigo_evento?.toLowerCase() ?? String(e.id_evento)));
-}
-
-function validarReglaTranseunte(categoriaPaciente: string | null, lugarExacto: string | null): void {
-  if (categoriaPaciente === "Transeúnte" && lugarExacto && lugarExacto !== "Exteriores" && lugarExacto !== "Explanada") {
-    throw new Error("Si categoría es Transeúnte, el lugar exacto debe ser Exteriores o Explanada.");
-  }
-}
-
 function validateField(row: ContingenciaRow, rowNumber: number, issues: ImportacionIssue[]): boolean {
   let valid = true;
+
+  const requiredTextFields: Array<[string, string]> = [
+    ["tipo_evento", "Tipo de evento"],
+    ["lugar_evento", "Lugar del evento"],
+    ["lugar_exacto_evento", "Lugar exacto del evento"],
+    ["quien_reporta", "Quién reporta"],
+  ];
+
+  for (const [field, label] of requiredTextFields) {
+    const value = getFieldValue(row, field);
+    if (!value) {
+      addIssue(issues, requiredIssue(rowNumber, label, value));
+      valid = false;
+    }
+  }
 
   const fecha = parseDate(getFieldValue(row, "fecha"));
   if (!fecha) {
@@ -300,11 +301,9 @@ function validateField(row: ContingenciaRow, rowNumber: number, issues: Importac
     }
   }
 
-  const dto = rowToDto(row);
-  try {
-    validarReglaTranseunte(dto.categoria_paciente ?? null, dto.lugar_exacto_evento);
-  } catch (error) {
-    addIssue(issues, { row: rowNumber, field: "categoria_paciente", severity: "error", message: error instanceof Error ? error.message : "Error en regla de transeúnte", value: dto.lugar_exacto_evento });
+  const edadValue = getFieldValue(row, "edad");
+  if (edadValue && Number.isNaN(Number(edadValue))) {
+    addIssue(issues, { row: rowNumber, field: "Edad", severity: "error", message: "La edad debe ser un número válido.", value: edadValue });
     valid = false;
   }
 
@@ -315,14 +314,13 @@ async function buildPreview(payload: { filename: string | null; rows: Contingenc
   const issues: ImportacionIssue[] = [];
   const { rows, filename } = payload;
 
-  const columnasExcel = Object.keys(rows[0] || {});
-  const faltantes = REQUIRED_COLUMNS.filter((col) => !columnasExcel.includes(col));
+  const columnasExcel = Object.keys(rows[0] || {}).map(normalizeText);
+  const faltantes = REQUIRED_COLUMNS.filter((col) => !columnasExcel.includes(normalizeText(col)));
   if (faltantes.length > 0) {
     throw new Error(`Faltan columnas obligatorias: ${faltantes.join(", ")}`);
   }
 
-  const existingCodes = await getExistingCodes();
-  const duplicateRows = findDuplicates(rows, existingCodes);
+  const duplicateRows = findDuplicates(rows);
 
   const parsed: Array<{ row: number; dto: CreateContingenciaDto; valid: boolean }> = [];
   const validRows: ContingenciaRow[] = [];
@@ -401,22 +399,27 @@ async function importContingencias(filename: string, rows: ContingenciaRow[], us
   );
 
   for (const lote of lotes) {
-    try {
-      await Promise.all(
-        lote.map(async (row) => {
-          try {
-            const dto = rowToDto(row);
-            await ContingenciaService.create(dto, actor);
-            importados++;
-          } catch (error) {
-            const msg = error instanceof Error ? error.message : String(error);
-            importErrors.push({ row: 0, field: "General", severity: "error", message: msg, value: null });
-          }
-        })
-      );
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      importErrors.push({ row: 0, field: "General", severity: "error", message: msg, value: null });
+    const promises: Promise<void>[] = [];
+    for (const row of lote) {
+      promises.push((async () => {
+        try {
+          const dto = rowToDto(row);
+          const parsed = createContingenciaSchema.parse(dto);
+          await ContingenciaRepository.create(parsed, actor.id_usuario, { preserveImportedValues: true });
+          importados++;
+        } catch (error) {
+          const msg = error instanceof Error ? error.message : String(error);
+          importErrors.push({ row: 0, field: "General", severity: "error", message: msg, value: null });
+        }
+      })());
+
+      if (promises.length >= MAX_CONCURRENT) {
+        await Promise.all(promises);
+        promises.length = 0;
+      }
+    }
+    if (promises.length > 0) {
+      await Promise.all(promises);
     }
   }
 

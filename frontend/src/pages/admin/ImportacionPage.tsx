@@ -12,46 +12,13 @@ import {
 import { AdminShell } from "@/components/layout/AdminShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/design-system/primitives/Button";
+import { IMPORTACION_MODULOS } from "@/features/importacion/importacionConfig";
 import { apiErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { useImportarRegistros, useValidarImportacion } from "@/features/importacion/hooks/useImportacion";
+import { validarImportacion, useImportarRegistros, useValidarImportacion } from "@/features/importacion/hooks/useImportacion";
 import type { ImportacionPayload, ImportacionPreview, ImportacionResult, ImportacionRow, ImportacionTipo } from "@/features/importacion/types";
 
-const ACCEPTED_EXTENSIONS = [".csv", ".xlsx", ".xlsm"];
-
-const IMPORTACION_MODULOS: Record<ImportacionTipo, {
-  label: string;
-  description: string;
-  importButton: string;
-  requiredFallback: string;
-  optionalFallback: string;
-  detectedTitle: string;
-}> = {
-  casos: {
-    label: "Casos SOP",
-    description: "Carga controlada de casos SOP desde CSV, XLSX o XLSM.",
-    importButton: "Importar casos",
-    requiredFallback: "Código, Tipo, Estado, Fecha",
-    optionalFallback: "Título, Estación, Reportante, Área, Riesgo, Descripción, Procedencia, Tipo SOP, Subtipo SOP, Peligro, Consecuencias, ACR, Responsable de Hallazgo, Código Plan, Descripción Plan, Estado Plan, Fecha Plan, Fecha Reprogramada, Área Plan, Responsable Plan, Observaciones Plan",
-    detectedTitle: "Casos detectados",
-  },
-  monitoreo: {
-    label: "Monitorista",
-    description: "Carga eventos del panel de monitorista desde el Excel de lista de eventos.",
-    importButton: "Importar monitoreo",
-    requiredFallback: "Fecha, Hora de evento, Tipo de incidente operativo, Descripción del evento, Ubicación, Lugar de Incidente",
-    optionalFallback: "Año, Mes, Mes_1, Sem, Día, Rango horario, Tipo de vía, Dirección de vía, Modelo MR, Nro. MR, Nro. Carrera, Personal o falla Involucrado, Tipo Causa, Posible Causa, Información adicional, Cámara monitoreada, DEMORA",
-    detectedTitle: "Eventos detectados",
-  },
-  contingencias: {
-    label: "Contingencias",
-    description: "Carga registros del panel de contingencias desde la plantilla oficial de planes de contingencia.",
-    importButton: "Importar contingencias",
-    requiredFallback: "Fecha, Hora de Reporte, TIPO DE EVENTO, LUGAR DEL EVENTO, LUGAR EXACTO DEL EVENTO, CATEGORIA DE PACIENTE",
-    optionalFallback: "Datos generales del evento, Soporte de primeros auxilios, Trasalado ambulancia, Datos de la atención y Gestor de atención",
-    detectedTitle: "Contingencias detectadas",
-  },
-};
+const ACCEPTED_EXTENSIONS = [".csv", ".xlsx", ".xlsm"] as const;
 
 interface ParsedFile {
   filename: string;
@@ -164,7 +131,7 @@ async function parseXlsx(file: File): Promise<ImportacionRow[]> {
 
 async function parseFile(file: File): Promise<ParsedFile> {
   const extension = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
-  if (!ACCEPTED_EXTENSIONS.includes(extension)) {
+  if (!(ACCEPTED_EXTENSIONS as readonly string[]).includes(extension)) {
     throw new Error("Formato no soportado. Usa CSV, XLSX o XLSM.");
   }
 
@@ -177,6 +144,18 @@ async function parseFile(file: File): Promise<ParsedFile> {
 function payloadFromParsed(parsed: ParsedFile | null): ImportacionPayload | null {
   if (!parsed) return null;
   return { filename: parsed.filename, rows: parsed.rows };
+}
+
+function normalizeHeader(value: string): string {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+function detectImportType(rows: ImportacionRow[]): ImportacionTipo | null {
+  const headers = new Set(Object.keys(rows[0] ?? {}).map(normalizeHeader));
+  if (headers.has("tipodeincidenteoperativo") && headers.has("horadeevento")) return "monitoreo";
+  if (headers.has("tipodeevento") && headers.has("horadereporte") && headers.has("lugardelevento")) return "contingencias";
+  if (headers.has("codigo") && headers.has("tipo") && headers.has("estado")) return "casos";
+  return null;
 }
 
 function StatTile({ label, value, tone = "neutral" }: { label: string; value: number | string; tone?: "neutral" | "good" | "warn" | "bad" }) {
@@ -238,13 +217,14 @@ export function AdminImportacionPage() {
   const [preview, setPreview] = useState<ImportacionPreview | null>(null);
   const [result, setResult] = useState<ImportacionResult | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
+  const [validandoArchivo, setValidandoArchivo] = useState(false);
   const [tipoImportacion, setTipoImportacion] = useState<ImportacionTipo>("casos");
   const modulo = IMPORTACION_MODULOS[tipoImportacion];
   const validar = useValidarImportacion(tipoImportacion);
   const importar = useImportarRegistros(tipoImportacion);
 
   const payload = useMemo(() => payloadFromParsed(parsed), [parsed]);
-  const pending = validar.isPending || importar.isPending;
+  const pending = validandoArchivo || validar.isPending || importar.isPending;
   const serverError = validar.error
     ? apiErrorMessage(validar.error, "No se pudo validar el archivo")
     : importar.error
@@ -273,13 +253,17 @@ export function AdminImportacionPage() {
 
     try {
       const next = await parseFile(file);
+      const detectedType = detectImportType(next.rows) ?? tipoImportacion;
+      setTipoImportacion(detectedType);
       setParsed(next);
-      const validation = await validar.mutateAsync({ filename: next.filename, rows: next.rows });
+      setValidandoArchivo(true);
+      const validation = await validarImportacion(detectedType, { filename: next.filename, rows: next.rows });
       setPreview(validation);
     } catch (error) {
       setParsed(null);
       setParseError(error instanceof Error ? error.message : "No se pudo leer el archivo");
     } finally {
+      setValidandoArchivo(false);
       if (inputRef.current) inputRef.current.value = "";
     }
   }
@@ -447,7 +431,7 @@ export function AdminImportacionPage() {
                 <thead className="border-b border-line bg-white text-[11px] uppercase text-ink-faint">
                   <tr>
                     <th className="px-4 py-3 font-semibold">Estado</th>
-                    <th className="px-4 py-3 font-semibold">Código</th>
+                    <th className="px-4 py-3 font-semibold">{tipoImportacion === "casos" ? "Código" : "N°"}</th>
                     <th className="px-4 py-3 font-semibold">Título</th>
                     <th className="px-4 py-3 font-semibold">Tipo</th>
                     <th className="px-4 py-3 font-semibold">Estación</th>
@@ -457,7 +441,7 @@ export function AdminImportacionPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {preview.cases.map((item) => {
+                  {preview.cases.map((item, rowIndex) => {
                     const tone =
                       item.status === "valid"
                         ? "bg-emerald-50 text-emerald-700"
@@ -475,7 +459,7 @@ export function AdminImportacionPage() {
                             {label}
                           </span>
                         </td>
-                        <td className="px-4 py-3 font-mono text-[11.5px] text-ink">{item.codigo}</td>
+                        <td className="px-4 py-3 font-mono text-[11.5px] text-ink">{tipoImportacion === "casos" ? item.codigo : rowIndex + 1}</td>
                         <td className="max-w-[320px] px-4 py-3 font-medium text-ink">{item.titulo}</td>
                         <td className="px-4 py-3 text-ink-soft">{item.tipo}</td>
                         <td className="px-4 py-3 text-ink-soft">{item.estacion}</td>

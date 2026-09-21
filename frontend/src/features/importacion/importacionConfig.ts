@@ -35,9 +35,9 @@ export const IMPORTACION_MODULOS: Record<
     description: "Carga registros del panel de contingencias desde la plantilla oficial de planes de contingencia.",
     importButton: "Importar contingencias",
     requiredFallback:
-      "Fecha, Hora de Reporte, TIPO DE EVENTO, LUGAR DEL EVENTO, LUGAR EXACTO DEL EVENTO, CATEGORIA DE PACIENTE",
+      "Fecha, Hora de Reporte, TIPO DE EVENTO, LUGAR DEL EVENTO, LUGAR EXACTO DEL EVENTO, Quién reporta",
     optionalFallback:
-      "Quién reporta, Atención inicial, Atención final, Nivel inicial, Nivel final, Trasladado por, Estación partida SPAA, Medio transporte SPAA, Estación partida ambulancia, Estación llegada ambulancia, Nombre persona, DNI, Sexo, Edad, Diagnóstico presuntivo, Zona de la lesión, Observación, Registro, Revisión",
+      "Categoría de paciente, Atención inicial, Atención final, Nivel inicial, Nivel final, Trasladado por, Estación partida SPAA, Medio transporte SPAA, Estación partida ambulancia, Estación llegada ambulancia, Nombre persona, DNI, Sexo, Edad, Diagnóstico presuntivo, Zona de la lesión, Observación, Registro, Revisión",
     detectedTitle: "Contingencias detectadas",
   },
 };

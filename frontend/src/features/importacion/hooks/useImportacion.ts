@@ -20,7 +20,7 @@ const ENDPOINTS: Record<ImportacionTipo, { validar: string; importar: string; qu
   },
 };
 
-async function validarImportacion(tipo: ImportacionTipo, payload: ImportacionPayload): Promise<ImportacionPreview> {
+export async function validarImportacion(tipo: ImportacionTipo, payload: ImportacionPayload): Promise<ImportacionPreview> {
   const { data } = await api.post<ApiEnvelope<ImportacionPreview>>(ENDPOINTS[tipo].validar, payload);
   if (!data.data) throw new Error("La API no devolvió la validación del archivo");
   return data.data;
