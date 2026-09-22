@@ -1,7 +1,6 @@
 import { lazy, Suspense, type ComponentType } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
-import { Indicadores } from "@/pages/monitoreo/Indicadores";
 
 function lazyNamed(loader: () => Promise<Record<string, unknown>>, exportName: string) {
   return lazy(async () => ({ default: (await loader())[exportName] as ComponentType }));
@@ -42,6 +41,7 @@ const ContingenciaHistorialPage = lazyNamed(() => import("@/pages/contingencias/
 const ContingenciaDetallePage = lazyNamed(() => import("@/pages/contingencias/Detalle"), "Detalle");
 const ContingenciaEditarPage = lazyNamed(() => import("@/pages/contingencias/Editar"), "Editar");
 const ContingenciaPerfilPage = lazyNamed(() => import("@/pages/contingencias/Perfil"), "Perfil");
+const ContingenciaIndicadoresPage = lazyNamed(() => import("@/pages/contingencias/Indicadores"), "Indicadores");
 const AdminUsuariosPage = lazyNamed(() => import("@/pages/admin/UsuariosPage"), "AdminUsuariosPage");
 const AdminAreasPage = lazyNamed(() => import("@/pages/admin/AreasPage"), "AdminAreasPage");
 const AdminEstacionesPage = lazyNamed(() => import("@/pages/admin/EstacionesPage"), "AdminEstacionesPage");
@@ -114,7 +114,7 @@ export function AppRouter() {
           <Route path="/contingencias" element={<Navigate to="/contingencias/registro" replace />} />
           <Route path="/contingencias/registro" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaRegistroPage /></ProtectedRoute>} />
           <Route path="/contingencias/historial" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaHistorialPage /></ProtectedRoute>} />
-          <Route path="/contingencias/Indicadores" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><Indicadores /></ProtectedRoute>} />
+          <Route path="/contingencias/Indicadores" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaIndicadoresPage /></ProtectedRoute>} />
           <Route path="/contingencias/datos-operativos" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><DatosOperativosPage /></ProtectedRoute>} />
           <Route path="/contingencias/evento/:id" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaDetallePage /></ProtectedRoute>} />
           <Route path="/contingencias/editar/:id" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaEditarPage /></ProtectedRoute>} />
