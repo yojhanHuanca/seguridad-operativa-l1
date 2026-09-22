@@ -14,12 +14,13 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-query': ['@tanstack/react-query'],
-          'vendor-motion': ['framer-motion'],
-          'vendor-icons': ['lucide-react'],
-          'vendor-ui': ['sonner', 'clsx', 'tailwind-merge'],
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return
+          if (/[\\/]node_modules[\\/](react|react-dom|react-router-dom)[\\/]/.test(id)) return 'vendor-react'
+          if (id.includes('@tanstack/react-query')) return 'vendor-query'
+          if (id.includes('framer-motion')) return 'vendor-motion'
+          if (id.includes('lucide-react')) return 'vendor-icons'
+          if (/[\\/]node_modules[\\/](sonner|clsx|tailwind-merge)[\\/]/.test(id)) return 'vendor-ui'
         },
       },
     },

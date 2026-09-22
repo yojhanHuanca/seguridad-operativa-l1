@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { useLocation } from "react-router-dom";
 import { Database, Pencil, RefreshCw, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { ContingenciaShell } from "@/components/layout/ContingenciaShell";
@@ -86,6 +87,7 @@ function fechaInput(fecha: string) {
 }
 
 export function DatosOperativos() {
+  const location = useLocation();
   const [desde, setDesde] = useState("");
   const [hasta, setHasta] = useState("");
   const [pagina, setPagina] = useState(1);
@@ -99,7 +101,7 @@ export function DatosOperativos() {
   const cantidadEstaciones = catalogosListos
     ? stationNamesFromCatalog(estacionesCatalogo).length
     : ESTACIONES_LINEA_1_FALLBACK;
-  const kmPorCarrera = configuracion?.operacion.kmPorCarrera ?? KM_POR_CARRERA_FALLBACK;
+  const kmPorCarrera = configuracion?.operacion?.kmPorCarrera ?? KM_POR_CARRERA_FALLBACK;
 
   const filtros = { desde: desde || undefined, hasta: hasta || undefined, page: pagina, limit: POR_PAGINA };
   const { data, isLoading, isFetching, refetch } = useDatosOperativos(filtros);
@@ -108,6 +110,7 @@ export function DatosOperativos() {
   const eliminar = useEliminarDatoOperativo();
 
   const totalPaginas = Math.max(1, Math.ceil((data?.total ?? 0) / POR_PAGINA));
+  const Shell = location.pathname.startsWith("/contingencias") ? ContingenciaShell : MonitoristaShell;
   const paginaActual = Math.min(pagina, totalPaginas);
   const guardando = crear.isPending || actualizar.isPending;
 
@@ -217,7 +220,7 @@ export function DatosOperativos() {
   };
 
   return (
-    <ContingenciaShell>
+    <Shell>
       <div className="space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -402,6 +405,6 @@ export function DatosOperativos() {
           </Card>
         )}
       </div>
-    </ContingenciaShell>
+    </Shell>
   );
 }

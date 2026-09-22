@@ -45,7 +45,7 @@ export function normalizeConfig(config: ConfiguracionGeneral): ConfiguracionGene
     ...config,
     sistema: { nombre: config.sistema.nombre.trim(), version: config.sistema.version.trim() },
     numeracion: { ...config.numeracion },
-    operacion: { ...config.operacion },
+    operacion: { kmPorCarrera: config.operacion?.kmPorCarrera ?? 33.128331 },
   };
 }
 
@@ -60,7 +60,7 @@ export function configErrors(config: ConfiguracionGeneral, saved: ConfiguracionG
   if (!Number.isInteger(sequence) || sequence < saved.numeracion.secuenciaExpedientes || sequence > 999999) {
     errors.secuenciaExpedientes = `Ingresa un entero entre ${saved.numeracion.secuenciaExpedientes} y 999999. La secuencia no puede retroceder.`;
   }
-  const km = config.operacion.kmPorCarrera;
+  const km = config.operacion?.kmPorCarrera ?? 33.128331;
   if (!Number.isFinite(km) || km < 0.01 || km > 100) errors.kmPorCarrera = "Ingresa un valor entre 0.01 y 100 km.";
   return errors;
 }
