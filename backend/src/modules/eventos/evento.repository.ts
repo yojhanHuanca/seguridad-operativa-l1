@@ -153,7 +153,7 @@ export class EventoRepository {
     return prisma.eventos_monitoreo.update({ where: { id_evento }, data: { asignado_a: id_usuario } });
   }
 
-  static async create(dto: CreateEventoDto, actor?: number, options?: { preserveImportedValues?: boolean }) {
+  static async create(dto: CreateEventoDto, actor?: number, options?: { preserveImportedValues?: boolean; idImportacion?: number }) {
     const match = dto.fecha.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (!match) throw new Error("Fecha inválida");
     const year = Number(match[1]);
@@ -189,6 +189,7 @@ export class EventoRepository {
         rango_horario,
         tipo_incidente: dto.id_tipo_incidente,
         usuario_registra: actor ?? null,
+        id_importacion: options?.idImportacion ?? null,
         ...datosDesdeDto(dto),
       },
     });

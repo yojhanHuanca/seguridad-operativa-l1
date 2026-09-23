@@ -358,13 +358,14 @@ export class ContingenciaRepository {
     return completo;
   }
 
-  static async create(dto: CreateContingenciaDto, actorId?: number, options?: { preserveImportedValues?: boolean }) {
+  static async create(dto: CreateContingenciaDto, actorId?: number, options?: { preserveImportedValues?: boolean; idImportacion?: number }) {
     await ensureSchemaInicial();
     const evento = await prisma.$transaction(async (tx) => {
       const creado = await tx.contingencia_eventos.create({
         data: {
           ...eventoData(dto, actorId, options),
           created_by: actorId ?? null,
+          id_importacion: options?.idImportacion ?? null,
         },
       });
 

@@ -20,7 +20,7 @@ const COLLAPSE_KEY = "sigma-contingencias-sidebar-collapsed";
 const NAV: NavItem[] = [
   { to: "/contingencias/registro", label: "Registro", icon: ClipboardList },
   { to: "/contingencias/historial", label: "Historial", icon: History },
-  { to: "/contingencias/Indicadores", label: "Indicadores", icon: TrendingUp},
+  { to: "/contingencias/indicadores", label: "Indicadores", icon: TrendingUp},
   { to: "/contingencias/datos-operativos", label: "Datos Operativos", icon: Database },
 
 ];
@@ -28,7 +28,7 @@ const NAV: NavItem[] = [
 const TITLES: Record<string, { title: string; crumb: string }> = {
   "/contingencias/registro": { title: "Registro", crumb: "Inicio / Registro" },
   "/contingencias/historial": { title: "Historial", crumb: "Inicio / Historial" },
-  "/contingencias/Indicadores": { title: "Indicadores", crumb: "Inicio / Indicadores" },
+  "/contingencias/indicadores": { title: "Indicadores", crumb: "Inicio / Indicadores" },
   "/contingencias/datos-operativos": { title: "Datos Operativos", crumb: "Inicio / Datos Operativos" },
   "/contingencias/perfil": { title: "Mi perfil", crumb: "Inicio / Perfil" },
 };

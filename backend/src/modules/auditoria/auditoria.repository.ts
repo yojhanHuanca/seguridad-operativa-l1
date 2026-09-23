@@ -88,8 +88,8 @@ export class AuditoriaRepository {
     search?: string;
     desde?: string;
     hasta?: string;
-  }): Record<string, unknown> {
-    const where: Record<string, unknown> = {};
+  }): Prisma.auditoriaWhereInput {
+    const where: Prisma.auditoriaWhereInput = {};
     if (opts.usuario) where.usuario = opts.usuario;
     if (opts.tabla) where.tabla_afectada = opts.tabla;
     if (opts.accion) where.accion = opts.accion;
@@ -104,8 +104,8 @@ export class AuditoriaRepository {
     }
     if (opts.desde || opts.hasta) {
       where.fecha = {
-        ...(opts.desde ? { gte: new Date(`${opts.desde}T00:00:00.000Z`) } : {}),
-        ...(opts.hasta ? { lte: new Date(`${opts.hasta}T23:59:59.999Z`) } : {}),
+        ...(opts.desde ? { gte: new Date(`${opts.desde}T00:00:00-05:00`) } : {}),
+        ...(opts.hasta ? { lt: new Date(new Date(`${opts.hasta}T00:00:00-05:00`).getTime() + 86400000) } : {}),
       };
     }
     return where;
@@ -127,7 +127,7 @@ export class AuditoriaRepository {
       prisma.auditoria.findMany({
         where,
         include: { usuarios: { select: { nombre: true, cargo: true } } },
-        orderBy: { fecha: "desc" },
+        orderBy: [{ fecha: "desc" }, { id_auditoria: "desc" }],
         skip: (opts.page - 1) * opts.limit,
         take: opts.limit,
       }),
@@ -137,9 +137,8 @@ export class AuditoriaRepository {
   }
 
   /**
-   * Igual que `findAll`, sin paginar: para la exportación a CSV. Tope duro de
-   * 20 000 filas — un export más grande que eso ya no es "revisar el filtro
-   * de hoy", es un caso para pedir un dump directo de la base de datos.
+   * Exporta el filtro completo hasta 20 000 filas. La fila adicional permite
+   * rechazar resultados mayores de forma explícita, sin entregar CSV parciales.
    */
   static async findParaExportar(opts: {
     usuario?: number;
@@ -153,8 +152,16 @@ export class AuditoriaRepository {
     return prisma.auditoria.findMany({
       where,
       include: { usuarios: { select: { nombre: true, cargo: true, codigo_usuario: true } } },
-      orderBy: { fecha: "desc" },
-      take: 20000,
+      orderBy: [{ fecha: "desc" }, { id_auditoria: "desc" }],
+      take: 20001, // One extra row lets the service reject oversized exports atomically.
+    });
+  }
+
+  static async findActores() {
+    return prisma.usuarios.findMany({
+      where: { auditoria: { some: {} } },
+      select: { id_usuario: true, nombre: true, codigo_usuario: true, estado: true },
+      orderBy: [{ nombre: "asc" }, { id_usuario: "asc" }],
     });
   }
 

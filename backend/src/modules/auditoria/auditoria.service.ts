@@ -1,11 +1,25 @@
 import { AuditoriaRepository, type AccionAuditoria, type NuevaAuditoria } from "./auditoria.repository.js";
+import { isDeepStrictEqual } from "node:util";
+
+export class AuditoriaInputError extends Error {}
 
 const ACCIONES_VALIDAS: AccionAuditoria[] = ["crear", "editar", "eliminar", "login", "login_fallido"];
 
 type FiltroQuery = { usuario?: string; tabla?: string; accion?: string; search?: string; desde?: string; hasta?: string };
 
 function parseFiltros(query: FiltroQuery) {
+  for (const value of Object.values(query)) {
+    if (value !== undefined && typeof value !== "string") throw new AuditoriaInputError("Los filtros deben ser valores simples.");
+  }
+  for (const value of [query.desde, query.hasta]) {
+    if (value && (!/^\d{4}-\d{2}-\d{2}$/.test(value) || !Number.isFinite(Date.parse(value)) || new Date(value).toISOString().slice(0, 10) !== value)) {
+      throw new AuditoriaInputError("Fecha inválida. Usa AAAA-MM-DD.");
+    }
+  }
+  if (query.desde && query.hasta && query.desde > query.hasta) throw new AuditoriaInputError("La fecha desde no puede ser posterior a hasta.");
   const usuario = Number(query.usuario);
+  if (query.usuario && (!Number.isSafeInteger(usuario) || usuario <= 0)) throw new AuditoriaInputError("Usuario inválido.");
+  if (query.accion && !ACCIONES_VALIDAS.includes(query.accion as AccionAuditoria)) throw new AuditoriaInputError("Acción inválida.");
   const accion = ACCIONES_VALIDAS.includes(query.accion as AccionAuditoria) ? (query.accion as AccionAuditoria) : undefined;
   return {
     ...(Number.isInteger(usuario) && usuario > 0 ? { usuario } : {}),
@@ -25,10 +39,10 @@ export function diffCampos(
   if (!antes || !despues) return null;
   const antesOut: Record<string, unknown> = {};
   const despuesOut: Record<string, unknown> = {};
-  for (const key of Object.keys(despues)) {
+  for (const key of new Set([...Object.keys(antes), ...Object.keys(despues)])) {
     const valorAntes = antes[key] ?? null;
     const valorDespues = despues[key] ?? null;
-    if (JSON.stringify(valorAntes) !== JSON.stringify(valorDespues)) {
+    if (!isDeepStrictEqual(valorAntes, valorDespues) || Object.hasOwn(antes, key) !== Object.hasOwn(despues, key)) {
       antesOut[key] = valorAntes;
       despuesOut[key] = valorDespues;
     }
@@ -39,8 +53,9 @@ export function diffCampos(
 
 function csvEscape(value: unknown): string {
   if (value == null) return "";
-  const texto = typeof value === "object" ? JSON.stringify(value) : String(value);
-  if (/[",\n]/.test(texto)) return `"${texto.replace(/"/g, '""')}"`;
+  const raw = typeof value === "object" ? JSON.stringify(value) : String(value);
+  const texto = /^[\s]*[=+@-]/.test(raw) || /^[\t\r\n]/.test(raw) ? `'${raw}` : raw;
+  if (/[",\r\n]/.test(texto)) return `"${texto.replace(/"/g, '""')}"`;
   return texto;
 }
 
@@ -50,14 +65,19 @@ export class AuditoriaService {
   }
 
   static async list(query: FiltroQuery & { page?: string; limit?: string }) {
-    const page = Number(query.page) || 1;
-    const limit = Math.min(Number(query.limit) || 30, 100);
+    const page = Number(query.page ?? 1);
+    const limit = Number(query.limit ?? 30);
+    if (!Number.isSafeInteger(page) || page < 1 || !Number.isSafeInteger(limit) || limit < 1 || limit > 100 || !Number.isSafeInteger((page - 1) * limit)) throw new AuditoriaInputError("Paginación inválida.");
 
     return AuditoriaRepository.findAll({ ...parseFiltros(query), page, limit });
   }
 
   static async tablas() {
     return AuditoriaRepository.findTablasRegistradas();
+  }
+
+  static async actores() {
+    return AuditoriaRepository.findActores();
   }
 
   static async counts() {
@@ -67,6 +87,7 @@ export class AuditoriaService {
   /** CSV con BOM (para que Excel en Windows respete los acentos) de los registros que calzan con el filtro. */
   static async exportarCsv(query: FiltroQuery): Promise<string> {
     const registros = await AuditoriaRepository.findParaExportar(parseFiltros(query));
+    if (registros.length > 20000) throw new AuditoriaInputError("El resultado supera 20 000 registros. Reduce el rango de fechas o aplica más filtros para exportar.");
 
     const encabezado = ["Fecha", "Usuario", "Cargo", "Acción", "Tabla", "ID registro", "Descripción", "IP", "Datos anteriores", "Datos nuevos"];
     const filas = registros.map((r) =>

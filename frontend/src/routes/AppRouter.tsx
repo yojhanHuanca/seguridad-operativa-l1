@@ -114,7 +114,7 @@ export function AppRouter() {
           <Route path="/contingencias" element={<Navigate to="/contingencias/registro" replace />} />
           <Route path="/contingencias/registro" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaRegistroPage /></ProtectedRoute>} />
           <Route path="/contingencias/historial" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaHistorialPage /></ProtectedRoute>} />
-          <Route path="/contingencias/Indicadores" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaIndicadoresPage /></ProtectedRoute>} />
+          <Route path="/contingencias/indicadores" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaIndicadoresPage /></ProtectedRoute>} />
           <Route path="/contingencias/datos-operativos" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><DatosOperativosPage /></ProtectedRoute>} />
           <Route path="/contingencias/evento/:id" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaDetallePage /></ProtectedRoute>} />
           <Route path="/contingencias/editar/:id" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaEditarPage /></ProtectedRoute>} />

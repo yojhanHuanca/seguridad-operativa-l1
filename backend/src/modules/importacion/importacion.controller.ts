@@ -5,6 +5,7 @@ import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 import { ImportacionService } from "./importacion.service.js";
 import { ImportacionContingenciasService } from "./importacion-contingencias.service.js";
 import { ImportacionMonitoreoService } from "./importacion-monitoreo.service.js";
+import { ImportacionHistorialService } from "./importacion-historial.service.js";
 
 const cellSchema = z.union([z.string(), z.number(), z.boolean(), z.null(), z.undefined()]);
 const payloadSchema = z.object({
@@ -25,6 +26,28 @@ function isZodError(error: unknown): error is ZodError {
 }
 
 export class ImportacionController {
+  static async historial(req: Request, res: Response) {
+    try {
+      const page = Number(req.query.page ?? 1);
+      const limit = Number(req.query.limit ?? 20);
+      return res.json(ApiResponse.success("Historial de importaciones", await ImportacionHistorialService.listar(page, limit)));
+    } catch (error) {
+      return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "No se pudo consultar el historial"), error));
+    }
+  }
+
+  static async revertir(req: AuthenticatedRequest, res: Response) {
+    try {
+      if (!req.user?.id_usuario) return res.status(401).json(ApiResponse.error("Token inválido"));
+      const id = z.coerce.number().int().positive().parse(req.params.id);
+      const { motivo } = z.object({ motivo: z.string().trim().min(10).max(500) }).parse(req.body);
+      const result = await ImportacionHistorialService.revertir(id, req.user.id_usuario, motivo, req.ip ?? null);
+      return res.json(ApiResponse.success("Importación revertida correctamente", result));
+    } catch (error) {
+      if (isZodError(error)) return res.status(400).json(ApiResponse.error("Solicitud inválida", error.flatten().fieldErrors));
+      return res.status(409).json(ApiResponse.error(safeErrorMessage(error, "No se pudo revertir la importación"), error));
+    }
+  }
   static async validar(req: AuthenticatedRequest, res: Response) {
     try {
       const payload = parsePayload(req.body);

@@ -8,6 +8,9 @@ const router = Router();
 // llega como JSON desde el navegador y pesa varios MB.
 const jsonImportacion = express.json({ limit: "64mb" });
 
+router.get("/historial", requireRoles("Admin"), ImportacionController.historial);
+router.post("/historial/:id/revertir", express.json({ limit: "16kb" }), requireRoles("Admin"), ImportacionController.revertir);
+
 router.post("/casos/validar", jsonImportacion, requireRoles("Admin"), ImportacionController.validar);
 router.post("/casos/importar", jsonImportacion, requireRoles("Admin"), ImportacionController.importar);
 

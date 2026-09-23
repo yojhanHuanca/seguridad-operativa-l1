@@ -38,13 +38,40 @@ describe("diffCampos", () => {
     });
   });
 
-  it("solo compara las claves presentes en 'después': un campo quitado del objeto nuevo no se reporta", () => {
+  it("incluye campos eliminados del objeto nuevo", () => {
     const resultado = diffCampos({ nombre: "Ana", extra: "x" }, { nombre: "Beto" });
-    expect(resultado).toEqual({ antes: { nombre: "Ana" }, despues: { nombre: "Beto" } });
+    expect(resultado).toEqual({ antes: { nombre: "Ana", extra: "x" }, despues: { nombre: "Beto", extra: null } });
   });
 });
 
 describe("AuditoriaService.exportarCsv", () => {
+  it("rechaza más de 20 000 filas sin devolver un CSV parcial", async () => {
+    findParaExportarMock.mockResolvedValue(Array(20001).fill({}));
+    await expect(AuditoriaService.exportarCsv({})).rejects.toThrow("supera 20 000");
+  });
+
+  it("incluye exactamente 20 000 filas y neutraliza fórmulas de hojas de cálculo", async () => {
+    findParaExportarMock.mockResolvedValue(Array(20000).fill({
+      fecha: null, usuarios: { nombre: '=HYPERLINK("malicioso")', cargo: null },
+      accion: "editar", tabla_afectada: "usuarios", descripcion: "@SUM(1)",
+    }));
+    const csv = await AuditoriaService.exportarCsv({});
+    expect(csv.split("\n")).toHaveLength(20001);
+    expect(csv).toContain("'@SUM(1)");
+    expect(csv).toContain("'=HYPERLINK");
+  });
+
+  it("rechaza fechas inexistentes, rangos invertidos, acciones y actores inválidos", async () => {
+    for (const query of [{ desde: "2026-02-30" }, { desde: "2026-09-02", hasta: "2026-09-01" }, { accion: "hack" }, { usuario: "-1" }]) {
+      await expect(AuditoriaService.exportarCsv(query)).rejects.toThrow();
+    }
+  });
+
+  it("exporta con todos los filtros e ignora la página", async () => {
+    findParaExportarMock.mockResolvedValue([]);
+    await AuditoriaService.exportarCsv({ usuario: "7", tabla: "usuarios", accion: "editar", desde: "2026-09-01", hasta: "2026-09-02", search: "Ana", ...{ page: "2", limit: "30" } });
+    expect(findParaExportarMock).toHaveBeenLastCalledWith({ usuario: 7, tabla: "usuarios", accion: "editar", desde: "2026-09-01", hasta: "2026-09-02", search: "Ana" });
+  });
   it("arranca con BOM y encabezado en español, y trae los campos en el orden documentado", async () => {
     findParaExportarMock.mockResolvedValue([
       {

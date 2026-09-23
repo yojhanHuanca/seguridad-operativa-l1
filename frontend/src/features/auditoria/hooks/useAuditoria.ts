@@ -38,8 +38,28 @@ export function useAuditoria(params: AuditoriaParams) {
   return useQuery({
     queryKey: ["auditoria", params],
     queryFn: () => fetchAuditoria(params),
-    placeholderData: (previous) => previous,
   });
+}
+
+export function useAuditoriaActores() {
+  return useQuery({
+    queryKey: ["auditoria-actores"],
+    queryFn: async () => {
+      const { data } = await api.get<ApiEnvelope<{ id_usuario: number; nombre: string; codigo_usuario: string; estado: string | null }[]>>("/auditoria/actores");
+      return data.data ?? [];
+    },
+  });
+}
+
+export async function exportarAuditoria(params: Omit<AuditoriaParams, "page" | "limit">) {
+  // Text preserves JSON error envelopes while avoiding a second, unauthenticated download.
+  const { data } = await api.get<string>("/auditoria/export", { params, responseType: "text" });
+  const url = URL.createObjectURL(new Blob([data], { type: "text/csv;charset=utf-8" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `auditoria_${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 async function fetchTablas(): Promise<string[]> {

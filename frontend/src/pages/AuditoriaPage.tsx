@@ -5,8 +5,8 @@ import { LoadingState } from "@/components/feedback/LoadingState";
 import { Button } from "@/design-system/primitives/Button";
 import { Input } from "@/design-system/primitives/Input";
 import { Card } from "@/components/ui/card";
-import { useAuditoria, useAuditoriaCounts } from "@/features/auditoria/hooks/useAuditoria";
-import { formatDateTime } from "@/lib/format";
+import { useAuditoria, useAuditoriaCounts, useAuditoriaActores, useAuditoriaTablas, exportarAuditoria } from "@/features/auditoria/hooks/useAuditoria";
+import { isAxiosError } from "axios";
 import { cn } from "@/lib/utils";
 import type { AccionAuditoria, AuditoriaItem } from "@/features/auditoria/types";
 
@@ -79,6 +79,7 @@ const CAMPO_LABEL: Record<string, string> = {
 function formatValor(v: unknown): string {
   if (v === null || v === undefined || v === "") return "—";
   if (typeof v === "boolean") return v ? "Sí" : "No";
+  if (typeof v === "object") return JSON.stringify(v, null, 2);
   return String(v);
 }
 
@@ -107,7 +108,7 @@ function detalleRegistro(registro: AuditoriaItem): string {
 
 /** Antes/después lado a lado — lo que de verdad importa en una auditoría "de empresa grande": qué cambió exactamente. */
 function DiffCambios({ antes, despues }: { antes: Record<string, unknown>; despues: Record<string, unknown> }) {
-  const campos = Object.keys(despues);
+  const campos = [...new Set([...Object.keys(antes), ...Object.keys(despues)])];
   return (
     <div className="overflow-hidden rounded-lg border border-line-soft">
       <table className="w-full text-left text-[11.5px]">
@@ -122,8 +123,8 @@ function DiffCambios({ antes, despues }: { antes: Record<string, unknown>; despu
           {campos.map((campo) => (
             <tr key={campo} className="border-t border-line-soft">
               <td className="px-3 py-1.5 font-medium text-ink-soft">{CAMPO_LABEL[campo] ?? campo}</td>
-              <td className="px-3 py-1.5 text-red-600 line-through decoration-red-300">{formatValor(antes[campo])}</td>
-              <td className="px-3 py-1.5 font-medium text-brand-700">{formatValor(despues[campo])}</td>
+              <td className="px-3 py-1.5 text-red-600 whitespace-pre-wrap break-all">{Object.hasOwn(antes, campo) ? formatValor(antes[campo]) : "No existía"}</td>
+              <td className="px-3 py-1.5 font-medium text-brand-700 whitespace-pre-wrap break-all">{Object.hasOwn(despues, campo) ? formatValor(despues[campo]) : "Eliminado"}</td>
             </tr>
           ))}
         </tbody>
@@ -147,7 +148,7 @@ function DatosRegistrados({ datos }: { datos: Record<string, unknown> }) {
           {campos.map((campo) => (
             <tr key={campo} className="border-t border-line-soft">
               <td className="px-3 py-1.5 font-medium text-ink-soft">{CAMPO_LABEL[campo] ?? campo}</td>
-              <td className="px-3 py-1.5 font-medium text-brand-700">{formatValor(datos[campo])}</td>
+              <td className="px-3 py-1.5 font-medium text-brand-700 whitespace-pre-wrap break-all">{formatValor(datos[campo])}</td>
             </tr>
           ))}
         </tbody>
@@ -160,15 +161,14 @@ function FilaAuditoria({ registro }: { registro: AuditoriaItem }) {
   const [abierto, setAbierto] = useState(false);
   const Icon = ACCION_ICON[registro.accion];
   const tieneDetalle = Boolean(registro.datos_previos || registro.datos_nuevos || registro.ip || registro.user_agent);
-  const actorCargo = registro.usuarios.cargo || "Administrador";
+  const actorCargo = registro.usuarios.cargo || "Sin cargo registrado";
 
   return (
     <>
       <tr
         className={cn("border-b border-line-soft last:border-0 hover:bg-brand-50/25", tieneDetalle && "cursor-pointer")}
-        onClick={() => tieneDetalle && setAbierto((v) => !v)}
       >
-        <td className="px-4 py-4 align-top whitespace-nowrap font-mono text-[11.5px] leading-relaxed text-ink-soft">{formatDateTime(registro.fecha)}</td>
+        <td className="px-4 py-4 align-top whitespace-nowrap font-mono text-[11.5px] leading-relaxed text-ink-soft">{registro.fecha ? new Date(registro.fecha).toLocaleString("es-PE", { timeZone: "America/Lima" }) : "—"}</td>
         <td className="px-4 py-3">
           <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-semibold leading-none", ACCION_TONE[registro.accion])}>
             <Icon className="h-3.5 w-3.5" /> {ACCION_LABEL[registro.accion]}
@@ -187,12 +187,14 @@ function FilaAuditoria({ registro }: { registro: AuditoriaItem }) {
         <td className="max-w-[460px] px-4 py-3 leading-relaxed text-ink-soft">{detalleRegistro(registro)}</td>
         <td className="px-4 py-3 text-right">
           {tieneDetalle && (
-            <ChevronDown className={cn("ml-auto h-4 w-4 text-ink-faint transition-transform", abierto && "rotate-180")} />
+            <button type="button" aria-label={`Detalle de auditoría ${registro.id_auditoria}`} aria-expanded={abierto} aria-controls={`auditoria-detalle-${registro.id_auditoria}`} onClick={() => setAbierto(v => !v)} className="rounded p-2 focus-visible:outline-2">
+              <ChevronDown className={cn("h-4 w-4 transition-transform", abierto && "rotate-180")} />
+            </button>
           )}
         </td>
       </tr>
       {abierto && tieneDetalle && (
-        <tr className="border-b border-line-soft bg-surface/60">
+        <tr id={`auditoria-detalle-${registro.id_auditoria}`} className="border-b border-line-soft bg-surface/60">
           <td colSpan={6} className="px-4 py-3">
             <div className="flex flex-col gap-3">
               {registro.datos_previos && registro.datos_nuevos && (
@@ -201,6 +203,7 @@ function FilaAuditoria({ registro }: { registro: AuditoriaItem }) {
               {!registro.datos_previos && registro.datos_nuevos && (
                 <DatosRegistrados datos={registro.datos_nuevos} />
               )}
+              {registro.datos_previos && !registro.datos_nuevos && <DiffCambios antes={registro.datos_previos} despues={{}} />}
               <div className="flex flex-wrap gap-x-6 gap-y-1 text-[11px] text-ink-faint">
                 {registro.ip && <span>IP: <span className="font-mono text-ink-soft">{registro.ip}</span></span>}
                 {registro.user_agent && <span className="max-w-full break-all">Navegador: <span className="text-ink-soft">{registro.user_agent}</span></span>}
@@ -219,6 +222,12 @@ export function AuditoriaPanelContent() {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [pagina, setPagina] = useState(1);
+  const [usuario, setUsuario] = useState("");
+  const [tabla, setTabla] = useState("");
+  const [desde, setDesde] = useState("");
+  const [hasta, setHasta] = useState("");
+  const [exportando, setExportando] = useState(false);
+  const [exportError, setExportError] = useState("");
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -229,24 +238,49 @@ export function AuditoriaPanelContent() {
   }, [query]);
 
   const filtrosActivos = {
+    usuario: usuario ? Number(usuario) : undefined,
+    tabla: tabla || undefined,
+    desde: desde || undefined,
+    hasta: hasta || undefined,
     accion: accionFiltro !== "todas" ? accionFiltro : undefined,
     search: debouncedQuery || undefined,
   };
 
-  const { data: pageData, isLoading } = useAuditoria({ ...filtrosActivos, page: pagina, limit: POR_PAGINA });
-  const { data: accionCounts } = useAuditoriaCounts();
+  const { data: pageData, isLoading, isError, refetch } = useAuditoria({ ...filtrosActivos, page: pagina, limit: POR_PAGINA });
+  const counts = useAuditoriaCounts();
+  const accionCounts = counts.data;
+  const actores = useAuditoriaActores();
+  const tablas = useAuditoriaTablas();
+  const fechasInvalidas = Boolean(desde && hasta && desde > hasta);
+
+  async function descargar() {
+    setExportando(true);
+    setExportError("");
+    try { await exportarAuditoria(filtrosActivos); }
+    catch (error) {
+      let message = "No se pudo exportar la auditoría. Intenta nuevamente.";
+      if (isAxiosError(error)) {
+        try {
+          const body = typeof error.response?.data === "string" ? JSON.parse(error.response.data) : error.response?.data;
+          message = body?.message || message;
+        } catch { /* Retain the readable fallback for non-JSON errors. */ }
+      }
+      setExportError(message);
+    } finally { setExportando(false); }
+  }
 
   const registros = pageData?.items ?? [];
   const total = pageData?.total ?? 0;
   const totalPaginas = Math.max(1, Math.ceil(total / POR_PAGINA));
   const paginaActual = Math.min(pagina, totalPaginas);
-  const hayFiltros = accionFiltro !== "todas" || Boolean(debouncedQuery);
+  const hayFiltros = accionFiltro !== "todas" || Boolean(query || usuario || tabla || desde || hasta);
 
   function limpiarFiltros() {
     setAccionFiltro("todas");
     setQuery("");
     setDebouncedQuery("");
     setPagina(1);
+    setUsuario(""); setTabla(""); setDesde(""); setHasta(""); setExportError("");
   }
 
   return (
@@ -259,7 +293,7 @@ export function AuditoriaPanelContent() {
               {total} {total === 1 ? "registro" : "registros"}
               {hayFiltros ? " filtrados" : " del sistema"}
             </p>
-            <p className="mt-1 text-[12.5px] text-ink-quiet">Historial completo de acciones administrativas.</p>
+            <p className="mt-1 text-[12.5px] text-ink-quiet">Historial completo de acciones administrativas. Fechas en Lima (UTC−5), días completos incluidos.</p>
           </div>
           {hayFiltros && (
             <Button variant="ghost" size="sm" onClick={limpiarFiltros}>
@@ -271,7 +305,7 @@ export function AuditoriaPanelContent() {
         <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
           {(Object.keys(ACCION_LABEL) as AccionAuditoria[]).map((accion) => {
             const activo = accionFiltro === accion;
-            const cantidad = accionCounts?.[accion] ?? 0;
+            const cantidad = accionCounts?.[accion] ?? "—";
             const Icon = ACCION_ICON[accion];
             return (
               <button
@@ -302,6 +336,23 @@ export function AuditoriaPanelContent() {
       </section>
 
       <div className="mt-4 rounded-2xl border border-line bg-white p-4">
+        <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <label>Usuario<select aria-label="Usuario" className="block w-full rounded border p-2" value={usuario} onChange={e => { setUsuario(e.target.value); setPagina(1); }} disabled={actores.isLoading}>
+            <option value="">Todos los usuarios</option>
+            {actores.data?.map(a => <option key={a.id_usuario} value={a.id_usuario}>{a.nombre} ({a.codigo_usuario}) · {a.estado ?? "Sin estado"}</option>)}
+          </select></label>
+          <label>Módulo<select aria-label="Módulo" className="block w-full rounded border p-2" value={tabla} onChange={e => { setTabla(e.target.value); setPagina(1); }} disabled={tablas.isLoading}>
+            <option value="">Todos los módulos</option>
+            {tablas.data?.map(t => <option key={t} value={t}>{TABLA_LABEL[t] ?? capitalizar(t)}</option>)}
+          </select></label>
+          <label>Desde<Input aria-label="Desde" type="date" value={desde} onChange={e => { setDesde(e.target.value); setPagina(1); }} /></label>
+          <label>Hasta<Input aria-label="Hasta" type="date" value={hasta} onChange={e => { setHasta(e.target.value); setPagina(1); }} /></label>
+        </div>
+        {(actores.isError || tablas.isError || counts.isError) && <p role="alert">No se pudieron cargar algunos filtros o conteos. <button onClick={() => { void actores.refetch(); void tablas.refetch(); void counts.refetch(); }}>Reintentar filtros</button></p>}
+        <p className="mb-3 text-xs">Los conteos por acción corresponden a todo el sistema. CSV: todos los resultados filtrados, máximo 20 000; si se supera, se rechaza sin truncar.</p>
+        <Button onClick={descargar} disabled={exportando || isLoading || isError || fechasInvalidas || query.trim() !== debouncedQuery}>{exportando ? "Exportando…" : "Exportar CSV filtrado"}</Button>
+        {exportError && <p role="alert">{exportError}</p>}
+        {fechasInvalidas && <p role="alert">La fecha desde no puede ser posterior a hasta.</p>}
         <div className="relative">
           <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
           <Input
@@ -314,7 +365,7 @@ export function AuditoriaPanelContent() {
         </div>
       </div>
 
-      {isLoading ? (
+      {isError ? <Card className="mt-4 p-4"><p role="alert">No se pudo cargar la auditoría. Revisa los filtros o intenta nuevamente.</p><Button onClick={() => void refetch()}>Reintentar</Button></Card> : isLoading ? (
         <Card className="mt-4"><LoadingState label="Cargando auditoría" compact /></Card>
       ) : registros.length === 0 ? (
         <Card className="mt-4 flex flex-col items-center gap-2 border-dashed p-9 text-center">
@@ -331,7 +382,7 @@ export function AuditoriaPanelContent() {
               <table className="min-w-[1040px] w-full text-left text-[13px]">
                 <thead>
                   <tr className="border-b border-line bg-surface text-[11px] uppercase tracking-wide text-ink-quiet">
-                    <th className="px-4 py-4 font-semibold">Fecha/Hora</th>
+                    <th className="px-4 py-4 font-semibold">Fecha/Hora (Lima)</th>
                     <th className="px-4 py-3 font-semibold">Acción</th>
                     <th className="px-4 py-3 font-semibold">Actor</th>
                     <th className="px-4 py-3 font-semibold">Destino</th>
@@ -353,11 +404,11 @@ export function AuditoriaPanelContent() {
               Mostrando {(paginaActual - 1) * POR_PAGINA + 1}–{Math.min(paginaActual * POR_PAGINA, total)} de {total}
             </p>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setPagina((p) => Math.max(1, p - 1))} disabled={paginaActual === 1}>
+              <Button aria-label="Página anterior" variant="outline" size="sm" onClick={() => setPagina((p) => Math.max(1, p - 1))} disabled={paginaActual === 1}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <span className="text-[12px] text-ink-quiet">Página {paginaActual} de {totalPaginas}</span>
-              <Button variant="outline" size="sm" onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))} disabled={paginaActual === totalPaginas}>
+              <Button aria-label="Página siguiente" variant="outline" size="sm" onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))} disabled={paginaActual === totalPaginas}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>

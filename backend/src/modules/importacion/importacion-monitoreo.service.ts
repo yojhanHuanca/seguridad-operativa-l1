@@ -2,6 +2,7 @@ import prisma from "../../lib/prisma.js";
 import { EventoRepository } from "../eventos/evento.repository.js";
 import type { CreateEventoDto } from "../eventos/evento.types.js";
 import type { ImportacionIssue, ImportacionPreview, ImportacionRow, ImportacionResult } from "./importacion.types.js";
+import { ImportacionHistorialService } from "./importacion-historial.service.js";
 
 interface MonitoreoRow extends ImportacionRow {}
 
@@ -368,6 +369,7 @@ async function importMonitoreo(filename: string, rows: MonitoreoRow[], userId: n
   const importErrors: ImportacionIssue[] = [];
 
   const actor = { id_usuario: userId, correo: "importacion", rol: null, rol_nombre: "Admin" };
+  const carga = await ImportacionHistorialService.iniciar("monitoreo", filename, userId, rows.length);
 
   const lotes = Array.from({ length: Math.ceil(validRows.length / INSERT_CHUNK) }, (_, i) =>
     validRows.slice(i * INSERT_CHUNK, (i + 1) * INSERT_CHUNK)
@@ -417,7 +419,7 @@ async function importMonitoreo(filename: string, rows: MonitoreoRow[], userId: n
             id_rango_horario: catalogos.catalogos["Rango horario"]?.[normalizeText(rangoHorarioValor)] ?? undefined,
           };
 
-          await EventoRepository.create(eventoDto, actor.id_usuario, { preserveImportedValues: true });
+          await EventoRepository.create(eventoDto, actor.id_usuario, { preserveImportedValues: true, idImportacion: carga.id_importacion });
           importados++;
         } catch (error) {
           const msg = error instanceof Error ? error.message : String(error);
@@ -435,7 +437,7 @@ async function importMonitoreo(filename: string, rows: MonitoreoRow[], userId: n
     }
   }
 
-  return {
+  const result = {
     ...preview,
     imported: {
       casos: 0,
@@ -446,6 +448,8 @@ async function importMonitoreo(filename: string, rows: MonitoreoRow[], userId: n
     filename,
     issues: [...preview.issues, ...importErrors],
   };
+  await ImportacionHistorialService.completar(carga.id_importacion, { importados, duplicados: preview.resumen.duplicados, errores: importErrors.length, resumen: result.imported });
+  return result;
 }
 
 export class ImportacionMonitoreoService {

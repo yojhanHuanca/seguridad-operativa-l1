@@ -7,6 +7,7 @@ import type {
   ImportacionRow,
   ImportacionResult,
 } from "./importacion.types.js";
+import { ImportacionHistorialService } from "./importacion-historial.service.js";
 
 interface ContingenciaRow extends ImportacionRow {}
 
@@ -393,6 +394,7 @@ async function importContingencias(filename: string, rows: ContingenciaRow[], us
   let importados = 0;
   const importErrors: ImportacionIssue[] = [];
   const actor = { id_usuario: userId, correo: "importacion", rol: null, rol_nombre: "Admin" };
+  const carga = await ImportacionHistorialService.iniciar("contingencias", filename, userId, rows.length);
 
   const lotes = Array.from({ length: Math.ceil(validRows.length / INSERT_CHUNK) }, (_, i) =>
     validRows.slice(i * INSERT_CHUNK, (i + 1) * INSERT_CHUNK)
@@ -405,7 +407,7 @@ async function importContingencias(filename: string, rows: ContingenciaRow[], us
         try {
           const dto = rowToDto(row);
           const parsed = createContingenciaSchema.parse(dto);
-          await ContingenciaRepository.create(parsed, actor.id_usuario, { preserveImportedValues: true });
+          await ContingenciaRepository.create(parsed, actor.id_usuario, { preserveImportedValues: true, idImportacion: carga.id_importacion });
           importados++;
         } catch (error) {
           const msg = error instanceof Error ? error.message : String(error);
@@ -423,7 +425,7 @@ async function importContingencias(filename: string, rows: ContingenciaRow[], us
     }
   }
 
-  return {
+  const result = {
     ...preview,
     imported: {
       casos: 0,
@@ -434,6 +436,8 @@ async function importContingencias(filename: string, rows: ContingenciaRow[], us
     filename,
     issues: [...preview.issues, ...importErrors],
   };
+  await ImportacionHistorialService.completar(carga.id_importacion, { importados, duplicados: preview.resumen.duplicados, errores: importErrors.length, resumen: result.imported });
+  return result;
 }
 
 export class ImportacionContingenciasService {

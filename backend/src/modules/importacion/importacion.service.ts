@@ -2,6 +2,7 @@ import type { Prisma } from "../../generated/prisma/client.js";
 import prisma from "../../lib/prisma.js";
 import { AuditoriaRepository } from "../auditoria/auditoria.repository.js";
 import { ConfiguracionService } from "../configuracion/configuracion.service.js";
+import { ImportacionHistorialService } from "./importacion-historial.service.js";
 import { codigoSopSequence } from "../configuracion/codigo-sop.js";
 import { SEQ_CASOS_SOP, advanceSequenceAtLeast } from "../configuracion/sequences.js";
 import type {
@@ -1138,6 +1139,7 @@ async function createImportedCases(
   tx: TxClient,
   items: PreparedCase[],
   actorId: number,
+  idImportacion?: number,
 ): Promise<{ casos: number; eventos: number; planes: number }> {
   if (items.length === 0) return { casos: 0, eventos: 0, planes: 0 };
 
@@ -1177,6 +1179,7 @@ async function createImportedCases(
         area_responsable: item.ids.area,
         responsable_hallazgo: item.ids.responsableHallazgo,
         created_by: item.ids.reportanteUsuario,
+        id_importacion: idImportacion ?? null,
         created_at: item.fecha,
         updated_at: ahora,
       })),
@@ -1299,20 +1302,25 @@ export class ImportacionService {
       throw new Error("El archivo tiene errores de validación. Corrige los datos antes de importar.");
     }
 
+    const carga = await ImportacionHistorialService.iniciar("casos", payload.filename ?? "Sin nombre", actorId, payload.rows.length);
+
     // Todo el archivo entra en una sola transacción: o se importa completo o no
     // se importa nada. El `timeout` es explícito porque el de Prisma son cinco
     // segundos, insuficiente para un archivo del tamaño real del histórico.
     const imported = await prisma
       .$transaction(
         async (tx) => {
-          const { casos, eventos, planes } = await createImportedCases(tx, prepared, actorId);
+          const { casos, eventos, planes } = await createImportedCases(tx, prepared, actorId, carga.id_importacion);
           return { casos, eventos, planes, skipped: 0 };
         },
         { timeout: IMPORT_TIMEOUT_MS, maxWait: 30_000 },
       )
-      .catch((error: unknown) => {
+      .catch(async (error: unknown) => {
+        await ImportacionHistorialService.fallar(carga.id_importacion, error);
         throw traducirErrorDeEscritura(error);
       });
+
+    await ImportacionHistorialService.completar(carga.id_importacion, { importados: imported.casos, duplicados: preview.resumen.duplicados, errores: 0, resumen: imported });
 
     await AuditoriaRepository.registrar({
       tabla: "importacion_historica",

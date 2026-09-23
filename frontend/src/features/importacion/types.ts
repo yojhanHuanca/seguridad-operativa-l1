@@ -59,3 +59,20 @@ export interface ImportacionResult extends ImportacionPreview {
     skipped: number;
   };
 }
+
+export interface ImportacionHistorialItem {
+  id_importacion: number;
+  modulo: ImportacionTipo;
+  archivo: string;
+  hoja: string | null;
+  estado: string;
+  filas_total: number;
+  importados: number;
+  duplicados: number;
+  errores: number;
+  created_at: string;
+  completed_at: string | null;
+  reverted_at: string | null;
+  creador: { id_usuario: number; nombre: string };
+  reversor: { id_usuario: number; nombre: string } | null;
+}

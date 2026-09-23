@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { AuditoriaService } from "./auditoria.service.js";
+import { AuditoriaService, AuditoriaInputError } from "./auditoria.service.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 
 export class AuditoriaController {
@@ -8,6 +8,7 @@ export class AuditoriaController {
       const { data, total } = await AuditoriaService.list(req.query as Record<string, string>);
       return res.json({ ...ApiResponse.success("Auditoría obtenida correctamente", data), meta: { total } });
     } catch (error) {
+      if (error instanceof AuditoriaInputError) return res.status(400).json(ApiResponse.error(error.message));
       return res.status(500).json(ApiResponse.error("Error al obtener la auditoría", error));
     }
   }
@@ -18,6 +19,14 @@ export class AuditoriaController {
       return res.json(ApiResponse.success("Tablas obtenidas correctamente", tablas));
     } catch (error) {
       return res.status(500).json(ApiResponse.error("Error al obtener las tablas", error));
+    }
+  }
+
+  static async getActores(_req: Request, res: Response) {
+    try {
+      return res.json(ApiResponse.success("Actores de auditoría", await AuditoriaService.actores()));
+    } catch (error) {
+      return res.status(500).json(ApiResponse.error("Error al obtener actores", error));
     }
   }
 
@@ -38,6 +47,7 @@ export class AuditoriaController {
       res.setHeader("Content-Disposition", `attachment; filename="${nombre}"`);
       return res.send(csv);
     } catch (error) {
+      if (error instanceof AuditoriaInputError) return res.status(400).json(ApiResponse.error(error.message));
       return res.status(500).json(ApiResponse.error("Error al exportar la auditoría", error));
     }
   }
