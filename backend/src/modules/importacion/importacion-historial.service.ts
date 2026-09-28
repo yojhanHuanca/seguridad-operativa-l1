@@ -1,3 +1,4 @@
+import type { Prisma } from "../../generated/prisma/client.js";
 import prisma from "../../lib/prisma.js";
 import { AuditoriaRepository } from "../auditoria/auditoria.repository.js";
 
@@ -8,15 +9,15 @@ export class ImportacionHistorialService {
     return prisma.importaciones.create({ data: { modulo, archivo: archivo || "Sin nombre", hoja: hoja || null, usuario, filas_total: filas } });
   }
 
-  static completar(id: number, data: { importados: number; duplicados: number; errores: number; resumen?: object }) {
+  static completar(id: number, data: { importados: number; duplicados: number; errores: number; resumen?: Prisma.InputJsonValue }) {
     return prisma.importaciones.update({
       where: { id_importacion: id },
-      data: { ...data, resumen: data.resumen ?? undefined, estado: data.errores > 0 ? "completado_con_errores" : "completado", completed_at: new Date() },
+      data: { ...data, ...(data.resumen ? { resumen: data.resumen } : {}), estado: data.errores > 0 ? "completado_con_errores" : "completado", completed_at: new Date() },
     });
   }
 
-  static fallar(id: number, error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
+  static fallar(id: number, _error: unknown) {
+    const message = "La carga no se completó. Revisa la validación antes de reintentar.";
     return prisma.importaciones.update({ where: { id_importacion: id }, data: { estado: "fallido", errores: 1, resumen: { error: message.slice(0, 500) }, completed_at: new Date() } });
   }
 
@@ -34,7 +35,7 @@ export class ImportacionHistorialService {
   }
 
   static async revertir(id: number, usuario: number, motivo: string, ip: string | null) {
-    const resultado = await prisma.$transaction(async (tx: typeof prisma) => {
+    const resultado = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const carga = await tx.importaciones.findUnique({ where: { id_importacion: id } });
       if (!carga) throw new Error("La importación no existe.");
       if (!carga.estado.startsWith("completado") || carga.reverted_at) throw new Error("Esta importación no se puede revertir.");
@@ -44,6 +45,17 @@ export class ImportacionHistorialService {
         if (usados > 0) throw new Error("No se puede revertir: algunos eventos ya fueron asignados o convertidos en casos.");
       }
 
+      if (!carga.completed_at) throw new Error("La carga aún no finaliza.");
+      const changed = { id_importacion: id, updated_at: { gt: carga.completed_at } };
+      const editados = carga.modulo === "casos"
+        ? await tx.casos_sop.count({ where: { id_importacion: id, OR: [
+          { updated_at: { gt: carga.completed_at } },
+          { anexos_caso: { some: {} } },
+          { timeline_caso: { some: { kind: { notIn: ["creado", "importacion"] } } } },
+          { planes_accion: { some: { OR: [{ updated_at: { gt: carga.completed_at } }, { actividades_plan: { some: {} } }] } } },
+        ] } })
+        : carga.modulo === "monitoreo" ? await tx.eventos_monitoreo.count({ where: changed }) : await tx.contingencia_eventos.count({ where: changed });
+      if (editados) throw new Error("No se puede revertir: hay registros modificados, planes habilitados para gestión o actividad vinculada.");
       const eliminados = carga.modulo === "casos"
         ? (await tx.casos_sop.deleteMany({ where: { id_importacion: id } })).count
         : carga.modulo === "monitoreo"
@@ -52,7 +64,7 @@ export class ImportacionHistorialService {
 
       await tx.importaciones.update({ where: { id_importacion: id }, data: { estado: "revertido", reverted_at: new Date(), reverted_by: usuario, motivo_reversion: motivo } });
       return { eliminados, modulo: carga.modulo, archivo: carga.archivo };
-    }, { timeout: 30_000 });
+    }, { timeout: 30_000, isolationLevel: "Serializable" });
 
     await AuditoriaRepository.registrar({ tabla: "importacion_historica", accion: "eliminar", usuario, ip, descripcion: `Importación ${id} revertida: ${resultado.eliminados} registro(s) eliminados de ${resultado.modulo}. Archivo: ${resultado.archivo}. Motivo: ${motivo}` });
     return resultado;
