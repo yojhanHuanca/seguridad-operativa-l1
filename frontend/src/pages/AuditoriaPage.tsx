@@ -160,7 +160,7 @@ function DatosRegistrados({ datos }: { datos: Record<string, unknown> }) {
 function FilaAuditoria({ registro }: { registro: AuditoriaItem }) {
   const [abierto, setAbierto] = useState(false);
   const Icon = ACCION_ICON[registro.accion];
-  const tieneDetalle = Boolean(registro.datos_previos || registro.datos_nuevos || registro.ip || registro.user_agent);
+  const tieneDetalle = Boolean(registro.descripcion || registro.datos_previos || registro.datos_nuevos || registro.ip || registro.user_agent || registro.id_registro != null);
   const actorCargo = registro.usuarios.cargo || "Sin cargo registrado";
 
   return (
@@ -197,6 +197,12 @@ function FilaAuditoria({ registro }: { registro: AuditoriaItem }) {
         <tr id={`auditoria-detalle-${registro.id_auditoria}`} className="border-b border-line-soft bg-surface/60">
           <td colSpan={6} className="px-4 py-3">
             <div className="flex flex-col gap-3">
+              {registro.descripcion && (
+                <div className="rounded-lg border border-brand-100 bg-brand-50/50 px-3 py-2.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-brand-700">Motivo / detalle de la acción</p>
+                  <p className="mt-1 whitespace-pre-wrap text-[12px] leading-relaxed text-ink">{detalleRegistro(registro)}</p>
+                </div>
+              )}
               {registro.datos_previos && registro.datos_nuevos && (
                 <DiffCambios antes={registro.datos_previos} despues={registro.datos_nuevos} />
               )}
@@ -205,6 +211,8 @@ function FilaAuditoria({ registro }: { registro: AuditoriaItem }) {
               )}
               {registro.datos_previos && !registro.datos_nuevos && <DiffCambios antes={registro.datos_previos} despues={{}} />}
               <div className="flex flex-wrap gap-x-6 gap-y-1 text-[11px] text-ink-faint">
+                <span>Actor: <span className="font-medium text-ink-soft">{registro.usuarios.nombre}</span>{registro.usuarios.cargo ? ` · ${registro.usuarios.cargo}` : ""}</span>
+                <span>Fecha: <span className="text-ink-soft">{registro.fecha ? new Date(registro.fecha).toLocaleString("es-PE", { timeZone: "America/Lima" }) : "—"}</span></span>
                 {registro.ip && <span>IP: <span className="font-mono text-ink-soft">{registro.ip}</span></span>}
                 {registro.user_agent && <span className="max-w-full break-all">Navegador: <span className="text-ink-soft">{registro.user_agent}</span></span>}
                 {registro.id_registro != null && <span>ID del registro: <span className="font-mono text-ink-soft">{registro.id_registro}</span></span>}

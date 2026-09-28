@@ -1,3 +1,4 @@
+import { applySopDecision, isFinished } from "./sop-decisions.js";
 import type { Prisma } from "../../generated/prisma/client.js";
 import prisma from "../../lib/prisma.js";
 import { AuditoriaRepository } from "../auditoria/auditoria.repository.js";
@@ -142,6 +143,9 @@ interface UserRef {
   codigo_usuario: string;
   nombre: string;
   correo: string;
+  id_area: number | null;
+  estado: string | null;
+  roles: { nombre_rol: string } | null;
 }
 
 interface ParsedPlan {
@@ -181,6 +185,7 @@ interface ParsedCase {
 }
 
 interface PreparedPlan {
+  actividadEstadoId?: number;
   row: number;
   codigo: string | null;
   descripcion: string;
@@ -436,6 +441,7 @@ function buildParsedCases(payload: ImportacionPayload, issues: ImportacionIssue[
     const parsedPlan = parsePlan(row, rowNumber, fecha, estado, area, issues);
 
     if (repeated) {
+      if (normalizeText(repeated.estado ?? "") !== normalizeText(estado)) addIssue(issues, { row: rowNumber, field: "Estado", severity: "error", value: estado, message: "El mismo SOP tiene estados distintos en el archivo. Unifica el estado de origen antes de aplicar decisiones." });
       if (parsedPlan) {
         repeated.plans.push(parsedPlan);
       } else {
@@ -583,16 +589,16 @@ function parsePlan(
   };
 }
 
-async function getBuildContext(parsed: ParsedCase[]): Promise<BuildContext> {
+async function getBuildContext(parsed: ParsedCase[], client: TxClient = prisma): Promise<BuildContext> {
   const [catalogos, areas, usuarios, existingCases, existingPlans] = await Promise.all([
     // Sin filtrar por `estado`: los valores que solo existen en el histórico se
     // guardan desactivados para no ofrecerlos al registrar un reporte nuevo,
     // pero la importación igual tiene que poder reconocerlos.
-    prisma.catalogos.findMany({
+    client.catalogos.findMany({
       include: { catalogo_detalle: { select: { id_detalle: true, nombre: true, codigo: true } } },
     }),
-    prisma.areas.findMany({ select: { id_area: true, nombre_area: true } }),
-    prisma.usuarios.findMany({ select: { id_usuario: true, codigo_usuario: true, nombre: true, correo: true } }),
+    client.areas.findMany({ select: { id_area: true, nombre_area: true } }),
+    client.usuarios.findMany({ select: { id_usuario: true, codigo_usuario: true, nombre: true, correo: true, id_area: true, estado: true, roles: { select: { nombre_rol: true } } } }),
     // Se traen todos los códigos, no solo los del archivo, porque la
     // comparación es normalizada y no se puede hacer con un `in` de SQL: el
     // histórico escribe el mismo caso como "SOP 01-2024" y sus planes como
@@ -600,8 +606,8 @@ async function getBuildContext(parsed: ParsedCase[]): Promise<BuildContext> {
     // reconocía como ya importado y sus planes chocaban igual, dejando un error
     // que bloqueaba el archivo entero. Son cadenas cortas: traerlas todas pesa
     // poco incluso con decenas de miles de casos.
-    prisma.casos_sop.findMany({ select: { codigo_sop: true } }),
-    prisma.planes_accion.findMany({ select: { codigo_plan: true } }),
+    client.casos_sop.findMany({ select: { codigo_sop: true } }),
+    client.planes_accion.findMany({ select: { codigo_plan: true } }),
   ]);
 
   return {
@@ -773,9 +779,9 @@ interface ReferenciasCreadas {
  * nuevo ni al asignar un plan, pero el caso histórico conserva su dato real.
  * Corre solo al importar, nunca al validar — la vista previa no escribe nada.
  */
-async function crearReferenciasFaltantes(payload: ImportacionPayload): Promise<ReferenciasCreadas> {
+async function crearReferenciasFaltantes(payload: ImportacionPayload, tx: TxClient): Promise<ReferenciasCreadas> {
   const parsed = buildParsedCases(payload, []);
-  const ctx = await getBuildContext(parsed);
+  const ctx = await getBuildContext(parsed, tx);
   const creadas: ReferenciasCreadas = { usuarios: 0, areas: 0, catalogos: 0 };
 
   const nombresUsuario = new Set<string>();
@@ -790,6 +796,7 @@ async function crearReferenciasFaltantes(payload: ImportacionPayload): Promise<R
   };
 
   for (const item of parsed) {
+    if (ctx.existingCodes.has(normalizeText(item.codigo))) continue;
     anotarUsuario(item.responsableHallazgo);
     anotarArea(item.area);
     for (const catalogo of CATALOGOS_AMPLIABLES) {
@@ -810,8 +817,7 @@ async function crearReferenciasFaltantes(payload: ImportacionPayload): Promise<R
 
   if (nombresArea.size === 0 && nombresUsuario.size === 0 && valoresCatalogo.size === 0) return creadas;
 
-  await prisma.$transaction(
-    async (tx) => {
+  {
       if (nombresArea.size > 0) {
         const { count } = await tx.areas.createMany({
           data: [...nombresArea].map((nombre) => ({ nombre_area: nombre.slice(0, 100) })),
@@ -845,9 +851,7 @@ async function crearReferenciasFaltantes(payload: ImportacionPayload): Promise<R
         });
         creadas.catalogos += count;
       }
-    },
-    { timeout: IMPORT_TIMEOUT_MS, maxWait: 30_000 },
-  );
+  }
 
   return creadas;
 }
@@ -1055,11 +1059,52 @@ function buildPreparedPlans(item: ParsedCase, ctx: BuildContext, issues: Importa
   return result;
 }
 
-async function buildPreview(payload: ImportacionPayload): Promise<BuildResult> {
+async function buildPreview(payload: ImportacionPayload, client: TxClient = prisma): Promise<BuildResult> {
   const issues: ImportacionIssue[] = [];
   const parsed = buildParsedCases(payload, issues);
-  const ctx = await getBuildContext(parsed);
+  const ctx = await getBuildContext(parsed, client);
+  const originals = new Map(parsed.map(item => [normalizeText(item.codigo), structuredClone(item)]));
+  const parsedIndexes = new Map(parsed.map((item, index) => [normalizeText(item.codigo), index]));
+  const decisions = new Map<string, NonNullable<ImportacionPayload["decisionesSop"]>[number]>();
+  for (const decision of payload.decisionesSop ?? []) {
+    const code = normalizeText(decision.codigo);
+    const index = parsedIndexes.get(code) ?? -1;
+    try {
+      if (index < 0 || decisions.has(code)) throw new Error("SOP desconocido o decisión repetida.");
+      decisions.set(code, decision);
+      parsed[index] = applySopDecision(parsed[index]!, decision, ctx.existingCodes.has(code));
+      for (const plan of parsed[index]!.plans) {
+        if (isFinished(plan.estado)) continue;
+        if (!plan.codigo) addIssue(issues, { row: plan.row, field: "Código Plan", severity: "error", value: null, message: "Para activar un plan debe indicarse su código original en el archivo." });
+        const candidates = ctx.usuarios.filter(user => [user.nombre, user.correo, user.codigo_usuario].some(value => normalizeText(value) === normalizeText(plan.responsable ?? "")));
+        const user = candidates.length === 1 ? candidates[0] : null;
+        const area = resolveArea(ctx, plan.area || parsed[index]!.area, plan.row, "Área Plan", []);
+        if (!user || normalizeText(user.estado ?? "") !== "activo" || normalizeText(user.roles?.nombre_rol ?? "") !== "jefedearea" || !area || user.id_area !== area.id_area) {
+          addIssue(issues, { row: plan.row, field: "Responsable Plan", severity: "error", value: null, message: "El destino debe ser un jefe de área activo y pertenecer al área del plan. Corrige el archivo antes de asignar." });
+        }
+      }
+    } catch (error) {
+      addIssue(issues, { row: index < 0 ? 0 : parsed[index]!.row, field: "Acción SOP", severity: "error", value: null, message: error instanceof Error ? error.message : "Decisión inválida." });
+    }
+  }
+  const planCodes = new Set<string>();
+  for (const item of parsed) for (const plan of item.plans) {
+    if (!plan.codigo || ctx.existingCodes.has(normalizeText(item.codigo))) continue;
+    const code = normalizeText(plan.codigo);
+    if (planCodes.has(code)) addIssue(issues, { row: plan.row, field: "Código Plan", severity: "error", value: plan.codigo, message: "Código de plan repetido en el archivo." });
+    planCodes.add(code);
+  }
   const prepared = buildPreparedCases(parsed, ctx, issues);
+  const plansByRow = new Map(parsed.flatMap(item => item.plans.map(plan => [plan.row, plan] as const)));
+  for (const item of prepared) {
+    if (!decisions.has(normalizeText(item.codigo))) continue;
+    for (const plan of item.plans) {
+      const source = plansByRow.get(plan.row)!;
+      if (isFinished(source.estado)) continue;
+      const activity = resolveCatalog(ctx, "Estado Actividad", source.estado === "Enviado" ? "Pendiente" : "En progreso", plan.row, "Estado Actividad", issues);
+      if (activity) plan.actividadEstadoId = activity.id_detalle;
+    }
+  }
   const errorRows = new Set(issues.filter((issue) => issue.severity === "error").map((issue) => issue.row));
   const duplicateRows = new Set(
     issues
@@ -1077,7 +1122,14 @@ async function buildPreview(payload: ImportacionPayload): Promise<BuildResult> {
     riesgo: item.riesgo && !EMPTY_RISK_VALUES.has(normalizeText(item.riesgo)) ? item.riesgo : null,
     fecha: item.fecha ? formatDate(item.fecha) : "Fecha inválida",
     planes: item.plans.length,
-    status: errorRows.has(item.row) ? ("error" as const) : duplicateRows.has(item.row) ? ("skipped" as const) : ("valid" as const),
+    editable: !ctx.existingCodes.has(normalizeText(item.codigo)) && !isFinished(originals.get(normalizeText(item.codigo))!.estado),
+    estadoOriginal: originals.get(normalizeText(item.codigo))!.estado ?? "",
+    accion: decisions.get(normalizeText(item.codigo))?.accion,
+    planesDetalle: item.plans.map(plan => {
+      const original = originals.get(normalizeText(item.codigo))!.plans.find(p => p.row === plan.row)!;
+      return { row: plan.row, codigo: plan.codigo ?? "Por generar", area: plan.area ?? "", responsable: plan.responsable ?? "", estado: plan.estado ?? "", estadoOriginal: original.estado ?? "", editable: !isFinished(original.estado) };
+    }),
+    status: (errorRows.has(item.row) || item.plans.some(plan => errorRows.has(plan.row))) ? ("error" as const) : duplicateRows.has(item.row) ? ("skipped" as const) : ("valid" as const),
   }));
 
   const errores = issues.filter((issue) => issue.severity === "error").length;
@@ -1250,8 +1302,16 @@ async function createImportedCases(
       });
     });
 
+    const activityStates = new Map(lote.flatMap(item => item.plans.filter(plan => plan.actividadEstadoId != null).map(plan => [plan.codigo, plan.actividadEstadoId!] as const)));
     for (const lotePlanes of enLotes(planesDelLote, INSERT_CHUNK)) {
-      await tx.planes_accion.createMany({ data: lotePlanes });
+      const created = await tx.planes_accion.createManyAndReturn({ data: lotePlanes, select: { id_plan: true, codigo_plan: true, descripcion: true, responsable: true, fecha_plan: true } });
+      // Match explicit codes, or the prepared plan order for legacy rows without a code.
+      const activities = created.flatMap(plan => {
+        const state = activityStates.get(plan.codigo_plan);
+        if (state == null) return [];
+        return [{ id_plan: plan.id_plan, descripcion: plan.descripcion, responsable: plan.responsable, fecha_fin: plan.fecha_plan, porcentaje: 0, estado: state }];
+      });
+      if (activities.length) await tx.actividades_plan.createMany({ data: activities });
     }
     planes += planesDelLote.length;
 
@@ -1290,11 +1350,9 @@ export class ImportacionService {
   }
 
   static async importar(payload: ImportacionPayload, actorId: number, ip: string | null): Promise<ImportacionResult> {
-    // Primero se dan de alta las personas, áreas y clasificaciones que el
-    // archivo menciona y todavía no existen; recién después se arma la
-    // importación, para que esas filas ya no se descarten ni se reclasifiquen.
-    const referencias = await crearReferenciasFaltantes(payload);
+    // Validate before writing; historical references are created inside the case transaction.
     const { preview, prepared } = await buildPreview(payload);
+    let referencias: ReferenciasCreadas = { usuarios: 0, areas: 0, catalogos: 0 };
     if (!preview.canImport) {
       if (preview.resumen.errores === 0 && prepared.length === 0) {
         throw new Error("No hay casos nuevos para importar. Los registros del archivo ya existen o fueron omitidos.");
@@ -1302,7 +1360,7 @@ export class ImportacionService {
       throw new Error("El archivo tiene errores de validación. Corrige los datos antes de importar.");
     }
 
-    const carga = await ImportacionHistorialService.iniciar("casos", payload.filename ?? "Sin nombre", actorId, payload.rows.length);
+    const carga = await ImportacionHistorialService.iniciar("casos", payload.filename ?? "Sin nombre", actorId, payload.rows.length, payload.hoja);
 
     // Todo el archivo entra en una sola transacción: o se importa completo o no
     // se importa nada. El `timeout` es explícito porque el de Prisma son cinco
@@ -1310,8 +1368,27 @@ export class ImportacionService {
     const imported = await prisma
       .$transaction(
         async (tx) => {
-          const { casos, eventos, planes } = await createImportedCases(tx, prepared, actorId, carga.id_importacion);
-          return { casos, eventos, planes, skipped: 0 };
+          referencias = await crearReferenciasFaltantes(payload, tx);
+          const rebuilt = await buildPreview(payload, tx);
+          const previewByCode = new Map(rebuilt.preview.cases.map(item => [item.codigo, item]));
+          const preparedByCode = new Map(rebuilt.prepared.map(item => [normalizeText(item.codigo), item]));
+          if (rebuilt.prepared.some(item => item.plans.length !== previewByCode.get(item.codigo)?.planes)) throw new Error("No se pudieron resolver todos los planes. No se guardó la carga.");
+          if (!rebuilt.preview.canImport) throw new Error("La validación cambió; revisa nuevamente el archivo.");
+          const { casos, eventos, planes } = await createImportedCases(tx, rebuilt.prepared, actorId, carga.id_importacion);
+          for (const decision of payload.decisionesSop ?? []) {
+            const item = preparedByCode.get(normalizeText(decision.codigo));
+            if (!item) continue;
+            const caso = await tx.casos_sop.findUniqueOrThrow({ where: { codigo_sop: item.codigo } });
+            const casePreview = previewByCode.get(item.codigo)!;
+            await tx.timeline_caso.create({ data: { id_caso: caso.id_caso, kind: "importacion", actor: `Administrador ${actorId}`, actor_rol: "admin", titulo: `Importación: ${decision.accion}`, detalle: JSON.stringify({ motivo: decision.motivo, estadoOriginal: casePreview.estadoOriginal, etapa: casePreview.estado, planes: casePreview.planesDetalle?.map(plan => ({ codigo: plan.codigo, fila: plan.row, antes: plan.estadoOriginal, despues: plan.estado })) ?? [] }), fecha: new Date() } });
+            if (decision.accion !== "cerrar") {
+              const closed = ctxClosed(rebuilt.preview, item.codigo);
+              for (const plan of item.plans.filter(p => !closed.has(p.row))) await tx.notificaciones.create({ data: { usuario: plan.responsableId, tipo: "plan_asignado", titulo: "Plan importado asignado", mensaje: `El SOP ${item.codigo} tiene un plan asignado a tu área. Revisa tu panel de planes.` } });
+            }
+          }
+          const result = { casos, eventos, planes, skipped: rebuilt.preview.resumen.duplicados };
+          await tx.importaciones.update({ where: { id_importacion: carga.id_importacion }, data: { estado: "completado", completed_at: new Date(), importados: casos, duplicados: result.skipped, resumen: JSON.parse(JSON.stringify({ ...result, decisiones: payload.decisionesSop ?? [] })) } });
+          return result;
         },
         { timeout: IMPORT_TIMEOUT_MS, maxWait: 30_000 },
       )
@@ -1320,7 +1397,6 @@ export class ImportacionService {
         throw traducirErrorDeEscritura(error);
       });
 
-    await ImportacionHistorialService.completar(carga.id_importacion, { importados: imported.casos, duplicados: preview.resumen.duplicados, errores: 0, resumen: imported });
 
     await AuditoriaRepository.registrar({
       tabla: "importacion_historica",
@@ -1329,6 +1405,9 @@ export class ImportacionService {
       ip,
       descripcion:
         `Archivo ${payload.filename ?? "sin nombre"} importado: ${imported.casos} caso(s), ${imported.eventos} evento(s), ${imported.planes} plan(es).` +
+        (payload.decisionesSop?.length
+          ? ` Motivos registrados: ${payload.decisionesSop.map((decision) => `${decision.codigo}: ${decision.motivo || "sin motivo indicado"}`).join("; ")}.`
+          : "") +
         (referencias.usuarios + referencias.areas + referencias.catalogos > 0
           ? ` Se dieron de alta ${referencias.usuarios} usuario(s), ${referencias.areas} área(s) y ${referencias.catalogos} valor(es) de catálogo del histórico.`
           : ""),
@@ -1336,7 +1415,10 @@ export class ImportacionService {
 
     return {
       ...preview,
+      canImport: false,
       imported,
     };
   }
 }
+
+function ctxClosed(preview: ImportacionPreview, codigo: string) { return new Set(preview.cases.find(c => c.codigo === codigo)?.planesDetalle?.filter(p => isFinished(p.estado)).map(p => p.row) ?? []); }

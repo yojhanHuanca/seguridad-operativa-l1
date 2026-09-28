@@ -55,6 +55,10 @@ export function useNotifications() {
     // Las notificaciones nacen de acciones de otras personas, así que no
     // llegan por invalidación local: hay que ir a buscarlas cada tanto.
     refetchInterval: 60_000,
+    // Al regresar desde otra pestaña o ventana, consultar inmediatamente
+    // para que la campana no espere al siguiente intervalo.
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   return { ...query, cargarMas: () => setLimit((l) => l + PAGE_SIZE) };
