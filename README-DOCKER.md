@@ -56,6 +56,7 @@ docker compose --env-file .env.docker down
 
 `down -v` elimina los volúmenes y borra permanentemente la base local y los archivos cargados; úsalo solo cuando realmente quieras reiniciar todo desde cero.
 
+<a id="preparar-una-instalacion-para-ti"></a>
 ## Preparar una instalación para TI
 
 1. Clonar el repositorio en el servidor que TI haya elegido.
@@ -79,6 +80,7 @@ docker compose --env-file .env.docker down
 
 El contenedor `schema` ejecuta `prisma db push` solo cuando TI lo solicita. No se ejecuta al reiniciar el sistema. Revisar los cambios del esquema y contar con un respaldo antes de repetir este paso sobre una instalación con datos.
 
+<a id="configuracion-de-integraciones"></a>
 ## Configuración de integraciones
 
 ### Correo
@@ -95,6 +97,7 @@ Completar `GOOGLE_CLIENT_ID` y `VITE_GOOGLE_CLIENT_ID` con el Client ID de la ap
 
 Configurar un par VAPID en `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` y `VITE_VAPID_PUBLIC_KEY` (la clave pública debe coincidir en backend y frontend). Web Push necesita HTTPS en el nombre definitivo del sistema; HTTP en una red local no habilita esta función de forma general.
 
+<a id="datos-archivos-y-respaldos"></a>
 ## Datos, archivos y respaldos
 
 Clonar el repositorio solo copia el código. No copia la base con los casos, las cuentas de usuario, las evidencias ni los avatares. Antes de trasladar el sistema actual, TI debe planificar la exportación e importación de la base de datos y copiar el contenido del almacenamiento de archivos, preservando las rutas registradas. El mecanismo y la ventana de migración dependen del entorno de origen.
