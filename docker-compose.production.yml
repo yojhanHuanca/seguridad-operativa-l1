@@ -1,51 +1,75 @@
-# Compose para ejecutar las imágenes en un entorno productivo.
-#
-# Requiere una base PostgreSQL externa ya creada y con el esquema aplicado.
-# Este archivo no ejecuta `prisma db push` al arrancar: un reinicio nunca debe
-# cambiar el esquema de una base productiva automáticamente.
-#
-# Antes de iniciar:
-#   Copy-Item .env.production.example .env.production
-#   completar los valores reales y ejecutar:
-#   docker compose --env-file .env.production -f docker-compose.production.yml up -d --build
+# Despliegue autocontenido para un servidor administrado por el área de TI.
+# PostgreSQL y la API quedan en la red privada de Docker; solo se publica Nginx.
+# Revisar README-DOCKER.md antes del primer inicio y respaldar ambos volúmenes.
 
 services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: seguridad_operativa
+      POSTGRES_USER: seguridad_operativa
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en .env.production}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U seguridad_operativa -d seguridad_operativa"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    security_opt:
+      - no-new-privileges:true
+
+  schema:
+    build:
+      context: ./backend
+    profiles: ["setup"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://seguridad_operativa:${POSTGRES_PASSWORD}@postgres:5432/seguridad_operativa?schema=public
+    command: ["npx", "prisma", "db", "push", "--skip-generate"]
+    restart: "no"
+
   backend:
     build:
       context: ./backend
     restart: unless-stopped
     init: true
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
       NODE_ENV: production
-      DATABASE_URL: ${DATABASE_URL:?Define DATABASE_URL en .env.production}
+      DATABASE_URL: postgresql://seguridad_operativa:${POSTGRES_PASSWORD}@postgres:5432/seguridad_operativa?schema=public
       PORT: 3000
       JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env.production}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
       FRONTEND_URL: ${FRONTEND_URL:?Define FRONTEND_URL en .env.production}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
-      EMAIL_FROM: ${EMAIL_FROM:-SMS L1 <onboarding@resend.dev>}
+      EMAIL_FROM: ${EMAIL_FROM:?Define EMAIL_FROM en .env.production}
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
       VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:soporte@lineauno.pe}
-    ports:
-      - "${BACKEND_PORT:-3000}:3000"
     volumes:
-      - backend_uploads:/app/uploads
+      - uploaded_files:/app/uploads
     security_opt:
       - no-new-privileges:true
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 30s
       timeout: 5s
-      start_period: 20s
-      retries: 3
+      start_period: 30s
+      retries: 5
 
   frontend:
     build:
       context: ./frontend
       args:
-        VITE_API_URL: ${VITE_API_URL:?Define VITE_API_URL con la URL pública del backend}
+        VITE_API_URL: /api
         VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
         VITE_VAPID_PUBLIC_KEY: ${VITE_VAPID_PUBLIC_KEY:-}
     restart: unless-stopped
@@ -65,4 +89,5 @@ services:
       retries: 3
 
 volumes:
-  backend_uploads:
+  postgres_data:
+  uploaded_files:

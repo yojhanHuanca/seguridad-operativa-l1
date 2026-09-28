@@ -1,73 +1,89 @@
-# Entorno de desarrollo local dockerizado. NO es lo que corre en producción
-# (eso sigue siendo Vercel + Railway) — esto es para poder levantar todo con
-# `docker compose up` sin instalar Postgres/Node a mano en la máquina.
-#
-# Antes de correr:
-#   cp .env.docker.example .env
-#   (completar JWT_SECRET, y opcionalmente RESEND_API_KEY/GOOGLE_CLIENT_ID)
-#
-# El backend corre `prisma db push` contra la base de este mismo compose antes
-# de arrancar — el proyecto no usa `prisma migrate`, usa `db push` (igual que
-# en Railway), así que la primera vez deja la base al día sola. Si alguna vez
-# rechaza el push por una pérdida de datos, se corre a mano con el flag:
-#   docker compose exec backend npx prisma db push --accept-data-loss
+# Entorno local para ejecutar la aplicación completa con Docker.
+# Copiar .env.docker.example a .env.docker y levantar con:
+# docker compose --env-file .env.docker up --build
 
 services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: sigma
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sigma_dev_password}
-      POSTGRES_DB: bd_seguridad_metro
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: seguridad_operativa
+      POSTGRES_USER: seguridad_operativa
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en .env.docker}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sigma -d bd_seguridad_metro"]
+      test: ["CMD-SHELL", "pg_isready -U seguridad_operativa -d seguridad_operativa"]
       interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 12
+
+  mailpit:
+    image: axllent/mailpit:v1.27
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8025:8025"
 
   backend:
     build:
       context: ./backend
     restart: unless-stopped
+    init: true
     depends_on:
       postgres:
         condition: service_healthy
+      mailpit:
+        condition: service_started
     environment:
-      DATABASE_URL: postgresql://sigma:${POSTGRES_PASSWORD:-sigma_dev_password}@postgres:5432/bd_seguridad_metro?schema=public
+      NODE_ENV: production
+      DATABASE_URL: postgresql://seguridad_operativa:${POSTGRES_PASSWORD}@postgres:5432/seguridad_operativa?schema=public
       PORT: 3000
-      JWT_SECRET: ${JWT_SECRET:?Definí JWT_SECRET en .env}
-      JWT_EXPIRES_IN: 8h
+      JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env.docker}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       EMAIL_FROM: ${EMAIL_FROM:-SMS L1 <onboarding@resend.dev>}
-      FRONTEND_URL: http://localhost:5173
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
       VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:soporte@lineauno.pe}
-    ports:
-      - "3000:3000"
     volumes:
-      - backend_uploads:/app/uploads
-    command: sh -c "npx prisma db push --skip-generate && node dist/server.js"
+      - uploaded_files:/app/uploads
+    command: ["sh", "-c", "npx prisma db push --skip-generate && node dist/server.js"]
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 20s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
 
   frontend:
     build:
       context: ./frontend
       args:
-        VITE_API_URL: http://localhost:3000/api
+        VITE_API_URL: /api
         VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
         VITE_VAPID_PUBLIC_KEY: ${VITE_VAPID_PUBLIC_KEY:-}
     restart: unless-stopped
+    init: true
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     ports:
-      - "5173:80"
+      - "${FRONTEND_PORT:-8080}:80"
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 5s
+      retries: 3
 
 volumes:
-  pgdata:
-  backend_uploads:
+  postgres_data:
+  uploaded_files:
