@@ -22,7 +22,7 @@ services:
     image: axllent/mailpit:v1.27
     restart: unless-stopped
     ports:
-      - "127.0.0.1:8025:8025"
+      - "127.0.0.1:${MAILPIT_PORT:-8025}:8025"
 
   backend:
     build:
@@ -38,6 +38,7 @@ services:
       NODE_ENV: production
       DATABASE_URL: postgresql://seguridad_operativa:${POSTGRES_PASSWORD}@postgres:5432/seguridad_operativa?schema=public
       PORT: 3000
+      ADMIN_BOOTSTRAP_ENABLED: "true"
       JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env.docker}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}

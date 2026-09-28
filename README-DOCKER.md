@@ -42,6 +42,36 @@ docker compose --env-file .env.docker ps
 
 Abre el sistema en `http://localhost:8080` y la bandeja local de correo en `http://localhost:8025`. El esquema de la base local se prepara al iniciar el backend. Los correos no salen a destinatarios reales en este modo.
 
+### Crear la primera cuenta administradora local
+
+La base empieza vacía y no hay una pantalla de registro público. Primero reconstruye y actualiza el backend para incluir el comando de alta:
+
+```powershell
+docker compose --env-file .env.docker up --build -d backend
+```
+
+Con los servicios locales activos, abre PowerShell en la raíz del repositorio y ejecuta:
+
+```powershell
+$env:BOOTSTRAP_ADMIN_EMAIL = Read-Host "Correo del administrador local"
+$env:BOOTSTRAP_ADMIN_NAME = Read-Host "Nombre del administrador local"
+$securePassword = Read-Host "Contraseña (mínimo 12 caracteres)" -AsSecureString
+$env:BOOTSTRAP_ADMIN_PASSWORD = [System.Net.NetworkCredential]::new("", $securePassword).Password
+
+docker compose --env-file .env.docker exec `
+  -e "BOOTSTRAP_ADMIN_EMAIL=$env:BOOTSTRAP_ADMIN_EMAIL" `
+  -e "BOOTSTRAP_ADMIN_NAME=$env:BOOTSTRAP_ADMIN_NAME" `
+  -e "BOOTSTRAP_ADMIN_PASSWORD=$env:BOOTSTRAP_ADMIN_PASSWORD" `
+  backend node scripts/bootstrap-admin.mjs
+
+Remove-Item Env:BOOTSTRAP_ADMIN_EMAIL, Env:BOOTSTRAP_ADMIN_NAME, Env:BOOTSTRAP_ADMIN_PASSWORD
+Remove-Variable securePassword
+```
+
+El comando crea una cuenta local nueva con rol **Admin**. La contraseña no queda escrita en el archivo `.env.docker` ni se muestra al escribirla. El script está deshabilitado en el Compose de servidor; no lo habilites ni lo ejecutes contra una base empresarial.
+
+Después inicia sesión en `http://localhost:8080` con el correo y la contraseña que ingresaste. Si el correo ya existe, el script se detiene sin modificar esa cuenta.
+
 Para ver registros:
 
 ```powershell

@@ -83,7 +83,7 @@ Espera a que los servicios indiquen que están activos y saludables. Luego abre:
 - **Aplicación:** [http://localhost:8080](http://localhost:8080)
 - **Bandeja local para correos de prueba:** [http://localhost:8025](http://localhost:8025)
 
-En esta modalidad, Mailpit captura los correos; no los envía a destinatarios reales. La base local empieza vacía. Docker no crea cuentas empresariales: las cuentas iniciales deben ser provisionadas por el administrador designado.
+En esta modalidad, Mailpit captura los correos; no los envía a destinatarios reales. La base local empieza vacía y no existe registro público. Para crear tu primer administrador local, sigue la sección [“Crear la primera cuenta administradora local”](README-DOCKER.md#crear-la-primera-cuenta-administradora-local) de la guía Docker. Ese usuario sirve solo para la base de prueba local.
 
 ### Comandos útiles
 
