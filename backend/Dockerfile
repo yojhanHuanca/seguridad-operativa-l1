@@ -9,6 +9,9 @@ ARG NODE_VERSION=22-bookworm-slim
 # ── deps: instala TODO (incluye devDependencies) para poder compilar ────────
 FROM node:${NODE_VERSION} AS deps
 WORKDIR /app
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y openssl \
+    && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
 # `npm ci` dispara "postinstall": prisma generate. Corre acá adentro (no en la
@@ -23,16 +26,23 @@ RUN npm run build
 # ── deps-prod: solo las dependencias de producción ──────────────────────────
 FROM node:${NODE_VERSION} AS deps-prod
 WORKDIR /app
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y openssl \
+    && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
 # --ignore-scripts: no hace falta volver a generar el cliente de Prisma acá,
 # ya se generó y se copió a dist/ en el stage de build.
 RUN npm ci --omit=dev --ignore-scripts
+RUN chown -R node:node /app/node_modules/@prisma/engines
 
 # ── runtime: imagen final, sin herramientas de build ─────────────────────────
 FROM node:${NODE_VERSION} AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y openssl \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=deps-prod /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
@@ -43,7 +53,7 @@ COPY package.json ./
 # Se monta como volumen en docker-compose para que sobrevivan a un rebuild.
 # El runtime corre como el usuario no privilegiado incluido en la imagen oficial.
 RUN mkdir -p uploads/casos uploads/avatars \
-    && chown -R node:node /app
+    && chown -R node:node /app/uploads
 
 USER node
 
