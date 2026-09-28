@@ -405,10 +405,16 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
               <SessionExitButton />
               <Link
                 to="/seguridad/notificaciones"
-                className="grid h-8 w-8 place-items-center rounded-lg text-ink-soft transition-colors hover:bg-surface hover:text-ink"
+                className="relative grid h-8 w-8 place-items-center rounded-lg text-ink-soft transition-colors hover:bg-surface hover:text-ink"
                 aria-label="Notificaciones"
+                title={unreadNotifications > 0 ? `${unreadNotifications} notificación${unreadNotifications === 1 ? "" : "es"} sin leer` : "Notificaciones"}
               >
                 <Bell className="h-4 w-4" />
+                {unreadNotifications > 0 && (
+                  <span className="absolute right-0.5 top-0.5 grid h-[15px] min-w-[15px] place-items-center rounded-full bg-critical px-1 text-[9.5px] font-semibold leading-none text-white ring-2 ring-white">
+                    {unreadNotifications > 9 ? "9+" : unreadNotifications}
+                  </span>
+                )}
               </Link>
               <Link to="/seguridad/perfil" className="flex items-center gap-1.5 rounded-lg py-1 pl-1 pr-1.5 hover:bg-surface">
                 <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand-100 text-[10.5px] font-bold text-brand-800">
