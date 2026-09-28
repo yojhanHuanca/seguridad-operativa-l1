@@ -4,6 +4,7 @@ import { ReportService } from "./report.service.js";
 import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
 import { AuditoriaService } from "../auditoria/auditoria.service.js";
+import { cookieAccesoReporte, crearAccesoReporte, puedeConsultarReporte } from "../../utils/publicReportAccess.js";
 
 function textoOrigenReporte(body: unknown): { modalidad: "anonimo" | "identificado"; origen: "reportante" | "seguridad_operativa" } {
   const data = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
@@ -33,7 +34,11 @@ export class ReportController {
       if (typeof codigo !== "string" || codigo.trim() === "") {
         throw new Error("Código de reporte inválido");
       }
-      const caso = await ReportService.getByCodigo(codigo, (req as AuthenticatedRequest).user);
+      const actor = (req as AuthenticatedRequest).user;
+      if (!actor && !puedeConsultarReporte(codigo, req.headers.cookie)) {
+        return res.status(403).json(ApiResponse.error("Este reporte solo puede consultarse desde el dispositivo donde fue registrado"));
+      }
+      const caso = await ReportService.getByCodigo(codigo, actor);
       return res.json(ApiResponse.success("Reporte obtenido correctamente", caso));
     } catch (error) {
       return res
@@ -55,6 +60,9 @@ export class ReportController {
         size: f.size,
       }));
 
+      if (!puedeConsultarReporte(codigo, req.headers.cookie)) {
+        return res.status(403).json(ApiResponse.error("Este reporte solo puede responderse desde el dispositivo donde fue registrado"));
+      }
       const solicitud = await ReportService.responderInfoPublico(codigo, req.body, files);
       return res.json(ApiResponse.success("Respuesta registrada correctamente", solicitud));
     } catch (error) {
@@ -78,6 +86,7 @@ export class ReportController {
 
       const actor = (req as AuthenticatedRequest).user;
       const result = await ReportService.createReport(req.body, files, actor);
+      if (!actor) res.setHeader("Set-Cookie", cookieAccesoReporte(crearAccesoReporte(result.caso.codigo_sop)));
       const { modalidad, origen } = textoOrigenReporte(req.body);
       const fuente =
         origen === "seguridad_operativa"

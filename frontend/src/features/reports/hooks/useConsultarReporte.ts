@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { api, type ApiEnvelope } from "@/lib/api";
+import { publicApi, type ApiEnvelope } from "@/lib/api";
 import type { ReportListItem } from "../types";
 
 async function fetchReportePublico(codigo: string): Promise<ReportListItem> {
-  const { data } = await api.get<ApiEnvelope<ReportListItem>>(`/reports/consulta/${encodeURIComponent(codigo)}`);
+  const { data } = await publicApi.get<ApiEnvelope<ReportListItem>>(`/reports/consulta/${encodeURIComponent(codigo)}`);
   if (!data.data) throw new Error("No se encontró ningún reporte con ese código");
   return data.data;
 }

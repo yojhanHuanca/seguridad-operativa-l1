@@ -6,6 +6,7 @@ export const api = axios.create({
 
 export const publicApi = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:3000/api",
+  withCredentials: true,
 });
 
 /** Origen del backend (sin /api) para resolver rutas /uploads/... que devuelve la API. */

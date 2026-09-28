@@ -19,6 +19,7 @@ const app = express();
 const ORIGENES_PERMITIDOS = new Set([env.FRONTEND_URL, "http://localhost:5173", "http://localhost:4173"]);
 app.use(
   cors({
+    credentials: true,
     origin(origin: string | undefined, callback: CorsOriginCallback) {
       // Sin cabecera Origin (curl, health checks, servidor-a-servidor): se permite.
       if (!origin || ORIGENES_PERMITIDOS.has(origin)) return callback(null, true);
