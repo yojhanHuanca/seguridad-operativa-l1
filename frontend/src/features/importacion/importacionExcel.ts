@@ -101,30 +101,17 @@ export async function downloadErrorWorkbook(parsed: ParsedImportFile, sheetIndex
   if (!source) return;
   const ExcelJS = await import("exceljs");
   const workbook = new ExcelJS.Workbook();
-  const data = workbook.addWorksheet(source.name.slice(0, 25) || "Datos");
-  data.addRow([...source.headers, "ERROR DE IMPORTACIÓN"]);
-  const issuesByRow = new Map<number, ImportacionIssue[]>();
-  issues.forEach(issue => issuesByRow.set(issue.row, [...(issuesByRow.get(issue.row) ?? []), issue]));
-  source.rows.forEach((row, index) => {
-    const rowIssues = issuesByRow.get(index + 2) ?? [];
-    const excelRow = data.addRow([...source.headers.map(header => row[header] ?? ""), rowIssues.map(issue => issue.message).join(" | ")]);
-    rowIssues.forEach(issue => {
-      const column = source.headers.findIndex(header => normalizeImportHeader(header) === normalizeImportHeader(issue.field));
-      if (column >= 0) excelRow.getCell(column + 1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFECACA" } };
-    });
-  });
-  styleDataSheet(data, source.headers.length);
-  data.getColumn(source.headers.length + 1).width = 55;
-  const summary = workbook.addWorksheet("Resumen de errores");
-  summary.addRow(["Fila", "Nivel", "Campo", "Mensaje", "Valor"]);
-  issues.forEach(issue => summary.addRow([issue.row, issue.severity === "error" ? "Error" : "Advertencia", issue.field, issue.message, issue.value ?? ""]));
+  const summary = workbook.addWorksheet("Diagnóstico");
+  summary.addRow(["Hoja", "Fila", "Nivel", "Campo", "Mensaje"]);
+  issues.forEach(issue => summary.addRow([source.name, issue.row, issue.severity === "error" ? "Error" : "Advertencia", issue.field, issue.message]));
   styleDataSheet(summary, 4);
+  summary.getColumn(5).width = 65;
   save(await workbook.xlsx.writeBuffer() as ArrayBuffer, `errores-${parsed.filename.replace(/\.[^.]+$/, "")}.xlsx`);
 }
 
 export function cellToImportText(value: CellValue): string {
   if (value == null) return "";
-  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  if (value instanceof Date) return value.getUTCFullYear() <= 1900 ? value.toISOString().slice(11, 16) : value.toISOString().slice(0, 10);
   if (typeof value !== "object") return String(value).trim();
   if ("result" in value) return cellToImportText(value.result as CellValue);
   if ("richText" in value) return value.richText.map(part => part.text).join("").trim();

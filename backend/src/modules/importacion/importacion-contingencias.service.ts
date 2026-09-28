@@ -1,3 +1,6 @@
+import { withImportLock } from "./import-lock.js";
+import prisma from "../../lib/prisma.js";
+import { importFingerprint, dateRange } from "./import-fingerprint.js";
 import { ContingenciaRepository } from "../contingencias/contingencia.repository.js";
 import { createContingenciaSchema, type CreateContingenciaDto } from "../contingencias/contingencia.types.js";
 import type {
@@ -15,7 +18,7 @@ const INSERT_CHUNK = 500;
 const MAX_CONCURRENT = 10;
 
 function normalizeText(value: string): string {
-  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 120);
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
 function cleanCell(value: unknown): string {
@@ -63,8 +66,8 @@ function parseDate(value: string): Date | null {
     if (date.getUTCFullYear() !== year || date.getUTCMonth() + 1 !== month || date.getUTCDate() !== day) return null;
     return date;
   }
-  const fallback = new Date(raw);
-  return Number.isNaN(fallback.getTime()) ? null : fallback;
+  const local = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  return local ? parseDate(`${local[3]}-${local[2]}-${local[1]}`) : null;
 }
 
 function parseTime(value: string): string | null {
@@ -188,6 +191,7 @@ function rowToDto(row: ContingenciaRow): CreateContingenciaDto {
     atencion_final: getFieldValue(row, "atencion_final") || undefined,
     nivel_inicial: getFieldValue(row, "nivel_inicial") || undefined,
     nivel_final: getFieldValue(row, "nivel_final") || undefined,
+    hora_termino_atencion_inicio_traslado: parseTime(getFieldValue(row, "hora_termino_atencion_inicio_traslado")) ?? undefined,
     hora_termino_ae: parseTime(getFieldValue(row, "hora_termino_atencion_inicio_traslado")) ?? undefined,
     hora_llamado_pco_sppa: parseTime(getFieldValue(row, "hora_llamado_pco_sppa")) ?? undefined,
     hora_llegada_spaa: parseTime(getFieldValue(row, "hora_llegada_spaa")) ?? undefined,
@@ -241,7 +245,8 @@ function findDuplicates(rows: ContingenciaRow[]): Set<number> {
   const seenRows = new Set<string>();
   rows.forEach((row, index) => {
     if (isEmptyRow(row)) return;
-    const signature = Object.keys(ALIASES).map((field) => normalizeText(getFieldValue(row, field))).join("|");
+    const dto = rowToDto(row);
+    const signature = importFingerprint(Object.keys(dto), dto);
     if (seenRows.has(signature)) duplicateRows.add(index + 2);
     seenRows.add(signature);
   });
@@ -316,12 +321,20 @@ async function buildPreview(payload: { filename: string | null; rows: Contingenc
   const { rows, filename } = payload;
 
   const columnasExcel = Object.keys(rows[0] || {}).map(normalizeText);
-  const faltantes = REQUIRED_COLUMNS.filter((col) => !columnasExcel.includes(normalizeText(col)));
+  const faltantes = REQUIRED_COLUMNS.filter((col) => !Object.values(ALIASES).find(aliases => aliases.some(alias => normalizeText(alias) === normalizeText(col)))?.some(alias => columnasExcel.includes(normalizeText(alias))));
   if (faltantes.length > 0) {
     throw new Error(`Faltan columnas obligatorias: ${faltantes.join(", ")}`);
   }
 
   const duplicateRows = findDuplicates(rows);
+  const range = dateRange(rows.map(row => parseDate(getFieldValue(row, "fecha"))));
+  if (range) {
+    const existing = await prisma.contingencia_eventos.findMany({ where: { fecha: range }, include: { atencion: true, traslado: true, persona: true, diagnostico: true, cierre: true } });
+    const fields = Object.keys(rowToDto({}));
+    const signatures = new Set(existing.map(event => importFingerprint(fields, { ...event, ...event.atencion, ...event.traslado, ...event.persona, ...event.diagnostico, ...event.cierre })));
+    rows.forEach((row, index) => { if (signatures.has(importFingerprint(fields, rowToDto(row)))) duplicateRows.add(index + 2); });
+  }
+
 
   const parsed: Array<{ row: number; dto: CreateContingenciaDto; valid: boolean }> = [];
   const validRows: ContingenciaRow[] = [];
@@ -331,10 +344,22 @@ async function buildPreview(payload: { filename: string | null; rows: Contingenc
     if (isEmptyRow(row)) return;
 
     const dto = rowToDto(row);
-    const isValid = validateField(row, rowNumber, issues);
+    let isValid = validateField(row, rowNumber, issues);
+    for (const field of Object.keys(ALIASES).filter(field => field.startsWith("hora"))) {
+      const value = getFieldValue(row, field);
+      if (value && !parseTime(value)) { isValid = false; addIssue(issues, { row: rowNumber, field, severity: "error", message: "Hora inválida. Usa HH:MM.", value: null }); }
+    }
+    for (const [start, end] of [["hora_llamado_pco_sppa", "hora_llegada_spaa"], ["hora_inicio_spaa", "hora_termino_atencion_inicio_traslado"], ["hora_llamado_ambulancia", "hora_llegada_estacion"]]) {
+      if (Boolean(getFieldValue(row, start!)) !== Boolean(getFieldValue(row, end!))) addIssue(issues, { row: rowNumber, field: ALIASES[end!]?.[0] ?? end!, severity: "warning", message: "Intervalo incompleto: falta una hora de inicio o fin para calcular este tiempo de atención.", value: null });
+    }
+    const validated = createContingenciaSchema.safeParse(dto);
+    if (!validated.success) {
+      isValid = false;
+      for (const issue of validated.error.issues) addIssue(issues, { row: rowNumber, field: issue.path.join("."), severity: "error", message: "Valor inválido para este campo; revisa el formato y los límites de la plantilla.", value: null });
+    }
 
     if (duplicateRows.has(rowNumber)) {
-      addIssue(issues, { row: rowNumber, field: "Fecha/Tipo", severity: "warning", message: "Registro duplicado en el archivo.", value: dto.tipo_evento });
+      addIssue(issues, { row: rowNumber, field: "Fecha/Tipo", severity: "warning", message: "Registro duplicado en el archivo o ya almacenado; se omitirá.", value: dto.tipo_evento });
     }
 
     parsed.push({ row: rowNumber, dto, valid: isValid });
@@ -371,7 +396,7 @@ async function buildPreview(payload: { filename: string | null; rows: Contingenc
       errores,
       advertencias,
     },
-    issues,
+    issues: issues.map(issue => ({ ...issue, value: null })),
     cases,
     canImport: errores === 0 && validRows.length > 0,
     requiredColumns: REQUIRED_COLUMNS,
@@ -379,22 +404,19 @@ async function buildPreview(payload: { filename: string | null; rows: Contingenc
   };
 }
 
-async function importContingencias(filename: string, rows: ContingenciaRow[], userId: number): Promise<ImportacionResult> {
+async function importContingencias(filename: string, rows: ContingenciaRow[], userId: number, hoja?: string): Promise<ImportacionResult> {
   const preview = await buildPreview({ filename, rows });
 
   if (!preview.canImport) {
     throw new Error("El archivo tiene errores de validación. Corrige los datos antes de importar.");
   }
 
-  const validRows = rows.filter((row) => {
-    if (isEmptyRow(row)) return false;
-    return validateField(row, 0, []);
-  });
+  const validRows = preview.cases.filter(item => item.status === "valid").map(item => ({ row: rows[item.row - 2]!, rowNumber: item.row }));
 
   let importados = 0;
   const importErrors: ImportacionIssue[] = [];
   const actor = { id_usuario: userId, correo: "importacion", rol: null, rol_nombre: "Admin" };
-  const carga = await ImportacionHistorialService.iniciar("contingencias", filename, userId, rows.length);
+  const carga = await ImportacionHistorialService.iniciar("contingencias", filename, userId, rows.length, hoja);
 
   const lotes = Array.from({ length: Math.ceil(validRows.length / INSERT_CHUNK) }, (_, i) =>
     validRows.slice(i * INSERT_CHUNK, (i + 1) * INSERT_CHUNK)
@@ -402,16 +424,15 @@ async function importContingencias(filename: string, rows: ContingenciaRow[], us
 
   for (const lote of lotes) {
     const promises: Promise<void>[] = [];
-    for (const row of lote) {
+    for (const { row, rowNumber } of lote) {
       promises.push((async () => {
         try {
           const dto = rowToDto(row);
           const parsed = createContingenciaSchema.parse(dto);
           await ContingenciaRepository.create(parsed, actor.id_usuario, { preserveImportedValues: true, idImportacion: carga.id_importacion });
           importados++;
-        } catch (error) {
-          const msg = error instanceof Error ? error.message : String(error);
-          importErrors.push({ row: 0, field: "General", severity: "error", message: msg, value: null });
+        } catch {
+          importErrors.push({ row: rowNumber, field: "Guardado", severity: "error", message: "No se pudo guardar esta fila. Revalida antes de reintentar.", value: null });
         }
       })());
 
@@ -427,6 +448,9 @@ async function importContingencias(filename: string, rows: ContingenciaRow[], us
 
   const result = {
     ...preview,
+    canImport: false,
+    resumen: { ...preview.resumen, errores: preview.resumen.errores + importErrors.length },
+    cases: preview.cases.map(item => importErrors.some(issue => issue.row === item.row) ? { ...item, status: "error" as const } : item),
     imported: {
       casos: 0,
       eventos: importados,
@@ -445,7 +469,7 @@ export class ImportacionContingenciasService {
     return buildPreview({ filename, rows });
   }
 
-  static async importarContingencias(filename: string, rows: ContingenciaRow[], userId: number): Promise<ImportacionResult> {
-    return importContingencias(filename, rows, userId);
+  static async importarContingencias(filename: string, rows: ContingenciaRow[], userId: number, hoja?: string): Promise<ImportacionResult> {
+    return withImportLock("contingencias", () => importContingencias(filename, rows, userId, hoja));
   }
 }

@@ -6,7 +6,7 @@ const ENDPOINTS: Record<ImportacionTipo, { validar: string; importar: string; qu
   casos: {
     validar: "/importacion/casos/validar",
     importar: "/importacion/casos/importar",
-    queryKeys: ["cases", "reports", "dashboard", "auditoria", "importaciones-historial"],
+    queryKeys: ["planes", "planes-caso", "planes-paginado", "cases", "reports", "dashboard", "auditoria", "importaciones-historial"],
   },
   monitoreo: {
     validar: "/importacion/monitoreo/validar",
@@ -52,11 +52,11 @@ export function useImportarCasos() {
   return useImportarRegistros("casos");
 }
 
-export function useHistorialImportaciones() {
+export function useHistorialImportaciones(page = 1) {
   return useQuery({
-    queryKey: ["importaciones-historial"],
+    queryKey: ["importaciones-historial", page],
     queryFn: async () => {
-      const { data } = await api.get<ApiEnvelope<{ items: ImportacionHistorialItem[]; total: number }>>("/importacion/historial");
+      const { data } = await api.get<ApiEnvelope<{ items: ImportacionHistorialItem[]; total: number }>>("/importacion/historial", { params: { page, limit: 20 } });
       if (!data.data) throw new Error("La API no devolvió el historial");
       return data.data;
     },
@@ -72,7 +72,7 @@ export function useRevertirImportacion() {
       return data.data;
     },
     onSuccess: async () => {
-      await Promise.all(["importaciones-historial", "cases", "eventos", "contingencias", "auditoria"].map(key => client.invalidateQueries({ queryKey: [key] })));
+      await Promise.all(["planes", "planes-caso", "planes-paginado", "dashboard", "reports", "eventos-paginado", "evento-counts", "importaciones-historial", "cases", "eventos", "contingencias", "auditoria"].map(key => client.invalidateQueries({ queryKey: [key] })));
     },
   });
 }

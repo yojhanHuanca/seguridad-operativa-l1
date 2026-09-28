@@ -11,6 +11,13 @@ const cellSchema = z.union([z.string(), z.number(), z.boolean(), z.null(), z.und
 const payloadSchema = z.object({
   filename: z.string().trim().max(255).optional().nullable(),
   rows: z.array(z.record(z.string(), cellSchema)).min(1).max(100000),
+  hoja: z.string().trim().max(255).optional(),
+  decisionesSop: z.array(z.object({
+    codigo: z.string().min(1).max(30),
+    accion: z.enum(["asignar", "cerrar", "planes"]),
+    motivo: z.string().trim().min(10).max(500),
+    planes: z.array(z.object({ row: z.number().int().min(2), estado: z.enum(["Enviado", "En Ejecución", "Cerrado"]) })).max(100000).optional(),
+  })).max(100000).optional(),
 });
 
 function parsePayload(body: unknown) {
@@ -18,6 +25,8 @@ function parsePayload(body: unknown) {
   return {
     filename: parsed.filename?.trim() || null,
     rows: parsed.rows,
+    hoja: parsed.hoja,
+    decisionesSop: parsed.decisionesSop,
   };
 }
 
@@ -93,7 +102,7 @@ export class ImportacionController {
       if (!req.user?.id_usuario) return res.status(401).json(ApiResponse.error("Token inválido"));
       const payload = parsePayload(req.body);
       const filename = payload.filename ?? "";
-      const resultado = await ImportacionContingenciasService.importarContingencias(filename, payload.rows, req.user.id_usuario);
+      const resultado = await ImportacionContingenciasService.importarContingencias(filename, payload.rows, req.user.id_usuario, payload.hoja);
       return res.status(201).json(ApiResponse.success("Importación completada correctamente", resultado));
     } catch (error) {
       if (isZodError(error)) {
@@ -121,7 +130,7 @@ export class ImportacionController {
       if (!req.user?.id_usuario) return res.status(401).json(ApiResponse.error("Token inválido"));
       const payload = parsePayload(req.body);
       const filename = payload.filename ?? "";
-      const resultado = await ImportacionMonitoreoService.importarMonitoreo(filename, payload.rows, req.user.id_usuario);
+      const resultado = await ImportacionMonitoreoService.importarMonitoreo(filename, payload.rows, req.user.id_usuario, payload.hoja);
       return res.status(201).json(ApiResponse.success("Importación completada correctamente", resultado));
     } catch (error) {
       if (isZodError(error)) {

@@ -1,3 +1,6 @@
+import { ImportacionHeader } from "@/features/importacion/ImportacionHeader";
+import "@/features/importacion/importacion-editor.css";
+import { SopImportActions } from "@/features/importacion/SopImportActions";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -19,7 +22,7 @@ import { IMPORTACION_MODULOS } from "@/features/importacion/importacionConfig";
 import { apiErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useHistorialImportaciones, useImportarRegistros, useRevertirImportacion, useValidarImportacion } from "@/features/importacion/hooks/useImportacion";
-import type { ImportacionPayload, ImportacionPreview, ImportacionResult, ImportacionRow, ImportacionTipo } from "@/features/importacion/types";
+import type { DecisionSop, ImportacionPayload, ImportacionPreview, ImportacionResult, ImportacionRow, ImportacionTipo } from "@/features/importacion/types";
 import {
   cellToImportText,
   downloadErrorWorkbook,
@@ -76,7 +79,7 @@ function parseCsv(text: string): string[][] {
     rows.push(row);
   }
 
-  return rows.filter((item) => item.some((value) => value.trim() !== ""));
+  return rows;
 }
 
 function matrixToSheet(name: string, matrix: string[][]): ImportSheet {
@@ -87,7 +90,7 @@ function matrixToSheet(name: string, matrix: string[][]): ImportSheet {
       record[header] = row[index]?.trim() ?? "";
       return record;
     }, {});
-    if (Object.values(item).some((value) => String(value ?? "").trim() !== "")) acc.push(item);
+    acc.push(item);
     return acc;
   }, []);
   return { name, headers, rows };
@@ -95,16 +98,75 @@ function matrixToSheet(name: string, matrix: string[][]): ImportSheet {
 
 async function parseXlsx(file: File): Promise<ImportSheet[]> {
   const ExcelJS = await import("exceljs");
-  const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.load(await file.arrayBuffer());
+  const source = await file.arrayBuffer();
+  let workbook = new ExcelJS.Workbook();
+  try {
+    await workbook.xlsx.load(source);
+  } catch {
+    // Algunos generadores válidos de XLSX usan el prefijo "x:" para el
+    // namespace principal y rutas de relación absolutas. ExcelJS no reconoce
+    // esas variantes aunque Excel sí. Normalizamos solo el paquete OOXML y
+    // volvemos a leerlo para que la importación admita ambos formatos.
+    try {
+      const JSZip = (await import("jszip")).default;
+      const archive = await JSZip.loadAsync(source);
+      const xmlEntries = Object.keys(archive.files).filter((name) => name.endsWith(".xml"));
+      await Promise.all(xmlEntries.map(async (name) => {
+        const entry = archive.file(name);
+        if (!entry) return;
+        let xml = await entry.async("string");
+        const spreadsheetNamespace = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
+        if (xml.includes(`xmlns:x="${spreadsheetNamespace}"`)) {
+          if (xml.includes(`xmlns="${spreadsheetNamespace}"`)) {
+            xml = xml.replace(`xmlns:x="${spreadsheetNamespace}"`, "");
+          } else {
+            xml = xml.replace(`xmlns:x="${spreadsheetNamespace}"`, `xmlns="${spreadsheetNamespace}"`);
+          }
+          xml = xml.replace(/(<\/?)(x:)/g, "$1");
+        }
+
+        if (name.endsWith(".rels") && name.includes("/_rels/")) {
+          const sourceDirectory = name.slice(0, name.indexOf("/_rels/"));
+          const from = sourceDirectory.split("/").filter(Boolean);
+          xml = xml.replace(/Target="(\/[^"]+)"/g, (_match, target: string) => {
+            const to = target.slice(1).split("/").filter(Boolean);
+            let common = 0;
+            while (common < from.length && common < to.length && from[common] === to[common]) common += 1;
+            return `Target="${[...Array(from.length - common).fill(".."), ...to.slice(common)].join("/")}"`;
+          });
+        }
+
+        // Las tablas con formato de Excel solo decoran un rango y no cambian
+        // los valores que importa SIGMA. ExcelJS falla con algunas rutas de
+        // relación de esas tablas, así que quitamos esa metadata del paquete
+        // temporal que leemos (nunca se modifica el archivo del usuario).
+        if (name.endsWith(".rels")) {
+          xml = xml.replace(/<Relationship\b(?=[^>]*\bType="[^"]*\/table")[^>]*(?:\/>|>[\s\S]*?<\/Relationship>)/g, "");
+        }
+        if (name.startsWith("xl/worksheets/") && name.endsWith(".xml")) {
+          xml = xml.replace(/<tableParts\b[^>]*(?:\/>|>[\s\S]*?<\/tableParts>)/g, "");
+        }
+        if (name === "[Content_Types].xml") {
+          xml = xml.replace(/<Override\b(?=[^>]*\bPartName="\/xl\/tables\/)[^>]*\/>/g, "");
+        }
+        archive.file(name, xml);
+      }));
+      Object.keys(archive.files).filter((name) => name.startsWith("xl/tables/")).forEach((name) => archive.remove(name));
+
+      workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(await archive.generateAsync({ type: "arraybuffer" }));
+    } catch {
+      throw new Error("No se pudo leer el libro de Excel. Vuelve a guardarlo como .xlsx y revisa que no esté dañado o protegido.");
+    }
+  }
   const sheets = workbook.worksheets.flatMap((worksheet) => {
     const matrix: string[][] = [];
-    worksheet.eachRow({ includeEmpty: false }, (sheetRow) => {
+    worksheet.eachRow({ includeEmpty: true }, (sheetRow) => {
       const rowValues: string[] = [];
       sheetRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
         rowValues[colNumber - 1] = cellToImportText(cell.value);
       });
-      if (rowValues.some(Boolean)) matrix.push(rowValues);
+      matrix.push(rowValues);
     });
     return matrix.length > 1 ? [matrixToSheet(worksheet.name, matrix)] : [];
   });
@@ -126,7 +188,7 @@ async function parseFile(file: File): Promise<ParsedImportFile> {
 function payloadFromParsed(parsed: ParsedImportFile | null, sheetIndex: number): ImportacionPayload | null {
   const sheet = parsed?.sheets[sheetIndex];
   if (!parsed || !sheet) return null;
-  return { filename: parsed.filename, rows: sheet.rows };
+  return { filename: parsed.filename, hoja: sheet.name, rows: sheet.rows };
 }
 
 function detectImportType(rows: ImportacionRow[]): ImportacionTipo | null {
@@ -166,7 +228,7 @@ function ValidationBadge({ preview }: { preview: ImportacionPreview | null }) {
   if (!preview.canImport && preview.resumen.duplicados > 0) {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-50 px-2.5 py-1 text-[12px] font-semibold text-amber-700 ring-1 ring-amber-200">
-        <AlertTriangle className="h-3.5 w-3.5" /> Sin casos nuevos
+        <AlertTriangle className="h-3.5 w-3.5" /> Sin registros nuevos
       </span>
     );
   }
@@ -180,9 +242,9 @@ function ValidationBadge({ preview }: { preview: ImportacionPreview | null }) {
 function ResultBanner({ result }: { result: ImportacionResult | null }) {
   if (!result) return null;
   return (
-    <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13px] text-emerald-800">
+    <div className={cn("mt-4 flex flex-wrap items-center gap-3 rounded-lg border px-4 py-3 text-[13px]", result.resumen.errores ? "border-amber-200 bg-amber-50 text-amber-900" : "border-emerald-200 bg-emerald-50 text-emerald-800")}>
       <CheckCircle2 className="h-4 w-4 shrink-0" />
-      <span className="font-semibold">Importación completada:</span>
+      <span className="font-semibold">{result.resumen.errores ? "Importación con errores:" : "Importación completada:"}</span><span>{result.resumen.errores} errores · {result.imported.skipped} omitidos</span>
       <span>{result.imported.casos} casos</span>
       <span>{result.imported.eventos} eventos</span>
       <span>{result.imported.planes} planes</span>
@@ -190,7 +252,7 @@ function ResultBanner({ result }: { result: ImportacionResult | null }) {
   );
 }
 
-function CellPreview({ sheet, preview }: { sheet: ImportSheet; preview: ImportacionPreview }) {
+function CellPreview({ sheet, preview, sensitive }: { sheet: ImportSheet; preview: ImportacionPreview; sensitive: boolean }) {
   const visibleHeaders = sheet.headers.slice(0, 12);
   const visibleRows = sheet.rows.slice(0, 100);
   const issueMap = new Map<string, typeof preview.issues>();
@@ -216,7 +278,7 @@ function CellPreview({ sheet, preview }: { sheet: ImportSheet; preview: Importac
               const warning = issues.find(issue => issue.severity === "warning");
               const title = (error ?? warning)?.message;
               return <td key={header} title={title} className={cn("max-w-[260px] px-3 py-2 align-top", error ? "bg-red-50 text-red-800 ring-1 ring-inset ring-red-200" : warning ? "bg-amber-50 text-amber-800" : value ? "bg-emerald-50/45 text-ink" : "bg-slate-50 text-ink-faint")}>
-                <span className="block max-w-[240px] truncate">{value || "Vacío"}</span>{title && <span className="mt-1 block max-w-[240px] text-[10.5px] font-medium">{title}</span>}
+                <span className="block max-w-[240px] truncate">{value ? sensitive ? "Dato protegido" : value : "Vacío"}</span>{title && <span className="mt-1 block max-w-[240px] text-[10.5px] font-medium">{title}</span>}
               </td>;
             })}
           </tr>)}</tbody>
@@ -233,20 +295,24 @@ export function AdminImportacionPage() {
   const [sheetIndex, setSheetIndex] = useState(0);
   const [preview, setPreview] = useState<ImportacionPreview | null>(null);
   const [result, setResult] = useState<ImportacionResult | null>(null);
+  const [decisions, setDecisions] = useState<DecisionSop[]>([]);
+  const [dirty, setDirty] = useState(false);
+  const [historyPage, setHistoryPage] = useState(1);
   const [confirming, setConfirming] = useState(false);
   const [revertingId, setRevertingId] = useState<number | null>(null);
   const [revertReason, setRevertReason] = useState("");
   const [parseError, setParseError] = useState<string | null>(null);
+  const [parsing, setParsing] = useState(false);
   const [tipoImportacion, setTipoImportacion] = useState<ImportacionTipo>("casos");
   const modulo = IMPORTACION_MODULOS[tipoImportacion];
   const validar = useValidarImportacion(tipoImportacion);
   const importar = useImportarRegistros(tipoImportacion);
-  const historial = useHistorialImportaciones();
+  const historial = useHistorialImportaciones(historyPage);
   const revertir = useRevertirImportacion();
 
   const selectedSheet = parsed?.sheets[sheetIndex] ?? null;
-  const payload = useMemo(() => payloadFromParsed(parsed, sheetIndex), [parsed, sheetIndex]);
-  const pending = validar.isPending || importar.isPending;
+  const payload = useMemo(() => { const source = payloadFromParsed(parsed, sheetIndex); return source ? { ...source, decisionesSop: tipoImportacion === "casos" ? decisions : undefined } : null; }, [parsed, sheetIndex, decisions, tipoImportacion]);
+  const pending = parsing || validar.isPending || importar.isPending;
   const serverError = validar.error
     ? apiErrorMessage(validar.error, "No se pudo validar el archivo")
     : importar.error
@@ -259,6 +325,8 @@ export function AdminImportacionPage() {
     setParsed(null);
     setSheetIndex(0);
     setPreview(null);
+    setDecisions([]);
+    setDirty(false);
     setResult(null);
     setConfirming(false);
     setParseError(null);
@@ -269,8 +337,11 @@ export function AdminImportacionPage() {
 
   async function handleFileChange(file: File | undefined) {
     if (!file) return;
+    setParsing(true);
     setParseError(null);
     setPreview(null);
+    setDecisions([]);
+    setDirty(false);
     setResult(null);
     validar.reset();
     importar.reset();
@@ -286,7 +357,7 @@ export function AdminImportacionPage() {
     } catch (error) {
       setParsed(null);
       setParseError(error instanceof Error ? error.message : "No se pudo leer el archivo");
-    } finally { if (inputRef.current) inputRef.current.value = ""; }
+    } finally { setParsing(false); if (inputRef.current) inputRef.current.value = ""; }
   }
 
   async function handleValidate() {
@@ -294,13 +365,14 @@ export function AdminImportacionPage() {
     setResult(null);
     validar.reset();
     importar.reset();
-    const validation = await validar.mutateAsync(payload);
-    setPreview(validation);
+    try { const validation = await validar.mutateAsync(payload); setPreview(validation); setDirty(false); } catch { /* Mutation error is rendered above. */ }
   }
 
   function handleSheetChange(index: number) {
     setSheetIndex(index);
     setPreview(null);
+    setDecisions([]);
+    setDirty(false);
     setResult(null);
     setConfirming(false);
     validar.reset();
@@ -310,19 +382,21 @@ export function AdminImportacionPage() {
   }
 
   async function handleImport() {
-    if (!payload || !preview?.canImport) return;
+    if (!payload || !preview?.canImport || dirty) return;
+    try {
     const imported = await importar.mutateAsync(payload);
     setResult(imported);
     setPreview(imported);
     setConfirming(false);
     const totalImportados = imported.imported.eventos + imported.imported.casos + imported.imported.planes;
-    toast.success("Importación completada correctamente", {
-      description: `${totalImportados.toLocaleString("es-PE")} registro${totalImportados === 1 ? "" : "s"} de ${modulo.label} importado${totalImportados === 1 ? "" : "s"}. Los datos fueron guardados sin recalcularse.`,
+    (imported.resumen.errores ? toast.warning : toast.success)(imported.resumen.errores ? "Importación con errores: revisa las filas indicadas" : "Importación completada correctamente", {
+      description: `${totalImportados.toLocaleString("es-PE")} registro${totalImportados === 1 ? "" : "s"} de ${modulo.label} importado${totalImportados === 1 ? "" : "s"}. Revisa el resumen de la carga.`,
       duration: 6000,
     });
+    } catch { setConfirming(false); }
   }
 
-  const importBlockedReason = !preview
+  const importBlockedReason = dirty ? "Hay decisiones pendientes: pulsa Validar antes de importar." : !preview
     ? "Primero valida la hoja seleccionada."
     : preview.resumen.errores > 0
       ? `Corrige ${preview.resumen.errores} error${preview.resumen.errores === 1 ? "" : "es"} antes de importar.`
@@ -332,52 +406,25 @@ export function AdminImportacionPage() {
 
   return (
     <AdminShell>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <p className="text-[12.5px] text-ink-quiet">{modulo.description}</p>
-        <ValidationBadge preview={preview} />
-      </div>
+      <div className="import-workspace">
+      <ImportacionHeader />
+      <div className="import-module-tabs" role="tablist" aria-label="Módulo de importación">{(Object.keys(IMPORTACION_MODULOS) as ImportacionTipo[]).map(tipo => <button key={tipo} role="tab" aria-selected={tipoImportacion === tipo} disabled={pending} onClick={() => cambiarTipoImportacion(tipo)}>{tipo === "monitoreo" ? "Monitoreo" : IMPORTACION_MODULOS[tipo].label}</button>)}</div>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-ink-quiet">{modulo.description}</p>{!result && !dirty && <ValidationBadge preview={preview} />}</div>
 
-      <div className="mt-5 grid gap-2 md:grid-cols-3">
-        {(Object.keys(IMPORTACION_MODULOS) as ImportacionTipo[]).map((tipo) => (
-          <button
-            key={tipo}
-            type="button"
-            onClick={() => cambiarTipoImportacion(tipo)}
-            className={cn(
-              "rounded-xl border px-4 py-3 text-left transition-all",
-              tipoImportacion === tipo
-                ? "border-brand-700 bg-brand-700 text-white shadow-sm"
-                : "border-line bg-white text-ink-soft hover:border-brand-200 hover:bg-brand-50"
-            )}
-          >
-            <span className="block text-sm font-semibold">{IMPORTACION_MODULOS[tipo].label}</span>
-            <span className={cn("mt-1 block text-xs", tipoImportacion === tipo ? "text-white/80" : "text-ink-quiet")}>Importar datos para este módulo</span>
-          </button>
-        ))}
-      </div>
-
-      {(tipoImportacion === "monitoreo" || tipoImportacion === "contingencias") && (
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-brand-100 bg-brand-50/60 px-4 py-3">
-          <div>
-            <p className="text-[13px] font-semibold text-ink">Plantilla oficial de {modulo.label}</p>
-            <p className="mt-0.5 text-[12px] text-ink-quiet">Incluye instrucciones, encabezados reconocidos y una fila de ejemplo.</p>
-          </div>
-          <Button type="button" variant="outline" onClick={() => void downloadOfficialTemplate(tipoImportacion)}>
-            <Download className="h-4 w-4" /> Descargar plantilla
-          </Button>
-        </div>
-      )}
-
-      <Card className="mt-5 gap-0 overflow-hidden rounded-lg border border-line bg-white p-0">
-        <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="border-b border-line-soft p-5 lg:border-b-0 lg:border-r">
-            <label className="flex min-h-[158px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-line-strong bg-surface px-4 py-6 text-center transition-colors hover:border-brand-600 hover:bg-brand-50/40">
+      <div className="import-desk">
+      <aside className="import-source">
+      <Card className="import-upload-card gap-0 overflow-hidden border-0 bg-white p-0 shadow-none">
+        <div className="import-section-heading"><div><h2>Archivo de origen</h2><p>Selecciona el documento y revisa la hoja antes de iniciar la carga.</p></div><FileSpreadsheet className="h-5 w-5 text-ink-faint" /></div>
+        <div>
+          <div className="p-5 pb-0">
+            <label className="flex min-h-[170px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-line-strong bg-surface px-4 py-6 text-center transition-colors hover:border-brand-600 hover:bg-brand-50/40">
               <UploadCloud className="h-8 w-8 text-brand-700" />
-              <span className="mt-3 text-[14px] font-semibold text-ink">Seleccionar archivo</span>
-              <span className="mt-1 text-[12px] text-ink-quiet">CSV, XLSX o XLSM · máximo 100 000 filas</span>
+              <span className="import-file-button">Seleccionar archivo</span>
+              <span className="mt-1 text-[12px] text-ink-quiet">CSV, XLSX o XLSM · hasta 100 000 filas</span>
               <input
                 ref={inputRef}
                 type="file"
+                disabled={pending}
                 accept=".csv,.xlsx,.xlsm"
                 className="sr-only"
                 onChange={(event) => {
@@ -394,11 +441,11 @@ export function AdminImportacionPage() {
                 </div>
                 <label className="block max-w-xl">
                   <span className="mb-1.5 block font-medium text-ink">Hoja que se importará</span>
-                  <select value={sheetIndex} onChange={event => handleSheetChange(Number(event.target.value))} className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink">
+                  <select disabled={pending} value={sheetIndex} onChange={event => handleSheetChange(Number(event.target.value))} className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink">
                     {parsed.sheets.map((sheet, index) => <option key={`${sheet.name}-${index}`} value={index}>{sheet.name} — {sheet.rows.length} filas — {sheet.headers.length} columnas</option>)}
                   </select>
                 </label>
-                {selectedSheet && <p className="text-ink-quiet">Columnas encontradas: {selectedSheet.headers.join(", ")}</p>}
+                {selectedSheet && <p className="text-ink-quiet">{selectedSheet.headers.length} columnas detectadas</p>}
               </div>
             )}
             {(parseError || serverError) && (
@@ -416,25 +463,48 @@ export function AdminImportacionPage() {
                 {validar.isPending ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                 Validar
               </Button>
-              <Button type="button" onClick={() => setConfirming(true)} disabled={!payload || !preview?.canImport || pending}>
+              <Button type="button" onClick={() => setConfirming(true)} disabled={!payload || !preview?.canImport || pending || dirty}>
                 {importar.isPending ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
                 {modulo.importButton}
               </Button>
             </div>
             {importBlockedReason && <p className="mt-2 text-[12px] font-medium text-amber-700">{importBlockedReason}</p>}
-            <div className="mt-4 rounded-lg border border-line bg-surface p-3 text-[12px] text-ink-quiet">
+            <details className="mt-4 rounded-lg border border-line bg-surface p-3 text-[12px] text-ink-quiet"><summary className="cursor-pointer font-semibold text-ink-soft">Requisitos del archivo</summary>
               <p className="font-medium text-ink-soft">Columnas obligatorias</p>
               <p className="mt-1">{preview?.requiredColumns.join(", ") ?? modulo.requiredFallback}</p>
               <p className="mt-3 font-medium text-ink-soft">Columnas opcionales reconocidas</p>
               <p className="mt-1">
                 {preview?.optionalColumns.join(", ") ?? modulo.optionalFallback}
               </p>
-            </div>
+            </details>
           </div>
         </div>
       </Card>
 
+      {(tipoImportacion === "monitoreo" || tipoImportacion === "contingencias") && (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-brand-100 bg-brand-50/60 px-4 py-3">
+          <div>
+            <p className="text-[13px] font-semibold text-ink">Plantilla oficial de {modulo.label}</p>
+            <p className="mt-0.5 text-[12px] text-ink-quiet">Incluye instrucciones, encabezados reconocidos y una fila de ejemplo.</p>
+          </div>
+          <Button type="button" variant="outline" onClick={() => void downloadOfficialTemplate(tipoImportacion)}>
+            <Download className="h-4 w-4" /> Descargar plantilla
+          </Button>
+        </div>
+      )}
+
+      </aside>
+      <section className="import-review">
+        <div className="import-review-heading"><div><span className="import-kicker">REVISIÓN DE LA CARGA</span><h2>{preview ? "Resultados y decisiones" : "Prepara tus registros"}</h2></div><span className="import-status-dot">{result ? "Finalizada" : dirty ? "Cambios por validar" : preview ? "Validado" : "Pendiente"}</span></div>
+        {!preview && <div className="import-review-empty"><div className="import-file-visual" aria-hidden="true"><FileSpreadsheet size={32} strokeWidth={1.3} /><span>CSV / EXCEL</span></div><h3>Todo listo para revisar tu archivo</h3><p>Selecciona el archivo de origen y pulsa <strong>Validar</strong>.<br />Aquí podrás revisar los registros antes de confirmar la carga.</p><div className="import-review-checks">{(tipoImportacion === "casos" ? ["Selecciona uno o varios SOP pendientes", "Asigna responsables o cambia el estado de los planes", "Prepara el cierre de SOP resueltos internamente"] : tipoImportacion === "monitoreo" ? ["Comprueba los campos y catálogos operativos", "Identifica registros duplicados", "Revisa las observaciones de cada fila"] : ["Revisa fechas y tiempos de atención", "Identifica duplicados y datos incompletos", "Consulta el diagnóstico con datos personales protegidos"]).map(text => <div key={text}><CheckCircle2 size={16} /><span>{text}</span></div>)}</div></div>}
+        {preview && tipoImportacion !== "casos" && <div className="import-review-summary"><strong>{preview.resumen.listos} registros listos</strong><p>{preview.resumen.duplicados} duplicados omitidos · {preview.resumen.errores} errores · {preview.resumen.advertencias} advertencias</p><p>Revisa el detalle de las filas y confirma la carga desde el panel de archivo.</p></div>}
       <ResultBanner result={result} />
+      {tipoImportacion === "contingencias" && <p className="mt-4 rounded border border-amber-200 bg-amber-50 p-4 text-sm">Esta carga contiene información personal y clínica. La vista previa oculta los valores del archivo y el diagnóstico descargable contiene únicamente referencias de fila y campo.</p>}
+      {tipoImportacion === "casos" && preview && !result && <SopImportActions preview={preview} decisions={decisions} disabled={pending} needsValidation={dirty} onChange={value => { setDecisions(value); setDirty(true); toast.info("Decisión preparada. Valida para revisar el resultado antes de importar."); }} />}
+
+        <div className="import-review-foot"><CheckCircle2 size={15} /><span>Se conservan los códigos de origen. Cada carga queda registrada en el historial.</span></div>
+      </section>
+      </div>
 
       {confirming && preview && selectedSheet && (
         <div role="dialog" aria-modal="true" aria-labelledby="confirmar-importacion" className="fixed inset-0 z-50 grid place-items-center bg-black/45 p-4">
@@ -449,7 +519,7 @@ export function AdminImportacionPage() {
               <p><span className="block text-xs text-ink-quiet">Errores</span><strong className="text-ink">{preview.resumen.errores}</strong></p>
             </div>
             <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-[12.5px] text-emerald-900">
-              Se crearán {preview.resumen.listos} registros nuevos. No se modificarán registros existentes y los valores históricos se conservarán sin recalcularse.
+              Se crearán {preview.resumen.listos} registros nuevos. Se aplicarán las decisiones validadas a {decisions.length} SOP. Los códigos y registros existentes se conservarán.
             </div>
             <div className="mt-5 flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setConfirming(false)}>Cancelar</Button>
@@ -463,7 +533,7 @@ export function AdminImportacionPage() {
         <>
           <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
             <StatTile label="Filas" value={preview.resumen.totalFilas} />
-            <StatTile label="Casos" value={preview.resumen.casosDetectados} />
+            <StatTile label={tipoImportacion === "casos" ? "Casos" : "Eventos"} value={preview.resumen.casosDetectados} />
             <StatTile label="Listos" value={preview.resumen.listos} tone="good" />
             <StatTile label="Duplicados" value={preview.resumen.duplicados} tone={preview.resumen.duplicados > 0 ? "warn" : "neutral"} />
             <StatTile label="Planes" value={preview.resumen.planesDetectados} />
@@ -471,13 +541,13 @@ export function AdminImportacionPage() {
             <StatTile label="Errores" value={preview.resumen.errores} tone={preview.resumen.errores > 0 ? "bad" : "neutral"} />
           </div>
 
-          {selectedSheet && <CellPreview sheet={selectedSheet} preview={preview} />}
+          {selectedSheet && <CellPreview sheet={selectedSheet} preview={preview} sensitive={tipoImportacion === "contingencias"} />}
 
           {preview.issues.length > 0 && (
             <Card className="mt-5 overflow-hidden rounded-lg border border-line bg-white p-0">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-surface px-4 py-3">
                 <div><p className="text-[13px] font-semibold text-ink">Validación</p><p className="mt-0.5 text-[11.5px] text-ink-quiet">Corrige los errores antes de confirmar la carga.</p></div>
-                {parsed && <Button type="button" variant="outline" onClick={() => void downloadErrorWorkbook(parsed, sheetIndex, preview.issues)}><Download className="h-4 w-4" /> Descargar Excel con errores</Button>}
+                {parsed && <Button type="button" variant="outline" onClick={() => void downloadErrorWorkbook(parsed, sheetIndex, preview.issues)}><Download className="h-4 w-4" /> Descargar diagnóstico</Button>}
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[760px] text-left text-[12.5px]">
@@ -507,7 +577,7 @@ export function AdminImportacionPage() {
                         </td>
                         <td className="px-4 py-3 font-medium text-ink">{issue.field}</td>
                         <td className="px-4 py-3 text-ink-soft">{issue.message}</td>
-                        <td className="px-4 py-3 text-ink-quiet">{issue.value ?? "—"}</td>
+                        <td className="px-4 py-3 text-ink-quiet">{tipoImportacion === "contingencias" ? "Protegido" : issue.value ?? "—"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -570,7 +640,7 @@ export function AdminImportacionPage() {
         </>
       )}
 
-      <Card className="mt-6 overflow-hidden rounded-lg border border-line bg-white p-0">
+      <Card id="import-history" className="mt-6 overflow-hidden rounded-lg border border-line bg-white p-0">
         <div className="flex items-center gap-2 border-b border-line bg-surface px-4 py-3">
           <History className="h-4 w-4 text-brand-700" />
           <div><p className="text-[13px] font-semibold text-ink">Historial de importaciones</p><p className="mt-0.5 text-[11.5px] text-ink-quiet">Trazabilidad de archivos cargados y operaciones revertidas.</p></div>
@@ -591,6 +661,7 @@ export function AdminImportacionPage() {
         )}
       </Card>
 
+      <div className="mt-3 flex items-center justify-end gap-4 text-sm"><Button variant="outline" disabled={historyPage === 1 || historial.isFetching} onClick={() => setHistoryPage(page => page - 1)}>Anterior</Button><span>Página {historyPage}</span><Button variant="outline" disabled={historyPage * 20 >= (historial.data?.total ?? 0) || historial.isFetching} onClick={() => setHistoryPage(page => page + 1)}>Siguiente</Button></div>
       {revertingId !== null && (
         <div role="dialog" aria-modal="true" aria-labelledby="revertir-importacion" className="fixed inset-0 z-50 grid place-items-center bg-black/45 p-4">
           <div className="w-full max-w-lg rounded-xl border border-line bg-white p-6 shadow-2xl">
@@ -602,6 +673,7 @@ export function AdminImportacionPage() {
           </div>
         </div>
       )}
+      </div>
     </AdminShell>
   );
 }

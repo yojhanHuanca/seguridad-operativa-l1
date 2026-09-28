@@ -1,3 +1,5 @@
+import { withImportLock } from "./import-lock.js";
+import { importFingerprint, dateRange } from "./import-fingerprint.js";
 import prisma from "../../lib/prisma.js";
 import { EventoRepository } from "../eventos/evento.repository.js";
 import type { CreateEventoDto } from "../eventos/evento.types.js";
@@ -10,7 +12,7 @@ const INSERT_CHUNK = 500;
 const MAX_CONCURRENT = 10;
 
 function normalizeText(value: string): string {
-  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 120);
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
 function cleanCell(value: unknown): string {
@@ -58,8 +60,8 @@ function parseDate(value: string): Date | null {
     if (date.getUTCFullYear() !== year || date.getUTCMonth() + 1 !== month || date.getUTCDate() !== day) return null;
     return date;
   }
-  const fallback = new Date(raw);
-  return Number.isNaN(fallback.getTime()) ? null : fallback;
+  const local = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  return local ? parseDate(`${local[3]}-${local[2]}-${local[1]}`) : null;
 }
 
 function parseTime(value: string): string | null {
@@ -156,8 +158,7 @@ function rowToDto(row: MonitoreoRow): CreateEventoDto {
   };
 }
 
-function validarCatalogosCache(row: MonitoreoRow, catalogos: CatalogCache): void {
-  const CATALOGOS_POR_CAMPO: Record<string, string> = {
+const CATALOGOS_POR_CAMPO: Record<string, string> = {
     tipo_incidente: "Tipo de incidente operativo",
     ubicacion: "Ubicación",
     tipo_via: "Tipo de vía",
@@ -170,16 +171,6 @@ function validarCatalogosCache(row: MonitoreoRow, catalogos: CatalogCache): void
     posible_causa: "Posible Causa",
     rango_horario: "Rango horario",
   };
-
-  for (const [campo, codigoCatalogo] of Object.entries(CATALOGOS_POR_CAMPO)) {
-    const valorTexto = getFieldValue(row, campo);
-    if (!valorTexto) continue;
-    const existe = catalogos.catalogos[codigoCatalogo]?.[normalizeText(valorTexto)];
-    if (!existe) {
-      throw new Error(`El valor "${valorTexto.trim()}" no pertenece al catálogo "${codigoCatalogo}".`);
-    }
-  }
-}
 
 function validateField(row: MonitoreoRow, rowNumber: number, issues: ImportacionIssue[], catalogos: CatalogCache): boolean {
   let valid = true;
@@ -208,8 +199,15 @@ function validateField(row: MonitoreoRow, rowNumber: number, issues: Importacion
     }
   }
 
+  for (const [field, min, max] of [["anio", 1, 32767], ["mes", 1, 12], ["semana", 1, 53]] as const) {
+    const value = getFieldValue(row, field);
+    if (value && (!Number.isInteger(Number(value)) || Number(value) < min || Number(value) > max)) {
+      valid = false;
+      addIssue(issues, { row: rowNumber, field: ALIASES[field]?.[0] ?? field, severity: "error", value, message: `Se requiere un entero entre ${min} y ${max}.` });
+    }
+  }
   const demoraValue = getFieldValue(row, "demora");
-  if (demoraValue && Number.isNaN(Number(demoraValue))) {
+  if (demoraValue && (!Number.isFinite(Number(demoraValue)) || Math.abs(Number(demoraValue)) >= 100000000)) {
     addIssue(issues, { row: rowNumber, field: "Demora", severity: "error", message: "La demora debe ser un número válido.", value: demoraValue });
     valid = false;
   }
@@ -238,22 +236,24 @@ function validateField(row: MonitoreoRow, rowNumber: number, issues: Importacion
     valid = false;
   }
 
-  try {
-    validarCatalogosCache(row, catalogos);
-  } catch (error) {
-    addIssue(issues, { row: rowNumber, field: "catálogo", severity: "error", message: error instanceof Error ? error.message : "Valor no válido en catálogo", value: "" });
-    valid = false;
+  for (const [field, catalog] of Object.entries(CATALOGOS_POR_CAMPO)) {
+    const value = getFieldValue(row, field);
+    if (value && !catalogos.catalogos[catalog]?.[normalizeText(value)]) {
+      addIssue(issues, { row: rowNumber, field: ALIASES[field]?.[0] ?? field, severity: "error", message: `El valor no pertenece al catálogo ${catalog}.`, value });
+      valid = false;
+    }
   }
 
   return valid;
 }
 
-function findDuplicates(rows: MonitoreoRow[]): Set<number> {
+function findDuplicates(rows: MonitoreoRow[], catalogos: CatalogCache): Set<number> {
   const duplicateRows = new Set<number>();
   const seenRows = new Set<string>();
   rows.forEach((row, index) => {
     if (isEmptyRow(row)) return;
-    const signature = Object.keys(ALIASES).map((field) => normalizeText(getFieldValue(row, field))).join("|");
+    const dto = resolvedDto(row, catalogos);
+    const signature = importFingerprint(Object.keys(dto), dto);
     if (seenRows.has(signature)) duplicateRows.add(index + 2);
     seenRows.add(signature);
   });
@@ -291,12 +291,23 @@ async function buildPreview(payload: { filename: string | null; rows: MonitoreoR
   const { rows, filename } = payload;
 
   const columnasExcel = Object.keys(rows[0] || {}).map(normalizeText);
-  const faltantes = REQUIRED_COLUMNS.filter((col) => !columnasExcel.includes(normalizeText(col)));
+  const faltantes = REQUIRED_COLUMNS.filter((col) => !Object.values(ALIASES).find(aliases => aliases.some(alias => normalizeText(alias) === normalizeText(col)))?.some(alias => columnasExcel.includes(normalizeText(alias))));
   if (faltantes.length > 0) {
     throw new Error(`Faltan columnas obligatorias: ${faltantes.join(", ")}`);
   }
 
-  const duplicateRows = findDuplicates(rows);
+  const duplicateRows = findDuplicates(rows, catalogos);
+  const range = dateRange(rows.map(row => parseDate(getFieldValue(row, "fecha"))));
+  if (range) {
+    const existing = await prisma.eventos_monitoreo.findMany({ where: { fecha: range } });
+    const fields = Object.keys(resolvedDto({}, catalogos));
+    const signatures = new Set(existing.map(event => {
+      const record = event as unknown as Record<string, unknown>;
+      return importFingerprint(fields, Object.fromEntries(fields.map(field => [field, record[field.replace(/^id_/, "")]])));
+    }));
+    rows.forEach((row, index) => { if (signatures.has(importFingerprint(fields, resolvedDto(row, catalogos)))) duplicateRows.add(index + 2); });
+  }
+
 
   const parsed: Array<{ row: number; valid: boolean }> = [];
   const validRows: MonitoreoRow[] = [];
@@ -308,7 +319,7 @@ async function buildPreview(payload: { filename: string | null; rows: MonitoreoR
     const isValid = validateField(row, rowNumber, issues, catalogos);
 
     if (duplicateRows.has(rowNumber)) {
-      addIssue(issues, { row: rowNumber, field: "Fecha/Tipo", severity: "warning", message: "Registro duplicado en el archivo.", value: getFieldValue(row, "tipo_incidente") });
+      addIssue(issues, { row: rowNumber, field: "Fecha/Tipo", severity: "warning", message: "Registro duplicado en el archivo o ya almacenado; se omitirá.", value: getFieldValue(row, "tipo_incidente") });
     }
 
     parsed.push({ row: rowNumber, valid: isValid });
@@ -351,7 +362,7 @@ async function buildPreview(payload: { filename: string | null; rows: MonitoreoR
   };
 }
 
-async function importMonitoreo(filename: string, rows: MonitoreoRow[], userId: number): Promise<ImportacionResult> {
+async function importMonitoreo(filename: string, rows: MonitoreoRow[], userId: number, hoja?: string): Promise<ImportacionResult> {
   const catalogos = await loadCatalogos();
 
   const preview = await buildPreview({ filename, rows }, catalogos);
@@ -360,16 +371,13 @@ async function importMonitoreo(filename: string, rows: MonitoreoRow[], userId: n
     throw new Error("El archivo tiene errores de validación. Corrige los datos antes de importar.");
   }
 
-  const validRows = rows.filter((row) => {
-    if (isEmptyRow(row)) return false;
-    return validateField(row, 0, [], catalogos);
-  });
+  const validRows = preview.cases.filter(item => item.status === "valid").map(item => ({ row: rows[item.row - 2]!, rowNumber: item.row }));
 
   let importados = 0;
   const importErrors: ImportacionIssue[] = [];
 
   const actor = { id_usuario: userId, correo: "importacion", rol: null, rol_nombre: "Admin" };
-  const carga = await ImportacionHistorialService.iniciar("monitoreo", filename, userId, rows.length);
+  const carga = await ImportacionHistorialService.iniciar("monitoreo", filename, userId, rows.length, hoja);
 
   const lotes = Array.from({ length: Math.ceil(validRows.length / INSERT_CHUNK) }, (_, i) =>
     validRows.slice(i * INSERT_CHUNK, (i + 1) * INSERT_CHUNK)
@@ -377,53 +385,15 @@ async function importMonitoreo(filename: string, rows: MonitoreoRow[], userId: n
 
   for (const lote of lotes) {
     const promises: Promise<void>[] = [];
-    for (const row of lote) {
+    for (const { row, rowNumber } of lote) {
       promises.push((async () => {
         try {
-          const dto = rowToDto(row);
-
-          const tipoIncidenteValor = getFieldValue(row, "tipo_incidente");
-          const ubicacionValor = getFieldValue(row, "ubicacion");
-          const tipoViaValor = getFieldValue(row, "tipo_via");
-          const direccionViaValor = getFieldValue(row, "direccion_via");
-          const lugarIncidenteValor = getFieldValue(row, "lugar_incidente");
-          const modeloMrValor = getFieldValue(row, "modelo_mr");
-          const numeroMrValor = getFieldValue(row, "numero_mr");
-          const personalValor = getFieldValue(row, "personal_involucrado");
-          const tipoCausaValor = getFieldValue(row, "tipo_causa");
-          const posibleCausaValor = getFieldValue(row, "posible_causa");
-          const rangoHorarioValor = getFieldValue(row, "rango_horario");
-
-          const eventoDto: CreateEventoDto = {
-            fecha: dto.fecha,
-            hora: dto.hora,
-            id_tipo_incidente: catalogos.catalogos["Tipo de incidente operativo"]?.[normalizeText(tipoIncidenteValor)] ?? 0,
-            descripcion: dto.descripcion,
-            id_ubicacion: catalogos.catalogos["Ubicación"]?.[normalizeText(ubicacionValor)] ?? undefined,
-            id_tipo_via: catalogos.catalogos["Tipo de vía"]?.[normalizeText(tipoViaValor)] ?? undefined,
-            id_direccion_via: catalogos.catalogos["Dirección de vía"]?.[normalizeText(direccionViaValor)] ?? undefined,
-            id_lugar_incidente: catalogos.catalogos["Lugar de Incidente"]?.[normalizeText(lugarIncidenteValor)] ?? undefined,
-            id_modelo_mr: catalogos.catalogos["Modelo MR"]?.[normalizeText(modeloMrValor)] ?? undefined,
-            id_numero_mr: catalogos.catalogos["Nro. MR"]?.[normalizeText(numeroMrValor)] ?? undefined,
-            numero_carrera: dto.numero_carrera,
-            id_personal_involucrado: catalogos.catalogos["Personal o falla Involucrado"]?.[normalizeText(personalValor)] ?? undefined,
-            id_tipo_causa: catalogos.catalogos["Tipo Causa"]?.[normalizeText(tipoCausaValor)] ?? undefined,
-            id_posible_causa: catalogos.catalogos["Posible Causa"]?.[normalizeText(posibleCausaValor)] ?? undefined,
-            informacion_adicional: dto.informacion_adicional,
-            camara_monitoreada: dto.camara_monitoreada,
-            demora: dto.demora,
-            anio: dto.anio,
-            mes: dto.mes,
-            semana: dto.semana,
-            dia: dto.dia,
-            id_rango_horario: catalogos.catalogos["Rango horario"]?.[normalizeText(rangoHorarioValor)] ?? undefined,
-          };
+          const eventoDto = resolvedDto(row, catalogos);
 
           await EventoRepository.create(eventoDto, actor.id_usuario, { preserveImportedValues: true, idImportacion: carga.id_importacion });
           importados++;
-        } catch (error) {
-          const msg = error instanceof Error ? error.message : String(error);
-          importErrors.push({ row: 0, field: "General", severity: "error", message: msg, value: null });
+        } catch {
+          importErrors.push({ row: rowNumber, field: "Guardado", severity: "error", message: "No se pudo guardar esta fila. Revalida antes de reintentar.", value: null });
         }
       })());
 
@@ -439,6 +409,9 @@ async function importMonitoreo(filename: string, rows: MonitoreoRow[], userId: n
 
   const result = {
     ...preview,
+    canImport: false,
+    resumen: { ...preview.resumen, errores: preview.resumen.errores + importErrors.length },
+    cases: preview.cases.map(item => importErrors.some(issue => issue.row === item.row) ? { ...item, status: "error" as const } : item),
     imported: {
       casos: 0,
       eventos: importados,
@@ -458,7 +431,48 @@ export class ImportacionMonitoreoService {
     return buildPreview({ filename, rows }, catalogos);
   }
 
-  static async importarMonitoreo(filename: string, rows: MonitoreoRow[], userId: number): Promise<ImportacionResult> {
-    return importMonitoreo(filename, rows, userId);
+  static async importarMonitoreo(filename: string, rows: MonitoreoRow[], userId: number, hoja?: string): Promise<ImportacionResult> {
+    return withImportLock("monitoreo", () => importMonitoreo(filename, rows, userId, hoja));
   }
+}
+
+function resolvedDto(row: MonitoreoRow, catalogos: CatalogCache): CreateEventoDto {
+  const dto = rowToDto(row);
+
+  const tipoIncidenteValor = getFieldValue(row, "tipo_incidente");
+  const ubicacionValor = getFieldValue(row, "ubicacion");
+  const tipoViaValor = getFieldValue(row, "tipo_via");
+  const direccionViaValor = getFieldValue(row, "direccion_via");
+  const lugarIncidenteValor = getFieldValue(row, "lugar_incidente");
+  const modeloMrValor = getFieldValue(row, "modelo_mr");
+  const numeroMrValor = getFieldValue(row, "numero_mr");
+  const personalValor = getFieldValue(row, "personal_involucrado");
+  const tipoCausaValor = getFieldValue(row, "tipo_causa");
+  const posibleCausaValor = getFieldValue(row, "posible_causa");
+  const rangoHorarioValor = getFieldValue(row, "rango_horario");
+
+  return {
+    fecha: dto.fecha,
+    hora: dto.hora,
+    id_tipo_incidente: catalogos.catalogos["Tipo de incidente operativo"]?.[normalizeText(tipoIncidenteValor)] ?? 0,
+    descripcion: dto.descripcion,
+    id_ubicacion: catalogos.catalogos["Ubicación"]?.[normalizeText(ubicacionValor)] ?? undefined,
+    id_tipo_via: catalogos.catalogos["Tipo de vía"]?.[normalizeText(tipoViaValor)] ?? undefined,
+    id_direccion_via: catalogos.catalogos["Dirección de vía"]?.[normalizeText(direccionViaValor)] ?? undefined,
+    id_lugar_incidente: catalogos.catalogos["Lugar de Incidente"]?.[normalizeText(lugarIncidenteValor)] ?? undefined,
+    id_modelo_mr: catalogos.catalogos["Modelo MR"]?.[normalizeText(modeloMrValor)] ?? undefined,
+    id_numero_mr: catalogos.catalogos["Nro. MR"]?.[normalizeText(numeroMrValor)] ?? undefined,
+    numero_carrera: dto.numero_carrera,
+    id_personal_involucrado: catalogos.catalogos["Personal o falla Involucrado"]?.[normalizeText(personalValor)] ?? undefined,
+    id_tipo_causa: catalogos.catalogos["Tipo Causa"]?.[normalizeText(tipoCausaValor)] ?? undefined,
+    id_posible_causa: catalogos.catalogos["Posible Causa"]?.[normalizeText(posibleCausaValor)] ?? undefined,
+    informacion_adicional: dto.informacion_adicional,
+    camara_monitoreada: dto.camara_monitoreada,
+    demora: dto.demora,
+    anio: dto.anio,
+    mes: dto.mes,
+    semana: dto.semana,
+    dia: dto.dia,
+    id_rango_horario: catalogos.catalogos["Rango horario"]?.[normalizeText(rangoHorarioValor)] ?? undefined,
+  };
 }

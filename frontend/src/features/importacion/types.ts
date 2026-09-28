@@ -7,6 +7,8 @@ export type ImportacionRow = Record<string, ImportacionRowValue>;
 export interface ImportacionPayload {
   filename: string | null;
   rows: ImportacionRow[];
+  hoja?: string;
+  decisionesSop?: DecisionSop[];
 }
 
 export interface ImportacionIssue {
@@ -29,6 +31,10 @@ export interface ImportacionCasePreview {
   fecha: string;
   planes: number;
   status: "valid" | "error" | "skipped";
+  editable?: boolean;
+  estadoOriginal?: string;
+  accion?: DecisionSop["accion"];
+  planesDetalle?: { row: number; codigo: string; area: string; responsable: string; estado: string; estadoOriginal: string; editable: boolean }[];
 }
 
 export interface ImportacionResumen {
@@ -75,4 +81,11 @@ export interface ImportacionHistorialItem {
   reverted_at: string | null;
   creador: { id_usuario: number; nombre: string };
   reversor: { id_usuario: number; nombre: string } | null;
+}
+
+export interface DecisionSop {
+  codigo: string;
+  accion: "asignar" | "cerrar" | "planes";
+  motivo: string;
+  planes?: { row: number; estado: "Enviado" | "En Ejecución" | "Cerrado" }[];
 }
