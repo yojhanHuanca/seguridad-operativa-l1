@@ -143,7 +143,7 @@ export class UsersService {
         // Si cambia el correo, verificar que no choque con el de otro usuario.
         if (data.correo && data.correo !== usuario.correo) {
             const emailExists = await UserRepository.findByEmail(data.correo);
-            if (emailExists) {
+            if (emailExists && emailExists.id_usuario !== id) {
                 throw new Error("El correo electrónico ya está registrado");
             }
         }

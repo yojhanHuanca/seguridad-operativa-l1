@@ -189,6 +189,32 @@ async function upsertCatalogo(catalogo: ContingenciaCatalogoInicial) {
 }
 
 export class ContingenciaRepository {
+  static async findMonthlyIndicatorInputs(desde: string, hasta: string) {
+    const fecha = { gte: fechaDesdeIso(desde), lte: fechaDesdeIso(hasta, true) };
+    const eventQuery = prisma.contingencia_eventos.groupBy({
+      by: ["fecha", "tipo_evento"], where: { fecha }, orderBy: { fecha: "asc" }, _count: { _all: true },
+    });
+    const [eventos, operacion] = await prisma.$transaction([
+      eventQuery,
+      prisma.datos_operativos.findMany({ where: { fecha, afluencia: { not: null } }, select: { fecha: true, afluencia: true } }),
+    ]);
+    return { eventos, operacion };
+  }
+
+  static async findRateInputs(desde: string, hasta: string) {
+    const start = fechaDesdeIso(desde);
+    const end = fechaDesdeIso(hasta, true);
+    const [eventos, operacion] = await Promise.all([
+      prisma.contingencia_eventos.count({ where: { fecha: { gte: start, lte: end } } }),
+      prisma.datos_operativos.findMany({
+        where: { fecha: { gte: start, lte: end }, afluencia: { not: null } },
+        select: { fecha: true, afluencia: true },
+        orderBy: { fecha: "asc" },
+      }),
+    ]);
+    return { eventos, operacion };
+  }
+
   static async ensureCatalogosIniciales() {
     for (const catalogo of CONTINGENCIA_CATALOGOS_INICIALES) {
       await upsertCatalogo(catalogo);

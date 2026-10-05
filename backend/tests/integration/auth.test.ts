@@ -12,6 +12,7 @@ const password = `Test-${randomUUID()}`;
 const users: { id: number; correo: string; rol: string }[] = [];
 const createdRoles: number[] = [];
 const uploadedAvatars: string[] = [];
+const testedRoles = ["Admin", "Monitorista", "Gestión de Planes de Contingencia", "Seguridad Operativa", "Jefe de Área", "Reportante"];
 
 async function login(correo: string) {
   const response = await request(app).post("/api/auth/login").send({ correo, password }).expect(200);
@@ -24,13 +25,13 @@ beforeAll(async () => {
   const database = await prisma.$queryRaw<{ name: string }[]>`SELECT current_database() AS name`;
   expect(database[0]?.name).toBe("seguridad_operativa_test");
   const password_hash = await bcrypt.hash(password, 10);
-  for (const rol of ["Admin", "Monitorista"]) {
+  for (const rol of testedRoles) {
     let role = await prisma.roles.findUnique({ where: { nombre_rol: rol } });
     if (!role) {
       role = await prisma.roles.create({ data: { nombre_rol: rol } });
       createdRoles.push(role.id_rol);
     }
-    const correo = `${rol.toLowerCase()}-${runId}@example.invalid`;
+    const correo = `Cuenta${users.length}-${runId}@example.invalid`;
     const user = await prisma.usuarios.create({ data: {
       codigo_usuario: `T-${rol[0]}-${runId}`,
       nombre: `Prueba ${rol} ${runId}`, correo, password_hash,
@@ -58,6 +59,33 @@ afterAll(async () => {
 });
 
 describe("API real: autenticación, PostgreSQL y permisos", () => {
+  it.each(testedRoles)("%s: correo sin distinción de mayúsculas conserva rol y permisos", async rol => {
+    const user = users.find(u => u.rol === rol)!;
+    for (const email of [user.correo.toLowerCase(), ` ${user.correo.toUpperCase()} `]) {
+      const token = await login(email);
+      const payload = JSON.parse(Buffer.from(token.split(".")[1]!, "base64url").toString());
+      expect(payload).toMatchObject({ id_usuario: user.id, rol_nombre: rol });
+      await request(app).get("/api/profile/me/sesiones").set("Authorization", `Bearer ${token}`).expect(200);
+      await request(app).get("/api/auditoria").set("Authorization", `Bearer ${token}`).expect(rol === "Admin" ? 200 : 403);
+      await request(app).post("/api/auth/logout").set("Authorization", `Bearer ${token}`).expect(200);
+      await request(app).get("/api/profile/me/sesiones").set("Authorization", `Bearer ${token}`).expect(401);
+    }
+  });
+  it("contingencias inicia sesión con un correo histórico que contiene mayúsculas", async () => {
+    const user = users.find(u => u.rol === "Gestión de Planes de Contingencia")!;
+    for (const email of [user.correo.toLowerCase(), ` ${user.correo.toUpperCase()} `]) {
+      const token = await login(email);
+      await request(app).get("/api/contingencias/catalogos").set("Authorization", `Bearer ${token}`).expect(200);
+      await request(app).post("/api/auth/logout").set("Authorization", `Bearer ${token}`).expect(200);
+    }
+  });
+  it("no crea otra cuenta con el mismo correo en distinta capitalización", async () => {
+    const user = users.find(u => u.rol === "Gestión de Planes de Contingencia")!;
+    const role = await prisma.roles.findUniqueOrThrow({ where: { nombre_rol: user.rol } });
+    const token = await login(users[0]!.correo);
+    await request(app).post("/api/users").set("Authorization", `Bearer ${token}`).send({ nombre: "Duplicado", correo: user.correo.toLowerCase(), password, id_rol: role.id_rol }).expect(400);
+    expect(await prisma.usuarios.count({ where: { correo: { equals: user.correo, mode: "insensitive" } } })).toBe(1);
+  });
   it("material rodante guarda la clasificación, evita duplicados y conserva ids", async () => {
     const token = await login(users[0]!.correo);
     const monitorToken = await login(users[1]!.correo);

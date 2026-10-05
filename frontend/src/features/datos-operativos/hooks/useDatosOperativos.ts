@@ -6,6 +6,7 @@ export interface DatoOperativo {
   fecha: string;
   qty_carreras: number;
   qty_pasajeros: number;
+  afluencia: number | null;
   km_comercial: number;
   km_no_comercial: number;
   paradas_estacion: number;
@@ -17,6 +18,7 @@ export interface DatosOperativosInput {
   fecha: string;
   qty_carreras: number;
   qty_pasajeros: number;
+  afluencia: number;
   km_comercial: number;
   km_no_comercial: number;
   paradas_estacion: number;
@@ -57,7 +59,10 @@ export function useCrearDatoOperativo() {
       if (!data.data) throw new Error(data.message);
       return data.data;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["datos-operativos"] }),
+    onSuccess: () => Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["datos-operativos"] }),
+      queryClient.invalidateQueries({ queryKey: ["contingencias", "indicador-mensual"] }),
+    ]),
   });
 }
 
@@ -69,7 +74,10 @@ export function useActualizarDatoOperativo() {
       if (!data.data) throw new Error(data.message);
       return data.data;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["datos-operativos"] }),
+    onSuccess: () => Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["datos-operativos"] }),
+      queryClient.invalidateQueries({ queryKey: ["contingencias", "indicador-mensual"] }),
+    ]),
   });
 }
 
@@ -77,6 +85,9 @@ export function useEliminarDatoOperativo() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => api.delete(`/datos-operativos/${id}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["datos-operativos"] }),
+    onSuccess: () => Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["datos-operativos"] }),
+      queryClient.invalidateQueries({ queryKey: ["contingencias", "indicador-mensual"] }),
+    ]),
   });
 }

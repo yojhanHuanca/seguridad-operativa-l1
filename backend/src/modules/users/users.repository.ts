@@ -199,9 +199,9 @@ export class UserRepository {
     }
 
     static async findByEmail(email: string) {
-        return await prisma.usuarios.findUnique({
+        return await prisma.usuarios.findFirst({
             where:{
-                correo: email,
+                correo: { equals: email.trim(), mode: "insensitive" },
             },
         });
 

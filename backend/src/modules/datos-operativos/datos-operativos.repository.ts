@@ -40,22 +40,25 @@ export class DatosOperativosRepository {
     fecha: Date;
     qty_carreras: number;
     qty_pasajeros: number;
+    afluencia?: number | null | undefined;
     km_comercial: number;
     km_no_comercial: number;
     paradas_estacion: number;
   }) {
-    return prisma.datos_operativos.create({ data });
+    return prisma.datos_operativos.create({ data: { ...data, afluencia: data.afluencia ?? null } });
   }
 
   static update(id_dato_operativo: number, data: {
     fecha: Date;
     qty_carreras: number;
     qty_pasajeros: number;
+    afluencia?: number | null | undefined;
     km_comercial: number;
     km_no_comercial: number;
     paradas_estacion: number;
   }) {
-    return prisma.datos_operativos.update({ where: { id_dato_operativo }, data });
+    const { afluencia, ...fields } = data;
+    return prisma.datos_operativos.update({ where: { id_dato_operativo }, data: { ...fields, ...(afluencia !== undefined ? { afluencia } : {}) } });
   }
 
   static remove(id_dato_operativo: number) {

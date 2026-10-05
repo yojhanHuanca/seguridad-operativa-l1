@@ -287,6 +287,64 @@ async function validarDto(dto: CreateContingenciaDto | UpdateContingenciaDto) {
 }
 
 export class ContingenciaService {
+  static async monthlyIndicator(query: Record<string, unknown>) {
+    const month = typeof query.mes === "string" ? query.mes : "";
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month) || Number(month.slice(0, 4)) < 1900) {
+      throw new Error("El mes debe ser válido (YYYY-MM)");
+    }
+    const year = Number(month.slice(0, 4));
+    const index = Number(month.slice(5)) - 1;
+    const start = new Date(Date.UTC(year, index - 11, 1));
+    const end = new Date(Date.UTC(year, index + 1, 0));
+    const parts = new Intl.DateTimeFormat("en", { timeZone: "America/Lima", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
+    const part = (type: string) => parts.find(p => p.type === type)?.value;
+    const cutoff = `${part("year")}-${part("month")}-${part("day")}`;
+    if (month > cutoff.slice(0, 7)) throw new Error("El periodo no puede ser futuro");
+    const hasta = dateToIso(end) < cutoff ? dateToIso(end) : cutoff;
+    if (dateToIso(start) > hasta) throw new Error("El periodo no puede ser futuro");
+    const inputs = await ContingenciaRepository.findMonthlyIndicatorInputs(dateToIso(start), hasta);
+    const items = Array.from({ length: 12 }, (_, offset) => {
+      const date = new Date(Date.UTC(year, index - 11 + offset, 1));
+      const mes = dateToIso(date).slice(0, 7);
+      const monthEnd = dateToIso(new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0)));
+      const fin = monthEnd < hasta ? monthEnd : hasta;
+      const diasEsperados = fin < `${mes}-01` ? 0 : Math.round((Date.parse(fin) - date.getTime()) / 86_400_000) + 1;
+      const rows = inputs.eventos.filter(row => dateToIso(row.fecha).startsWith(mes));
+      const operations = inputs.operacion.filter(row => row.afluencia != null && dateToIso(row.fecha).startsWith(mes));
+      const accidentes = rows.filter(row => normalizarTexto(row.tipo_evento) === "accidente").reduce((n, row) => n + row._count._all, 0);
+      const noAccidentes = rows.filter(row => normalizarTexto(row.tipo_evento) === "problemas de salud").reduce((n, row) => n + row._count._all, 0);
+      const sinClasificar = rows.reduce((n, row) => n + row._count._all, 0) - accidentes - noAccidentes;
+      const afluencia = operations.reduce((n, row) => n + Number(row.afluencia), 0);
+      const completo = diasEsperados > 0 && operations.length === diasEsperados;
+      return { mes, accidentes, noAccidentes, sinClasificar, total: accidentes + noAccidentes, afluencia, diasRegistrados: operations.length, diasEsperados,
+        tasa: completo && afluencia > 0 && sinClasificar === 0 ? (accidentes + noAccidentes) / afluencia * 1_000_000 : null };
+    });
+    return { desde: dateToIso(start), hasta, items };
+  }
+
+  static async rate(query: Record<string, unknown>) {
+    const desde = parseFechaQuery(query.desde, "La fecha inicial");
+    const hasta = parseFechaQuery(query.hasta, "La fecha final");
+    if (!desde || !hasta) throw new Error("Se requieren las fechas inicial y final");
+    if (desde > hasta) throw new Error("La fecha inicial no puede ser posterior a la fecha final");
+
+    const { eventos, operacion } = await ContingenciaRepository.findRateInputs(desde, hasta);
+    const registros = operacion.filter(row => row.afluencia != null);
+    const afluencia = registros.reduce((total, row) => total + Number(row.afluencia), 0);
+    const diasEsperados = Math.floor((Date.parse(`${hasta}T00:00:00.000Z`) - Date.parse(`${desde}T00:00:00.000Z`)) / 86_400_000) + 1;
+    const diasRegistrados = registros.length;
+    return {
+      desde,
+      hasta,
+      eventos,
+      afluencia,
+      diasRegistrados,
+      diasEsperados,
+      diasPendientes: Math.max(0, diasEsperados - diasRegistrados),
+      tasa: diasRegistrados === diasEsperados && afluencia > 0 ? (eventos / afluencia) * 1_000_000 : null,
+    };
+  }
+
   static async catalogos() {
     const catalogos = await ContingenciaRepository.findCatalogos();
     return catalogos.map((catalogo) => ({ ...catalogo, items: itemsNormalizados(catalogo.codigo, catalogo.id_catalogo, catalogo.items) }));

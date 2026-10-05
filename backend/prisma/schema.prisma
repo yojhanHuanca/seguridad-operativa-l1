@@ -421,6 +421,7 @@ model datos_operativos {
   fecha             DateTime @unique @db.Date
   qty_carreras      Decimal  @db.Decimal(15, 2)
   qty_pasajeros     Decimal  @db.Decimal(15, 2)
+  afluencia         Decimal? @db.Decimal(15, 0)
   km_comercial      Decimal  @db.Decimal(15, 2)
   km_no_comercial   Decimal  @db.Decimal(15, 2)
   paradas_estacion  Decimal  @db.Decimal(15, 2)

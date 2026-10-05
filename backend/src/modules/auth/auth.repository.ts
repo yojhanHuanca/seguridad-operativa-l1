@@ -3,15 +3,19 @@ import prisma from "../../lib/prisma.js";
 export class AuthRepository {
 
   static async findByEmail(correo: string) {
-    return await prisma.usuarios.findUnique({
+    const matches = await prisma.usuarios.findMany({
       where: {
-        correo,
+        correo: { equals: correo.trim(), mode: "insensitive" },
       },
       include: {
         roles: true,
         areas: true,
       },
+      take: 2,
     });
+    // Never authenticate an arbitrary account if legacy records differ only
+    // by email casing. New accounts reject those duplicates on creation.
+    return matches.length === 1 ? matches[0]! : null;
   }
 
   static async updateUltimoAcceso(id_usuario: number) {

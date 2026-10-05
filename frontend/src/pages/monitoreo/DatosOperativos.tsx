@@ -23,12 +23,13 @@ import { MonitoristaShell } from "@/components/layout/MonitoristaShell";
 
 
 const POR_PAGINA = 25;
-type CampoNumerico = "qty_carreras" | "qty_pasajeros" | "km_comercial" | "km_no_comercial" | "paradas_estacion";
+type CampoNumerico = "qty_carreras" | "qty_pasajeros" | "afluencia" | "km_comercial" | "km_no_comercial" | "paradas_estacion";
 
 interface FormularioDatosOperativos {
   fecha: string;
   qty_carreras: string;
   qty_pasajeros: string;
+  afluencia: string;
   km_comercial: string;
   km_no_comercial: string;
   paradas_estacion: string;
@@ -72,6 +73,7 @@ function formularioVacio(): FormularioDatosOperativos {
     fecha: fechaHoyInput(),
     qty_carreras: "",
     qty_pasajeros: "",
+    afluencia: "",
     km_comercial: "",
     km_no_comercial: "0",
     paradas_estacion: "",
@@ -125,6 +127,7 @@ export function DatosOperativos() {
       fecha: fechaInput(dato.fecha),
       qty_carreras: formatearEntradaNumerica(String(dato.qty_carreras), 0),
       qty_pasajeros: formatearEntradaNumerica(String(dato.qty_pasajeros), 0),
+      afluencia: dato.afluencia == null ? "" : formatearEntradaNumerica(String(dato.afluencia), 0),
       km_comercial: formatearEntradaNumerica(String(dato.km_comercial), 2),
       km_no_comercial: formatearEntradaNumerica(String(dato.km_no_comercial), 2),
       paradas_estacion: formatearEntradaNumerica(String(dato.paradas_estacion), 0),
@@ -163,6 +166,7 @@ export function DatosOperativos() {
     const camposValidar: { campo: CampoNumerico; valor: string; label: string }[] = [
       { campo: "qty_carreras", valor: formulario.qty_carreras.trim(), label: "QTY carreras" },
       { campo: "qty_pasajeros", valor: formulario.qty_pasajeros.trim(), label: "QTY pasajeros" },
+      { campo: "afluencia", valor: formulario.afluencia.trim(), label: "Afluencia diaria" },
       { campo: "km_comercial", valor: formulario.km_comercial.trim(), label: "Km comercial" },
       { campo: "km_no_comercial", valor: kmNoComercialValor, label: "Km no comercial" },
       { campo: "paradas_estacion", valor: formulario.paradas_estacion.trim(), label: "Paradas en estación" },
@@ -178,6 +182,7 @@ export function DatosOperativos() {
       fecha: formulario.fecha,
       qty_carreras: convertirNumero(formulario.qty_carreras),
       qty_pasajeros: convertirNumero(formulario.qty_pasajeros),
+      afluencia: convertirNumero(formulario.afluencia),
       km_comercial: convertirNumero(formulario.km_comercial),
       km_no_comercial: convertirNumero(kmNoComercialValor),
       paradas_estacion: convertirNumero(formulario.paradas_estacion),
@@ -223,7 +228,7 @@ export function DatosOperativos() {
         <Card>
           <CardHeader
             title={editando ? "Editar dato operativo" : "Registrar dato operativo"}
-            subtitle="Un registro por cada fecha del histórico operacional."
+            subtitle="Un registro diario por fecha. La afluencia capturada aquí alimenta el indicador de contingencias."
             icon={<Database className="h-4 w-4" />}
             action={
               <div className="flex items-center gap-2">
@@ -238,7 +243,8 @@ export function DatosOperativos() {
               </div>
             }
           />
-          <form onSubmit={enviar} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <form onSubmit={enviar} className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <Field label="Fecha" required>
               <Input
                 type="date"
@@ -272,6 +278,8 @@ export function DatosOperativos() {
                 required
               />
             </Field>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Field label="Km comercial" hint={`Auto: carreras × ${kmPorCarrera} km (editable si hubo variante)`} required>
               <Input
                 type="text"
@@ -308,7 +316,11 @@ export function DatosOperativos() {
                 required
               />
             </Field>
-            <div className="flex items-end sm:col-span-2 lg:col-span-3">
+            <Field label="Afluencia diaria" hint="Afluencia del día seleccionado. Alimenta el indicador de contingencias." required>
+              <Input type="text" inputMode="numeric" placeholder="Ej. 534200" value={formulario.afluencia} onChange={(event) => actualizarNumero("afluencia", event.target.value)} required />
+            </Field>
+            </div>
+            <div className="flex items-end">
               <Button type="submit" disabled={guardando}>
                 <Save className="h-4 w-4" /> {guardando ? "Guardando..." : editando ? "Guardar cambios" : "Registrar dato"}
               </Button>
@@ -339,6 +351,7 @@ export function DatosOperativos() {
                   <th className="px-5 py-3 font-semibold">Fecha</th>
                   <th className="px-4 py-3 text-right font-semibold">QTY carreras</th>
                   <th className="px-4 py-3 text-right font-semibold">QTY pasajeros</th>
+                  <th className="bg-brand-50 px-4 py-3 text-right font-semibold text-brand-800">Afluencia diaria</th>
                   <th className="px-4 py-3 text-right font-semibold">Km comercial</th>
                   <th className="px-4 py-3 text-right font-semibold">Km no comercial</th>
                   <th className="px-4 py-3 text-right font-semibold">Paradas en estación</th>
@@ -346,13 +359,14 @@ export function DatosOperativos() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-line-soft">
-                {isLoading && <tr><td colSpan={7} className="px-5 py-10 text-center text-ink-quiet">Cargando datos...</td></tr>}
-                {!isLoading && data?.items.length === 0 && <tr><td colSpan={7} className="px-5 py-10 text-center text-ink-quiet">No hay datos operativos para mostrar.</td></tr>}
+                {isLoading && <tr><td colSpan={8} className="px-5 py-10 text-center text-ink-quiet">Cargando datos...</td></tr>}
+                {!isLoading && data?.items.length === 0 && <tr><td colSpan={8} className="px-5 py-10 text-center text-ink-quiet">No hay datos operativos para mostrar.</td></tr>}
                 {!isLoading && data?.items.map((dato) => (
                   <tr key={dato.id_dato_operativo} className="text-ink-soft hover:bg-surface/60">
                     <td className="px-5 py-3 font-medium text-ink">{formatDate(dato.fecha)}</td>
                     <td className="px-4 py-3 text-right">{numero(dato.qty_carreras)}</td>
                     <td className="px-4 py-3 text-right">{numero(dato.qty_pasajeros)}</td>
+                    <td className="bg-brand-50/40 px-4 py-3 text-right font-semibold text-brand-800">{dato.afluencia == null ? <span className="font-normal text-ink-quiet">Pendiente</span> : numero(dato.afluencia)}</td>
                     <td className="px-4 py-3 text-right">{numero(dato.km_comercial)}</td>
                     <td className="px-4 py-3 text-right">{numero(dato.km_no_comercial)}</td>
                     <td className="px-4 py-3 text-right">{numero(dato.paradas_estacion)}</td>

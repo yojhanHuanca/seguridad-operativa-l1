@@ -5,7 +5,7 @@ const idAreaAsignable = idPositivo.nullable().optional();
 
 export const createUserSchema = z.object({
   nombre: z.string().trim().min(2, "El nombre debe tener al menos 2 caracteres").max(150),
-  correo: z.string().trim().email("Ingrese un correo válido").max(150),
+  correo: z.string().trim().email("Ingrese un correo válido").max(150).toLowerCase(),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres").max(100),
   cargo: z.string().trim().max(100).optional(),
   telefono: z.string().trim().max(20).optional(),
@@ -18,7 +18,7 @@ export const createUserSchema = z.object({
 
 export const updateUserSchema = z.object({
   nombre: z.string().trim().min(2, "El nombre debe tener al menos 2 caracteres").max(150).optional(),
-  correo: z.string().trim().email("Ingrese un correo válido").max(150).optional(),
+  correo: z.string().trim().email("Ingrese un correo válido").max(150).toLowerCase().optional(),
   cargo: z.string().trim().max(100).optional(),
   telefono: z.string().trim().max(20).optional(),
   id_area: idAreaAsignable,

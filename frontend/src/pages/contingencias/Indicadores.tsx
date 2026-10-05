@@ -10,10 +10,11 @@ import type { DatoOperativo } from '@/features/datos-operativos/hooks/useDatosOp
 import { api, type ApiEnvelope } from '@/lib/api';
 import { countBy, dayKey, eventTimes, formatMetric as fmt, monthKey, percentChange, periodFor, summarize } from '@/features/contingencias/analytics';
 import { ChartPanel, Evolution, HourHeatmap, PlaceDotplot, ResponseBoxplot, Sparkline, TypeTreemap } from '@/features/contingencias/components/AnalyticsCharts';
+import { MonthlyIndicatorChart } from '@/features/contingencias/components/MonthlyIndicatorChart';
 import './indicadores.css';
 
-type OperationMetric = 'qty_pasajeros' | 'qty_carreras' | 'km_comercial';
-const metricNames: Record<OperationMetric, string> = { qty_pasajeros: 'Pasajeros', qty_carreras: 'Carreras', km_comercial: 'Km comerciales' };
+type OperationMetric = 'qty_pasajeros' | 'afluencia' | 'qty_carreras' | 'km_comercial';
+const metricNames: Record<OperationMetric, string> = { qty_pasajeros: 'QTY pasajeros', afluencia: 'Afluencia diaria', qty_carreras: 'Carreras', km_comercial: 'Km comerciales' };
 const kpis = [
   { label: 'Eventos registrados', icon: Activity, suffix: '' },
   { label: 'Atención acumulada', icon: Clock3, suffix: ' h' },
@@ -46,7 +47,7 @@ export function Indicadores() {
   const [station, setStation] = useState('');
   const [tipo, setTipo] = useState('');
   const [view, setView] = useState<'eventos' | 'operacion'>('eventos');
-  const [metric, setMetric] = useState<OperationMetric>('qty_pasajeros');
+  const [metric, setMetric] = useState<OperationMetric>('afluencia');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const reduce = useReducedMotion();
   const period = periodFor(month);
@@ -60,7 +61,11 @@ export function Indicadores() {
     queryFn: () => loadOperations(period.start, period.end),
     staleTime: 60_000,
   });
-
+  const monthlyQuery = useQuery({
+    queryKey: ['contingencias', 'indicador-mensual', month],
+    queryFn: () => contingenciasApi.monthlyIndicator(month),
+    staleTime: 60_000,
+  });
   const analytics = useMemo(() => {
     const all = eventsQuery.data ?? [];
     const matches = (e: ContingenciaEvento) => (!station || e.lugar_evento?.trim() === station) && (!tipo || e.tipo_evento?.trim() === tipo);
@@ -79,8 +84,8 @@ export function Indicadores() {
     return { currentAll, events, previous, operations, daily, summary: summarize(events), previousSummary: summarize(previous), times: eventTimes(events), types: countBy(events, 'tipo_evento'), places: countBy(events, 'lugar_evento') };
   }, [eventsQuery.data, opsQuery.data, month, metric, station, tipo, period.start, period.end, period.previousStart, period.previousEnd, period.days]);
 
-  const refresh = () => { void eventsQuery.refetch(); void opsQuery.refetch(); };
-  const busy = eventsQuery.isFetching || opsQuery.isFetching;
+  const refresh = () => { void eventsQuery.refetch(); void opsQuery.refetch(); void monthlyQuery.refetch(); };
+  const busy = eventsQuery.isFetching || opsQuery.isFetching || monthlyQuery.isFetching;
   const loading = eventsQuery.isPending;
   const error = eventsQuery.isError;
   const filtered = !!station || !!tipo;
@@ -92,7 +97,7 @@ export function Indicadores() {
         <header className="ctg-heading">
           <div><h1>Indicadores de contingencias</h1><p>Frecuencia, distribución y tiempos de atención</p></div>
           <div className="ctg-actions">
-            <label className="ctg-month"><CalendarDays /><input type="month" aria-label="Periodo" value={month} onChange={e => chooseMonth(e.target.value)} /></label>
+            <label className="ctg-month"><CalendarDays /><input type="month" aria-label="Periodo" value={month} max={monthKey(new Date())} onChange={e => chooseMonth(e.target.value)} /></label>
             <button className="ctg-button" aria-expanded={filtersOpen} aria-controls="ctg-filters" onClick={() => setFiltersOpen(!filtersOpen)}><Filter />Filtros{filtered ? ' · ' + [station, tipo].filter(Boolean).length : ''}</button>
             <button className="ctg-button" aria-label="Actualizar estadísticas" onClick={refresh} disabled={busy}><RefreshCcw className={busy ? 'animate-spin' : ''} /></button>
           </div>
@@ -106,6 +111,9 @@ export function Indicadores() {
           <button className="ctg-button" onClick={() => { setStation(''); setTipo(''); }}><X />Restablecer</button>
         </div>}
         {loading ? <LoadingState label="Preparando indicadores de contingencias" /> : error ? <div className="ctg-error" role="alert">No se pudieron cargar las contingencias. <button className="ctg-button" onClick={refresh}>Reintentar</button></div> : <>
+          <section className="ctg-panel ctg-monthly-panel" aria-label="Atenciones y eventos por millón de pasajeros"><div className="ctg-panel-body">
+            {monthlyQuery.isPending ? <LoadingState label="Cargando indicador mensual" /> : monthlyQuery.isError ? <div className="ctg-error" role="alert">No se pudo cargar el gráfico. <button className="ctg-button" onClick={() => void monthlyQuery.refetch()}>Reintentar</button></div> : <MonthlyIndicatorChart data={monthlyQuery.data} />}
+          </div></section>
           <div className="ctg-kpis">
             {kpis.map((kpi, index) => {
               const value = analytics.summary[index];
