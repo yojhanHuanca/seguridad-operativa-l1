@@ -109,7 +109,7 @@ export class AuthService {
                 tabla: "usuarios",
                 id_registro: user.id_usuario,
                 accion: "login_fallido",
-                descripcion: `Intento de acceso con contraseña incorrecta (${correo})`,
+                descripcion: "Intento de acceso con contraseña incorrecta",
                 usuario: user.id_usuario,
                 ip: direccion_ip,
                 user_agent: navegador,

@@ -49,6 +49,43 @@ export class AuthRepository {
     return sesion?.estado === "activa";
   }
 
+  /** Devuelve la autorización vigente de una sesión, sin confiar en roles o permisos del JWT. */
+  static async obtenerActorDeSesion(id_sesion: number, id_usuario: number) {
+    const sesion = await prisma.sesiones.findFirst({
+      where: { id_sesion, usuario: id_usuario, estado: "activa" },
+      select: {
+        usuarios: {
+          select: {
+            id_usuario: true,
+            correo: true,
+            nombre: true,
+            id_rol: true,
+            id_area: true,
+            estado: true,
+            es_responsable: true,
+            puede_reabrir_casos: true,
+            puede_rechazar_reportes: true,
+            roles: { select: { nombre_rol: true } },
+          },
+        },
+      },
+    });
+    const usuario = sesion?.usuarios;
+    if (!usuario || usuario.estado?.toLowerCase() !== "activo" || usuario.id_rol == null || !usuario.roles) return null;
+    return {
+      id_usuario: usuario.id_usuario,
+      correo: usuario.correo,
+      nombre: usuario.nombre,
+      rol: usuario.id_rol,
+      rol_nombre: usuario.roles.nombre_rol,
+      id_area: usuario.id_area,
+      es_responsable: usuario.es_responsable,
+      puede_reabrir_casos: usuario.puede_reabrir_casos,
+      puede_rechazar_reportes: usuario.puede_rechazar_reportes,
+      id_sesion,
+    };
+  }
+
   /** Al resetear la contraseña se cierran todas las sesiones activas — si alguien más tenía el token viejo, queda afuera. */
   static async cerrarTodasLasSesiones(usuario: number) {
     return prisma.sesiones.updateMany({

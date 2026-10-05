@@ -40,7 +40,13 @@ docker compose --env-file .env.docker up --build -d
 docker compose --env-file .env.docker ps
 ```
 
-Abre el sistema en `http://localhost:8080` y la bandeja local de correo en `http://localhost:8025`. El esquema de la base local se prepara al iniciar el backend. Los correos no salen a destinatarios reales en este modo.
+En la primera instalación local, prepara el rol y los catálogos de contingencias una vez:
+
+```powershell
+docker compose --env-file .env.docker exec backend node scripts/seed-contingencias.mjs
+```
+
+Abre el sistema en `http://localhost:8080` y la bandeja local de correo en `http://localhost:8025`. Al iniciar el stack local, el servicio de migraciones aplica los cambios versionados antes de arrancar la API. Los correos no salen a destinatarios reales en este modo.
 
 ### Crear la primera cuenta administradora local
 
@@ -92,11 +98,15 @@ docker compose --env-file .env.docker down
 1. Clonar el repositorio en el servidor que TI haya elegido.
 2. Copiar `.env.production.example` como `.env.production` y completar los secretos y las integraciones.
 3. Revisar en `.env.production` que `FRONTEND_URL` sea el nombre HTTPS definitivo y que `FRONTEND_PORT` coincida con la configuración de red.
-4. Crear el esquema inicial de forma explícita:
+4. **Solo para una instalación nueva con una base vacía**, aplicar las migraciones versionadas:
 
    ```sh
    docker compose --env-file .env.production -f docker-compose.production.yml --profile setup run --rm schema
    ```
+
+   La secuencia incluye la línea base del esquema anterior, el historial de importaciones y el lock compartido para importaciones. `migrate deploy` registra las migraciones y no se ejecuta dentro de las peticiones de la web.
+
+   **Instalación ya existente:** no ejecutes este paso directamente contra su base. Primero TI debe respaldarla y comparar el esquema con la línea base y las migraciones. Si la base ya contiene cambios aplicados anteriormente con `db push`, el responsable de base de datos debe verificar uno por uno los objetos de cada migración antes de marcarlos como aplicados con `prisma migrate resolve --applied <nombre>`. Después se ejecuta `migrate deploy` para aplicar solo las migraciones que faltan. Si el esquema no coincide, preparar y probar una migración de ajuste en una copia restaurada antes de tocar la base real.
 
 5. Construir e iniciar la aplicación:
 
@@ -105,10 +115,20 @@ docker compose --env-file .env.docker down
    docker compose --env-file .env.production -f docker-compose.production.yml ps
    ```
 
+   En una base nueva, preparar una vez el rol y los catálogos iniciales del módulo de contingencias:
+
+   ```sh
+   docker compose --env-file .env.production -f docker-compose.production.yml exec backend node scripts/seed-contingencias.mjs
+   ```
+
+   Este paso carga datos de catálogo; la estructura de tablas la instala Prisma Migrate. No ejecutar el seed general de desarrollo en una base empresarial.
+
 6. Configurar HTTPS en el proxy o balanceador aprobado por TI, reenviando al puerto del frontend. Mantener los puertos 3000 y 5432 cerrados desde la red externa.
+
+`TRUST_PROXY_HOPS` controla cuántos proxies Express considera confiables al calcular la IP del cliente para los límites de solicitudes. El valor de ejemplo `1` corresponde a una conexión directa al Nginx del contenedor frontend. Si TI coloca otro proxy/balanceador delante, debe ajustar el valor al número real de saltos de la cadena; no lo aumente sin confirmar esa topología, porque afecta los rate limits y el registro de IP.
 7. Verificar el acceso al sitio, `/api/health`, inicio de sesión, creación de un reporte, archivos adjuntos y correos de prueba antes de habilitar el uso real.
 
-El contenedor `schema` ejecuta `prisma db push` solo cuando TI lo solicita. No se ejecuta al reiniciar el sistema. Revisar los cambios del esquema y contar con un respaldo antes de repetir este paso sobre una instalación con datos.
+El contenedor `schema` ejecuta `prisma migrate deploy` solo cuando TI lo solicita en producción. No se ejecuta al reiniciar el sistema. Cada nueva versión debe incluir su migración SQL revisada; no usar `prisma db push` en una instalación con datos.
 
 <a id="configuracion-de-integraciones"></a>
 ## Configuración de integraciones
@@ -133,6 +153,8 @@ Configurar un par VAPID en `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` y `VITE_VAPID
 Clonar el repositorio solo copia el código. No copia la base con los casos, las cuentas de usuario, las evidencias ni los avatares. Antes de trasladar el sistema actual, TI debe planificar la exportación e importación de la base de datos y copiar el contenido del almacenamiento de archivos, preservando las rutas registradas. El mecanismo y la ventana de migración dependen del entorno de origen.
 
 La configuración productiva conserva datos en los volúmenes `postgres_data` y `uploaded_files`. Los volúmenes de Docker no son un respaldo por sí solos y residen en el servidor donde se crearon. TI debe respaldar ambos, cifrar las copias, limitar su acceso y ensayar la restauración. Un respaldo de PostgreSQL puede generarse así:
+
+Las cargas de evidencias aceptan hasta 10 archivos de 30 MB cada uno, con un máximo agregado de 150 MB por petición. TI debe dimensionar `uploaded_files` y su política de retención para ese uso.
 
 ```sh
 docker compose --env-file .env.production -f docker-compose.production.yml exec -T postgres \

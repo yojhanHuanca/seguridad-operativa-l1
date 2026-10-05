@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import nodemailer, { type Transporter } from "nodemailer";
 import { env } from "../config/env.js";
+import logger from "./logger.js";
 import { ConfiguracionService } from "../modules/configuracion/configuracion.service.js";
 
 let client: Resend | null = null;
@@ -50,7 +51,7 @@ async function enviarCorreo(opts: { to: string; subject: string; html: string })
   if (smtp) {
     const info = await smtp.sendMail({ from: env.EMAIL_FROM, to: opts.to, subject: opts.subject, html: opts.html });
     const previewUrl = nodemailer.getTestMessageUrl(info);
-    if (previewUrl) console.log(`[mail] "${opts.subject}" para ${opts.to} — vista previa: ${previewUrl}`);
+    if (previewUrl) logger.info({ previewAvailable: true }, "Test email sent to preview inbox");
     return;
   }
 

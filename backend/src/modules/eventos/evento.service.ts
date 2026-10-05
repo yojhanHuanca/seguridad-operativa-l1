@@ -5,6 +5,7 @@ import { UserRepository } from "../users/users.repository.js";
 import { NotificationRepository } from "../notifications/notification.repository.js";
 import { esAdmin, type Actor } from "../../utils/actor.js";
 import { AuditoriaService } from "../auditoria/auditoria.service.js";
+import { parseOptionalPagination } from "../../utils/pagination.js";
 
 /** Cada campo opcional que sí venga tiene que apuntar al catálogo que le corresponde. */
 const CATALOGOS_POR_CAMPO: Record<string, string> = {
@@ -45,16 +46,14 @@ export class EventoService {
     const estado = ESTADOS_EVENTO.includes(query?.estado as (typeof ESTADOS_EVENTO)[number])
       ? (query!.estado as (typeof ESTADOS_EVENTO)[number])
       : undefined;
-    const page = Number(query?.page);
-    const limit = Number(query?.limit);
-    const paginar = Number.isInteger(page) && page > 0 && Number.isInteger(limit) && limit > 0;
+    const pagination = parseOptionalPagination(query?.page, query?.limit);
 
     return EventoRepository.findAll({
       ...(estado ? { estado } : {}),
       ...(query?.search ? { search: query.search } : {}),
       ...(query?.desde ? { desde: query.desde } : {}),
       ...(query?.hasta ? { hasta: query.hasta } : {}),
-      ...(paginar ? { page, limit } : {}),
+      ...(pagination ?? {}),
     });
   }
 

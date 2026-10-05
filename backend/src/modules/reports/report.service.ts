@@ -3,6 +3,7 @@ import { ReportRepository } from "./report.repository.js";
 import type { UploadedFile } from "./report.types.js";
 import { esReportante, type Actor } from "../../utils/actor.js";
 import { CaseRepository } from "../cases/case.repository.js";
+import { parseOptionalPagination } from "../../utils/pagination.js";
 
 const idPositivo = z.coerce.number().int().positive();
 const telefonoSchema = z
@@ -96,12 +97,10 @@ export class ReportService {
     actor?: Actor,
     query?: { filter?: string; search?: string; page?: string; limit?: string }
   ) {
-    const page = Number(query?.page);
-    const limit = Number(query?.limit);
-    const paginar = Number.isInteger(page) && page > 0 && Number.isInteger(limit) && limit > 0;
+    const pagination = parseOptionalPagination(query?.page, query?.limit);
 
     if (!esReportante(actor)) {
-      return ReportRepository.findAll(paginar ? { page, limit } : undefined);
+      return ReportRepository.findAll(pagination);
     }
 
     const filter =
@@ -112,7 +111,7 @@ export class ReportService {
     return ReportRepository.findAllByCreator(actor!.id_usuario, {
       ...(filter ? { filter } : {}),
       ...(query?.search ? { search: query.search } : {}),
-      ...(paginar ? { page, limit } : {}),
+      ...(pagination ?? {}),
     });
   }
 

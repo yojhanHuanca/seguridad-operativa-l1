@@ -3,7 +3,9 @@ import { RoleRepository } from "../roles/role.repository.js";
 import { BcryptHelper } from "../../utils/bcrypt.js";
 import { createUserSchema, idParamSchema, updateUserSchema } from "./users.schema.js";
 import { AuditoriaService, diffCampos } from "../auditoria/auditoria.service.js";
+import { AuthRepository } from "../auth/auth.repository.js";
 import type { Actor } from "../../utils/actor.js";
+import { parseOptionalPagination } from "../../utils/pagination.js";
 
 /** Campos sensibles que nunca deben llegar al registro de auditoría en texto plano. */
 const CAMPOS_SENSIBLES = new Set(["password", "password_hash"]);
@@ -63,15 +65,13 @@ export class UsersService {
 
      static async getAllUsers(query?: { search?: string; rol?: string; estado?: string; page?: string; limit?: string }) {
        const rol = Number(query?.rol);
-       const page = Number(query?.page);
-       const limit = Number(query?.limit);
-       const paginar = Number.isInteger(page) && page > 0 && Number.isInteger(limit) && limit > 0;
+       const pagination = parseOptionalPagination(query?.page, query?.limit);
 
        return UserRepository.findAll({
          ...(query?.search ? { search: query.search } : {}),
          ...(Number.isInteger(rol) && rol > 0 ? { rol } : {}),
          ...(query?.estado === "activo" || query?.estado === "inactivo" ? { estado: query.estado } : {}),
-         ...(paginar ? { page, limit } : {}),
+         ...(pagination ?? {}),
        });
      }
 
@@ -154,6 +154,15 @@ export class UsersService {
         const rolDestino = rest.id_rol ? await RoleRepository.findById(rest.id_rol) : usuario.roles;
 
         const dataNormalizada = areaSoloParaJefeArea(rest, rolDestino?.nombre_rol, usuario.id_area);
+
+        const cambioDeAcceso = password_hash !== undefined
+            || (data.estado !== undefined && data.estado !== usuario.estado)
+            || (data.id_rol !== undefined && data.id_rol !== usuario.id_rol)
+            || (data.id_area !== undefined && data.id_area !== usuario.id_area)
+            || PERMISOS_ESPECIALES.some((key) => data[key] !== undefined && data[key] !== usuario[key]);
+        // Revocar antes de guardar cambios sensibles: si la revocación falla,
+        // el cambio de credencial/permisos tampoco se aplica parcialmente.
+        if (cambioDeAcceso) await AuthRepository.cerrarTodasLasSesiones(id);
 
         const actualizado = await UserRepository.update(id, sinIndefinidos(permisosSoloParaSO({
             ...dataNormalizada,

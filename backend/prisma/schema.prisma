@@ -526,6 +526,12 @@ model importaciones {
   @@index([estado], map: "idx_importaciones_estado")
 }
 
+model importacion_locks {
+  modulo       String   @id @db.VarChar(30)
+  token        String   @db.Uuid
+  heartbeat_at DateTime @default(now()) @db.Timestamp(6)
+}
+
 model contingencia_atenciones {
   id_atencion                           Int                  @id @default(autoincrement())
   id_evento                             Int                  @unique

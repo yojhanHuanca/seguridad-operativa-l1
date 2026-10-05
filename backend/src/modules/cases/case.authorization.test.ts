@@ -94,3 +94,18 @@ describe("visibilidad de planes", () => {
     expect(listar).toHaveBeenLastCalledWith({});
   });
 });
+
+describe("transiciones condicionales del SOP", () => {
+  it("pasa al repositorio el estado observado para que la transacción descarte cambios simultáneos", async () => {
+    vi.spyOn(CaseRepository, "findBasicByCodigo").mockResolvedValue({
+      id_caso: 9,
+      codigo_sop: "SOP 9-2026",
+      catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { id_detalle: 41, nombre: "Recepción" },
+    } as never);
+    const aprobar = vi.spyOn(CaseRepository, "approve").mockResolvedValue({ id_caso: 9 } as never);
+
+    await CaseService.approve("SOP 9-2026", admin);
+
+    expect(aprobar).toHaveBeenCalledWith(9, 41, "Administrador");
+  });
+});

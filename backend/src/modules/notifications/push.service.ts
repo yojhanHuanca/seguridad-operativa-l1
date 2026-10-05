@@ -1,6 +1,7 @@
 import webpush from "web-push";
 import { env } from "../../config/env.js";
 import { PushRepository, type SuscripcionPush } from "./push.repository.js";
+import logger from "../../utils/logger.js";
 
 // Sin claves configuradas, el push queda desactivado sin romper nada (mismo
 // criterio que GOOGLE_CLIENT_ID/RESEND_API_KEY vacíos): guardar/eliminar
@@ -50,13 +51,13 @@ export class PushService {
             if (status === 404 || status === 410) {
               await PushRepository.eliminar(sub.endpoint);
             } else {
-              console.error("[push] no se pudo enviar a", sub.endpoint, error);
+              logger.warn({ statusCode: status }, "Push delivery failed");
             }
           }
         })
       );
     } catch (error) {
-      console.error("[push] error general al enviar", error);
+      logger.error({ errorName: error instanceof Error ? error.name : "UnknownError" }, "Push dispatch failed");
     }
   }
 }

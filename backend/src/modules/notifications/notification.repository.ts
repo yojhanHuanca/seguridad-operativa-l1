@@ -1,4 +1,5 @@
 import prisma from "../../lib/prisma.js";
+import logger from "../../utils/logger.js";
 import { PushService } from "./push.service.js";
 
 /**
@@ -82,7 +83,7 @@ export class NotificationRepository {
       // de más. `enviarAUsuarios` ya nunca lanza, así que esto es seguro.
       void PushService.enviarAUsuarios(ids, { title: n.titulo, body: n.mensaje });
     } catch (error) {
-      console.error("[notificaciones] no se pudo emitir", n.tipo, error);
+      logger.error({ tipo: n.tipo, errorName: error instanceof Error ? error.name : "UnknownError" }, "Notification could not be emitted");
     }
   }
 

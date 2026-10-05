@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { DatosOperativosRepository } from "./datos-operativos.repository.js";
+import { parseOptionalPagination } from "../../utils/pagination.js";
 
 const fechaSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "La fecha debe tener formato YYYY-MM-DD");
 const numeroSchema = (label: string) => z.coerce.number({ error: `${label} debe ser numérico` }).finite().min(0, `${label} no puede ser negativo`).max(999999999999, `${label} es demasiado grande`);
@@ -75,8 +76,12 @@ export class DatosOperativosService {
     const hasta = parsePeriodo(query.hasta, "La fecha final", minimo, maximo);
     if (desde && hasta && desde > hasta) throw new Error("La fecha inicial no puede ser posterior a la fecha final");
 
-    const page = Math.max(1, Math.floor(Number(query.page) || 1));
-    const limit = Math.min(100, Math.max(1, Math.floor(Number(query.limit) || 25)));
+    const pageValue = query.page == null ? undefined : typeof query.page === "string" ? query.page : undefined;
+    const limitValue = query.limit == null ? undefined : typeof query.limit === "string" ? query.limit : undefined;
+    if ((query.page != null && pageValue === undefined) || (query.limit != null && limitValue === undefined)) {
+      throw new Error("Los parámetros page y limit deben ser valores simples.");
+    }
+    const { page, limit } = parseOptionalPagination(pageValue, limitValue) ?? { page: 1, limit: 25 };
     const filtros = { page, limit, ...(desde ? { desde } : {}), ...(hasta ? { hasta } : {}) };
     const result = await DatosOperativosRepository.findAll(filtros);
     return { items: result.items.map(serializar), total: result.total, page, limit };

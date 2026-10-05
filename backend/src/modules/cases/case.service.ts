@@ -4,6 +4,7 @@ import { CaseRepository } from "./case.repository.js";
 import type { CreatePlanDto, UploadedFile } from "./case.types.js";
 import { areaDelActor, esJefeDeArea, nombreDelActor, type Actor } from "../../utils/actor.js";
 import { assertTransicion, type AccionCaso } from "./case.workflow.js";
+import { parseOptionalPagination } from "../../utils/pagination.js";
 
 /** El plan existe, pero es de otra área: 403, no 400. */
 export class PlanAjenoError extends Error {}
@@ -254,17 +255,13 @@ export class CaseService {
     const area = await areaEfectiva(query.area, actor);
     const sort = query.sort === "prioridad" || query.sort === "sla" ? query.sort : "recientes";
     const filters = { sort } satisfies { sort: "recientes" | "prioridad" | "sla" };
-    // Ambos o ninguno: una página sin tamaño (o viceversa) no significa nada,
-    // así que se ignoran los dos y se cae al comportamiento sin paginar.
-    const page = Number(query.page);
-    const limit = Number(query.limit);
-    const paginar = Number.isInteger(page) && page > 0 && Number.isInteger(limit) && limit > 0;
+    const pagination = parseOptionalPagination(query.page, query.limit);
     const fullFilters = {
       ...filters,
       ...(vencidos ? { vencidos: true } : estados?.length ? { estados } : {}),
       ...(area != null ? { area } : {}),
       ...(query.search ? { search: query.search } : {}),
-      ...(paginar ? { page, limit } : {}),
+      ...(pagination ?? {}),
     };
     return CaseRepository.findAll(fullFilters);
   }
@@ -279,14 +276,12 @@ export class CaseService {
     actor?: Actor
   ) {
     const area = await areaEfectiva(query.area, actor);
-    const page = Number(query.page);
-    const limit = Number(query.limit);
-    const paginar = Number.isInteger(page) && page > 0 && Number.isInteger(limit) && limit > 0;
+    const pagination = parseOptionalPagination(query.page, query.limit);
     return CaseRepository.findPlansByArea({
       ...(area != null ? { id_area: area } : {}),
       ...(query.codigo ? { codigo_sop: query.codigo } : {}),
       ...(query.vencidos === "1" ? { vencidos: true } : {}),
-      ...(paginar ? { page, limit } : {}),
+      ...(pagination ?? {}),
     });
   }
 
@@ -316,7 +311,7 @@ export class CaseService {
 
   static async approve(codigo: string, actor?: Actor) {
     const caso = await getCasoBasico(codigo, "approve");
-    return CaseRepository.approve(caso.id_caso, await nombreDelActor(actor));
+    return CaseRepository.approve(caso.id_caso, caso.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.id_detalle, await nombreDelActor(actor));
   }
 
   static async addObservation(codigo: string, rawBody: unknown, actor?: Actor) {
@@ -328,7 +323,7 @@ export class CaseService {
   static async evaluate(codigo: string, rawBody: unknown, actor?: Actor) {
     const dto = evaluateSchema.parse(rawBody);
     const caso = await getCasoBasico(codigo, "evaluate");
-    return CaseRepository.evaluate(caso.id_caso, dto, await nombreDelActor(actor));
+    return CaseRepository.evaluate(caso.id_caso, dto, caso.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.id_detalle, await nombreDelActor(actor));
   }
 
   /**
@@ -346,14 +341,14 @@ export class CaseService {
   static async reject(codigo: string, rawBody: unknown, actor?: Actor) {
     const dto = rejectSchema.parse(rawBody);
     const caso = await getCasoBasico(codigo, "reject");
-    return CaseRepository.reject(caso.id_caso, dto, await nombreDelActor(actor));
+    return CaseRepository.reject(caso.id_caso, dto, caso.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.id_detalle, await nombreDelActor(actor));
   }
 
   static async requestInfo(codigo: string, rawBody: unknown, actor?: Actor) {
     const dto = requestInfoSchema.parse(rawBody);
     const caso = await getCasoBasico(codigo, "requestInfo");
     const estadoActual = caso.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre;
-    return CaseRepository.requestInfo(caso.id_caso, estadoActual, dto, await nombreDelActor(actor));
+    return CaseRepository.requestInfo(caso.id_caso, estadoActual, caso.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.id_detalle, dto, await nombreDelActor(actor));
   }
 
   /** SO registra a mano una respuesta que recibió por otro medio; firma con su propio usuario, no como "Reportante". */
@@ -393,7 +388,7 @@ export class CaseService {
   static async closeCase(codigo: string, rawBody: unknown, actor?: Actor) {
     const dto = notaSchema.parse(rawBody ?? {});
     const caso = await getCasoBasico(codigo, "close");
-    return CaseRepository.closeCase(caso.id_caso, dto.nota, await nombreDelActor(actor));
+    return CaseRepository.closeCase(caso.id_caso, dto.nota, await nombreDelActor(actor), caso.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.id_detalle);
   }
 
   /** SO arranca la Ejecución con los planes ya aceptados, sin esperar al resto. */
@@ -461,14 +456,14 @@ export class CaseService {
   static async reopenCase(codigo: string, rawBody: unknown, actor?: Actor) {
     const dto = reopenSchema.parse(rawBody ?? {});
     const caso = await getCasoBasico(codigo, "reopen");
-    return CaseRepository.reopenCase(caso.id_caso, dto.nota, dto.destino, await nombreDelActor(actor));
+    return CaseRepository.reopenCase(caso.id_caso, caso.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.id_detalle, dto.nota, dto.destino, await nombreDelActor(actor));
   }
 
   static async rollbackStage(codigo: string, rawBody: unknown, actor?: Actor) {
     const dto = rollbackSchema.parse(rawBody ?? {});
     const caso = await getCasoBasico(codigo, "rollback");
     const estadoActual = caso.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre;
-    return CaseRepository.rollbackStage(caso.id_caso, estadoActual, dto.destino, dto.motivo, await nombreDelActor(actor));
+    return CaseRepository.rollbackStage(caso.id_caso, estadoActual, dto.destino, dto.motivo, caso.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.id_detalle, await nombreDelActor(actor));
   }
 
   static async updateActivity(idActividad: string, rawBody: unknown, actor?: Actor) {
