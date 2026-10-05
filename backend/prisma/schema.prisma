@@ -152,6 +152,7 @@ model casos_sop {
 }
 
 model catalogo_detalle {
+  clasificacion_mr String? @db.VarChar(30)
   id_detalle                                                                   Int                  @id @default(autoincrement())
   id_catalogo                                                                  Int
   codigo                                                                       String?              @db.VarChar(30)

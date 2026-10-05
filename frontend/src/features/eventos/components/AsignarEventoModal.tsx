@@ -1,3 +1,4 @@
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useState } from "react";
 import { ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
@@ -22,6 +23,7 @@ export function AsignarEventoModal({ evento, onClose }: { evento: EventoListItem
 
   const responsables = (usuarios ?? []).filter((u) => u.roles?.nombre_rol === "Seguridad Operativa");
 
+  const selected = responsables.find(u => u.id_usuario === Number(idUsuario));
   const cerrar = () => {
     setIdUsuario("");
     onClose();
@@ -77,6 +79,7 @@ export function AsignarEventoModal({ evento, onClose }: { evento: EventoListItem
                 </option>
               ))}
             </Select>
+            {selected && <div className="mt-3 flex items-center gap-2 rounded-lg border border-line-soft p-3"><UserAvatar nombre={selected.nombre} fotoUrl={selected.foto_url} /><span className="text-sm">{selected.nombre}</span></div>}
             {responsables.length === 0 && (
               <p className="mt-1.5 text-[11.5px] text-ink-faint">No hay personal de Seguridad Operativa registrado.</p>
             )}
@@ -86,3 +89,4 @@ export function AsignarEventoModal({ evento, onClose }: { evento: EventoListItem
     </Modal>
   );
 }
+

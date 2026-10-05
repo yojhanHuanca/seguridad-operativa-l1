@@ -826,16 +826,22 @@ export class CaseRepository {
     const caso = await prisma.casos_sop.findUniqueOrThrow({ where: { id_caso }, select: { codigo_sop: true } });
 
     return prisma.$transaction(async (tx) => {
-      const actualizada = await tx.solicitudes_informacion.update({
-        where: { id_solicitud },
+      await tx.$queryRaw`SELECT id_caso FROM casos_sop WHERE id_caso = ${id_caso} FOR UPDATE`;
+      const respuesta = await tx.solicitudes_informacion.updateMany({
+        where: { id_solicitud, id_caso, respondida: false },
         data: { respondida: true, respuesta: dto.respuesta ?? null, fecha_respuesta: new Date() },
       });
-      await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estadoDestino.id_detalle } });
+      if (respuesta.count !== 1) throw new Error("La solicitud de información ya fue respondida");
+      const actualizada = await tx.solicitudes_informacion.findUniqueOrThrow({ where: { id_solicitud } });
+      const pendientes = await tx.solicitudes_informacion.count({ where: { id_caso, respondida: false } });
+      if (pendientes === 0) {
+        await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estadoDestino.id_detalle } });
+      }
       await CaseRepository.pushTimeline(tx, id_caso, {
         kind: "info_recibida",
         actor,
         actor_rol,
-        titulo: `Información recibida — vuelve a ${estadoDestino.nombre}`,
+        titulo: pendientes > 0 ? "Información recibida — quedan solicitudes pendientes" : `Información recibida — vuelve a ${estadoDestino.nombre}`,
         detalle: dto.respuesta ?? null,
       });
       await NotificationRepository.emitir(tx, {
@@ -1236,20 +1242,25 @@ export class CaseRepository {
     });
     if (!plan) throw new Error(`El plan ${id_plan} no existe`);
 
-    const [estadoCaso, estadoPlanAceptado, estadoPlanEnEjecucion, estadoPlanFinalizado, estadoPlanCerrado, estadoActEnProgreso] = await Promise.all([
+    const [estadoCaso, estadoPlanAceptado, estadoPlanEnEjecucion, estadoPlanFinalizado, estadoPlanCerrado, estadoActEnProgreso, estadoPlanEnviado] = await Promise.all([
       CaseRepository.findEstado("Ejecución"),
       CaseRepository.findEstadoPlan("Aceptado"),
       CaseRepository.findEstadoPlan("En Ejecución"),
       CaseRepository.ensureEstadoPlan("Finalizado"),
       CaseRepository.findEstadoPlan("Cerrado"),
       CaseRepository.findEstadoActividad("En progreso"),
+      CaseRepository.findEstadoPlan("Enviado"),
     ]);
 
     return prisma.$transaction(async (tx) => {
-      const actualizado = await tx.planes_accion.update({
-        where: { id_plan },
+      // Compare the plan state inside the transaction: a repeated or concurrent
+      // acceptance must never reset activities that have already progressed.
+      const aceptacion = await tx.planes_accion.updateMany({
+        where: { id_plan, estado: estadoPlanEnviado.id_detalle },
         data: { estado: estadoPlanEnEjecucion.id_detalle, updated_at: new Date() },
       });
+      if (aceptacion.count !== 1) throw new Error(`El plan ${plan.codigo_plan} ya fue aceptado o no está Enviado`);
+      const actualizado = await tx.planes_accion.findUniqueOrThrow({ where: { id_plan } });
 
       await tx.actividades_plan.updateMany({
         where: { id_plan },
@@ -1325,16 +1336,19 @@ export class CaseRepository {
       throw new Error(`El plan ${plan.codigo_plan} no tiene actividades para finalizar`);
     }
 
-    const [estadoPlanFinalizado, estadoActCompletado] = await Promise.all([
+    const [estadoPlanFinalizado, estadoActCompletado, estadoPlanEnEjecucion, estadoPlanAceptado] = await Promise.all([
       CaseRepository.ensureEstadoPlan("Finalizado"),
       CaseRepository.findEstadoActividad("Completado"),
+      CaseRepository.findEstadoPlan("En Ejecución"),
+      CaseRepository.findEstadoPlan("Aceptado"),
     ]);
 
     return prisma.$transaction(async (tx) => {
-      await tx.planes_accion.update({
-        where: { id_plan },
+      const cierre = await tx.planes_accion.updateMany({
+        where: { id_plan, estado: { in: [estadoPlanEnEjecucion.id_detalle, estadoPlanAceptado.id_detalle] } },
         data: { estado: estadoPlanFinalizado.id_detalle, updated_at: new Date() },
       });
+      if (cierre.count !== 1) throw new Error(`El plan ${plan.codigo_plan} debe estar aceptado y en ejecución para finalizarlo`);
 
       await tx.actividades_plan.updateMany({
         where: { id_plan },

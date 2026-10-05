@@ -1,7 +1,36 @@
 import { ProfileRepository } from "./profile.repository.js";
 import { BcryptHelper } from "../../utils/bcrypt.js";
+import { unlink } from "node:fs/promises";
+import path from "node:path";
+import logger from "../../utils/logger.js";
 
 export class ProfileService {
+  static async replaceAvatar(id_usuario: number, foto_url: string | null) {
+    const previous = await this.getMe(id_usuario);
+    const user = await ProfileRepository.updateContact(id_usuario, { foto_url });
+    const oldPhoto = previous.foto_url;
+    // Only server-generated avatar filenames may be removed, never arbitrary paths.
+    const file = oldPhoto?.match(/^\/uploads\/avatars\/([a-f0-9-]{36}\.(?:jpg|png|webp))$/i)?.[1];
+    if (file && oldPhoto !== foto_url) {
+      try {
+        if (await ProfileRepository.countAvatarReferences(oldPhoto!) === 0) {
+          await unlink(path.resolve(process.cwd(), "uploads", "avatars", file));
+        }
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+          logger.warn({ userId: id_usuario }, "No se pudo limpiar una foto reemplazada");
+        }
+      }
+    }
+    return user;
+  }
+  static async getSessions(id_usuario: number, currentId?: number) {
+    const sessions = await ProfileRepository.sessions(id_usuario);
+    return sessions.map(session => ({ ...session, actual: session.id_sesion === currentId }));
+  }
+  static getRecent(id_usuario: number) {
+    return ProfileRepository.recent(id_usuario);
+  }
   static async getMe(id_usuario: number) {
     const user = await ProfileRepository.findById(id_usuario);
     if (!user) throw new Error("Usuario no encontrado");
@@ -60,6 +89,11 @@ export class ProfileService {
       return [{ label: "Reportes enviados", value: reportes }];
     }
 
+    if (rol === "gestión de planes de contingencia") {
+      const registrados = await ProfileRepository.countContingenciasRegistradas(id_usuario);
+      return [{ label: "Contingencias registradas", value: registrados }];
+    }
+
     if (rol === "admin") {
       const [usuarios, areas] = await Promise.all([
         ProfileRepository.countUsuariosActivos(),
@@ -74,3 +108,4 @@ export class ProfileService {
     return [];
   }
 }
+

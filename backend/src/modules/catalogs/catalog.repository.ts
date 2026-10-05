@@ -1,6 +1,13 @@
 import prisma from "../../lib/prisma.js";
 
 export class CatalogRepository {
+  static async countUnitReferences(id_detalle: number) {
+    const counts = await Promise.all([
+      prisma.eventos_monitoreo.count({ where: { numero_mr: id_detalle } }),
+      prisma.eventos_operativos.count({ where: { numero_mr: id_detalle } }),
+    ]);
+    return counts.reduce((total, count) => total + count, 0);
+  }
   static async findAllGroups() {
     return prisma.catalogos.findMany({
       where: { estado: true },
@@ -11,7 +18,7 @@ export class CatalogRepository {
           orderBy: { orden: "asc" },
           select: {
             id_detalle: true,
-            codigo: true,
+            codigo: true, clasificacion_mr: true,
             nombre: true,
             descripcion: true,
             color: true,
@@ -28,12 +35,14 @@ export class CatalogRepository {
       include: {
         catalogo_detalle: {
           orderBy: { orden: "asc" },
-          select: { id_detalle: true, codigo: true, nombre: true, descripcion: true, color: true, orden: true, estado: true },
+          select: { id_detalle: true, codigo: true, clasificacion_mr: true, nombre: true, descripcion: true, color: true, orden: true, estado: true },
         },
       },
     });
   }
 
+  static findGroup(id_catalogo: number) { return prisma.catalogos.findUnique({ where: { id_catalogo } }); }
+  static listNames(id_catalogo: number) { return prisma.catalogo_detalle.findMany({ where: { id_catalogo }, select: { id_detalle: true, nombre: true } }); }
   static async findDetalleById(id_detalle: number) {
     return prisma.catalogo_detalle.findUnique({
       where: { id_detalle },
@@ -45,15 +54,15 @@ export class CatalogRepository {
     return prisma.catalogo_detalle.findFirst({ where: { id_catalogo, nombre } });
   }
 
-  static async createDetalle(id_catalogo: number, nombre: string) {
+  static async createDetalle(id_catalogo: number, nombre: string, clasificacion_mr?: string) {
     const count = await prisma.catalogo_detalle.count({ where: { id_catalogo } });
     return prisma.catalogo_detalle.create({
-      data: { id_catalogo, nombre, orden: count + 1 },
+      data: { id_catalogo, nombre, ...(clasificacion_mr !== undefined ? { clasificacion_mr } : {}), orden: count + 1 },
     });
   }
 
-  static async updateDetalle(id_detalle: number, nombre: string) {
-    return prisma.catalogo_detalle.update({ where: { id_detalle }, data: { nombre } });
+  static async updateDetalle(id_detalle: number, nombre: string, clasificacion_mr?: string) {
+    return prisma.catalogo_detalle.update({ where: { id_detalle }, data: { nombre, ...(clasificacion_mr !== undefined ? { clasificacion_mr } : {}) } });
   }
 
   static async setDetalleEstado(id_detalle: number, estado: boolean) {

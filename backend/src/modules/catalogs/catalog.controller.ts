@@ -25,7 +25,7 @@ export class CatalogController {
   static async createItem(req: Request, res: Response) {
     try {
       const id_catalogo = Number(req.params.id);
-      const item = await CatalogService.createItem(id_catalogo, req.body?.nombre ?? "");
+      const item = await CatalogService.createItem(id_catalogo, req.body?.nombre ?? "", req.body?.clasificacion_mr);
       return res.status(201).json(ApiResponse.success("Valor creado correctamente", item));
     } catch (error) {
       return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "Error al crear el valor")));
@@ -35,7 +35,7 @@ export class CatalogController {
   static async updateItem(req: Request, res: Response) {
     try {
       const id_detalle = Number(req.params.idDetalle);
-      const item = await CatalogService.updateItem(id_detalle, req.body?.nombre ?? "");
+      const item = await CatalogService.updateItem(id_detalle, req.body?.nombre ?? "", req.body?.clasificacion_mr);
       return res.json(ApiResponse.success("Valor actualizado correctamente", item));
     } catch (error) {
       return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "Error al actualizar el valor")));

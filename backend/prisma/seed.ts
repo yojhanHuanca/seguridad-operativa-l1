@@ -78,6 +78,7 @@ async function seedCatalogos() {
             id_catalogo: catalogo.id_catalogo,
             codigo: item.codigo,
             nombre: item.nombre,
+            clasificacion_mr: item.clasificacion_mr,
             descripcion: item.descripcion,
             orden: i + 1,
           },

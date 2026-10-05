@@ -1,5 +1,7 @@
+import { disconnectDevicePush } from "@/features/notifications/lib/push";
 import { useMemo, useState, type ReactNode } from "react";
 import { api, type ApiEnvelope } from "@/lib/api";
+import { queryClient } from "@/lib/queryClient";
 import { AuthContext, type AuthUser, type AuthValue } from "./auth";
 
 interface LoginResult { token: string; usuario: AuthUser }
@@ -26,6 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login: async (correo, password) => {
       const response = await api.post<ApiEnvelope<LoginResult>>("/auth/login", { correo, password });
       if (!response.data.data) throw new Error("La respuesta del servidor no contiene una sesión válida");
+      queryClient.clear();
       localStorage.setItem(TOKEN_KEY, response.data.data.token);
       localStorage.setItem(USER_KEY, JSON.stringify(response.data.data.usuario));
       setToken(response.data.data.token);
@@ -35,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loginWithGoogle: async (credential) => {
       const response = await api.post<ApiEnvelope<LoginResult>>("/auth/google", { credential });
       if (!response.data.data) throw new Error("La respuesta del servidor no contiene una sesión válida");
+      queryClient.clear();
       localStorage.setItem(TOKEN_KEY, response.data.data.token);
       localStorage.setItem(USER_KEY, JSON.stringify(response.data.data.usuario));
       setToken(response.data.data.token);
@@ -47,12 +51,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // limpia igual el lado del cliente, para no dejar a nadie atrapado sin
       // poder salir.
       try {
-        await api.post("/auth/logout");
+        await disconnectDevicePush();
+        await api.post("/auth/logout", undefined, { timeout: 10_000 });
       } catch {
         // intencional: logout local sigue aunque esto falle
       }
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
+      queryClient.clear();
       setToken(null);
       setUser(null);
     },

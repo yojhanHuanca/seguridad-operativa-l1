@@ -8,21 +8,23 @@ import type { CatalogDetalleAdmin } from "../hooks/useCatalogGroupAdmin";
  * Un solo clic en la unidad abre el modal de edición (renombrar / activar /
  * desactivar) — nada escondido detrás de un hover, todo a la vista.
  */
-function UnitButton({ item, onSelect }: { item: CatalogDetalleAdmin; onSelect: () => void }) {
+function UnitButton({ item, onSelect, showStatus }: { item: CatalogDetalleAdmin; onSelect: () => void; showStatus?: boolean }) {
   const activo = item.estado !== false;
   return (
     <button
       type="button"
       onClick={onSelect}
       className={cn(
-        "flex h-11 items-center justify-center rounded-lg border px-2 text-[12.5px] font-bold transition-colors",
+        "flex items-center justify-center rounded-lg border px-2 text-[12.5px] font-bold transition-colors",
+        showStatus ? "min-h-20 flex-col gap-2" : "h-11",
         activo
           ? "border-brand-200 bg-brand-50/70 text-brand-800 hover:border-brand-400 hover:bg-brand-50"
           : "border-line-soft bg-surface text-ink-faint line-through hover:border-line-strong"
       )}
       title={activo ? item.nombre : `${item.nombre} (inactiva)`}
     >
-      <span className="truncate">{item.nombre}</span>
+      <span className="max-w-full truncate">{item.nombre}</span>
+      {showStatus && <span className="flex items-center gap-1.5 text-[10px] font-medium no-underline"><span className={cn("h-1.5 w-1.5 rounded-full", activo ? "bg-brand-600" : "bg-ink-faint")} />{activo ? "Activa" : "Inactiva"}</span>}
     </button>
   );
 }
@@ -38,10 +40,12 @@ export function UnitGridCard({
   groups,
   onCreate,
   onSelect,
+  showStatus,
 }: {
   title: string;
   icon?: LucideIcon;
   groups: UnitGroup[];
+  showStatus?: boolean;
   onCreate: () => void;
   onSelect: (item: CatalogDetalleAdmin) => void;
 }) {
@@ -50,10 +54,10 @@ export function UnitGridCard({
   if (total === 0) {
     return (
       <Card className="p-8 text-center text-[13px] text-ink-quiet">
-        Sin registros todavía.
+        <p>{showStatus ? "No hay unidades que coincidan con los filtros." : "Sin registros todavía."}</p>
         <div className="mt-3">
           <Button size="sm" variant="outline" onClick={onCreate}>
-            <Plus className="h-4 w-4" /> Nuevo
+            <Plus className="h-4 w-4" /> {showStatus ? "Nueva unidad" : "Nuevo"}
           </Button>
         </div>
       </Card>
@@ -63,9 +67,9 @@ export function UnitGridCard({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-[12.5px] text-ink-quiet">{total} registradas en total · {title}</p>
+        <p className="text-[12.5px] text-ink-quiet">{total} {showStatus ? "unidades visibles" : "registradas en total"} · {title}</p>
         <Button size="sm" variant="outline" onClick={onCreate}>
-          <Plus className="h-4 w-4" /> Nuevo
+          <Plus className="h-4 w-4" /> {showStatus ? "Nueva unidad" : "Nuevo"}
         </Button>
       </div>
 
@@ -88,7 +92,7 @@ export function UnitGridCard({
             </div>
             <div className="grid grid-cols-3 gap-2 p-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
               {group.items.map((item) => (
-                <UnitButton key={item.id_detalle} item={item} onSelect={() => onSelect(item)} />
+                <UnitButton key={item.id_detalle} item={item} showStatus={showStatus} onSelect={() => onSelect(item)} />
               ))}
             </div>
           </Card>

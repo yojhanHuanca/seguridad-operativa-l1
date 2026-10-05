@@ -4,12 +4,14 @@ import { api, type ApiEnvelope } from "@/lib/api";
 export interface CatalogDetalleAdmin {
   id_detalle: number;
   nombre: string;
+  clasificacion_mr?: string | null;
   estado: boolean;
 }
 
 interface CatalogGroupAdmin {
   id_catalogo: number;
   nombre: string;
+  clasificacion_mr?: string | null;
   catalogo_detalle: CatalogDetalleAdmin[];
 }
 

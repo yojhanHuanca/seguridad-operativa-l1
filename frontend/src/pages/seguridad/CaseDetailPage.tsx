@@ -1,3 +1,4 @@
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
@@ -224,7 +225,7 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
               <InfoRow icon={<Phone className="h-3.5 w-3.5" />} label="Teléfono" value={caso.telefono_reportante.trim()} />
             )}
             {caso.usuarios_casos_sop_responsable_hallazgoTousuarios && (
-              <InfoRow icon={<UserIcon className="h-3.5 w-3.5" />} label="Asignado a" value={caso.usuarios_casos_sop_responsable_hallazgoTousuarios.nombre} />
+              <InfoRow icon={<UserAvatar nombre={caso.usuarios_casos_sop_responsable_hallazgoTousuarios.nombre} userId={caso.usuarios_casos_sop_responsable_hallazgoTousuarios.id_usuario} className="h-7 w-7 text-[10px]" />} label="Asignado a" value={caso.usuarios_casos_sop_responsable_hallazgoTousuarios.nombre} />
             )}
             <InfoRow icon={<FileText className="h-3.5 w-3.5" />} label="Creado" value={formatDateTime(caso.created_at)} />
           </InfoCard>
@@ -651,3 +652,4 @@ function PrintTh({ children }: { children: ReactNode }) {
 function PrintTd({ children, className }: { children: ReactNode; className?: string }) {
   return <td className={`border-b border-line px-2 py-2.5 align-top text-ink ${className ?? ""}`}>{children}</td>;
 }
+

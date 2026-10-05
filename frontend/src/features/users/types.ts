@@ -3,6 +3,7 @@
  * pedir cualquier rol para llenar los selectores de responsable.
  */
 export interface UserBasic {
+  foto_url?: string | null;
   id_usuario: number;
   codigo_usuario: string;
   nombre: string;

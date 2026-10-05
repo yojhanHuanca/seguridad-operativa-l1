@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { BriefcaseBusiness, ClipboardList, Plus, Rocket, Search, Send, Trash2, UserRound, FileSearch } from "lucide-react";
+import { UserAvatar } from "@/components/ui/UserAvatar";
+import { BriefcaseBusiness, ClipboardList, Plus, Rocket, Search, Send, Trash2, FileSearch } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/design-system/primitives/Button";
 import { Modal } from "@/design-system/primitives/Modal";
@@ -98,7 +99,7 @@ function ResponsableSearch({
       {selected && (
         <div className="flex items-start justify-between gap-3 rounded-lg border border-brand-100 bg-brand-50/70 p-3">
           <div className="flex min-w-0 items-start gap-2.5">
-            <UserRound className="mt-0.5 h-4 w-4 shrink-0 text-brand-700" />
+            <UserAvatar nombre={selected.nombre} fotoUrl={selected.foto_url} />
             <div className="min-w-0">
               <p className="truncate text-[13px] font-semibold text-brand-900">{selected.nombre}</p>
               <p className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-brand-800/80">
@@ -125,7 +126,7 @@ function ResponsableSearch({
               }}
               className="flex w-full items-start gap-2.5 border-b border-line-soft px-3 py-2.5 text-left last:border-b-0 hover:bg-surface"
             >
-              <UserRound className="mt-0.5 h-4 w-4 shrink-0 text-ink-faint" />
+              <UserAvatar nombre={u.nombre} fotoUrl={u.foto_url} />
               <span className="min-w-0">
                 <span className="block truncate text-[13px] font-medium text-ink">{u.nombre}</span>
                 <span className="block truncate text-[11.5px] text-ink-quiet">{u.cargo || "Cargo no registrado"} · {u.codigo_usuario}</span>
@@ -323,7 +324,7 @@ function PlanDisplay({ caso, onEdit }: { caso: CaseDetail; onEdit: (idPlan: numb
             </div>
             <div>
               <span className="text-ink-quiet">Responsable:</span>{" "}
-              <span className="font-medium">{plan.usuarios.nombre}</span>
+              <span className="inline-flex items-center gap-1.5 font-medium"><UserAvatar nombre={plan.usuarios.nombre} userId={plan.usuarios.id_usuario} className="h-6 w-6 text-[10px]" />{plan.usuarios.nombre}</span>
               {plan.usuarios.cargo && <span className="text-ink-faint text-xs"> · {plan.usuarios.cargo}</span>}
             </div>
             <div>
@@ -369,7 +370,7 @@ function PlanDisplay({ caso, onEdit }: { caso: CaseDetail; onEdit: (idPlan: numb
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div>
-                          <span className="text-ink-quiet">Responsable:</span> {it.usuarios?.nombre ?? "—"}
+                          <span className="text-ink-quiet">Responsable:</span> {it.usuarios ? <span className="inline-flex items-center gap-1.5"><UserAvatar nombre={it.usuarios.nombre} userId={it.usuarios.id_usuario} className="h-5 w-5 text-[9px]" />{it.usuarios.nombre}</span> : "—"}
                           {it.usuarios?.cargo && <span className="text-ink-faint"> · {it.usuarios.cargo}</span>}
                         </div>
                         <div>
@@ -705,3 +706,4 @@ function PlanForm({
     </div>
   );
 }
+

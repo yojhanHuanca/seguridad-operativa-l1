@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Activity, CalendarDays, Clock3, Download, Filter, Info, MapPin, PieChart, RefreshCcw, Timer, TrendingUp, X } from 'lucide-react';
+import { Activity, CalendarDays, Clock3, Filter, Info, MapPin, PieChart, RefreshCcw, Timer, TrendingUp, X } from 'lucide-react';
 import { ContingenciaShell } from '@/components/layout/ContingenciaShell';
 import { LoadingState } from '@/components/feedback/LoadingState';
 import { contingenciasApi } from '@/features/contingencias/api';
 import type { ContingenciaEvento } from '@/features/contingencias/types';
 import type { DatoOperativo } from '@/features/datos-operativos/hooks/useDatosOperativos';
 import { api, type ApiEnvelope } from '@/lib/api';
-import { countBy, dayKey, distribution, eventTimes, formatMetric as fmt, heatmap, monthKey, percentChange, periodFor, summarize } from '@/features/contingencias/analytics';
+import { countBy, dayKey, eventTimes, formatMetric as fmt, monthKey, percentChange, periodFor, summarize } from '@/features/contingencias/analytics';
 import { ChartPanel, Evolution, HourHeatmap, PlaceDotplot, ResponseBoxplot, Sparkline, TypeTreemap } from '@/features/contingencias/components/AnalyticsCharts';
 import './indicadores.css';
 
@@ -84,31 +84,6 @@ export function Indicadores() {
   const loading = eventsQuery.isPending;
   const error = eventsQuery.isError;
   const filtered = !!station || !!tipo;
-  const exportSummary = () => {
-    const hourly = heatmap(analytics.events);
-    const rows = [
-      ['Sección', 'Concepto', 'Valor'],
-      ['Periodo', 'Desde', period.start], ['Periodo', 'Hasta', period.end],
-      ['Filtro', 'Lugar', station || 'Todos'], ['Filtro', 'Tipo', tipo || 'Todos'],
-      ['Resumen', 'Eventos', String(analytics.events.length)],
-      ...kpis.slice(1).map((kpi, index) => ['Resumen', kpi.label, analytics.summary[index + 1] === null ? 'Sin dato' : String(analytics.summary[index + 1])]),
-      ...analytics.types.map(row => ['Tipo', row.name, String(row.value)]),
-      ...analytics.places.map(row => ['Lugar', row.name, String(row.value)]),
-      ...hourly.cells.flatMap((row, day) => row.map((value, hour) => ['Concentración horaria', ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'][day] + ' / ' + hour * 4 + '–' + (hour + 1) * 4 + ' h', String(value)])),
-      ['Concentración horaria', 'Sin hora válida (excluidos)', String(hourly.excluded)],
-      ...analytics.times.flatMap(row => {
-        const stats = distribution(row.values);
-        return [['Muestra de tiempos', row.name, String(row.values.length)], ...(['min', 'q1', 'median', 'q3', 'max'] as const).map(key => ['Tiempo (min)', row.name + ' / ' + key, stats ? String(stats[key]) : 'Sin dato'])];
-      }),
-      ...analytics.daily.map(row => ['Evolución diaria', row.date, String(row.eventos)]),
-      ...analytics.daily.map(row => ['Operación global / ' + metricNames[metric], row.date, row.operacion === null ? 'Sin dato' : String(row.operacion)]),
-    ];
-    const csv = rows.map(row => row.map(value => '"' + value.replace(/^[=+@-]/, "'$&").replaceAll('"', '""') + '"').join(',')).join('\r\n');
-    const url = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }));
-    const link = document.createElement('a');
-    link.href = url; link.download = 'contingencias-' + month + '.csv'; link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  };
   const chooseMonth = (value: string) => { if (/^\d{4}-\d{2}$/.test(value) && +value.slice(5) >= 1 && +value.slice(5) <= 12) { setMonth(value); setStation(''); setTipo(''); } };
 
   return (
@@ -120,7 +95,6 @@ export function Indicadores() {
             <label className="ctg-month"><CalendarDays /><input type="month" aria-label="Periodo" value={month} onChange={e => chooseMonth(e.target.value)} /></label>
             <button className="ctg-button" aria-expanded={filtersOpen} aria-controls="ctg-filters" onClick={() => setFiltersOpen(!filtersOpen)}><Filter />Filtros{filtered ? ' · ' + [station, tipo].filter(Boolean).length : ''}</button>
             <button className="ctg-button" aria-label="Actualizar estadísticas" onClick={refresh} disabled={busy}><RefreshCcw className={busy ? 'animate-spin' : ''} /></button>
-            <button className="ctg-button" onClick={exportSummary} disabled={loading || error || opsQuery.isPending || opsQuery.isError || busy || (!analytics.events.length && !analytics.operations.length)}><Download />Exportar</button>
           </div>
         </header>
         {(filtersOpen || filtered) && <div id="ctg-filters" className="ctg-filters">

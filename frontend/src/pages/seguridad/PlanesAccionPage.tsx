@@ -1,6 +1,7 @@
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft, ChevronRight, ClipboardList, UserCircle, CalendarDays } from "lucide-react";
+import { ChevronLeft, ChevronRight, ClipboardList, CalendarDays } from "lucide-react";
 import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
 import { Card } from "@/design-system/primitives/Card";
 import { Button } from "@/design-system/primitives/Button";
@@ -141,7 +142,7 @@ export function SoPlanesAccionPage() {
                     <td className="px-4 py-3.5">
                       <p className="text-[12.5px] font-medium text-ink-soft truncate">{plan.areas.nombre_area}</p>
                       <p className="inline-flex items-center gap-1 text-[11.5px] text-ink-quiet truncate mt-0.5">
-                        <UserCircle className="h-3.5 w-3.5 shrink-0" /> {plan.usuarios.nombre}
+                        <UserAvatar nombre={plan.usuarios.nombre} userId={plan.usuarios.id_usuario} className="h-5 w-5 text-[9px]" /> {plan.usuarios.nombre}
                       </p>
                     </td>
                     <td className="px-4 py-3.5">
@@ -260,3 +261,4 @@ function FilterSelect({
     </div>
   );
 }
+

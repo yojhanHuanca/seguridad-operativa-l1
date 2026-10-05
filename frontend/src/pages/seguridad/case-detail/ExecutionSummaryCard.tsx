@@ -1,3 +1,4 @@
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useState, type ReactNode } from "react";
 import {
   Activity, ClipboardList, CheckCircle2, CornerUpLeft, Clock,
@@ -170,6 +171,7 @@ function comentariosActividad(plan: PlanAccion) {
           comentario: s.comentario?.trim() ?? "",
           porcentaje: Number(s.porcentaje ?? actividad.porcentaje ?? 0),
           fecha: s.fecha,
+          usuarioId: s.usuarios?.id_usuario,
           usuario: s.usuarios?.nombre ?? actividad.usuarios?.nombre ?? plan.usuarios.nombre,
         }))
     )
@@ -454,7 +456,7 @@ function PlanExecutionBoard({
                 </div>
                 <div className="rounded-lg bg-surface/70 border border-line-soft p-3">
                   <p className="text-[10.5px] font-semibold uppercase tracking-wide text-ink-faint">Responsable</p>
-                  <p className="text-[12.5px] font-medium text-ink mt-1">{plan.usuarios.nombre}</p>
+                  <p className="mt-1 flex items-center gap-1.5 text-[12.5px] font-medium text-ink"><UserAvatar nombre={plan.usuarios.nombre} userId={plan.usuarios.id_usuario} className="h-6 w-6 text-[10px]" />{plan.usuarios.nombre}</p>
                 </div>
                 <div className="rounded-lg bg-surface/70 border border-line-soft p-3">
                   <p className="text-[10.5px] font-semibold uppercase tracking-wide text-ink-faint">Fecha límite</p>
@@ -520,7 +522,7 @@ function PlanExecutionBoard({
                             <div className="min-w-0">
                               <p className="text-[13px] font-medium text-ink leading-snug break-words">{parsed.descripcion}</p>
                               <p className="text-[11px] text-ink-quiet mt-1">
-                                {act.usuarios?.nombre ?? "Sin responsable"}
+                                {act.usuarios ? <span className="inline-flex items-center gap-1.5"><UserAvatar nombre={act.usuarios.nombre} userId={act.usuarios.id_usuario} className="h-5 w-5 text-[9px]" />{act.usuarios.nombre}</span> : "Sin responsable"}
                                 {act.usuarios?.cargo ? ` · ${act.usuarios.cargo}` : ""}
                                 {parsed.meta.tipoAccion ? ` · ${parsed.meta.tipoAccion}` : ""}
                                 {parsed.meta.areaNombre ? ` · ${parsed.meta.areaNombre}` : ""}
@@ -576,7 +578,7 @@ function PlanExecutionBoard({
                               <span className="text-[10.5px] text-ink-faint shrink-0">{s.fecha ? relativeTime(s.fecha) : ""}</span>
                             </div>
                             {/* El porcentaje de avance no aporta al comentario en sí. */}
-                            <p className="mt-1 text-[10.5px] text-ink-quiet">{s.usuario}</p>
+                            <p className="mt-1 flex items-center gap-1.5 text-[10.5px] text-ink-quiet">{s.usuarioId && <UserAvatar nombre={s.usuario} userId={s.usuarioId} className="h-5 w-5 text-[9px]" />}{s.usuario}</p>
                           </div>
                         ),
                       })),
@@ -1627,3 +1629,6 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
     </StageSection>
   );
 }
+
+
+

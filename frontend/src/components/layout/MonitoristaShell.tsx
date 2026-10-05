@@ -13,10 +13,10 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SessionExitButton } from "@/features/auth/SessionExitButton";
+import { SidebarAccount } from "./SidebarAccount";
 import { AdminPanelSwitcher } from "@/features/auth/AdminPanelSwitcher";
 import { AdminViewingBanner } from "@/features/auth/AdminViewingBanner";
-import { useAuth } from "@/features/auth/auth";
+
 import { Logo } from "@/components/brand/Logo";
 import { nombreSistema, useConfiguracion } from "@/features/configuracion/hooks/useConfiguracion";
 
@@ -95,14 +95,14 @@ function NavLink({ item, collapsed, active, onNavigate }: { item: NavItem; colla
 
   if (item.external) {
     return (
-      <a href={item.to} target="_blank" rel="noreferrer" title={collapsed ? item.label : undefined} className={className}>
+      <a href={item.to} target="_blank" rel="noreferrer" aria-label={collapsed ? item.label : undefined} aria-current={active ? "page" : undefined} title={collapsed ? item.label : undefined} className={className}>
         {content}
       </a>
     );
   }
 
   return (
-    <Link to={item.to} onClick={onNavigate} title={collapsed ? item.label : undefined} className={className}>
+    <Link to={item.to} onClick={onNavigate} aria-label={collapsed ? item.label : undefined} aria-current={active ? "page" : undefined} title={collapsed ? item.label : undefined} className={className}>
       {content}
     </Link>
   );
@@ -110,12 +110,9 @@ function NavLink({ item, collapsed, active, onNavigate }: { item: NavItem; colla
 
 function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
   const location = useLocation();
-  const { user } = useAuth();
   // Antes decía "Monitorista" fijo, sin importar quién entró — un SO
   // visitando este panel (RSO) veía un nombre que no era el suyo. La banda
   // de AdminViewingBanner ya avisa "estás visitando"; acá va la persona real.
-  const nombre = user?.nombre?.trim() || "Monitorista";
-  const inicial = nombre.charAt(0).toUpperCase() || "M";
 
   return (
     <>
@@ -131,7 +128,7 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
         </Link>
       </div>
 
-      <nav className="scrollbar-none flex-1 overflow-y-auto px-3 py-4">
+      <nav aria-label="Navegación de monitoreo" className="scrollbar-none flex-1 overflow-y-auto px-3 py-4">
         {SECTIONS.map((section) => (
           <div key={section.title} className="mb-5">
             {!collapsed && (
@@ -152,18 +149,7 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
         </div>
       </nav>
 
-      {!collapsed && (
-        <div className="shrink-0 border-t border-line-soft p-3">
-          <SessionExitButton withLabel className="mb-2 w-full justify-start" />
-          <Link to="/monitoreo/perfil" onClick={onNavigate} className="flex items-center gap-3 rounded-2xl bg-surface px-3 py-3 transition-colors hover:bg-surface-2">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-700 text-[13px] font-bold text-white">{inicial}</div>
-            <div className="min-w-0 leading-tight">
-              <p className="truncate text-[13px] font-semibold text-ink">{nombre}</p>
-              <p className="mt-0.5 truncate text-[11.5px] text-ink-quiet">Línea 1 · Metro de Lima</p>
-            </div>
-          </Link>
-        </div>
-      )}
+      <SidebarAccount collapsed={collapsed} to="/monitoreo/perfil" role="Monitorista" onNavigate={onNavigate} />
     </>
   );
 }
@@ -186,7 +172,7 @@ export function MonitoristaShell({ children }: { children: ReactNode }) {
       <AdminViewingBanner roleLabel="Monitorista" />
       <div className="min-h-screen bg-surface md:flex">
       {/* Desktop sidebar */}
-      <aside
+      <aside data-sidebar data-collapsed={collapsed}
         data-print="hide"
         className={cn(
           "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-line bg-white transition-[width] duration-200 md:flex",
@@ -208,7 +194,7 @@ export function MonitoristaShell({ children }: { children: ReactNode }) {
       {mobileOpen && (
         <div data-print="hide" className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileOpenPath(null)} aria-hidden />
-          <aside className="absolute left-0 top-0 flex h-full w-[264px] flex-col bg-white shadow-xl">
+          <aside data-sidebar data-mobile="true" className="absolute left-0 top-0 flex h-full w-[264px] flex-col bg-white shadow-xl">
             <SidebarContent collapsed={false} onNavigate={() => setMobileOpenPath(null)} />
           </aside>
         </div>

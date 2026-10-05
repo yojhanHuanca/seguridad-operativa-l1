@@ -119,6 +119,7 @@ const ALL_COLUMNS: string[] = [
 ];
 
 interface CatalogCache {
+  materialRodante?: Record<string, string | null>;
   catalogos: Record<string, Record<string, number>>;
 }
 
@@ -244,6 +245,16 @@ function validateField(row: MonitoreoRow, rowNumber: number, issues: Importacion
     }
   }
 
+  const unitName = getFieldValue(row, "numero_mr");
+  const unitKey = normalizeText(unitName);
+  if (unitName && unitKey !== normalizeText("N/A") && catalogos.materialRodante && Object.hasOwn(catalogos.materialRodante, unitKey)) {
+    const classification = catalogos.materialRodante[unitKey];
+    const expected = classification === "AUXILIAR" ? "N/A" : classification;
+    if (!expected || normalizeText(getFieldValue(row, "modelo_mr")) !== normalizeText(expected)) {
+      addIssue(issues, { row: rowNumber, field: "Nro. MR", severity: "error", message: classification ? "La unidad no corresponde al modelo MR seleccionado." : "La unidad no tiene clasificación. Completa el catálogo antes de importar.", value: unitName });
+      valid = false;
+    }
+  }
   return valid;
 }
 
@@ -266,7 +277,7 @@ async function loadCatalogos(): Promise<CatalogCache> {
     where: { estado: true },
   });
 
-  const cache: CatalogCache = { catalogos: {} };
+  const cache: CatalogCache = { catalogos: {}, materialRodante: {} };
   const catalogoNames = [
     "Tipo de incidente operativo", "Ubicación", "Tipo de vía",
     "Dirección de vía", "Lugar de Incidente", "Modelo MR",
@@ -281,6 +292,7 @@ async function loadCatalogos(): Promise<CatalogCache> {
       cache.catalogos[nombreCatalogo] = {};
     }
     cache.catalogos[nombreCatalogo][normalizeText(detalle.nombre)] = detalle.id_detalle;
+    if (nombreCatalogo === "Nro. MR") cache.materialRodante![normalizeText(detalle.nombre)] = detalle.clasificacion_mr;
   }
 
   return cache;

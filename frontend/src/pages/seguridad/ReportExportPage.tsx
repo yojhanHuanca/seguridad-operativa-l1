@@ -4,11 +4,9 @@ import {
   CalendarDays,
   CheckCircle2,
   ClipboardList,
-  FileJson,
   FileSpreadsheet,
   FileText,
   Layers3,
-  Printer,
   RefreshCcw,
   Search,
   SlidersHorizontal,
@@ -189,12 +187,6 @@ export function ReportExportPage() {
     setTo(toDateInput(today));
   };
 
-  const printReport = () => {
-    if (exportRows.length === 0) return;
-    setPrintActive(true);
-    window.setTimeout(() => window.print(), 0);
-  };
-
   const downloadExcel = async () => {
     if (exportRows.length === 0) return;
     setExportingExcel(true);
@@ -252,15 +244,6 @@ export function ReportExportPage() {
               <StatChip icon={<BarChart3 className="h-3.5 w-3.5" />} label="Filas a exportar" value={exportRows.length} tone="info" />
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Button variant="outline" size="sm" disabled={exportRows.length === 0} onClick={() => downloadJson(exportRows, fileName)}>
-                <FileJson className="h-4 w-4" /> JSON
-              </Button>
-              <Button variant="outline" size="sm" disabled={exportRows.length === 0} onClick={printReport}>
-                <Printer className="h-4 w-4" /> PDF
-              </Button>
-              <Button variant="outline" size="sm" disabled={exportRows.length === 0} onClick={() => downloadCsv(exportRows, fileName)}>
-                <Table2 className="h-4 w-4" /> CSV
-              </Button>
               <Button size="sm" disabled={exportRows.length === 0 || exportingExcel} onClick={() => void downloadExcel()}>
                 <FileSpreadsheet className="h-4 w-4" /> {exportingExcel ? "Generando..." : "Descargar Excel"}
               </Button>
@@ -966,42 +949,6 @@ function normalizeText(value: unknown): string {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
-}
-
-function downloadCsv(rows: ExportRow[], fileName: string) {
-  if (rows.length === 0) return;
-  const columns = Object.keys(rows[0]);
-  const lines = [
-    columns,
-    ...rows.map((row) => columns.map((column) => row[column] ?? "")),
-  ].map((row) => row.map(toCsvCell).join(";"));
-  const csv = `sep=;\r\n${lines.join("\r\n")}`;
-  downloadBlob(new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" }), `${fileName}.csv`);
-}
-
-function downloadJson(rows: ExportRow[], fileName: string) {
-  if (rows.length === 0) return;
-  downloadBlob(new Blob([JSON.stringify(rows, null, 2)], { type: "application/json;charset=utf-8;" }), `${fileName}.json`);
-}
-
-function toCsvCell(value: string | number): string {
-  const clean = String(value)
-    .replace(/\r?\n|\r/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  const safe = /^[=+\-@]/.test(clean) ? `'${clean}` : clean;
-  return `"${safe.replace(/"/g, '""')}"`;
-}
-
-function downloadBlob(blob: Blob, fileName: string) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 function PreviewTh({ children }: { children: ReactNode }) {

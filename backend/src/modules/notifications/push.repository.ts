@@ -6,6 +6,9 @@ export interface SuscripcionPush {
 }
 
 export class PushRepository {
+  static buscarPropia(endpoint: string, usuario: number) {
+    return prisma.push_subscriptions.findFirst({ where: { endpoint, usuario } });
+  }
   /**
    * `upsert` por `endpoint` (no por usuario): un mismo navegador/dispositivo
    * puede volver a suscribirse (permiso revocado y vuelto a aceptar, u otro

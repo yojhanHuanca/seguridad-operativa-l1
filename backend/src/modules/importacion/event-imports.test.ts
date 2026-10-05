@@ -32,6 +32,19 @@ beforeEach(() => {
   mocks.start.mockResolvedValue({ id_importacion: 3 });
 });
 describe('Importación de eventos', () => {
+  it('rechaza modelo y unidad incompatibles en la vista previa del Excel', async () => {
+    const existing = await mocks.db.catalogo_detalle.findMany();
+    mocks.db.catalogo_detalle.findMany.mockResolvedValue([...existing,
+      { id_detalle: 10, nombre: 'ALSTOM', catalogos: { nombre: 'Modelo MR' } },
+      { id_detalle: 11, nombre: 'ANSALDO', catalogos: { nombre: 'Modelo MR' } },
+      { id_detalle: 12, nombre: 'T45', clasificacion_mr: 'ANSALDO', catalogos: { nombre: 'Nro. MR' } },
+    ]);
+    const invalid = await Monitor.validarMonitoreo('test.xlsx', [{ ...monitoring, 'Modelo MR': 'ALSTOM', 'Nro. MR': 'T45' }]);
+    expect(invalid.canImport).toBe(false);
+    expect(invalid.issues.some(issue => issue.message.includes('no corresponde'))).toBe(true);
+    const valid = await Monitor.validarMonitoreo('test.xlsx', [{ ...monitoring, 'Modelo MR': 'ANSALDO', 'Nro. MR': 'T45' }]);
+    expect(valid.canImport).toBe(true);
+  });
   it('omite duplicados realmente durante la escritura de ambos módulos', async () => {
     const mon = await Monitor.importarMonitoreo('test', [monitoring, monitoring], 1, 'Hoja 2');
     const con = await Cont.importarContingencias('test', [contingency, contingency], 1);

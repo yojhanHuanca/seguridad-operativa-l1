@@ -16,10 +16,10 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { cn } from "@/lib/utils";
-import { SessionExitButton } from "@/features/auth/SessionExitButton";
+import { SidebarAccount } from "./SidebarAccount";
 import { AdminPanelSwitcher } from "@/features/auth/AdminPanelSwitcher";
 import { nombreSistema, useConfiguracion } from "@/features/configuracion/hooks/useConfiguracion";
-import { useAuth } from "@/features/auth/auth";
+
 
 interface NavItem {
   to: string;
@@ -61,7 +61,6 @@ const TITLES: Record<string, string> = {
 
 function SidebarContent({ collapsed, onNavigate, systemName }: { collapsed: boolean; onNavigate?: () => void; systemName: string }) {
   const location = useLocation();
-  const { user } = useAuth();
 
   return (
     <>
@@ -103,18 +102,7 @@ function SidebarContent({ collapsed, onNavigate, systemName }: { collapsed: bool
         ))}
       </nav>
 
-      {!collapsed && (
-        <div className="shrink-0 border-t border-line-soft p-3">
-          <SessionExitButton withLabel className="mb-3 w-full justify-start" />
-          <Link to="/admin/perfil" onClick={onNavigate} className="flex items-center gap-3 rounded-2xl bg-surface px-3 py-3 transition-colors hover:bg-surface-2">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-700 text-[13px] font-bold text-white">{user?.nombre?.charAt(0).toUpperCase() || "A"}</div>
-            <div className="min-w-0 leading-tight">
-              <p className="truncate text-[13px] font-semibold text-ink">{user?.nombre || "Administrador"}</p>
-              <p className="mt-0.5 truncate text-[11.5px] text-ink-quiet">Administrador</p>
-            </div>
-          </Link>
-        </div>
-      )}
+      <SidebarAccount collapsed={collapsed} to="/admin/perfil" role="Administrador" onNavigate={onNavigate} />
     </>
   );
 }
@@ -134,7 +122,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-surface md:flex">
       {/* Desktop sidebar */}
-      <aside
+      <aside data-sidebar data-collapsed={collapsed}
         className={cn(
           "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-line bg-white transition-[width] duration-200 md:flex",
           collapsed ? "w-[64px]" : "w-[256px]"
@@ -155,7 +143,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       {mobileOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileOpen(false)} aria-hidden />
-          <aside className="absolute left-0 top-0 flex h-full w-[296px] flex-col bg-white shadow-xl">
+          <aside data-sidebar data-mobile="true" className="absolute left-0 top-0 flex h-full w-[296px] flex-col bg-white shadow-xl">
             <SidebarContent collapsed={false} systemName={systemName} onNavigate={() => setMobileOpen(false)} />
           </aside>
         </div>

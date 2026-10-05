@@ -1,3 +1,4 @@
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { type ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -28,6 +29,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SidebarAccount } from "./SidebarAccount";
 import { SessionExitButton } from "@/features/auth/SessionExitButton";
 import { AdminPanelSwitcher } from "@/features/auth/AdminPanelSwitcher";
 import { AdminViewingBanner } from "@/features/auth/AdminViewingBanner";
@@ -107,7 +109,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
     location.pathname === "/seguridad/casos" ? activeFilter?.label ?? "Gestión de Reportes" : currentPageTitle;
   const unreadNotifications = notifications?.no_leidas ?? 0;
   const currentSoUser = useCurrentSoUser();
-  const { nombre: userName, cargo: userRole, iniciales: userInitials, user: soUser } = currentSoUser;
+  const { nombre: userName, cargo: userRole, user: soUser } = currentSoUser;
   const { data: eventosAsignados } = useEventosAsignados(soUser?.id_usuario);
   const eventosAsignadosPendientes = (eventosAsignados ?? []).filter((e) => !e.id_caso_creado).length;
 
@@ -176,7 +178,8 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
 
   const toggleGroup = (id: string) => setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }));
 
-  const renderLink = (link: NavLink, onNavigate?: () => void) => {
+  const renderLink = (link: NavLink, onNavigate?: () => void, compact = collapsed) => {
+    const collapsed = compact;
     const active = link.match(location.pathname, location.search);
     const className = cn(
       "group relative flex h-10 items-center gap-2 rounded-xl pl-2 pr-2.5 text-[13px] font-medium transition-colors hover:bg-surface",
@@ -232,13 +235,16 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
     }
 
     return (
-      <Link key={link.to} to={link.to} onClick={onNavigate} title={collapsed ? link.label : undefined} className={className}>
+      <Link aria-label={collapsed ? link.label : undefined} aria-current={active ? "page" : undefined} key={link.to} to={link.to} onClick={onNavigate} title={collapsed ? link.label : undefined} className={className}>
         {content}
       </Link>
     );
   };
 
-  const sidebarContent = (onNavigate?: () => void) => (
+  const desktopCollapsed = collapsed;
+  const sidebarContent = (onNavigate?: () => void) => {
+    const collapsed = onNavigate ? false : desktopCollapsed;
+    return (
     <>
       <div
         className={cn(
@@ -271,7 +277,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
         </div>
       </div>
 
-      <nav className="scrollbar-none flex-1 overflow-y-auto overscroll-contain px-3 py-4">
+      <nav aria-label="Navegación de seguridad operativa" className="scrollbar-none flex-1 overflow-y-auto overscroll-contain px-3 py-4">
         {!collapsed && (
           <p className="mb-3 px-1.5 text-[10.5px] font-bold uppercase tracking-[0.18em] text-ink-faint">
             {currentSection}
@@ -304,7 +310,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
 
               {open && (
                 <div className={cn("mt-1 space-y-1", !collapsed && "ml-[18px] border-l border-line-soft pl-3")}>
-                  {group.links.map((link) => renderLink(link, onNavigate))}
+                  {group.links.map((link) => renderLink(link, onNavigate, collapsed))}
                 </div>
               )}
             </div>
@@ -312,37 +318,21 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
         })}
 
         <div className={cn("mt-4 space-y-1 border-t border-line-soft pt-4", collapsed && "border-t-0 pt-1")}>
-          {standaloneLinks.map((link) => renderLink(link, onNavigate))}
+          {standaloneLinks.map((link) => renderLink(link, onNavigate, collapsed))}
         </div>
       </nav>
 
-      <div className={cn("shrink-0 border-t border-line bg-white p-3", collapsed && "px-2")}>
-        <Link
-          to="/seguridad/perfil"
-          onClick={onNavigate}
-          className={cn(
-            "flex items-center gap-3 rounded-2xl bg-surface px-3 py-3 transition-colors hover:bg-brand-50",
-            collapsed && "justify-center rounded-xl px-0"
-          )}
-        >
-          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-700 text-[13px] font-bold text-white">{userInitials}</div>
-          {!collapsed && (
-            <div className="min-w-0 leading-tight">
-              <p className="truncate text-[13px] font-semibold text-ink">{userName}</p>
-              <p className="mt-0.5 truncate text-[11.5px] text-ink-quiet">{userRole}</p>
-            </div>
-          )}
-        </Link>
-      </div>
+      <SidebarAccount collapsed={collapsed} to="/seguridad/perfil" role={userRole} onNavigate={onNavigate} />
     </>
-  );
+    );
+  };
 
   return (
     <>
       <AdminViewingBanner roleLabel="Seguridad Operativa" />
       <div className="min-h-screen bg-surface md:flex">
       {/* Desktop sidebar */}
-      <aside
+      <aside data-sidebar data-collapsed={collapsed}
         data-print="hide"
         className={cn(
           "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-line bg-white transition-[width] duration-200 md:flex",
@@ -365,7 +355,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
       {mobileOpen && (
         <div data-print="hide" className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileOpen(false)} aria-hidden />
-          <aside className="absolute left-0 top-0 flex h-full w-[min(296px,calc(100vw-32px))] flex-col bg-white shadow-xl">
+          <aside data-sidebar data-mobile="true" className="absolute left-0 top-0 flex h-full w-[min(296px,calc(100vw-32px))] flex-col bg-white shadow-xl">
             {sidebarContent(() => setMobileOpen(false))}
           </aside>
         </div>
@@ -417,9 +407,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
                 )}
               </Link>
               <Link to="/seguridad/perfil" className="flex items-center gap-1.5 rounded-lg py-1 pl-1 pr-1.5 hover:bg-surface">
-                <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand-100 text-[10.5px] font-bold text-brand-800">
-                  {userInitials}
-                </div>
+                <UserAvatar nombre={userName} userId={soUser?.id_usuario} fotoUrl={soUser?.foto_url} className="h-7 w-7 text-[10.5px]" />
                 <span className="hidden text-[12.5px] font-medium text-ink sm:block">{userName}</span>
               </Link>
             </div>
@@ -460,3 +448,4 @@ function getBreadcrumb(pathname: string) {
   if (pathname === "/seguridad/perfil") return "Inicio / Perfil";
   return "Inicio";
 }
+

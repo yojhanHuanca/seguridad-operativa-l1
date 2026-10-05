@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowDownWideNarrow, ChevronLeft, ChevronRight, Download, FileSpreadsheet, RotateCcw, Search } from "lucide-react";
+import { ArrowDownWideNarrow, ChevronLeft, ChevronRight, Download, RotateCcw, Search } from "lucide-react";
 import { toast } from "sonner";
 import { ContingenciaShell } from "@/components/layout/ContingenciaShell";
 import { Button } from "@/design-system/primitives/Button";
@@ -72,37 +72,11 @@ export function Historial() {
         <p className="text-[13px] text-ink-quiet">{total} registros{hasFilters ? " con estos filtros" : ""}</p>
         <div className="flex flex-wrap items-center gap-2">
           {hasFilters && <Button variant="ghost" size="sm" onClick={reset}><RotateCcw className="h-4 w-4" /> Limpiar</Button>}
-        </div>
-      </div>
-
-      <Card className="overflow-hidden border-brand-200 bg-gradient-to-r from-brand-50 via-white to-brand-50/50 p-0">
-        <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-          <div className="flex min-w-0 items-start gap-3">
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-700 text-white shadow-[0_12px_28px_-18px_rgba(15,107,62,0.9)]">
-              <FileSpreadsheet className="h-5 w-5" />
-            </span>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-ink">Exportar historial en Excel</p>
-              <p className="mt-1 text-[12.5px] text-ink-quiet">
-                Descarga un archivo .xlsx con formato profesional, encabezado Línea 1 y el orden del Excel base.
-              </p>
-              <p className="mt-2 font-mono text-[12px] font-semibold text-brand-700">
-                {total} registro{total === 1 ? "" : "s"} {hasFilters ? "filtrado" : "disponible"}{total === 1 ? "" : "s"}
-              </p>
-            </div>
-          </div>
-          <Button
-            type="button"
-            size="lg"
-            onClick={exportExcel}
-            disabled={isExporting || isPending || total === 0}
-            className="w-full shadow-[0_16px_32px_-22px_rgba(15,107,62,0.9)] sm:w-auto"
-          >
-            <Download className="h-4 w-4" />
-            {isExporting ? "Generando Excel..." : "Descargar Excel"}
+          <Button type="button" size="sm" onClick={exportExcel} disabled={isExporting || isPending || Boolean(error) || total === 0} title="Descargar en Excel los registros con los filtros actuales">
+            <Download className="h-4 w-4" />{isExporting ? "Generando..." : "Descargar Excel"}
           </Button>
         </div>
-      </Card>
+      </div>
 
       <Card className="p-3">
         <div className="grid gap-3 lg:grid-cols-[1.4fr_0.7fr_0.7fr_0.8fr]">

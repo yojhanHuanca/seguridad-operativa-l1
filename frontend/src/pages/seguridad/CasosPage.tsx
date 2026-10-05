@@ -1,6 +1,7 @@
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, FolderKanban, Plus, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ClipboardList, CalendarDays, UserCircle, CheckCircle2 } from "lucide-react";
+import { Search, FolderKanban, Plus, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ClipboardList, CalendarDays, CheckCircle2 } from "lucide-react";
 import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
 import { Card } from "@/design-system/primitives/Card";
 import { Button } from "@/design-system/primitives/Button";
@@ -296,7 +297,7 @@ export function SoCasosPage() {
                                         </div>
                                         <p className="mt-1 line-clamp-2 break-all text-[12.5px] font-medium leading-snug text-ink">{plan.descripcion}</p>
                                         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11.5px] text-ink-quiet">
-                                          <span className="inline-flex items-center gap-1"><UserCircle className="h-3.5 w-3.5" /> {plan.usuarios.nombre}</span>
+                                          <span className="inline-flex items-center gap-1"><UserAvatar nombre={plan.usuarios.nombre} userId={plan.usuarios.id_usuario} className="h-5 w-5 text-[9px]" /> {plan.usuarios.nombre}</span>
                                           <span>{plan.areas.nombre_area}</span>
                                           <span className="inline-flex items-center gap-1"><CalendarDays className="h-3.5 w-3.5" /> vence {formatDate(fechaObjetivo)}</span>
                                           <span className="inline-flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5" /> {completadas}/{total} actividades</span>
@@ -410,4 +411,5 @@ function FilterSelect({
     </div>
   );
 }
+
 

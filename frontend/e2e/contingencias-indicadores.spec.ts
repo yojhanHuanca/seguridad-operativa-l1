@@ -23,7 +23,7 @@ const operations = Array.from({ length: 22 }, (_, i) => ({
 }));
 
 for (const width of [1600, 390]) {
-  test('diseño aprobado, filtros, paginación y CSV a ' + width + 'px', async ({ page }) => {
+  test('diseño aprobado, filtros y paginación a ' + width + 'px', async ({ page }) => {
     test.setTimeout(60000);
     await page.clock.setFixedTime(new Date('2026-09-22T12:00:00-05:00'));
     await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -60,13 +60,7 @@ for (const width of [1600, 390]) {
     await page.getByLabel('Lugar', { exact: true }).selectOption('La Cultura');
     const selected = events.filter(row => row.lugar_evento === 'La Cultura').length;
     await expect(page.locator('.ctg-kpi-value').first()).toHaveText(String(selected));
-    const download = page.waitForEvent('download');
-    await page.getByRole('button', { name: 'Exportar', exact: true }).click();
-    const stream = await (await download).createReadStream();
-    let csv = '';
-    for await (const chunk of stream!) csv += chunk.toString();
-    expect(csv).toContain('"Resumen","Eventos","' + selected + '"');
-    expect(csv).toContain('"Filtro","Lugar","La Cultura"');
+    await expect(page.getByRole('button', { name: 'Exportar', exact: true })).toHaveCount(0);
     await page.getByRole('button', { name: 'Restablecer', exact: true }).click();
     await page.getByRole('button', { name: 'Filtros', exact: true }).click();
     await expect(page.locator('.ctg-kpi-value').first()).toHaveText(String(events.length));
@@ -78,7 +72,7 @@ for (const width of [1600, 390]) {
     await page.route('**/api/contingencias?**', route => route.fulfill({ json: { success: true, data: [], meta: { total: 0 } } }));
     await page.route('**/api/datos-operativos?**', route => route.fulfill({ json: { success: true, data: { items: [], total: 0 } } }));
     await page.getByRole('button', { name: 'Actualizar estadísticas' }).click();
-    await expect(page.getByRole('button', { name: 'Exportar', exact: true })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Exportar', exact: true })).toHaveCount(0);
     await expect(page.getByText('Sin registros para esta selección').first()).toBeVisible();
     expect(errors).toEqual([]);
   });

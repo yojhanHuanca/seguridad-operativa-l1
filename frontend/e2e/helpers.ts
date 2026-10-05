@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 
-type TestRole = 'Admin' | 'Seguridad Operativa' | 'Jefe de Área' | 'Monitorista';
+type TestRole = 'Admin' | 'Seguridad Operativa' | 'Jefe de Área' | 'Monitorista' | 'Gestión de Planes de Contingencia';
 
 const now = new Date('2026-08-24T12:00:00.000Z').toISOString();
 

@@ -4,6 +4,7 @@
 // de origen y el nivel de confianza de la lista.
 
 export interface CatalogItem {
+  clasificacion_mr?: string;
   codigo?: string;
   nombre: string;
   descripcion?: string;
@@ -233,13 +234,13 @@ export const CATALOGOS: CatalogGroup[] = [
     descripcion: "LISTA DE EVENTOS!Nro. MR. Unidades T1-T44 + vehículos auxiliares de vía.",
     items: [
       { nombre: "N/A" },
-      ...Array.from({ length: 44 }, (_, i) => ({ nombre: `T${i + 1}` })),
-      { nombre: "V-BIVIAL" },
-      { nombre: "V-DRESINA" },
-      { nombre: "V-GRECO" },
-      { nombre: "V-GRUA" },
-      { nombre: "VH-PLATAFORMA" },
-      { nombre: "V-PLATAFORMA" },
+      ...Array.from({ length: 44 }, (_, i) => ({ nombre: `T${i + 1}`, clasificacion_mr: i < 5 ? "ANSALDO" : "ALSTOM" })),
+      { nombre: "V-BIVIAL", clasificacion_mr: "AUXILIAR" },
+      { nombre: "V-DRESINA", clasificacion_mr: "AUXILIAR" },
+      { nombre: "V-GRECO", clasificacion_mr: "AUXILIAR" },
+      { nombre: "V-GRUA", clasificacion_mr: "AUXILIAR" },
+      { nombre: "VH-PLATAFORMA", clasificacion_mr: "AUXILIAR" },
+      { nombre: "V-PLATAFORMA", clasificacion_mr: "AUXILIAR" },
     ],
   },
   {

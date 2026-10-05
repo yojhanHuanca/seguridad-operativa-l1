@@ -18,6 +18,25 @@ const PUBLIC_SELECT = {
 } as const;
 
 export class ProfileRepository {
+  static countAvatarReferences(foto_url: string) {
+    return prisma.usuarios.count({ where: { foto_url } });
+  }
+  static sessions(id_usuario: number) {
+    return prisma.sesiones.findMany({
+      where: { usuario: id_usuario, estado: "activa" },
+      orderBy: { id_sesion: "desc" },
+      take: 20,
+      select: { id_sesion: true, fecha_inicio: true, navegador: true, dispositivo: true },
+    });
+  }
+  static recent(id_usuario: number) {
+    return prisma.auditoria.findMany({
+      where: { usuario: id_usuario },
+      orderBy: [{ fecha: "desc" }, { id_auditoria: "desc" }],
+      take: 8,
+      select: { id_auditoria: true, accion: true, tabla_afectada: true, fecha: true },
+    });
+  }
   static async findById(id_usuario: number) {
     return prisma.usuarios.findUnique({ where: { id_usuario }, select: PUBLIC_SELECT });
   }
@@ -59,6 +78,10 @@ export class ProfileRepository {
     return prisma.eventos_monitoreo.count({ where: { usuario_registra: id_usuario } });
   }
 
+  static countContingenciasRegistradas(id_usuario: number) {
+    return prisma.contingencia_eventos.count({ where: { created_by: id_usuario } });
+  }
+
   static async countUsuariosActivos() {
     return prisma.usuarios.count({ where: { estado: "Activo" } });
   }
@@ -67,3 +90,4 @@ export class ProfileRepository {
     return prisma.areas.count();
   }
 }
+

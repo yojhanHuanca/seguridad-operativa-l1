@@ -2,6 +2,11 @@
 @import "@fontsource-variable/geist";
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./sidebar.css";
+
+body:has(dialog[open]) {
+  overflow: hidden;
+}
 
 @theme inline {
   --font-sans: "Manrope Variable", "Manrope", "Segoe UI", sans-serif;

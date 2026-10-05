@@ -1,3 +1,4 @@
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -142,15 +143,7 @@ function estadoActivo(estado: string | null) {
   return (estado ?? "Activo").toLowerCase() === "activo";
 }
 
-function initials(nombre: string) {
-  return nombre
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
-}
+
 
 function roleStyle(nombreRol?: string | null) {
   return nombreRol ? ROL_STYLE[nombreRol] ?? ROL_STYLE_DEFAULT : ROL_STYLE_DEFAULT;
@@ -228,7 +221,7 @@ function StatusBadge({ estado }: { estado: string | null }) {
 function UserIdentity({ user }: { user: UserListItem }) {
   return (
     <div className="flex min-w-0 items-center gap-3">
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-100 text-[10.5px] font-semibold text-brand-800">{initials(user.nombre)}</span>
+      <UserAvatar nombre={user.nombre} fotoUrl={user.foto_url} />
       <div className="min-w-0">
         <p className="truncate font-medium text-ink">{user.nombre}</p>
         <p className="mt-0.5 truncate text-[10.5px] text-ink-faint">{user.correo}</p>

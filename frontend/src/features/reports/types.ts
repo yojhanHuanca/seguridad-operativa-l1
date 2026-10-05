@@ -1,4 +1,5 @@
 export interface CatalogItem {
+  clasificacion_mr?: string | null;
   id_detalle: number;
   codigo: string | null;
   nombre: string;

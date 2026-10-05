@@ -1,4 +1,5 @@
 import { defineConfig } from "vitest/config";
+import { coverageOptions } from "./vitest.coverage";
 
 export default defineConfig({
   test: {
@@ -18,5 +19,7 @@ export default defineConfig({
         external: [/generated\/prisma/, /\.prisma[\\/]client/],
       },
     },
+
+    coverage: { ...coverageOptions, reportsDirectory: "./coverage/unit" },
   },
 });
