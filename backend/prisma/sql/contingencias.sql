@@ -1,7 +1,6 @@
--- Módulo Gestión de Planes de Contingencia.
--- Aplicar una vez en cada base de datos antes de usar /api/contingencias.
--- Script aditivo e idempotente: crea tablas, índices, llaves foráneas y rol
--- sin borrar datos existentes.
+-- LEGACY: no ejecutar en instalaciones nuevas o existentes.
+-- El esquema ahora se administra exclusivamente con Prisma Migrate.
+-- Este archivo se conserva como referencia histórica; use las migraciones versionadas.
 
 INSERT INTO "roles" ("nombre_rol")
 SELECT 'Gestión de Planes de Contingencia'

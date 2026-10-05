@@ -1,4 +1,5 @@
 import prisma from "../../lib/prisma.js";
+import logger from "../../utils/logger.js";
 import type { Prisma } from "../../generated/prisma/client.js";
 
 /** Los objetos que llegan de Prisma pueden traer `Date`/`Decimal`; esto los deja en JSON puro. */
@@ -76,7 +77,7 @@ export class AuditoriaRepository {
         },
       });
     } catch (error) {
-      console.error("[auditoria] no se pudo registrar", n.tabla, n.accion, error);
+      logger.error({ tabla: n.tabla, accion: n.accion, errorName: error instanceof Error ? error.name : "UnknownError" }, "Audit event could not be recorded");
     }
   }
 

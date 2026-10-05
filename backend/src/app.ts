@@ -1,15 +1,18 @@
 import express from "express";
 import cors, { type CorsOriginCallback } from "cors";
 import helmet from "helmet";
-import morgan from "morgan";
 import prisma from "./lib/prisma.js";
 import routes from "./routes/index.js";
 import { notFoundMiddleware } from "./middlewares/notFound.middleware.js";
 import { errorMiddleware } from "./middlewares/error.middleware.js";
 import { env } from "./config/env.js";
+import logger from "./utils/logger.js";
 
 
 const app = express();
+// Permite que Express derive req.ip de X-Forwarded-For cuando existe un proxy
+// explícitamente configurado. El valor debe coincidir con la cadena real.
+app.set("trust proxy", env.TRUST_PROXY_HOPS);
 
 // Allowlist explícito: el frontend real (FRONTEND_URL, prod o el que diga el
 // .env) más los puertos de desarrollo local (Vite dev y `vite preview`).
@@ -52,7 +55,15 @@ app.use((req, res, next) => {
   if (req.path.startsWith("/api/importacion")) return next();
   return jsonEstandar(req, res, next);
 });
-app.use(morgan("dev"));
+app.use((req, res, next) => {
+  const startedAt = Date.now();
+  res.on("finish", () => {
+    let route = "/[invalid-url]";
+    try { route = new URL(req.originalUrl ?? req.url ?? "/", "http://localhost").pathname; } catch { /* use sanitized fallback */ }
+    logger.info({ source: "http", method: req.method, path: route, status: res.statusCode, durationMs: Date.now() - startedAt }, "HTTP request");
+  });
+  next();
+});
 
 app.get("/", (_req, res) => {
   res.redirect("/api");
@@ -73,7 +84,7 @@ app.get("/api/health", async (_req, res) => {
       version: "1.0.0",
     });
   } catch (error) {
-    console.error("[GET /api/health]", error);
+    logger.error({ errorName: error instanceof Error ? error.name : "UnknownError" }, "Health check failed");
     res.status(500).json({
       status: "ERROR",
       database: "Disconnected",

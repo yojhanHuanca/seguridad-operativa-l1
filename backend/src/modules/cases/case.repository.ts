@@ -4,6 +4,8 @@ import { NotificationRepository } from "../notifications/notification.repository
 import { ConfiguracionService } from "../configuracion/configuracion.service.js";
 import { enviarCorreoPlanAsignado, enviarCorreoSolicitudInformacion } from "../../utils/mailer.js";
 import { env } from "../../config/env.js";
+import type { Prisma } from "../../generated/prisma/client.js";
+import logger from "../../utils/logger.js";
 import type {
   CaseListFilters,
   CreatePlanDto,
@@ -118,6 +120,17 @@ type TimelineClient = {
     }) => Promise<unknown>;
   };
 };
+
+async function updateCaseIfStateMatches(
+  tx: Prisma.TransactionClient,
+  id_caso: number,
+  expectedStateId: number,
+  data: Prisma.casos_sopUncheckedUpdateManyInput
+) {
+  const changed = await tx.casos_sop.updateMany({ where: { id_caso, estado_hallazgo: expectedStateId }, data });
+  if (changed.count !== 1) throw new Error("El estado del SOP cambió mientras se procesaba. Recarga el caso e inténtalo otra vez.");
+  return tx.casos_sop.findUniqueOrThrow({ where: { id_caso } });
+}
 
 // TODO(auth): reemplazar por el usuario autenticado cuando exista login real.
 const ACTOR_SO = "Seguridad Operativa";
@@ -529,7 +542,7 @@ export class CaseRepository {
       select: {
         id_caso: true,
         codigo_sop: true,
-        catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { select: { nombre: true } },
+        catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { select: { id_detalle: true, nombre: true } },
       },
     });
   }
@@ -612,10 +625,10 @@ export class CaseRepository {
     return estado;
   }
 
-  static async approve(id_caso: number, actor = ACTOR_SO) {
+  static async approve(id_caso: number, expectedStateId: number, actor = ACTOR_SO) {
     const estado = await CaseRepository.findEstado("Evaluación");
     return prisma.$transaction(async (tx) => {
-      const caso = await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estado.id_detalle } });
+      const caso = await updateCaseIfStateMatches(tx, id_caso, expectedStateId, { estado_hallazgo: estado.id_detalle });
       await CaseRepository.pushTimeline(tx, id_caso, {
         kind: "aprobado",
         actor,
@@ -688,13 +701,11 @@ export class CaseRepository {
     });
   }
 
-  static async evaluate(id_caso: number, dto: EvaluateCaseDto, actor = ACTOR_SO) {
+  static async evaluate(id_caso: number, dto: EvaluateCaseDto, expectedStateId: number, actor = ACTOR_SO) {
     const destino = dto.requiere_investigacion ? "Investigación" : "Plan de Acción";
     const estado = await CaseRepository.findEstado(destino);
     return prisma.$transaction(async (tx) => {
-      const caso = await tx.casos_sop.update({
-        where: { id_caso },
-        data: {
+      const caso = await updateCaseIfStateMatches(tx, id_caso, expectedStateId, {
           analisis_riesgo: dto.id_riesgo,
           clasificacion: dto.clasificacion,
           descripcion_evento: dto.descripcion_evento,
@@ -704,7 +715,6 @@ export class CaseRepository {
           ...(dto.peligro != null ? { peligro: dto.peligro } : {}),
           ...(dto.consecuencia != null ? { consecuencia: dto.consecuencia } : {}),
           ...(dto.observaciones != null ? { observaciones: dto.observaciones } : {}),
-        },
       });
       await CaseRepository.pushTimeline(tx, id_caso, {
         kind: dto.requiere_investigacion ? "investigacion" : "derivado",
@@ -717,13 +727,10 @@ export class CaseRepository {
     });
   }
 
-  static async reject(id_caso: number, dto: RejectCaseDto, actor = ACTOR_SO) {
+  static async reject(id_caso: number, dto: RejectCaseDto, expectedStateId: number, actor = ACTOR_SO) {
     const estado = await CaseRepository.findEstado("Rechazado");
     return prisma.$transaction(async (tx) => {
-      const caso = await tx.casos_sop.update({
-        where: { id_caso },
-        data: { estado_hallazgo: estado.id_detalle, ...(dto.motivo != null ? { observaciones: dto.motivo } : {}) },
-      });
+      const caso = await updateCaseIfStateMatches(tx, id_caso, expectedStateId, { estado_hallazgo: estado.id_detalle, ...(dto.motivo != null ? { observaciones: dto.motivo } : {}) });
       await CaseRepository.pushTimeline(tx, id_caso, {
         kind: "rechazado",
         actor,
@@ -735,7 +742,7 @@ export class CaseRepository {
     });
   }
 
-  static async requestInfo(id_caso: number, estadoActualNombre: string, dto: RequestInfoDto, actor = ACTOR_SO) {
+  static async requestInfo(id_caso: number, estadoActualNombre: string, expectedStateId: number, dto: RequestInfoDto, actor = ACTOR_SO) {
     const estadoPausa = await CaseRepository.findEstado("Pendiente de Información");
     const caso = await prisma.casos_sop.findUniqueOrThrow({
       where: { id_caso },
@@ -753,10 +760,11 @@ export class CaseRepository {
       estadoPrevio = abierta?.estado_previo ?? "Evaluación";
     }
     return prisma.$transaction(async (tx) => {
+      const changed = await tx.casos_sop.updateMany({ where: { id_caso, estado_hallazgo: expectedStateId }, data: { estado_hallazgo: estadoPausa.id_detalle } });
+      if (changed.count !== 1) throw new Error("El estado del SOP cambió mientras se procesaba. Recarga el caso e inténtalo otra vez.");
       const solicitud = await tx.solicitudes_informacion.create({
         data: { id_caso, mensaje: dto.mensaje, estado_previo: estadoPrevio },
       });
-      await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estadoPausa.id_detalle } });
       await CaseRepository.pushTimeline(tx, id_caso, {
         kind: "info_solicitada",
         actor,
@@ -790,7 +798,7 @@ export class CaseRepository {
           mensaje: dto.mensaje,
           url: `${baseUrl}/reportes/consulta?codigo=${encodeURIComponent(caso.codigo_sop)}`,
         }).catch((error) => {
-          console.error("[reportes] no se pudo avisar por correo la solicitud de información", caso.codigo_sop, error);
+          logger.warn({ errorName: error instanceof Error ? error.name : "UnknownError" }, "Report information request email failed");
         });
       }
       return solicitud;
@@ -934,7 +942,7 @@ export class CaseRepository {
 
     resultados.forEach((resultado, i) => {
       if (resultado.status === "rejected") {
-        console.error("[planes] no se pudo avisar por correo del plan", planes[i]?.codigo_plan, resultado.reason);
+        logger.warn({ errorName: resultado.reason instanceof Error ? resultado.reason.name : "UnknownError" }, "Action plan assignment email failed");
       }
     });
   }
@@ -1789,13 +1797,14 @@ export class CaseRepository {
   /** ETAPA 7 — reabrir un caso cerrado hacia la etapa que SO necesita corregir. */
   static async reopenCase(
     id_caso: number,
+    expectedStateId: number,
     motivo?: string | null,
     destino: "Recepción" | "Evaluación" | "Investigación" | "Plan de Acción" | "Ejecución" | "Verificación" = "Verificación",
     actor = ACTOR_SO
   ) {
     const estado = await CaseRepository.findEstado(destino);
     return prisma.$transaction(async (tx) => {
-      const caso = await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estado.id_detalle } });
+      const caso = await updateCaseIfStateMatches(tx, id_caso, expectedStateId, { estado_hallazgo: estado.id_detalle });
       await CaseRepository.pushTimeline(tx, id_caso, {
         kind: "reapertura",
         actor,
@@ -1813,6 +1822,7 @@ export class CaseRepository {
     estadoActualNombre: string,
     destinoNombre: "Evaluación" | "Investigación" | "Plan de Acción",
     motivo: string,
+    expectedStateId: number,
     actor = ACTOR_SO
   ) {
     const permitidos: Record<string, Array<"Evaluación" | "Investigación" | "Plan de Acción">> = {
@@ -1827,10 +1837,7 @@ export class CaseRepository {
 
     const estadoDestino = await CaseRepository.findEstado(destinoNombre);
     return prisma.$transaction(async (tx) => {
-      const caso = await tx.casos_sop.update({
-        where: { id_caso },
-        data: { estado_hallazgo: estadoDestino.id_detalle },
-      });
+      const caso = await updateCaseIfStateMatches(tx, id_caso, expectedStateId, { estado_hallazgo: estadoDestino.id_detalle });
       await CaseRepository.pushTimeline(tx, id_caso, {
         kind: "retroceso",
         actor,
@@ -1842,7 +1849,7 @@ export class CaseRepository {
     });
   }
 
-  static async closeCase(id_caso: number, nota?: string | null, actor = ACTOR_SO) {
+  static async closeCase(id_caso: number, nota: string | null | undefined, actor: string, expectedStateId: number) {
     const [estado, estadoPlanCerrado] = await Promise.all([
       CaseRepository.findEstado("Cerrado"),
       CaseRepository.findEstadoPlan("Cerrado"),
@@ -1857,7 +1864,7 @@ export class CaseRepository {
         throw new Error("No se puede cerrar el expediente hasta que todos los planes de acción estén cerrados por Seguridad Operativa");
       }
 
-      const caso = await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estado.id_detalle } });
+      const caso = await updateCaseIfStateMatches(tx, id_caso, expectedStateId, { estado_hallazgo: estado.id_detalle });
       await CaseRepository.pushTimeline(tx, id_caso, {
         kind: "cierre",
         actor,

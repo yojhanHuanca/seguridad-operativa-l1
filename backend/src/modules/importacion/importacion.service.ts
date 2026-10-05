@@ -869,9 +869,9 @@ function traducirErrorDeEscritura(error: unknown): Error {
   const mensaje = error instanceof Error ? error.message : String(error);
   if (/too long for the column/i.test(mensaje)) {
     return new Error(
-      "La base de datos rechazó un valor por ser demasiado largo para su columna. " +
-        "Suele pasar cuando el entorno todavía no tiene aplicado el último cambio de esquema: " +
-        "ejecute `npx prisma db push` contra esa base y vuelva a intentar.",
+        "La base de datos rechazó un valor por ser demasiado largo para su columna. " +
+        "Suele pasar cuando el entorno todavía no tiene aplicada la migración aprobada más reciente. " +
+        "Contacte al responsable de TI para revisar el esquema y ejecutar `npx prisma migrate deploy` según el procedimiento de instalación.",
     );
   }
   if (/Transaction (already closed|not found)|timed out/i.test(mensaje)) {

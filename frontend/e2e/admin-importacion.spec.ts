@@ -22,6 +22,7 @@ test('diseño empresarial visible antes de cargar un archivo', async ({ page }) 
 test('SOP: lee XLSX con prefijos OOXML y selecciona la hoja con datos', async ({ page }) => {
   await mockApi(page);
   await loginAs(page, 'Admin');
+  await page.route('**/api/importacion/historial**', route => route.fulfill({ json: { success: true, data: { items: [], total: 0 } } }));
   await page.goto('/admin/importacion');
   const source = await readFile('../outputs/2026-09-28-sop-import-sample/Ejemplo_importacion_SOP_10_datos.xlsx');
   const JSZip = (await import('jszip')).default;
@@ -61,7 +62,7 @@ test('SOP: lee XLSX con prefijos OOXML y selecciona la hoja con datos', async ({
   });
   await expect(page.getByText('Ejemplo_importacion_SOP_10_datos.xlsx')).toBeVisible();
   await expect(page.getByLabel('Hoja que se importará')).toHaveValue('0');
-  await expect(page.getByText('Casos SOP — 10 filas — 25 columnas')).toBeVisible();
+  await expect(page.getByLabel('Hoja que se importará').locator('option:checked')).toHaveText(/10 filas — 25 columnas/);
 });
 
 test('SOP: exige revalidación, protege terminados y envía decisiones separadas del archivo', async ({ page }) => {
@@ -95,7 +96,7 @@ test('SOP: exige revalidación, protege terminados y envía decisiones separadas
   await page.getByRole('button', { name: 'Preparar y revisar' }).click();
   await expect(page.getByLabel('Estado SOP 54-2026-PLA-01 fila 2')).toHaveValue('Cerrado');
   await expect(page.getByLabel('Estado SOP 54-2026-PLA-01 fila 2')).toBeDisabled();
-  await expect(page.getByRole('button', { name: 'Asignar a jefes de área' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Asignar planes a jefes de área' })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Importar casos', exact: true })).toBeDisabled();
   await page.getByRole('button', { name: 'Validar', exact: true }).click();
   await page.getByRole('button', { name: 'Importar casos', exact: true }).click();

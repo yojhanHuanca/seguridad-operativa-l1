@@ -648,7 +648,7 @@ export function AdminImportacionPage() {
         {historial.isLoading ? <p className="p-5 text-sm text-ink-quiet">Cargando historial…</p> : historial.isError ? <p className="p-5 text-sm text-red-700">No se pudo cargar el historial. La migración de base de datos debe estar aplicada.</p> : (
           <div className="overflow-x-auto"><table className="w-full min-w-[900px] text-left text-[12.5px]">
             <thead className="border-b border-line text-[11px] uppercase text-ink-faint"><tr>{["Fecha", "Usuario", "Módulo", "Archivo / hoja", "Importados", "Estado", "Acción"].map(label => <th key={label} className="px-4 py-3 font-semibold">{label}</th>)}</tr></thead>
-            <tbody>{historial.data?.items.map(item => <tr key={item.id_importacion} className="border-b border-line-soft last:border-0">
+            <tbody>{historial.data?.items?.map(item => <tr key={item.id_importacion} className="border-b border-line-soft last:border-0">
               <td className="px-4 py-3 text-ink-soft">{new Date(item.created_at).toLocaleString("es-PE")}</td>
               <td className="px-4 py-3 font-medium text-ink">{item.creador.nombre}</td>
               <td className="px-4 py-3 text-ink-soft">{IMPORTACION_MODULOS[item.modulo]?.label ?? item.modulo}</td>
@@ -657,7 +657,7 @@ export function AdminImportacionPage() {
               <td className="px-4 py-3"><span className={cn("rounded-md px-2 py-1 text-[11px] font-semibold", item.estado === "revertido" ? "bg-slate-100 text-slate-700" : item.estado === "fallido" ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700")}>{item.estado.replaceAll("_", " ")}</span></td>
               <td className="px-4 py-3"><Button type="button" variant="outline" disabled={!item.estado.startsWith("completado")} onClick={() => { setRevertingId(item.id_importacion); setRevertReason(""); }}><RotateCcw className="h-3.5 w-3.5" /> Revertir</Button></td>
             </tr>)}</tbody>
-          </table>{historial.data?.items.length === 0 && <p className="p-5 text-sm text-ink-quiet">Todavía no existen importaciones registradas.</p>}</div>
+          </table>{historial.data?.items?.length === 0 && <p className="p-5 text-sm text-ink-quiet">Todavía no existen importaciones registradas.</p>}</div>
         )}
       </Card>
 

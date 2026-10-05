@@ -1,4 +1,5 @@
 import { Prisma } from "../generated/prisma/client.js";
+import logger from "./logger.js";
 
 const ERRORES_INTERNOS: (new (...args: never[]) => Error)[] = [
   Prisma.PrismaClientKnownRequestError,
@@ -48,7 +49,7 @@ export class ApiResponse<T> {
    */
   static error(message: string, errors?: unknown) {
     if (errors instanceof Error) {
-      console.error(`[${message}]`, errors);
+      logger.error({ errorName: errors.name }, "Application request failed");
       return new ApiResponse(false, message);
     }
     return new ApiResponse(false, message, undefined, errors);

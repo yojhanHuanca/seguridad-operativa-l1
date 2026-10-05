@@ -17,8 +17,7 @@ export interface AuthTokenPayload {
     id_area?: number | null;
     /** Puede faltar en tokens viejos — ver nombreDelActor(). */
     nombre?: string;
-    /** Puede faltar en tokens emitidos antes de este campo — en ese caso no
-     * hay sesión que comprobar, y el token sigue siendo válido igual que antes. */
+    /** Identificador obligatorio de sesión para revocación y autorización vigente. */
     id_sesion?: number;
 }
 
@@ -51,27 +50,17 @@ export const verifyToken = async (
         });
     }
 
-    // Cerrar sesión invalida el token de inmediato, aunque le queden horas de
-    // vigencia firmada. Sin esto "cerrar sesión" no invalidaba nada del lado
-    // del servidor: el token seguía sirviendo hasta que expirara solo.
-    if (decoded.id_sesion) {
-        try {
-            const activa = await AuthRepository.sesionActiva(decoded.id_sesion);
-            if (!activa) {
-                return res.status(401).json({
-                    success: false,
-                    message: "La sesión fue cerrada, vuelve a iniciar sesión",
-                });
-            }
-        } catch {
-            return res.status(401).json({
-                success: false,
-                message: "Token inválido",
-            });
-        }
+    if (!Number.isSafeInteger(decoded.id_usuario) || !Number.isSafeInteger(decoded.id_sesion)) {
+        return res.status(401).json({ success: false, message: "Sesión inválida, vuelve a iniciar sesión" });
     }
 
-    req.user = decoded;
+    try {
+        const actor = await AuthRepository.obtenerActorDeSesion(decoded.id_sesion!, decoded.id_usuario);
+        if (!actor) return res.status(401).json({ success: false, message: "La sesión ya no está activa o la cuenta fue deshabilitada" });
+        req.user = actor;
+    } catch {
+        return res.status(401).json({ success: false, message: "No se pudo validar la sesión" });
+    }
     next();
 };
 
@@ -92,11 +81,10 @@ export const optionalVerifyToken = async (
     const token = authHeader.replace("Bearer ", "");
     try {
         const decoded = jwt.verify(token, env.JWT_SECRET) as AuthTokenPayload;
-        if (decoded.id_sesion) {
-            const activa = await AuthRepository.sesionActiva(decoded.id_sesion);
-            if (!activa) return next();
-        }
-        req.user = decoded;
+        if (!Number.isSafeInteger(decoded.id_usuario) || !Number.isSafeInteger(decoded.id_sesion)) return next();
+        const actor = await AuthRepository.obtenerActorDeSesion(decoded.id_sesion!, decoded.id_usuario);
+        if (!actor) return next();
+        req.user = actor;
     } catch {
         // El endpoint sigue siendo público; un token vencido no debe bloquear
         // el registro desde QR ni la consulta pública.

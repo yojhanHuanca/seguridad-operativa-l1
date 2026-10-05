@@ -20,12 +20,16 @@ function parseId(id: unknown) {
 
 function parsePage(value: unknown) {
   const parsed = Number(value);
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : 1;
+  if (value === undefined || value === null || value === "") return 1;
+  if (!Number.isSafeInteger(parsed) || parsed < 1 || (parsed - 1) * 100 > 1_000_000) throw new Error("La página solicitada no es válida.");
+  return parsed;
 }
 
 function parseLimit(value: unknown) {
   const parsed = Number(value);
-  return Math.min(100, Number.isInteger(parsed) && parsed > 0 ? parsed : 20);
+  if (value === undefined || value === null || value === "") return 20;
+  if (!Number.isSafeInteger(parsed) || parsed < 1 || parsed > 100) throw new Error("El límite debe estar entre 1 y 100.");
+  return parsed;
 }
 
 function parseFechaQuery(value: unknown, label: string) {
@@ -284,7 +288,6 @@ async function validarDto(dto: CreateContingenciaDto | UpdateContingenciaDto) {
 
 export class ContingenciaService {
   static async catalogos() {
-    await ContingenciaRepository.ensureCatalogosIniciales();
     const catalogos = await ContingenciaRepository.findCatalogos();
     return catalogos.map((catalogo) => ({ ...catalogo, items: itemsNormalizados(catalogo.codigo, catalogo.id_catalogo, catalogo.items) }));
   }

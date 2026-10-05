@@ -4,9 +4,9 @@ import type { Response } from "express";
 
 vi.mock("../config/env.js", () => ({ env: { JWT_SECRET: "test-secret", JWT_EXPIRES_IN: "8h" } }));
 
-const sesionActivaMock = vi.fn();
+const actorSesionMock = vi.fn();
 vi.mock("../modules/auth/auth.repository.js", () => ({
-  AuthRepository: { sesionActiva: sesionActivaMock },
+  AuthRepository: { obtenerActorDeSesion: actorSesionMock },
 }));
 
 const { verifyToken, optionalVerifyToken, requireRoles, requireRolesOrResponsable, requireRolesAndPermission } =
@@ -29,7 +29,7 @@ const JEFE: AuthTokenPayload = { id_usuario: 2, correo: "jefe@x.pe", rol: 3, rol
 const ADMIN: AuthTokenPayload = { id_usuario: 3, correo: "admin@x.pe", rol: 1, rol_nombre: "Admin" };
 
 beforeEach(() => {
-  sesionActivaMock.mockReset();
+  actorSesionMock.mockReset();
 });
 
 describe("verifyToken", () => {
@@ -51,37 +51,47 @@ describe("verifyToken", () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  it("acepta un token válido sin id_sesion (tokens viejos) y pobla req.user", async () => {
+  it("rechaza tokens antiguos sin identificador de sesión", async () => {
     const token = tokenPara(SO);
     const req = { headers: { authorization: `Bearer ${token}` } } as unknown as Parameters<typeof verifyToken>[0];
     const res = mockRes();
     const next = vi.fn();
     await verifyToken(req, res, next);
-    expect(next).toHaveBeenCalledOnce();
-    expect(req.user?.rol_nombre).toBe("Seguridad Operativa");
-    expect(sesionActivaMock).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(next).not.toHaveBeenCalled();
   });
 
   it("cierra la puerta si la sesión ya fue cerrada del lado del servidor, aunque el JWT siga firmado y vigente", async () => {
-    sesionActivaMock.mockResolvedValue(false);
+    actorSesionMock.mockResolvedValue(null);
     const token = tokenPara({ ...SO, id_sesion: 55 });
     const req = { headers: { authorization: `Bearer ${token}` } } as unknown as Parameters<typeof verifyToken>[0];
     const res = mockRes();
     const next = vi.fn();
     await verifyToken(req, res, next);
-    expect(sesionActivaMock).toHaveBeenCalledWith(55);
+    expect(actorSesionMock).toHaveBeenCalledWith(55, 1);
     expect(res.status).toHaveBeenCalledWith(401);
     expect(next).not.toHaveBeenCalled();
   });
 
   it("deja pasar cuando la sesión sigue activa", async () => {
-    sesionActivaMock.mockResolvedValue(true);
+    actorSesionMock.mockResolvedValue({ ...SO, id_sesion: 56 });
     const token = tokenPara({ ...SO, id_sesion: 56 });
     const req = { headers: { authorization: `Bearer ${token}` } } as unknown as Parameters<typeof verifyToken>[0];
     const res = mockRes();
     const next = vi.fn();
     await verifyToken(req, res, next);
     expect(next).toHaveBeenCalledOnce();
+    expect(req.user?.rol_nombre).toBe("Seguridad Operativa");
+  });
+
+  it("usa rol y permisos actuales de base, no los reclamos antiguos del JWT", async () => {
+    actorSesionMock.mockResolvedValue({ ...JEFE, id_sesion: 57 });
+    const token = tokenPara({ ...ADMIN, id_sesion: 57 });
+    const req = { headers: { authorization: `Bearer ${token}` } } as unknown as Parameters<typeof verifyToken>[0];
+    const next = vi.fn();
+    await verifyToken(req, mockRes(), next);
+    expect(next).toHaveBeenCalledOnce();
+    expect(req.user?.rol_nombre).toBe("Jefe de Área");
   });
 });
 
@@ -103,11 +113,22 @@ describe("optionalVerifyToken", () => {
   });
 
   it("pobla req.user cuando el token sí es válido", async () => {
-    const token = tokenPara(SO);
+    actorSesionMock.mockResolvedValue({ ...SO, id_sesion: 58 });
+    const token = tokenPara({ ...SO, id_sesion: 58 });
     const req = { headers: { authorization: `Bearer ${token}` } } as unknown as Parameters<typeof optionalVerifyToken>[0];
     const next = vi.fn();
     await optionalVerifyToken(req, mockRes(), next);
     expect(req.user?.id_usuario).toBe(1);
+  });
+
+  it("no adjunta como usuario un token válido cuya sesión fue revocada", async () => {
+    actorSesionMock.mockResolvedValue(null);
+    const token = tokenPara({ ...SO, id_sesion: 59 });
+    const req = { headers: { authorization: `Bearer ${token}` } } as unknown as Parameters<typeof optionalVerifyToken>[0];
+    const next = vi.fn();
+    await optionalVerifyToken(req, mockRes(), next);
+    expect(next).toHaveBeenCalledOnce();
+    expect(req.user).toBeUndefined();
   });
 });
 

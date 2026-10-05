@@ -1,6 +1,7 @@
 import type { Prisma } from "../../generated/prisma/client.js";
 import prisma from "../../lib/prisma.js";
 import { AuditoriaRepository } from "../auditoria/auditoria.repository.js";
+import { parseOptionalPagination } from "../../utils/pagination.js";
 
 export type ModuloImportacion = "casos" | "monitoreo" | "contingencias";
 
@@ -22,8 +23,7 @@ export class ImportacionHistorialService {
   }
 
   static async listar(page = 1, limit = 20) {
-    const safePage = Math.max(1, Math.trunc(page));
-    const safeLimit = Math.min(100, Math.max(1, Math.trunc(limit)));
+    const { page: safePage, limit: safeLimit } = parseOptionalPagination(String(page), String(limit))!;
     const [items, total] = await prisma.$transaction([
       prisma.importaciones.findMany({
         select: { id_importacion: true, modulo: true, archivo: true, hoja: true, estado: true, filas_total: true, importados: true, duplicados: true, errores: true, created_at: true, completed_at: true, reverted_at: true, creador: { select: { id_usuario: true, nombre: true } }, reversor: { select: { id_usuario: true, nombre: true } } },

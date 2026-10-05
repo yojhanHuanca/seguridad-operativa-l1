@@ -1,6 +1,11 @@
 export const env = {
     PORT: Number(process.env.PORT) || 3000,
 
+    /** Saltos de proxy confiables; ajustar a la cadena real del hosting. */
+    TRUST_PROXY_HOPS: Number.isInteger(Number(process.env.TRUST_PROXY_HOPS)) && Number(process.env.TRUST_PROXY_HOPS) >= 0
+        ? Number(process.env.TRUST_PROXY_HOPS)
+        : 0,
+
     DATABASE_URL: process.env.DATABASE_URL!,
 
     JWT_SECRET: process.env.JWT_SECRET!,

@@ -67,7 +67,7 @@ export class AuditoriaService {
   static async list(query: FiltroQuery & { page?: string; limit?: string }) {
     const page = Number(query.page ?? 1);
     const limit = Number(query.limit ?? 30);
-    if (!Number.isSafeInteger(page) || page < 1 || !Number.isSafeInteger(limit) || limit < 1 || limit > 100 || !Number.isSafeInteger((page - 1) * limit)) throw new AuditoriaInputError("Paginación inválida.");
+    if (!Number.isSafeInteger(page) || page < 1 || !Number.isSafeInteger(limit) || limit < 1 || limit > 100 || !Number.isSafeInteger((page - 1) * limit) || (page - 1) * limit > 1_000_000) throw new AuditoriaInputError("Paginación inválida.");
 
     return AuditoriaRepository.findAll({ ...parseFiltros(query), page, limit });
   }

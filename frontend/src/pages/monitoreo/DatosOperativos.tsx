@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useLocation } from "react-router-dom";
 import { Database, Pencil, RefreshCw, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
@@ -113,19 +113,6 @@ export function DatosOperativos() {
   const Shell = location.pathname.startsWith("/contingencias") ? ContingenciaShell : MonitoristaShell;
   const paginaActual = Math.min(pagina, totalPaginas);
   const guardando = crear.isPending || actualizar.isPending;
-
-  useEffect(() => {
-    if (editando || formulario.qty_carreras.trim() === "") return;
-    const carreras = convertirNumero(formulario.qty_carreras);
-    if (!Number.isFinite(carreras) || carreras < 0) return;
-    const paradasEstimadas = String(Math.round(carreras * cantidadEstaciones));
-    const kmComercialEstimado = formatearEntradaNumerica(String(Math.round(carreras * kmPorCarrera)), 0);
-    setFormulario((actual) => ({
-      ...actual,
-      paradas_estacion: formatearEntradaNumerica(paradasEstimadas, 0),
-      km_comercial: kmComercialEstimado,
-    }));
-  }, [cantidadEstaciones, editando, formulario.qty_carreras, kmPorCarrera]);
 
   const limpiarFormulario = () => {
     setFormulario(formularioVacio());

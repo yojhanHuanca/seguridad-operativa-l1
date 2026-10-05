@@ -24,6 +24,18 @@ services:
     ports:
       - "127.0.0.1:8025:8025"
 
+  schema:
+    build:
+      context: ./backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://seguridad_operativa:${POSTGRES_PASSWORD}@postgres:5432/seguridad_operativa?schema=public
+    command: ["npx", "prisma", "migrate", "deploy"]
+    restart: "no"
+
   backend:
     build:
       context: ./backend
@@ -34,11 +46,14 @@ services:
         condition: service_healthy
       mailpit:
         condition: service_started
+      schema:
+        condition: service_completed_successfully
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://seguridad_operativa:${POSTGRES_PASSWORD}@postgres:5432/seguridad_operativa?schema=public
       PORT: 3000
       JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env.docker}
+      TRUST_PROXY_HOPS: ${TRUST_PROXY_HOPS:-1}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
@@ -51,7 +66,7 @@ services:
       VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:soporte@lineauno.pe}
     volumes:
       - uploaded_files:/app/uploads
-    command: ["sh", "-c", "npx prisma db push --skip-generate && node dist/server.js"]
+    command: ["node", "dist/server.js"]
     security_opt:
       - no-new-privileges:true
     healthcheck:

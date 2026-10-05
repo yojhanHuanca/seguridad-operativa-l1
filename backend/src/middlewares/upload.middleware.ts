@@ -2,6 +2,7 @@ import multer from "multer";
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import { Transform, pipeline } from "node:stream";
 import type { Request, Response, NextFunction } from "express";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
@@ -16,19 +17,51 @@ const ALLOWED_MIME = new Set([
   "video/quicktime",
   "application/pdf",
 ]);
+const EXTENSION_POR_MIME: Record<string, string> = {
+  "image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp",
+  "video/mp4": ".mp4", "video/quicktime": ".mov", "application/pdf": ".pdf",
+};
+const EXTENSION_AVATAR_POR_MIME: Record<string, string> = { "image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp" };
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
-  filename: (_req, file, cb) => {
-    const unique = crypto.randomUUID();
-    const ext = path.extname(file.originalname);
-    cb(null, `${unique}${ext}`);
+const MAX_EVIDENCE_TOTAL_BYTES = 150 * 1024 * 1024;
+const evidenceBytesByRequest = new WeakMap<Request, number>();
+
+const storage: multer.StorageEngine = {
+  _handleFile(req, file, cb) {
+    const filename = `${crypto.randomUUID()}${EXTENSION_POR_MIME[file.mimetype] ?? ".bin"}`;
+    const destination = path.join(UPLOAD_DIR, filename);
+    let fileSize = 0;
+    const enforceRequestLimit = new Transform({
+      transform(chunk: Buffer, _encoding, done) {
+        fileSize += chunk.length;
+        const requestTotal = (evidenceBytesByRequest.get(req) ?? 0) + chunk.length;
+        evidenceBytesByRequest.set(req, requestTotal);
+        if (requestTotal > MAX_EVIDENCE_TOTAL_BYTES) {
+          const error = new Error("La carga supera el máximo total permitido de 150 MB.") as Error & { status: number };
+          error.status = 413;
+          done(error);
+          return;
+        }
+        done(null, chunk);
+      },
+    });
+
+    pipeline(file.stream, enforceRequestLimit, fs.createWriteStream(destination, { flags: "wx" }), (error) => {
+      if (error) {
+        fs.rm(destination, { force: true }, () => cb(error));
+        return;
+      }
+      cb(null, { destination: UPLOAD_DIR, filename, path: destination, size: fileSize });
+    });
   },
-});
+  _removeFile(_req, file, cb) {
+    fs.rm(file.path, { force: true }, cb);
+  },
+};
 
 export const uploadEvidencia = multer({
   storage,
-  limits: { fileSize: 30 * 1024 * 1024, files: 10 },
+  limits: { fileSize: 30 * 1024 * 1024, files: 10, fields: 50, parts: 60, fieldNameSize: 100 },
   fileFilter: (_req, file, cb) => {
     if (!ALLOWED_MIME.has(file.mimetype)) {
       cb(new Error(`Tipo de archivo no permitido: ${file.mimetype}`));
@@ -47,14 +80,14 @@ const avatarStorage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, AVATAR_DIR),
   filename: (_req, file, cb) => {
     const unique = crypto.randomUUID();
-    const ext = path.extname(file.originalname);
+    const ext = EXTENSION_AVATAR_POR_MIME[file.mimetype] ?? ".bin";
     cb(null, `${unique}${ext}`);
   },
 });
 
 export const uploadAvatar = multer({
   storage: avatarStorage,
-  limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+  limits: { fileSize: 5 * 1024 * 1024, files: 1, fields: 20, parts: 21, fieldNameSize: 100 },
   fileFilter: (_req, file, cb) => {
     if (!ALLOWED_AVATAR_MIME.has(file.mimetype)) {
       cb(new Error(`Tipo de archivo no permitido: ${file.mimetype}`));

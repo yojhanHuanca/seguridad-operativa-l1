@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
-  db: { catalogo_detalle: { findMany: vi.fn() }, eventos_monitoreo: { findMany: vi.fn() }, contingencia_eventos: { findMany: vi.fn() } },
+  db: {
+    catalogo_detalle: { findMany: vi.fn() }, eventos_monitoreo: { findMany: vi.fn() }, contingencia_eventos: { findMany: vi.fn() },
+    importacion_locks: { create: vi.fn(), updateMany: vi.fn(), deleteMany: vi.fn() },
+    $executeRaw: vi.fn(), $transaction: vi.fn(),
+  },
   monitor: vi.fn(), contingency: vi.fn(), start: vi.fn(), complete: vi.fn(),
 }));
 vi.mock('../../lib/prisma.js', () => ({ default: mocks.db }));
@@ -14,6 +18,10 @@ const monitoring = { Fecha: '2026-09-01', 'Hora de evento': '10:00', 'Tipo de in
 const contingency = { Fecha: '2026-09-01', 'Hora de Reporte': '10:00', 'Tipo de evento': 'Atención', 'Lugar del evento': 'Estación', 'Lugar exacto del evento': 'Andén', 'Quién reporta': 'Prueba', 'Nombre persona': 'Persona privada', DNI: '12345678' };
 beforeEach(() => {
   vi.resetAllMocks();
+  mocks.db.$transaction.mockImplementation((callback: (tx: typeof mocks.db) => unknown) => callback(mocks.db));
+  mocks.db.importacion_locks.create.mockResolvedValue({});
+  mocks.db.importacion_locks.updateMany.mockResolvedValue({ count: 1 });
+  mocks.db.importacion_locks.deleteMany.mockResolvedValue({ count: 1 });
   mocks.db.catalogo_detalle.findMany.mockResolvedValue([
     { id_detalle: 1, nombre: 'Incidente', catalogos: { nombre: 'Tipo de incidente operativo' } },
     { id_detalle: 2, nombre: 'Estación', catalogos: { nombre: 'Ubicación' } },

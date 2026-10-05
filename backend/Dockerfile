@@ -48,6 +48,7 @@ COPY --from=deps-prod /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
 COPY package.json ./
+COPY scripts/seed-contingencias.mjs ./scripts/
 
 # Evidencias de casos y avatares: el código los escribe acá si no existe.
 # Se monta como volumen en docker-compose para que sobrevivan a un rebuild.
