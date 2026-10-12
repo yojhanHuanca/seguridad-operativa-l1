@@ -26,6 +26,7 @@ backups/
 # Artefactos de herramientas de desarrollo / logs locales
 .codex-*
 *.log
+*.[mM][dD]
 backend/coverage/
 .env.docker
 outputs/

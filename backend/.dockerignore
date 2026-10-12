@@ -6,6 +6,8 @@ uploads
 !.env.example
 src/generated
 *.log
+**/*.md
+**/*.MD
 .git
 coverage
 tmp
