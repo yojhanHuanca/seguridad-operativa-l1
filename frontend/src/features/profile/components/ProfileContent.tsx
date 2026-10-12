@@ -1,5 +1,7 @@
 import { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/features/auth/auth";
+import { newPasswordError } from "@/lib/password";
 import {
   ArrowUpRight,
   Bell,
@@ -228,6 +230,8 @@ function QuickActionLink({ action }: { action: QuickAction }) {
 }
 
 export function ProfileContent() {
+  const { clearSession } = useAuth();
+  const navigate = useNavigate();
   const { data: profile, isLoading, isError, refetch } = useMyProfile();
   const { data: actividad = [], isLoading: actividadLoading, isError: actividadError, refetch: refetchActividad } = useMyActivity();
   const updatePhone = useUpdatePhone();
@@ -331,23 +335,19 @@ export function ProfileContent() {
   };
 
   const cambiarPassword = () => {
+    if (changePassword.isPending) return;
     setPwError(null);
-    if (pwNueva.trim().length < 6) {
-      setPwError("La nueva contraseña debe tener al menos 6 caracteres");
-      return;
-    }
-    if (pwNueva !== pwConfirmar) {
-      setPwError("La confirmación no coincide con la nueva contraseña");
+    const validation = newPasswordError(pwNueva, pwConfirmar);
+    if (validation) {
+      setPwError(validation);
       return;
     }
     changePassword.mutate(
-      { password_actual: pwActual, password_nueva: pwNueva },
+      { password_actual: pwActual, password_nueva: pwNueva, password_confirmacion: pwConfirmar },
       {
         onSuccess: () => {
-          toast.success("Contraseña actualizada");
-          setPwActual("");
-          setPwNueva("");
-          setPwConfirmar("");
+          clearSession("password-changed");
+          navigate("/login", { replace: true });
         },
         onError: (e) => setPwError(apiErrorMessage(e, "No se pudo cambiar la contraseña")),
       }
@@ -359,9 +359,9 @@ export function ProfileContent() {
           <CardHeader
             icon={<LockKeyhole className="h-4.5 w-4.5" />}
             title="Seguridad de acceso"
-            subtitle="Actualiza tu contraseña cuando sea necesario."
+            subtitle="Al cambiar la contraseña se cerrarán todas tus sesiones."
             action={
-              tab === "informacion" ? <Button type="button" variant="outline" size="sm" onClick={() => setTab("seguridad")}>Cambiar</Button> : <Button type="button" variant="subtle" size="sm" onClick={() => setPwVisible((value) => !value)}>
+              tab === "informacion" ? <Button type="button" variant="outline" size="sm" onClick={() => setTab("seguridad")}>Cambiar</Button> : <Button type="button" variant="subtle" size="sm" disabled={changePassword.isPending} onClick={() => setPwVisible((value) => !value)}>
                 {pwVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 {pwVisible ? "Ocultar" : "Ver"}
               </Button>
@@ -370,7 +370,7 @@ export function ProfileContent() {
           {tab === "informacion" ? <p className="text-sm text-ink-soft">Contraseña protegida · Último acceso: {ultimoAcceso}</p> : <>
           <div className="grid gap-4 lg:grid-cols-3">
             <Field label="Contraseña actual">
-              <Input type={pwVisible ? "text" : "password"} value={pwActual} onChange={(e) => setPwActual(e.target.value)} placeholder="Actual" />
+              <Input type={pwVisible ? "text" : "password"} value={pwActual} onChange={(e) => setPwActual(e.target.value)} placeholder="Actual" autoComplete="current-password" disabled={changePassword.isPending} />
             </Field>
             <Field label="Nueva contraseña">
               <Input
@@ -378,6 +378,8 @@ export function ProfileContent() {
                 value={pwNueva}
                 onChange={(e) => setPwNueva(e.target.value)}
                 placeholder="Mínimo 6 caracteres"
+                autoComplete="new-password"
+                disabled={changePassword.isPending}
               />
             </Field>
             <Field label="Confirmar contraseña">
@@ -386,10 +388,12 @@ export function ProfileContent() {
                 value={pwConfirmar}
                 onChange={(e) => setPwConfirmar(e.target.value)}
                 placeholder="Repite la nueva contraseña"
+                autoComplete="new-password"
+                disabled={changePassword.isPending}
               />
             </Field>
           </div>
-          {pwError && <p className="mt-3 rounded-lg bg-critical-soft px-3 py-2 text-[12.5px] text-critical-ink">{pwError}</p>}
+          {pwError && <p role="alert" className="mt-3 rounded-lg bg-critical-soft px-3 py-2 text-[12.5px] text-critical-ink">{pwError}</p>}
           <div className="mt-4 flex justify-end">
             <Button size="sm" onClick={cambiarPassword} disabled={changePassword.isPending || !pwActual || !pwNueva || !pwConfirmar}>
               {changePassword.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}

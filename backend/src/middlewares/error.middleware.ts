@@ -19,12 +19,11 @@ export function errorMiddleware(err: unknown, _req: Request, res: Response, _nex
     err && typeof err === "object" && "status" in err && typeof (err as { status?: unknown }).status === "number"
       ? (err as { status: number }).status
       : 500;
-  // El error 400 del body-parser (JSON mal formado) es información segura y
-  // útil para el cliente, aunque técnicamente sea un SyntaxError; cualquier
-  // otro caso (500) pasa por el mismo saneo que usan los controladores.
+  // Parser messages can include the submitted body (passwords or personal data).
+  // Preserve the client status without reflecting raw input or parser internals.
   const message =
-    status === 400 && err instanceof Error
-      ? err.message
+    status === 400 && err instanceof SyntaxError
+      ? "El cuerpo de la solicitud no tiene un formato JSON válido"
       : safeErrorMessage(err, "Error interno del servidor");
   res.status(status).json(ApiResponse.error(message));
 }

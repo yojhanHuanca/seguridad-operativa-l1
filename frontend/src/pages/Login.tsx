@@ -1,9 +1,9 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Eye, EyeOff, Loader2, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { apiErrorMessage } from "@/lib/api";
-import { homeForRole, useAuth } from "@/features/auth/auth";
+import { homeForRole, useAuth, type AuthUser } from "@/features/auth/auth";
 import { AuthLayout } from "@/features/auth/AuthLayout";
 import { GoogleSignInButton } from "@/features/auth/GoogleSignInButton";
 import { riseItem, EASE_OUT, SHAKE_X, SHAKE_TRANSITION, SPRING_SNAPPY } from "@/design-system/motion/variants";
@@ -17,6 +17,8 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [passwordUpdated] = useState(() => sessionStorage.getItem("sigma_password_updated") === "1");
+  useEffect(() => { sessionStorage.removeItem("sigma_password_updated"); }, []);
 
   // `ProtectedRoute` guarda la ruta a la que se quería entrar en el estado de
   // la navegación al mandar para acá — por ejemplo, el enlace de un correo de
@@ -26,9 +28,9 @@ export function LoginPage() {
   // rol cuando se navega ahí, así que redirigir ciego acá es seguro: un
   // usuario sin permiso para esa ruta rebota igual, como siempre.
   const from = (location.state as { from?: string } | null)?.from;
-  const destino = (rol: string) => from || homeForRole(rol);
+  const destino = (actor: AuthUser) => actor.debe_cambiar_password ? "/cambiar-contrasena" : from || homeForRole(actor.rol);
 
-  if (user && token) return <Navigate to={destino(user.rol)} replace />;
+  if (user && token) return <Navigate to={destino(user)} replace />;
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -36,7 +38,7 @@ export function LoginPage() {
     setLoading(true);
     try {
       const authenticatedUser = await login(correo.trim().toLowerCase(), password);
-      navigate(destino(authenticatedUser.rol), { replace: true });
+      navigate(destino(authenticatedUser), { replace: true });
     } catch (loginError) {
       setError(apiErrorMessage(loginError, "No se pudo iniciar sesión. Verifica tus credenciales."));
     } finally {
@@ -49,7 +51,7 @@ export function LoginPage() {
     setLoading(true);
     try {
       const authenticatedUser = await loginWithGoogle(credential);
-      navigate(destino(authenticatedUser.rol), { replace: true });
+      navigate(destino(authenticatedUser), { replace: true });
     } catch (loginError) {
       setError(apiErrorMessage(loginError, "No se pudo iniciar sesión con Google."));
     } finally {
@@ -70,6 +72,11 @@ export function LoginPage() {
       }
     >
       <motion.form onSubmit={submit} variants={riseItem} className="mt-4 space-y-3.5">
+        {passwordUpdated && (
+          <p role="status" className="rounded-lg border border-brand-200 bg-brand-50 px-3 py-2.5 text-[12px] text-brand-800">
+            Contraseña actualizada. Se cerraron todas tus sesiones. Ingresa con tu nueva contraseña.
+          </p>
+        )}
         <label className="block">
           <span className="mb-1.5 block text-[12px] font-semibold text-ink-soft">Correo corporativo</span>
           <span className="relative block">

@@ -59,7 +59,7 @@ export function useUploadAvatar() {
 
 export function useChangePassword() {
   return useMutation({
-    mutationFn: async (input: { password_actual: string; password_nueva: string }) => {
+    mutationFn: async (input: { password_actual: string; password_nueva: string; password_confirmacion: string }) => {
       const { data } = await api.patch<ApiEnvelope<null>>("/profile/me/password", input);
       return data;
     },

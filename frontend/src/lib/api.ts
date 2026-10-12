@@ -22,6 +22,15 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const isAuthAttempt = error.config?.url?.includes("/auth/login") || error.config?.url?.includes("/auth/google");
+    if (error.response?.status === 403 && error.response?.data?.code === "PASSWORD_CHANGE_REQUIRED") {
+      try {
+        const stored = localStorage.getItem("sigma_auth_user");
+        if (stored) localStorage.setItem("sigma_auth_user", JSON.stringify({ ...JSON.parse(stored), debe_cambiar_password: true }));
+      } catch {
+        localStorage.removeItem("sigma_auth_user");
+      }
+      if (window.location.pathname !== "/cambiar-contrasena") window.location.assign("/cambiar-contrasena");
+    }
     if (error.response?.status === 401 && !isAuthAttempt) {
       localStorage.removeItem("sigma_auth_token");
       localStorage.removeItem("sigma_auth_user");

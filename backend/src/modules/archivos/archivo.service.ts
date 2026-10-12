@@ -1,6 +1,7 @@
 import path from "node:path";
 import prisma from "../../lib/prisma.js";
 import { esReportante, type Actor } from "../../utils/actor.js";
+import { casoVisibleParaJefe } from "../cases/case.visibility.js";
 
 /** Raíz física de los archivos subidos. Nada se sirve fuera de acá. */
 const UPLOADS_ROOT = path.resolve(process.cwd(), "uploads");
@@ -48,7 +49,10 @@ export async function rutaDeArchivoPermitido(
 
   const anexo = await prisma.anexos_caso.findFirst({
     where: { ruta_archivo: `/uploads/${carpeta}/${archivo}` },
-    select: { casos_sop: { select: { created_by: true } } },
+    select: { casos_sop: { select: {
+      created_by: true, area_responsable: true,
+      planes_accion: { select: { responsable: true, id_area: true } },
+    } } },
   });
   if (!anexo) throw new ArchivoNoEncontradoError("Archivo no encontrado");
 
@@ -60,7 +64,10 @@ export async function rutaDeArchivoPermitido(
   }
 
   const rol = (actor?.rol_nombre ?? "").trim().toLowerCase();
-  if (["seguridad operativa", "jefe de área", "jefe de area", "admin"].includes(rol)) {
+  if (["seguridad operativa", "jefe de área", "admin"].includes(rol)) {
+    if (!await casoVisibleParaJefe(anexo.casos_sop, actor)) {
+      throw new ArchivoNoAccesibleError("No tienes permiso para ver este archivo");
+    }
     return destino;
   }
   throw new ArchivoNoAccesibleError("No tienes permiso para ver este archivo");

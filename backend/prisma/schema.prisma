@@ -872,6 +872,7 @@ model usuarios {
   id_area                                                        Int?
   id_rol                                                         Int?
   password_hash                                                  String?               @db.VarChar(255)
+  debe_cambiar_password                                          Boolean               @default(false)
   foto_url                                                       String?               @db.VarChar(255)
   ultimo_acceso                                                  DateTime?             @db.Timestamp(6)
   es_responsable                                                 Boolean               @default(false)

@@ -166,7 +166,7 @@ export class UsersService {
 
         const actualizado = await UserRepository.update(id, sinIndefinidos(permisosSoloParaSO({
             ...dataNormalizada,
-            ...(password_hash ? { password_hash } : {}),
+            ...(password_hash ? { password_hash, debe_cambiar_password: true } : {}),
         }, rolDestino?.nombre_rol)));
 
         if (actor) {
@@ -179,7 +179,7 @@ export class UsersService {
                 tabla: "usuarios",
                 id_registro: id,
                 accion: "editar",
-                descripcion: `Editó al usuario ${actualizado.nombre}. ${resumen}`,
+                descripcion: password_hash ? `Restableció la contraseña temporal de ${actualizado.nombre}. ${resumen}` : `Editó al usuario ${actualizado.nombre}. ${resumen}`,
                 usuario: actor.id_usuario,
                 ip,
                 ...(cambios ? { antes: cambios.antes, despues: cambios.despues } : {}),

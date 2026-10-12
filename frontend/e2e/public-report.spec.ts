@@ -1,7 +1,20 @@
 import { expect, test } from '@playwright/test';
 import { mockApi } from './helpers';
 
+test('la consulta pública conserva el título del reporte registrado', async ({ page }) => {
+  await mockApi(page);
+  await page.route('**/api/reports/consulta/SOP-TITULO', route => route.fulfill({ json: { success: true, data: {
+    codigo_sop: 'SOP-TITULO', titulo: 'Condición Insegura en Villa El Salvador · Andén', descripcion: 'Reporte QA',
+    created_at: '2026-10-10T20:00:00Z', anexos_caso: [], solicitudes_informacion: [], evento_caso: [],
+    catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { nombre: 'Recepción' },
+    catalogo_detalle_casos_sop_tipoTocatalogo_detalle: { nombre: 'Observación' },
+  } } }));
+  await page.goto('/reportes/consulta?codigo=SOP-TITULO');
+  await expect(page.getByRole('heading', { name: 'Condición Insegura en Villa El Salvador · Andén', exact: true })).toBeVisible();
+});
+
 test('portal publico de reportes carga sin panel privado', async ({ page }) => {
+  await page.addInitScript(() => localStorage.clear());
   await page.goto('/reportes/nuevo');
 
   await expect(page.getByRole('heading', { name: /Reporta una condición de seguridad/i })).toBeVisible();
@@ -11,6 +24,20 @@ test('portal publico de reportes carga sin panel privado', async ({ page }) => {
   await expect(page.getByRole('button', { name: /Cambiar panel/i })).toHaveCount(0);
   await expect(page.getByRole('link', { name: /Mis reportes/i })).toHaveCount(0);
   await expect(page.getByRole('link', { name: /Notificaciones/i })).toHaveCount(0);
+  await expect(page).toHaveURL(/\/reportes\/nuevo$/);
+  expect(await page.evaluate(() => localStorage.getItem('sigma_auth_token'))).toBeNull();
+});
+
+test('sin cookie la consulta rechazada informa la restricción y no pide login', async ({ page }) => {
+  await mockApi(page);
+  await page.route('**/api/reports/consulta/SOP-AJENO', route => route.fulfill({ status: 403, json: {
+    success: false, message: 'Este reporte solo puede consultarse desde el dispositivo donde fue registrado',
+  } }));
+  await page.goto('/reportes/consulta?codigo=SOP-AJENO');
+  await expect(page.getByText('Este reporte solo puede consultarse desde el dispositivo donde fue registrado', { exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/\/reportes\/consulta\?codigo=SOP-AJENO$/);
+  await expect(page.getByText(/conserva las cookies/)).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem('sigma_auth_token'))).toBeNull();
 });
 
 test('ruta antigua de reportes redirige al registro publico', async ({ page }) => {

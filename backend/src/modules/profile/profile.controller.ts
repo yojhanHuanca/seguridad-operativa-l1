@@ -2,6 +2,8 @@ import type { Response } from "express";
 import { ProfileService } from "./profile.service.js";
 import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
+import { cambiarPasswordSchema } from "../../utils/password.js";
+import { ZodError } from "zod";
 
 export class ProfileController {
   static async getSessions(req: AuthenticatedRequest, res: Response) {
@@ -64,13 +66,11 @@ export class ProfileController {
 
   static async changePassword(req: AuthenticatedRequest, res: Response) {
     try {
-      const { password_actual, password_nueva } = req.body ?? {};
-      if (!password_actual || !password_nueva) {
-        throw new Error("Ingresa tu contraseña actual y la nueva");
-      }
+      const { password_actual, password_nueva } = cambiarPasswordSchema.parse(req.body ?? {});
       await ProfileService.changePassword(req.user!.id_usuario, password_actual, password_nueva);
       return res.json(ApiResponse.success("Contraseña actualizada correctamente"));
     } catch (error) {
+      if (error instanceof ZodError) return res.status(400).json(ApiResponse.error(error.issues[0]?.message ?? "Datos inválidos"));
       return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "No se pudo cambiar la contraseña")));
     }
   }

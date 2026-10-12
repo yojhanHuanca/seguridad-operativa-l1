@@ -12,6 +12,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   ClipboardCheck,
+  Database,
   Download,
   ExternalLink,
   FilePlus2,
@@ -121,6 +122,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
       defaultOpen: true,
       links: [
         { to: "/seguridad", label: "Dashboard Ejecutivo", icon: LayoutDashboard, match: (p) => p === "/seguridad" },
+        { to: "/seguridad/datos-operativos", label: "Datos Operativos", icon: Database, match: (p) => p === "/seguridad/datos-operativos" },
         {
           to: "/seguridad/eventos-asignados",
           label: "Eventos asignados",
@@ -422,6 +424,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
 }
 
 function getPageTitle(pathname: string) {
+  if (pathname === "/seguridad/datos-operativos") return "Datos Operativos";
   if (pathname === "/seguridad") return "Dashboard Ejecutivo";
   if (pathname.startsWith("/seguridad/casos")) return "Gestión de Casos";
   if (pathname === "/seguridad/planes-accion") return "Planes de Acción";
@@ -436,6 +439,7 @@ function getPageTitle(pathname: string) {
 }
 
 function getBreadcrumb(pathname: string) {
+  if (pathname === "/seguridad/datos-operativos") return "Inicio / Datos Operativos";
   if (pathname === "/seguridad") return "Inicio";
   if (pathname.startsWith("/seguridad/casos")) return "Inicio / Casos";
   if (pathname === "/seguridad/planes-accion") return "Inicio / Planes de Acción";

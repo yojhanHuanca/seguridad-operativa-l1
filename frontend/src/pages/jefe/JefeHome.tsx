@@ -7,6 +7,7 @@ import { Pill } from "@/design-system/primitives/Pill";
 import { usePlans } from "@/features/plans/hooks/usePlans";
 import { useJefeAreaFilter } from "@/features/plans/hooks/useJefeAreaFilter";
 import { planDeadline } from "@/features/plans/lib/planDeadline";
+import { priorityInfo } from "@/features/plans/lib/planDetailFlow";
 import {
   hasPendingExtension,
   isClosed,
@@ -62,17 +63,6 @@ function statusInfo(p: PlanItem): { label: string; tone: PillTone } {
   if (isReadyForVerification(p)) return { label: "En Ejecución", tone: "brand" };
   if (isExecuting(p)) return { label: "En Ejecución", tone: "brand" };
   return { label: "Pendiente", tone: "info" };
-}
-
-function priorityInfo(p: PlanItem): { label: string; tone: PillTone; rank: number } {
-  const riesgo = p.casos_sop.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle;
-  const text = normalize(`${riesgo?.codigo ?? ""} ${riesgo?.nombre ?? ""}`);
-  const tokens = text.split(/[^a-z0-9]+/).filter(Boolean);
-
-  if (tokens.some((t) => ["critica", "critico", "inaceptable", "extremo", "extrema"].includes(t))) return { label: "Crítica", tone: "critical", rank: 0 };
-  if (tokens.some((t) => ["a", "alta", "alto"].includes(t))) return { label: "Alta", tone: "warning", rank: 1 };
-  if (tokens.some((t) => ["b", "baja", "bajo"].includes(t))) return { label: "Baja", tone: "neutral", rank: 3 };
-  return { label: "Media", tone: "info", rank: 2 };
 }
 
 function deadlineRank(p: PlanItem): number {

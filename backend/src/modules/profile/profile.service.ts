@@ -3,6 +3,7 @@ import { BcryptHelper } from "../../utils/bcrypt.js";
 import { unlink } from "node:fs/promises";
 import path from "node:path";
 import logger from "../../utils/logger.js";
+import { nuevaPasswordSchema } from "../../utils/password.js";
 
 export class ProfileService {
   static async replaceAvatar(id_usuario: number, foto_url: string | null) {
@@ -42,16 +43,17 @@ export class ProfileService {
   }
 
   static async changePassword(id_usuario: number, actual: string, nueva: string) {
-    if (nueva.trim().length < 6) throw new Error("La nueva contraseña debe tener al menos 6 caracteres");
+    nuevaPasswordSchema.parse(nueva);
 
     const row = await ProfileRepository.findPasswordHash(id_usuario);
     if (!row?.password_hash) throw new Error("Tu cuenta todavía no tiene una contraseña configurada; pedile al administrador que te asigne una");
 
     const valida = await BcryptHelper.compare(actual, row.password_hash);
     if (!valida) throw new Error("La contraseña actual no es correcta");
+    if (await BcryptHelper.compare(nueva, row.password_hash)) throw new Error("La nueva contraseña debe ser diferente de la actual");
 
     const password_hash = await BcryptHelper.hash(nueva);
-    await ProfileRepository.updatePassword(id_usuario, password_hash);
+    await ProfileRepository.updatePassword(id_usuario, password_hash, row.password_hash);
   }
 
   static async getActividad(id_usuario: number, rol_nombre: string) {

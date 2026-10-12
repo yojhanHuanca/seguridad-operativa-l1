@@ -5,6 +5,7 @@ import type { CreatePlanDto, UploadedFile } from "./case.types.js";
 import { areaDelActor, esJefeDeArea, nombreDelActor, type Actor } from "../../utils/actor.js";
 import { assertTransicion, type AccionCaso } from "./case.workflow.js";
 import { parseOptionalPagination } from "../../utils/pagination.js";
+import { casoVisibleParaJefe } from "./case.visibility.js";
 
 /** El plan existe, pero es de otra área: 403, no 400. */
 export class PlanAjenoError extends Error {}
@@ -136,7 +137,6 @@ const investigationSchema = z.object({
   causa_raiz: z.string().trim().min(5, "Describa la causa raíz"),
   conclusiones: z.string().trim().min(5, "Describa las conclusiones"),
   observaciones: z.string().trim().max(1000).optional().nullable(),
-  investigador: idPositivo.optional().nullable(),
 });
 
 const activitySchema = z.object({
@@ -297,14 +297,7 @@ export class CaseService {
   static async getByCodigo(codigo: string, actor?: Actor) {
     const caso = await CaseRepository.findByCodigo(codigo);
     if (!caso) throw new Error(`El caso ${codigo} no existe`);
-    if (!esJefeDeArea(actor)) return caso;
-
-    const areaActor = await areaDelActor(actor);
-    const esDeSuArea = areaActor != null && caso.area_responsable === areaActor;
-    const tienePlanPropio = caso.planes_accion.some(
-      (plan) => plan.responsable === actor!.id_usuario || (areaActor != null && plan.id_area === areaActor)
-    );
-    if (!esDeSuArea && !tienePlanPropio) throw new Error(`El caso ${codigo} no existe`);
+    if (!await casoVisibleParaJefe(caso, actor)) throw new Error(`El caso ${codigo} no existe`);
 
     return caso;
   }
@@ -361,7 +354,10 @@ export class CaseService {
   static async saveInvestigation(codigo: string, rawBody: unknown, actor?: Actor) {
     const dto = investigationSchema.parse(rawBody);
     const caso = await getCasoBasico(codigo, "saveInvestigation");
-    return CaseRepository.saveInvestigation(caso.id_caso, dto, await nombreDelActor(actor));
+    return CaseRepository.saveInvestigation(caso.id_caso, {
+      ...dto,
+      investigador: actor?.id_usuario ?? null,
+    }, await nombreDelActor(actor));
   }
 
   static async createPlan(codigo: string, rawBody: unknown, actor?: Actor) {

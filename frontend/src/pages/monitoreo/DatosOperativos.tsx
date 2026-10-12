@@ -20,6 +20,7 @@ import { apiErrorMessage } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { stationNamesFromCatalog } from "@/lib/stations";
 import { MonitoristaShell } from "@/components/layout/MonitoristaShell";
+import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
 
 
 const POR_PAGINA = 25;
@@ -112,7 +113,9 @@ export function DatosOperativos() {
   const eliminar = useEliminarDatoOperativo();
 
   const totalPaginas = Math.max(1, Math.ceil((data?.total ?? 0) / POR_PAGINA));
-  const Shell = location.pathname.startsWith("/contingencias") ? ContingenciaShell : MonitoristaShell;
+  const Shell = location.pathname.startsWith("/seguridad")
+    ? SeguridadOperativaShell
+    : location.pathname.startsWith("/contingencias") ? ContingenciaShell : MonitoristaShell;
   const paginaActual = Math.min(pagina, totalPaginas);
   const guardando = crear.isPending || actualizar.isPending;
 

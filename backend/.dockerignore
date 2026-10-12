@@ -7,3 +7,8 @@ uploads
 src/generated
 *.log
 .git
+coverage
+tmp
+scripts/qa-*.mts
+scripts/qa-*.mjs
+*.tsbuildinfo

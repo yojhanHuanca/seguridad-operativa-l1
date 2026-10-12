@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { nuevaPasswordSchema } from "../../utils/password.js";
 
 const idPositivo = z.coerce.number().int().positive();
 const idAreaAsignable = idPositivo.nullable().optional();
@@ -6,7 +7,7 @@ const idAreaAsignable = idPositivo.nullable().optional();
 export const createUserSchema = z.object({
   nombre: z.string().trim().min(2, "El nombre debe tener al menos 2 caracteres").max(150),
   correo: z.string().trim().email("Ingrese un correo válido").max(150).toLowerCase(),
-  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres").max(100),
+  password: nuevaPasswordSchema,
   cargo: z.string().trim().max(100).optional(),
   telefono: z.string().trim().max(20).optional(),
   id_area: idAreaAsignable,
@@ -28,7 +29,7 @@ export const updateUserSchema = z.object({
   puede_reabrir_casos: z.boolean().optional(),
   puede_rechazar_reportes: z.boolean().optional(),
   // Opcional: si viene vacío o no viene, la contraseña actual se conserva.
-  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres").max(100).optional().or(z.literal("")),
+  password: nuevaPasswordSchema.optional().or(z.literal("")),
 });
 
 export const idParamSchema = idPositivo;

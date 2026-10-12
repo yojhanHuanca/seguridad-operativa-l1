@@ -13,6 +13,7 @@ const PUBLIC_SELECT = {
   fecha_ingreso: true,
   id_area: true,
   id_rol: true,
+  debe_cambiar_password: true,
   roles: { select: { nombre_rol: true } },
   areas: { select: { nombre_area: true } },
 } as const;
@@ -52,8 +53,20 @@ export class ProfileRepository {
     return prisma.usuarios.update({ where: { id_usuario }, data, select: PUBLIC_SELECT });
   }
 
-  static async updatePassword(id_usuario: number, password_hash: string) {
-    return prisma.usuarios.update({ where: { id_usuario }, data: { password_hash } });
+  static async updatePassword(id_usuario: number, password_hash: string, previousHash: string) {
+    return prisma.$transaction(async tx => {
+      const updated = await tx.usuarios.updateMany({
+        where: { id_usuario, password_hash: previousHash },
+        data: { password_hash, debe_cambiar_password: false },
+      });
+      if (updated.count !== 1) throw new Error("La contraseña cambió mientras se procesaba. Vuelve a iniciar sesión.");
+      await tx.sesiones.updateMany({ where: { usuario: id_usuario, estado: "activa" }, data: { estado: "cerrada", fecha_fin: new Date() } });
+      await tx.password_resets.updateMany({ where: { usuario: id_usuario, used_at: null }, data: { used_at: new Date() } });
+      await tx.auditoria.create({ data: {
+        tabla_afectada: "usuarios", id_registro: id_usuario, usuario: id_usuario,
+        accion: "editar", descripcion: "Cambió su contraseña y cerró todas sus sesiones",
+      } });
+    });
   }
 
   static async countCasosResponsable(id_usuario: number) {

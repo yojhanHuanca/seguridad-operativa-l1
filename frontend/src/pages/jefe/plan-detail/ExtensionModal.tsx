@@ -9,6 +9,7 @@ import { useRequestPlanExtension } from "@/features/plans/hooks/usePlans";
 import { planDeadline } from "@/features/plans/lib/planDeadline";
 import { apiErrorMessage } from "@/lib/api";
 import type { PlanItem } from "@/features/plans/types";
+import { planFlow } from "@/features/plans/lib/planDetailFlow";
 import { ACTOR } from "./constants";
 
 function soloFecha(value?: string | null) {
@@ -29,11 +30,12 @@ export function ExtensionModal({ plan, open, onClose }: { plan: PlanItem; open: 
   const draftKey = `${plan.id_plan}:${plazoVigente}`;
   const [draftFecha, setDraftFecha] = useState<{ key: string; value: string }>(() => ({ key: draftKey, value: sugerida }));
   const nuevaFecha = draftFecha.key === draftKey ? draftFecha.value : sugerida;
+  const puedeSolicitar = planFlow(plan).puedeSolicitarProrroga;
   const [justificacion, setJustificacion] = useState("");
 
   return (
     <Modal
-      open={open}
+      open={open && puedeSolicitar}
       onClose={onClose}
       title="Solicitar ampliación de plazo"
       subtitle={`${shortPlanCode(plan.codigo_plan)} · la decide Seguridad Operativa`}
@@ -43,7 +45,7 @@ export function ExtensionModal({ plan, open, onClose }: { plan: PlanItem; open: 
             Cancelar
           </Button>
           <Button
-            disabled={!nuevaFecha || justificacion.trim().length < 5 || requestExt.isPending}
+            disabled={!puedeSolicitar || !nuevaFecha || nuevaFecha < fechaMinima || justificacion.trim().length < 5 || requestExt.isPending}
             onClick={() =>
               requestExt.mutate(
                 { id_plan: plan.id_plan, nueva_fecha: nuevaFecha, justificacion: justificacion.trim(), actor: ACTOR },

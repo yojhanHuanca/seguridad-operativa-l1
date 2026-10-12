@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useAuth } from "@/features/auth/auth";
@@ -24,16 +24,15 @@ export function UserAvatar({ nombre, fotoUrl, userId, className }: {
       return data;
     },
   });
-  const [loaded, setLoaded] = useState<{ blob: Blob; src: string } | null>(null);
-  const [failedSrc, setFailedSrc] = useState("");
+  const image = useRef<HTMLImageElement>(null);
+  const [failedBlob, setFailedBlob] = useState<Blob | null>(null);
   useEffect(() => {
-    if (!blob) return;
+    if (!blob || !image.current) return;
     const src = URL.createObjectURL(blob);
-    setLoaded({ blob, src });
+    image.current.src = src;
     return () => URL.revokeObjectURL(src);
   }, [blob]);
-  const src = loaded?.blob === blob ? loaded?.src : undefined;
   return <span className={cn("relative inline-grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-100 text-xs font-bold text-brand-800", className)} aria-label={nombre}>
-    {src && src !== failedSrc ? <img src={src} alt={nombre} className="h-full w-full object-cover" onError={() => setFailedSrc(src)} /> : <span aria-hidden>{initials(nombre)}</span>}
+    {blob && blob !== failedBlob ? <img ref={image} alt={nombre} className="h-full w-full object-cover" onError={() => setFailedBlob(blob)} /> : <span aria-hidden>{initials(nombre)}</span>}
   </span>;
 }

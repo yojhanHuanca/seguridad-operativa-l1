@@ -59,6 +59,16 @@ afterAll(async () => {
 });
 
 describe("API real: autenticación, PostgreSQL y permisos", () => {
+  it("editar datos conserva el hash y permite seguir entrando con la contraseña anterior", async () => {
+    const target = users.find(user => user.rol === "Monitorista")!;
+    const before = await prisma.usuarios.findUniqueOrThrow({ where: { id_usuario: target.id } });
+    const token = await login(users[0]!.correo);
+    await request(app).patch(`/api/users/${target.id}`).set("Authorization", `Bearer ${token}`).send({ cargo: "Cargo actualizado" }).expect(200);
+    const after = await prisma.usuarios.findUniqueOrThrow({ where: { id_usuario: target.id } });
+    expect(after.password_hash).toBe(before.password_hash);
+    const preserved = await login(target.correo);
+    await request(app).post("/api/auth/logout").set("Authorization", `Bearer ${preserved}`).expect(200);
+  });
   it.each(testedRoles)("%s: correo sin distinción de mayúsculas conserva rol y permisos", async rol => {
     const user = users.find(u => u.rol === rol)!;
     for (const email of [user.correo.toLowerCase(), ` ${user.correo.toUpperCase()} `]) {

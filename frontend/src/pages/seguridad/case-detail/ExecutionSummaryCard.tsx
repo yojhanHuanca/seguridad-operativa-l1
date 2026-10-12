@@ -942,7 +942,7 @@ function ExecutionVerificationGate({
             <p className="mt-1 text-[18px] font-bold text-ink tabular-nums">{listos.length}/{total}</p>
           </div>
           <div className="rounded-lg border border-line-soft bg-surface/50 p-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">En ejecución</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Planes abiertos</p>
             <p className={cn("mt-1 text-[18px] font-bold tabular-nums", abiertos.length ? "text-warning-ink" : "text-brand-700")}>{abiertos.length}</p>
           </div>
           <div className="rounded-lg border border-line-soft bg-surface/50 p-3">

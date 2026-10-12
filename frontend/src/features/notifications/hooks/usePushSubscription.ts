@@ -41,15 +41,15 @@ export function usePushSubscription() {
     } catch (cause) {
       if (current === revision.current) { setError(apiErrorMessage(cause, cause instanceof Error ? cause.message : "No se pudo comprobar la configuración de notificaciones")); update("error"); }
     }
-  }, [supported, secure, user?.id_usuario]);
+  }, [supported, secure]);
 
   useEffect(() => {
-    setEstado("cargando");
     void revisar();
+    const pendingRevision = revision;
     const focus = () => void revisar();
     window.addEventListener("focus", focus);
-    return () => { revision.current++; window.removeEventListener("focus", focus); };
-  }, [revisar]);
+    return () => { pendingRevision.current++; window.removeEventListener("focus", focus); };
+  }, [revisar, user?.id_usuario]);
 
   const activar = async (): Promise<boolean> => {
     if (working.current || !supported || !secure || !key.current) return false;

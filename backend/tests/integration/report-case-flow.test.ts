@@ -1,4 +1,6 @@
 import { randomUUID } from "node:crypto";
+import { unlink } from "node:fs/promises";
+import path from "node:path";
 import bcrypt from "bcrypt";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -13,6 +15,8 @@ const userIds: number[] = [], areaIds: number[] = [], caseIds: number[] = [], ev
 const actors: Record<string, { id: number; token: string; area: number }> = {};
 const catalogs: Record<string, number> = {};
 const codes: string[] = [];
+const uploadedFiles: string[] = [];
+const importedCodes: string[] = [];
 
 beforeAll(async () => {
   const db = await prisma.$queryRaw<{ name: string }[]>`SELECT current_database() AS name`;
@@ -61,19 +65,29 @@ beforeAll(async () => {
 
 afterAll(async () => {
   try {
+    const imported = await prisma.casos_sop.findMany({ where: { codigo_sop: { in: importedCodes } }, select: { id_caso: true, evento_caso: { select: { id_evento: true } } } });
+    caseIds.push(...imported.map(item => item.id_caso));
+    eventIds.push(...imported.flatMap(item => item.evento_caso.map(event => event.id_evento)));
     await prisma.casos_sop.deleteMany({ where: { id_caso: { in: caseIds } } });
     await prisma.eventos_operativos.deleteMany({ where: { id_evento: { in: eventIds } } });
+    await prisma.importaciones.deleteMany({ where: { usuario: { in: userIds } } });
     await prisma.notificaciones.deleteMany({ where: { OR: [
       { usuario: { in: userIds } }, ...codes.map(code => ({ titulo: { contains: code } })),
     ] } });
-    await prisma.auditoria.deleteMany({ where: { usuario: { in: userIds } } });
+    await prisma.auditoria.deleteMany({ where: { OR: [
+      { usuario: { in: userIds } },
+      { tabla_afectada: "casos_sop", id_registro: { in: caseIds } },
+    ] } });
     await prisma.sesiones.deleteMany({ where: { usuario: { in: userIds } } });
     await prisma.usuarios.deleteMany({ where: { id_usuario: { in: userIds } } });
     await prisma.areas.deleteMany({ where: { id_area: { in: areaIds } } });
     await prisma.catalogo_detalle.deleteMany({ where: { id_detalle: { in: detailIds } } });
     await prisma.catalogos.deleteMany({ where: { id_catalogo: { in: groupIds }, catalogo_detalle: { none: {} } } });
     await prisma.roles.deleteMany({ where: { id_rol: { in: roleIds }, usuarios: { none: {} } } });
-  } finally { await prisma.$disconnect(); }
+  } finally {
+    for (const file of uploadedFiles) await unlink(file).catch(() => undefined);
+    await prisma.$disconnect();
+  }
 });
 
 const auth = (who = "so") => `Bearer ${actors[who]!.token}`;
@@ -108,6 +122,66 @@ async function plannedCase() {
 }
 
 describe("API real: reportes y ciclo de planes", () => {
+  it("importación SOP valida antes de escribir, conserva relaciones y evita duplicados", async () => {
+    const sequence = 100000 + Number.parseInt(run, 16) % 100000;
+    const codigo = `SOP ${sequence}-2026`;
+    const invalidCode = `SOP ${sequence + 1}-2026`;
+    // No reclamar ni limpiar un código que ya existiera antes de este fixture.
+    expect(await prisma.casos_sop.count({ where: { codigo_sop: { in: [codigo, invalidCode] } } })).toBe(0);
+    importedCodes.push(codigo, invalidCode);
+    codes.push(codigo, invalidCode);
+    const row = {
+      Código: codigo, Tipo: `Reporte-${run}`, Estado: "Plan de Acción", Fecha: "2026-09-01", "Fecha Plan": "2026-12-31",
+      Descripción: `QA importación ${run}`, Área: `Prueba-jefe-${run}`,
+      "Código Plan": `${codigo}-PLA-01`, "Descripción Plan": "Inspeccionar la condición sintética",
+      "Estado Plan": "Enviado", "Responsable Plan": `Usuario jefe ${run}`, "Área Plan": `Prueba-jefe-${run}`,
+    };
+    const url = "/api/importacion/casos";
+    await request(app).post(`${url}/validar`).set("Authorization", auth("monitor")).send({ rows: [row] }).expect(403);
+    await request(app).post(`${url}/validar`).set("Authorization", auth("admin")).send({ rows: [] }).expect(400);
+    const invalid = { filename: "QA-invalido.csv", rows: [row, { ...row, Código: invalidCode, "Código Plan": `${invalidCode}-PLA-01`, Fecha: "31/02/2026" }] };
+    const invalidPreview = await request(app).post(`${url}/validar`).set("Authorization", auth("admin")).send(invalid).expect(200);
+    expect(invalidPreview.body.data.canImport).toBe(false);
+    expect(invalidPreview.body.data.issues.some((issue: { field: string; severity: string }) => /fecha/i.test(issue.field) && issue.severity === "error")).toBe(true);
+    await request(app).post(`${url}/importar`).set("Authorization", auth("admin")).send(invalid).expect(400);
+    expect(await prisma.casos_sop.count({ where: { codigo_sop: { in: importedCodes } } })).toBe(0);
+    const payload = { filename: "QA-valido.csv", rows: [row], decisionesSop: [{ codigo, accion: "asignar", motivo: "Asignación sintética autorizada para verificar la importación" }] };
+    const preview = await request(app).post(`${url}/validar`).set("Authorization", auth("admin")).send(payload).expect(200);
+    expect(preview.body.data.canImport, JSON.stringify(preview.body.data.issues)).toBe(true);
+    await request(app).post(`${url}/importar`).set("Authorization", auth("admin")).send(payload).expect(201);
+    const saved = await prisma.casos_sop.findUniqueOrThrow({ where: { codigo_sop: codigo }, include: { planes_accion: { include: { actividades_plan: true } }, importacion: true } });
+    expect(saved.planes_accion).toHaveLength(1);
+    expect(saved.planes_accion[0]).toMatchObject({ responsable: actors.jefe!.id, id_area: actors.jefe!.area });
+    expect(saved.planes_accion[0]!.actividades_plan).toHaveLength(1);
+    expect(saved.importacion).toMatchObject({ estado: "completado", importados: 1, usuario: actors.admin!.id });
+    const repeated = await request(app).post(`${url}/validar`).set("Authorization", auth("admin")).send(payload).expect(200);
+    expect(repeated.body.data.canImport).toBe(false);
+    await request(app).post(`${url}/importar`).set("Authorization", auth("admin")).send(payload).expect(400);
+    expect(await prisma.casos_sop.count({ where: { codigo_sop: codigo } })).toBe(1);
+  });
+  it("la descarga de evidencia respeta el área y los planes asignados del expediente", async () => {
+    const report = await plannedCase();
+    const bytes = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZlSAAAAAASUVORK5CYII=", "base64");
+    const upload = await request(app).post(`/api/cases/${encodeURIComponent(report.code)}/evidence`)
+      .set("Authorization", auth()).attach("evidencia", bytes, { filename: "QA-evidencia.png", contentType: "image/png" }).expect(201);
+    const ruta = upload.body.data[0].ruta_archivo as string;
+    uploadedFiles.push(path.resolve(process.cwd(), ruta.replace(/^\//, "")));
+    const url = ruta.replace("/uploads/", "/api/archivos/");
+    await request(app).get(url).expect(401);
+    await request(app).get(`/api/cases/${encodeURIComponent(report.code)}`).set("Authorization", auth("ajeno")).expect(404);
+    await request(app).get(url).set("Authorization", auth("ajeno")).expect(403);
+    await request(app).get(url).set("Authorization", auth("reportante")).expect(403); // anonymous report has no owner
+    for (const who of ["jefe", "so", "admin"]) {
+      const response = await request(app).get(url).set("Authorization", auth(who)).expect(200);
+      expect(Buffer.compare(response.body, bytes)).toBe(0);
+    }
+    // Assignment to a second area grants access without changing the case's primary area.
+    await request(app).post(`/api/cases/${encodeURIComponent(report.code)}/plans`).set("Authorization", auth()).send({
+      descripcion: "Segunda área autorizada", id_area: actors.ajeno!.area, responsable: actors.ajeno!.id,
+      fecha_plan: "2026-12-31", actividades: [{ descripcion: "Verificar el acceso autorizado", responsable: actors.ajeno!.id }],
+    }).expect(201);
+    await request(app).get(url).set("Authorization", auth("ajeno")).expect(200);
+  });
   it("desactivar una cuenta revoca sus sesiones y bloquea nuevos accesos", async () => {
     const user = actors.monitor!;
     await request(app).patch(`/api/users/${user.id}`).set("Authorization", auth("jefe")).send({ estado: "Inactivo" }).expect(403);
@@ -140,7 +214,18 @@ describe("API real: reportes y ciclo de planes", () => {
     await request(app).post(`${url}/investigation`).set("Authorization", auth()).send({ causa_raiz: "x", conclusiones: "y" }).expect(400);
     await request(app).post(`${url}/investigation`).set("Authorization", auth()).send({ causa_raiz: "Falta de mantenimiento preventivo", conclusiones: "Actualizar el programa de mantenimiento" }).expect(200);
     expect(await state(report.id)).toBe("Plan de Acción");
-    expect(await prisma.investigacion_caso.findUniqueOrThrow({ where: { id_caso: report.id } })).toMatchObject({ causa_raiz: "Falta de mantenimiento preventivo", conclusiones: "Actualizar el programa de mantenimiento" });
+    expect(await prisma.investigacion_caso.findUniqueOrThrow({ where: { id_caso: report.id } })).toMatchObject({ causa_raiz: "Falta de mantenimiento preventivo", conclusiones: "Actualizar el programa de mantenimiento", investigador: actors.so!.id });
+  });
+  it("el investigador se obtiene de la sesión aunque el cliente envíe otra identidad", async () => {
+    const report = await createReport();
+    const url = `/api/cases/${encodeURIComponent(report.code)}`;
+    await request(app).post(`${url}/approve`).set("Authorization", auth()).expect(200);
+    await request(app).post(`${url}/evaluate`).set("Authorization", auth()).send({ id_riesgo: catalogs[`Riesgo-${run}`], clasificacion: "Condición insegura", descripcion_evento: "Evaluación de identidad del investigador", requiere_investigacion: true }).expect(200);
+    await request(app).post(`${url}/investigation`).set("Authorization", auth()).send({
+      causa_raiz: "Causa de prueba para verificar autoría", conclusiones: "La autoría debe provenir de la sesión",
+      investigador: actors.admin!.id,
+    }).expect(200);
+    expect(await prisma.investigacion_caso.findUniqueOrThrow({ where: { id_caso: report.id } })).toMatchObject({ investigador: actors.so!.id });
   });
   it("solicitudes de información solo se responden una vez desde el dispositivo autorizado", async () => {
     const client = request.agent(app);

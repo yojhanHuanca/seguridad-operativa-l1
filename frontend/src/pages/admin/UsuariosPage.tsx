@@ -34,7 +34,7 @@ type PermisoKey = "es_responsable" | "puede_reabrir_casos" | "puede_rechazar_rep
 type PermissionFilter = "todos" | "con_permisos" | PermisoKey;
 
 const POR_PAGINA = 15;
-const ACCESS_LIMIT = 500;
+const ACCESS_LIMIT = 100;
 
 const PERMISOS: { key: PermisoKey; label: string; shortLabel: string; hint: string }[] = [
   { key: "es_responsable", label: "Responsable SO", shortLabel: "RSO", hint: "Acceso responsable a Monitoreo y Eventos Operativos." },
@@ -457,12 +457,13 @@ export function AdminUsuariosPage() {
     return () => clearTimeout(t);
   }, [query]);
 
-  const { data: pageData, isLoading } = useUsers({
+  const { data: pageData, isLoading, isError, isPlaceholderData, refetch } = useUsers({
     search: debouncedQuery.trim() || undefined,
     rol: roleFilter !== "todos" ? Number(roleFilter) : undefined,
     estado: statusFilter !== "todos" ? statusFilter : undefined,
     page: rolesView ? 1 : pagina,
     limit: rolesView ? ACCESS_LIMIT : POR_PAGINA,
+    all: rolesView,
   });
 
   const pageUsers = useMemo(() => pageData?.items ?? [], [pageData]);
@@ -515,6 +516,14 @@ export function AdminUsuariosPage() {
     );
   };
 
+  const loadError = (
+    <Card role="alert" className="mt-4 p-5 text-center">
+      <p className="text-[13px] font-semibold text-critical">No se pudieron cargar los usuarios</p>
+      <p className="mt-1 text-[12px] text-ink-quiet">Intenta nuevamente para consultar los resultados de estos filtros.</p>
+      <Button variant="outline" size="sm" className="mt-3" onClick={() => void refetch()}>Reintentar</Button>
+    </Card>
+  );
+
   return (
     <AdminShell>
       {rolesView ? (
@@ -565,14 +574,16 @@ export function AdminUsuariosPage() {
           </div>
 
           <div className="mt-4">
+            {isError ? loadError : (
             <AccessUsersTable
               users={accessUsers}
-              isLoading={isLoading}
+              isLoading={isLoading || isPlaceholderData}
               permissionFilter={permissionFilter}
               updatePending={updateUser.isPending}
               onToggle={togglePermiso}
               onEdit={abrirEditar}
             />
+            )}
           </div>
 
           <div className="mt-4">
@@ -611,7 +622,7 @@ export function AdminUsuariosPage() {
             </Select>
           </div>
 
-          {isLoading ? (
+          {isError ? loadError : isLoading || isPlaceholderData ? (
             <Card className="mt-4 p-8 text-center text-[13px] text-ink-quiet">Cargando usuarios...</Card>
           ) : pageUsers.length === 0 ? (
             <Card className="mt-4 flex flex-col items-center gap-2 border-dashed p-9 text-center">

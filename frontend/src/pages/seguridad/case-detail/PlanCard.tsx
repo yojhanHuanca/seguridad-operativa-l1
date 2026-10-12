@@ -45,17 +45,21 @@ function InvBlock({ label, value, tone }: { label: string; value: string; tone?:
   );
 }
 
+function fechaLocal(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
 function fechaEnDias(dias: number) {
   const date = new Date();
   date.setDate(date.getDate() + Math.max(1, dias));
-  return date.toISOString().slice(0, 10);
+  return fechaLocal(date);
 }
 
 function blankActividad(idArea = "", plazoDias = DEFAULT_PLAN_DAYS): PlanFormActivityInput {
   return {
     descripcion: "",
     responsable: null,
-    fecha_inicio: new Date().toISOString().slice(0, 10),
+    fecha_inicio: fechaLocal(),
     fecha_fin: fechaEnDias(plazoDias),
     tipo_accion: TIPOS_ACCION[0],
     id_area: idArea,
@@ -427,7 +431,7 @@ function PlanForm({
   const esEdicion = !!plan;
   const plazoRespuesta = configuracion?.plazos.diasResponderPlanes ?? DEFAULT_PLAN_DAYS;
 
-  const hoy = new Date().toISOString().slice(0, 10);
+  const hoy = fechaLocal();
   const soloFecha = (v?: string | null) => (v ? v.slice(0, 10) : "");
   const defaultArea = plan ? String(plan.areas.id_area) : caso.areas ? String(caso.areas.id_area) : "";
 

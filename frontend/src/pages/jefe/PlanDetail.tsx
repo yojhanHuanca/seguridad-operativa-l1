@@ -163,7 +163,7 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {flow.puedeTrabajar && (
+            {flow.puedeSolicitarProrroga && (
               <Button variant="outline" size="md" onClick={() => setExtOpen(true)}>
                 <Timer className="h-4.5 w-4.5" /> Solicitar Prórroga
               </Button>

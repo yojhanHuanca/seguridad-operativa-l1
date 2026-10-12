@@ -10,6 +10,7 @@ const Landing = lazyNamed(() => import("@/pages/Landing"), "Landing");
 const LoginPage = lazyNamed(() => import("@/pages/Login"), "LoginPage");
 const ForgotPasswordPage = lazyNamed(() => import("@/pages/ForgotPassword"), "ForgotPasswordPage");
 const ResetPasswordPage = lazyNamed(() => import("@/pages/ResetPassword"), "ResetPasswordPage");
+const ChangePasswordPage = lazyNamed(() => import("@/pages/ChangePassword"), "ChangePasswordPage");
 const NewReportPage = lazyNamed(() => import("@/pages/reports/NewReportPage"), "NewReportPage");
 const ConsultarReportePage = lazyNamed(() => import("@/pages/reports/ConsultarReportePage"), "ConsultarReportePage");
 const SoDashboardPage = lazyNamed(() => import("@/pages/seguridad/DashboardPage"), "SoDashboardPage");
@@ -69,6 +70,7 @@ export function AppRouter() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/cambiar-contrasena" element={<ChangePasswordPage />} />
           <Route path="/inicio" element={<Navigate to="/" replace />} />
           <Route path="/reportes" element={<Navigate to="/reportes/nuevo" replace />} />
           {/* Pública, sin sesión: quien reporta llega desde un QR/URL, sin cuenta. */}
@@ -90,6 +92,7 @@ export function AppRouter() {
           <Route path="/seguridad/reportes/exportar" element={<ProtectedRoute roles={["Seguridad Operativa"]}><ReportExportPage /></ProtectedRoute>} />
           <Route path="/seguridad/notificaciones" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoNotificacionesPage /></ProtectedRoute>} />
           <Route path="/seguridad/eventos-asignados" element={<ProtectedRoute roles={["Seguridad Operativa"]}><EventosAsignadosPage /></ProtectedRoute>} />
+          <Route path="/seguridad/datos-operativos" element={<ProtectedRoute roles={["Seguridad Operativa"]}><DatosOperativosPage /></ProtectedRoute>} />
           <Route path="/seguridad/perfil" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoPerfilPage /></ProtectedRoute>} />
 
           {/* Portal Jefe de Área — sin login todavía; el área se elige a mano */}
@@ -108,7 +111,7 @@ export function AppRouter() {
           <Route path="/monitoreo/reportes" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoReportesPage /></ProtectedRoute>} />
           <Route path="/monitoreo/indicadores" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoIndicadoresPage /></ProtectedRoute>} />
           <Route path="/monitoreo/perfil" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoPerfilPage /></ProtectedRoute>} />
-          <Route path="/monitoreo/datos-operativos" element={<Navigate to="/contingencias/datos-operativos" replace />} />
+          <Route path="/monitoreo/datos-operativos" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><DatosOperativosPage /></ProtectedRoute>} />
 
           {/* Gestión de Planes de Contingencia */}
           <Route path="/contingencias" element={<Navigate to="/contingencias/registro" replace />} />

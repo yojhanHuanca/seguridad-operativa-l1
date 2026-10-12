@@ -1,5 +1,5 @@
 import { disconnectDevicePush } from "@/features/notifications/lib/push";
-import { useMemo, useState, type ReactNode } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { api, type ApiEnvelope } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 import { AuthContext, type AuthUser, type AuthValue } from "./auth";
@@ -22,9 +22,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(readUser);
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_KEY));
 
+  const clearSession = useCallback((reason?: "password-changed") => {
+    if (reason === "password-changed") sessionStorage.setItem("sigma_password_updated", "1");
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    queryClient.clear();
+    setToken(null);
+    setUser(null);
+  }, []);
+
   const value = useMemo<AuthValue>(() => ({
     user,
     token,
+    clearSession,
     login: async (correo, password) => {
       const response = await api.post<ApiEnvelope<LoginResult>>("/auth/login", { correo, password });
       if (!response.data.data) throw new Error("La respuesta del servidor no contiene una sesión válida");
@@ -56,13 +66,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch {
         // intencional: logout local sigue aunque esto falle
       }
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
-      queryClient.clear();
-      setToken(null);
-      setUser(null);
+      clearSession();
     },
-  }), [token, user]);
+  }), [token, user, clearSession]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

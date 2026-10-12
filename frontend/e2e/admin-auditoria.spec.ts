@@ -28,7 +28,12 @@ test('filtros y paginación sin botón de exportación', async ({ page }) => {
   await page.getByLabel('Desde', { exact: true }).fill('2026-09-01');
   await page.getByLabel('Hasta', { exact: true }).fill('2026-09-02');
   await page.getByRole('button', { name: /Editó/ }).click();
+  const searchLoaded = page.waitForResponse(response => {
+    const url = new URL(response.url());
+    return url.pathname.endsWith('/auditoria') && url.searchParams.get('search') === 'Ana' && url.searchParams.get('page') === '1';
+  });
   await page.getByLabel('Buscar auditoría').fill('Ana');
+  await searchLoaded;
   await expect(page.getByRole('button', { name: 'Exportar CSV filtrado' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Página siguiente' }).click();
   await expect(page.getByText('Página 2 de 2')).toBeVisible();

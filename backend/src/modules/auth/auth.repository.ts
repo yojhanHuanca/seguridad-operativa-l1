@@ -27,15 +27,23 @@ export class AuthRepository {
     return true;
   }
 
-  static async crearSesion(usuario: number, direccion_ip?: string, navegador?: string) {
-    return prisma.sesiones.create({
-      data: {
-        usuario,
-        fecha_inicio: new Date(),
-        estado: "activa",
-        direccion_ip: direccion_ip ?? null,
-        navegador: navegador ?? null,
-      },
+  static async crearSesion(usuario: number, expectedPasswordHash: string | null, direccion_ip?: string, navegador?: string) {
+    return prisma.$transaction(async tx => {
+      // Serializa la apertura con los cambios de clave: una comprobación de
+      // contraseña anterior a un restablecimiento no puede abrir otra sesión.
+      const [current] = await tx.$queryRaw<{ password_hash: string | null; estado: string | null }[]>`
+        SELECT password_hash, estado FROM usuarios WHERE id_usuario = ${usuario} FOR UPDATE
+      `;
+      if (!current || current.password_hash !== expectedPasswordHash || current.estado?.toLowerCase() !== "activo") {
+        throw new Error("Las credenciales cambiaron. Vuelve a iniciar sesión.");
+      }
+      return tx.sesiones.create({ data: {
+          usuario,
+          fecha_inicio: new Date(),
+          estado: "activa",
+          direccion_ip: direccion_ip ?? null,
+          navegador: navegador ?? null,
+      } });
     });
   }
 
@@ -69,6 +77,7 @@ export class AuthRepository {
             es_responsable: true,
             puede_reabrir_casos: true,
             puede_rechazar_reportes: true,
+            debe_cambiar_password: true,
             roles: { select: { nombre_rol: true } },
           },
         },
@@ -86,6 +95,7 @@ export class AuthRepository {
       es_responsable: usuario.es_responsable,
       puede_reabrir_casos: usuario.puede_reabrir_casos,
       puede_rechazar_reportes: usuario.puede_rechazar_reportes,
+      debe_cambiar_password: usuario.debe_cambiar_password,
       id_sesion,
     };
   }
@@ -110,6 +120,21 @@ export class AuthRepository {
 
   static async marcarPasswordResetUsado(id_reset: number) {
     return prisma.password_resets.update({ where: { id_reset }, data: { used_at: new Date() } });
+  }
+
+  static async restablecerPassword(id_reset: number, usuario: number, password_hash: string) {
+    return prisma.$transaction(async tx => {
+      // Bloquea la cuenta durante el cambio para que el mismo enlace no pueda
+      // consumirse dos veces en solicitudes simultáneas. Un fallo revierte todo.
+      await tx.usuarios.update({ where: { id_usuario: usuario }, data: { password_hash, debe_cambiar_password: false } });
+      const consumed = await tx.password_resets.updateMany({
+        where: { id_reset, usuario, used_at: null, expires_at: { gt: new Date() } },
+        data: { used_at: new Date() },
+      });
+      if (consumed.count !== 1) throw new Error("Este link ya no es válido. Pide uno nuevo.");
+      await tx.sesiones.updateMany({ where: { usuario, estado: "activa" }, data: { estado: "cerrada", fecha_fin: new Date() } });
+      await tx.password_resets.updateMany({ where: { usuario, used_at: null }, data: { used_at: new Date() } });
+    });
   }
 
   /** Invalida cualquier link de recuperación anterior sin usar: solo el más reciente debe servir. */

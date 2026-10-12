@@ -8,7 +8,8 @@ const roles = [
   { role: 'Monitorista', route: '/monitoreo/perfil' },
   { role: 'Gestión de Planes de Contingencia', route: '/contingencias/perfil' },
 ] as const;
-const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64');
+// PNG RGBA de 64x64 con CRC válido: Firefox rechaza la antigua imagen de prueba.
+const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAiElEQVR4nO3QsRFAQAAAwS9BVepRuEAoowaSM36Dy2927OdxzdyoB+oA1AN1AOqBOgD1QB2AeqAOQD1Q9xhg2dZPBwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB4D/C3ANQDdQDqgToA9UAdgHqgDkA9UDc9wA0pY1tR3+0TUgAAAABJRU5ErkJggg==', 'base64');
 function profile(role: string) {
   return { id_usuario: 1, codigo_usuario: 'EMP-001', nombre: 'María García López', correo: 'maria@linea1.pe', cargo: 'Analista', telefono: '+51 999 000 123', foto_url: null as string | null, estado: 'Activo', ultimo_acceso: '2026-10-05T12:00:00Z', fecha_ingreso: '2025-01-01T12:00:00Z', roles: { nombre_rol: role }, areas: { nombre_area: 'Operaciones' } };
 }
@@ -108,8 +109,9 @@ test('guardar teléfono, cancelar y validar contraseña sin enviar datos inváli
   expect(passwordRequests).toBe(0);
   await page.getByPlaceholder('Repite la nueva contraseña').fill('nueva123');
   await page.getByRole('button', { name: 'Actualizar contraseña' }).click();
-  await expect(page.getByText('Contraseña actualizada', { exact: true })).toBeVisible();
-  await expect(page.getByPlaceholder('Actual', { exact: true })).toHaveValue('');
+  await expect(page).toHaveURL('/login');
+  await expect(page.getByRole('status')).toContainText('Se cerraron todas tus sesiones');
+  expect(await page.evaluate(() => localStorage.getItem('sigma_auth_token'))).toBeNull();
   expect(passwordRequests).toBe(1);
 });
 
