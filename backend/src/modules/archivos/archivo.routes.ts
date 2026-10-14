@@ -22,7 +22,7 @@ router.get("/:carpeta/:archivo", async (req: AuthenticatedRequest, res: Response
   const { carpeta, archivo } = req.params as { carpeta: string; archivo: string };
 
   try {
-    const ruta = await rutaDeArchivoPermitido(carpeta, archivo, req.user);
+    const ruta = await rutaDeArchivoPermitido(carpeta, archivo, req.user, req.query.preview === "1");
     return res.sendFile(ruta, (error) => {
       if (error && !res.headersSent) {
         res.status(404).json(ApiResponse.error("Archivo no encontrado"));

@@ -1,4 +1,5 @@
 import path from "node:path";
+import fs from "node:fs";
 import prisma from "../../lib/prisma.js";
 import { esReportante, type Actor } from "../../utils/actor.js";
 import { casoVisibleParaJefe } from "../cases/case.visibility.js";
@@ -42,7 +43,8 @@ function resolverRuta(carpeta: string, archivo: string): string {
 export async function rutaDeArchivoPermitido(
   carpeta: string,
   archivo: string,
-  actor?: Actor
+  actor?: Actor,
+  preview = false
 ): Promise<string> {
   const destino = resolverRuta(carpeta, archivo);
   if (carpeta === "avatars") return destino;
@@ -60,7 +62,7 @@ export async function rutaDeArchivoPermitido(
     if (anexo.casos_sop?.created_by !== actor?.id_usuario) {
       throw new ArchivoNoAccesibleError("No tienes permiso para ver este archivo");
     }
-    return destino;
+    return rutaDeVista(destino, preview);
   }
 
   const rol = (actor?.rol_nombre ?? "").trim().toLowerCase();
@@ -68,7 +70,13 @@ export async function rutaDeArchivoPermitido(
     if (!await casoVisibleParaJefe(anexo.casos_sop, actor)) {
       throw new ArchivoNoAccesibleError("No tienes permiso para ver este archivo");
     }
-    return destino;
+    return rutaDeVista(destino, preview);
   }
   throw new ArchivoNoAccesibleError("No tienes permiso para ver este archivo");
+}
+
+function rutaDeVista(original: string, preview: boolean): string {
+  if (!preview) return original;
+  const optimizada = `${original}.preview.webp`;
+  return fs.existsSync(optimizada) ? optimizada : original;
 }

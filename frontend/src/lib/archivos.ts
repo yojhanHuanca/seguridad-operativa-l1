@@ -15,8 +15,9 @@ function rutaApi(rutaArchivo: string): string {
   return rutaArchivo.replace(/^\/?uploads\//, "/archivos/").replace(/^(?!\/)/, "/");
 }
 
-async function traerBlob(rutaArchivo: string): Promise<Blob> {
-  const { data } = await api.get<Blob>(rutaApi(rutaArchivo), { responseType: "blob" });
+async function traerBlob(rutaArchivo: string, optimizada = false): Promise<Blob> {
+  const ruta = rutaApi(rutaArchivo);
+  const { data } = await api.get<Blob>(optimizada ? `${ruta}?preview=1` : ruta, { responseType: "blob" });
   return data;
 }
 
@@ -38,7 +39,7 @@ export function useArchivoProtegido(rutaArchivo: string | null | undefined): str
     let objectUrl = "";
     let cancelado = false;
 
-    traerBlob(rutaArchivo)
+    traerBlob(rutaArchivo, true)
       .then((blob) => {
         if (cancelado) return;
         objectUrl = URL.createObjectURL(blob);
