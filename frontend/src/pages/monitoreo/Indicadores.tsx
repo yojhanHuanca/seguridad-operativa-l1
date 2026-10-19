@@ -1,6 +1,7 @@
 import { useState,  type ReactNode } from "react";
 import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Gauge, Printer, ShieldAlert, TrainFront, TriangleAlert } from "lucide-react";
 import { MonitoristaShell } from "@/components/layout/MonitoristaShell";
+import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/design-system/primitives/Button";
 import { SkeletonChart } from "@/design-system/primitives/Skeleton";
@@ -21,7 +22,8 @@ const MESES_CORTO = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Se
 const DETALLE_INTERNOS = ["Tren no abre puertas", "Tren no para en estación", "Parada incorrecta"];
 const DETALLE_EXTERNOS = ["Caída en estación", "Impacto físico", "Atasco en puerta de coches"];
 
-export function Indicadores() {
+export function Indicadores({ panel = "monitoreo" }: { panel?: "monitoreo" | "seguridad" }) {
+  const Shell = panel === "seguridad" ? SeguridadOperativaShell : MonitoristaShell;
   const hoy = new Date();
   const [anio, setAnio] = useState(hoy.getFullYear());
   const [mes, setMes] = useState(hoy.getMonth() + 1);
@@ -34,10 +36,10 @@ export function Indicadores() {
     totalFactoresMes > 0 && parte ? formatPercent(Math.round((parte.mes / totalFactoresMes) * 1000) / 10) : "—";
 
   return (
-    <MonitoristaShell>
+    <Shell>
       <div data-report-export-root={printActive ? "active" : "idle"}>
         {printActive && data && (
-          <EventosPrintDocument data={data} periodo={`${MESES[mes - 1]} ${anio}`} anio={anio} generatedAt={new Date()} />
+          <EventosPrintDocument data={data} periodo={`${MESES[mes - 1]} ${anio}`} anio={anio} generatedAt={new Date()} panel={panel} />
         )}
 
         <div data-report-export-screen>
@@ -160,8 +162,12 @@ export function Indicadores() {
       </div>
 
       
-    </MonitoristaShell>
+    </Shell>
   );
+}
+
+export function IndicadoresSeguridad() {
+  return <Indicadores panel="seguridad" />;
 }
 
 /**
@@ -180,11 +186,13 @@ function EventosPrintDocument({
   periodo,
   anio,
   generatedAt,
+  panel,
 }: {
   data: IndicadoresEventos;
   periodo: string;
   anio: number;
   generatedAt: Date;
+  panel: "monitoreo" | "seguridad";
 }) {
   const total = data.totalEventos;
   const totalFactoresMes = data.erroresOperativos.mes + data.accidentabilidad.mes;
@@ -196,7 +204,7 @@ function EventosPrintDocument({
         <div className="flex items-center gap-3">
           <Logo size={30} withWordmark={false} />
           <div>
-            <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-brand-800">SMS L1 · Monitoreo</p>
+            <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-brand-800">SMS L1 · {panel === "seguridad" ? "Seguridad Operativa" : "Monitoreo"}</p>
             <h1 className="mt-0.5 text-[15px] font-bold leading-tight text-ink">Indicadores | Eventos operacionales</h1>
             <p className="text-[10px] text-ink-quiet">
               Línea 1 del Metro de Lima · {total.mes} eventos · {periodo}

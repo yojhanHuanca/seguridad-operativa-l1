@@ -17,6 +17,7 @@ import { COLUMNAS_EVENTO, coincideBusqueda, nombreLugar, nombreTipo } from "@/fe
 import { apiErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { EventoListItem } from "@/features/eventos/types";
+import { useAuth } from "@/features/auth/auth";
 
 const RECIENTES = 8;
 
@@ -53,6 +54,8 @@ function contarPorLugar(eventos: EventoListItem[]) {
 
 export function Dashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const puedeAsignar = Boolean(user && user.rol.toLowerCase() === "seguridad operativa" && user.es_responsable);
   const { data: eventos, isLoading } = useEventos();
   const deleteEvento = useDeleteEvento();
   const [query, setQuery] = useState("");
@@ -151,7 +154,7 @@ export function Dashboard() {
           onView={(e) => navigate(`/monitoreo/evento/${e.id_evento}`)}
           onEdit={(e) => navigate(`/monitoreo/editar/${e.id_evento}`)}
           onDelete={setBorrando}
-          onAsignar={setAsignando}
+          onAsignar={puedeAsignar ? setAsignando : undefined}
           showNumero
         />
 

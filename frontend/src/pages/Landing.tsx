@@ -144,7 +144,7 @@ interface Portal {
 }
 
 const PORTALES: Portal[] = [
-  { label: "Reporte del trabajador", description: "Registro de condiciones y actos inseguros, con seguimiento del estado de cada reporte.", icon: FileText, publico: true },
+  { label: "Reporte de evento", description: "Registro de eventos y condiciones de seguridad, con seguimiento del estado de cada reporte.", icon: FileText, publico: true },
   { label: "Seguridad Operativa", description: "Evaluación de riesgos, investigación de casos y control de planes de acción.", icon: ShieldCheck },
   { label: "Responsables de área", description: "Ejecución y seguimiento de medidas correctivas asignadas a cada área.", icon: Users },
   { label: "Monitoreo operacional", description: "Registro y análisis de eventos operativos de la Línea 1 en tiempo real.", icon: ActivitySquare },

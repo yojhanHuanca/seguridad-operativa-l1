@@ -213,14 +213,13 @@ export const CATALOGOS: CatalogGroup[] = [
     codigo: "TIPO_VIA",
     nombre: "Tipo de vía",
     descripcion: "LISTA DE EVENTOS!Tipo de vía.",
-    items: [{ nombre: "IMPAR" }, { nombre: "PAR" }],
+    items: [{ nombre: "IMPAR" }, { nombre: "PAR" }, { nombre: "N/A" }],
   },
   {
     codigo: "DIRECCION_VIA",
     nombre: "Dirección de vía",
-    descripcion:
-      "LISTA DE EVENTOS!Dirección de vía. AVISO: valores 'LEGAL'/'N/A' no parecen describir una dirección de vía — sospecha de columna desalineada en la tabla dinámica del cliente. Sembrado tal cual viene, pendiente de confirmación.",
-    items: [{ nombre: "LEGAL" }, { nombre: "N/A" }],
+    descripcion: "Dirección de circulación de la vía por la que ocurrió el evento.",
+    items: [{ nombre: "LEGAL" }, { nombre: "ILEGAL" }, { nombre: "N/A" }],
   },
   {
     codigo: "MODELO_MR",
@@ -330,8 +329,7 @@ export const CATALOGOS: CatalogGroup[] = [
   {
     codigo: "LUGAR_INCIDENTE",
     nombre: "Lugar de Incidente",
-    descripcion:
-      "LISTA DE EVENTOS!Lugar de Incidente, con el código de 3 letras (ej. GAM) en 'codigo'. El nombre completo de cada estación (ej. Gamarra) y las 2 entradas de 'Taller' se confirmaron contra la app ya desplegada en sigma-l1-metromet.vercel.app (paso 'Ubicación' del wizard de Reportante), no vienen del CSV.",
+    descripcion: "Estaciones y patios de la Línea 1. Las estaciones usan código; los patios se seleccionan por nombre.",
     items: [
       { codigo: "VES", nombre: "Villa El Salvador" },
       { codigo: "PIN", nombre: "Parque Industrial" },
@@ -360,8 +358,8 @@ export const CATALOGOS: CatalogGroup[] = [
       { codigo: "SRO", nombre: "Santa Rosa" },
       { codigo: "BAY", nombre: "Bayovar" },
       { codigo: "EXTERIORES", nombre: "Exteriores" },
-      { nombre: "Taller Villa El Salvador" },
-      { nombre: "Taller Bayóvar" },
+      { nombre: "Patio taller Villa El Salvador" },
+      { nombre: "Patio de maniobras Bayovar" },
     ],
   },
   {

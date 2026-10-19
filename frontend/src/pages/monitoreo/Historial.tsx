@@ -17,11 +17,14 @@ import { COLUMNAS_EVENTO } from "@/features/eventos/lib/tabla";
 import { apiErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { EventoListItem } from "@/features/eventos/types";
+import { useAuth } from "@/features/auth/auth";
 
 const POR_PAGINA = 20;
 
 export function Historial() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const puedeAsignar = Boolean(user && user.rol.toLowerCase() === "seguridad operativa" && user.es_responsable);
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState(query);
   const [desde, setDesde] = useState("");
@@ -168,7 +171,7 @@ export function Historial() {
           onView={(e) => navigate(`/monitoreo/evento/${e.id_evento}`)}
           onEdit={(e) => navigate(`/monitoreo/editar/${e.id_evento}`)}
           onDelete={setBorrando}
-          onAsignar={setAsignando}
+          onAsignar={puedeAsignar ? setAsignando : undefined}
           showNumero
         />
 

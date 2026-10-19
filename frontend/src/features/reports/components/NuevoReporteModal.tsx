@@ -22,6 +22,7 @@ import { StagePill } from "@/design-system/primitives/Pill";
 import { Textarea } from "@/components/ui/textarea";
 import { Field } from "@/features/reports/components/Field";
 import { CatalogSelect } from "@/features/reports/components/CatalogSelect";
+import { nombrePatioCanonico, patiosDelCatalogo } from "@/features/reports/lib/patios";
 import { SelectedCheck } from "@/features/reports/components/SelectedCheck";
 import { EvidencePicker } from "@/features/reports/components/EvidencePicker";
 import { iconoTipoReporte } from "@/features/reports/lib/tipoIcons";
@@ -89,10 +90,10 @@ export function NuevoReporteModal({
 
   const valores = useWatch({ control: form.control }) as Partial<SoReportFormValues>;
   const tipos = catalogs.byName.get("Tipo de Reporte")?.catalogo_detalle ?? [];
-  // Las estaciones del catálogo llevan código de estación; los patios taller no.
+  // Las estaciones llevan código; las dos ubicaciones de patio se eligen por nombre.
   const lugares = catalogs.byName.get("Lugar de Incidente")?.catalogo_detalle ?? [];
   const estaciones = lugares.filter((l) => !!l.codigo);
-  const patios = lugares.filter((l) => !l.codigo);
+  const patios = patiosDelCatalogo(lugares);
   const lugaresEspecificos = catalogs.byName.get("Lugar Específico")?.catalogo_detalle ?? [];
   const descripcion = valores.descripcion ?? "";
   const esPatio = valores.tipo_ubicacion === "patio_taller";
@@ -289,7 +290,7 @@ export function NuevoReporteModal({
                   {(
                     [
                       { value: "estacion", label: "Estación", icon: Train },
-                      { value: "patio_taller", label: "Patio Taller", icon: Building2 },
+                      { value: "patio_taller", label: "Patio", icon: Building2 },
                     ] as const
                   ).map((opt) => {
                     const active = valores.tipo_ubicacion === opt.value;
@@ -322,7 +323,7 @@ export function NuevoReporteModal({
               </Field>
 
               <Field
-                label={esPatio ? "Patio Taller" : "Estación"}
+                label={esPatio ? "Patio" : "Estación"}
                 required
                 error={form.formState.errors.id_lugar?.message}
                 className="mt-4"
@@ -408,7 +409,7 @@ export function NuevoReporteModal({
                     value={nombreCatalogo(catalogs.byName, "Tipo de Reporte", valores.id_tipo)}
                   />
                   <CampoCreado
-                    label={esPatio ? "Patio Taller" : "Estación"}
+                    label={esPatio ? "Patio" : "Estación"}
                     value={nombreCatalogo(catalogs.byName, "Lugar de Incidente", valores.id_lugar)}
                   />
                   {!esPatio && (
@@ -438,7 +439,9 @@ export function NuevoReporteModal({
 
 function nombreCatalogo(catalogs: Map<string, CatalogGroup>, grupo: string, id?: number): string {
   if (!id) return "—";
-  return catalogs.get(grupo)?.catalogo_detalle.find((d) => d.id_detalle === id)?.nombre ?? "—";
+  const nombre = catalogs.get(grupo)?.catalogo_detalle.find((d) => d.id_detalle === id)?.nombre;
+  if (!nombre) return "—";
+  return grupo === "Lugar de Incidente" ? nombrePatioCanonico(nombre) ?? nombre : nombre;
 }
 
 /**
@@ -459,6 +462,7 @@ function ReporteCreado({ codigo }: { codigo: string }) {
 
   const evento = caso.evento_caso[0]?.eventos_operativos;
   const estado = caso.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre;
+  const nombreLugar = evento?.catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle?.nombre;
 
   return (
     <>
@@ -490,7 +494,7 @@ function ReporteCreado({ codigo }: { codigo: string }) {
         />
         <CampoCreado
           label="Estación / Patio"
-          value={evento?.catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle?.nombre ?? "—"}
+          value={nombreLugar ? nombrePatioCanonico(nombreLugar) ?? nombreLugar : "—"}
         />
         {/* Un reporte de patio taller no lleva lugar específico: no se muestra
             la fila vacía. */}

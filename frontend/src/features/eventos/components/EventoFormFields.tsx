@@ -227,6 +227,7 @@ export function EventoFormFields({
           </Field>
           <Field label="Tipo de vía" required error={errors.idTipoVia}>
             <CatalogSelect items={tiposVia} value={form.idTipoVia} onChange={(v) => set("idTipoVia", v)} disabled={catalogs.isLoading} />
+            <p className="mt-1 text-[10.5px] leading-snug text-ink-faint">Seleccione N/A cuando la vía no tenga paridad, como en HALL o PATIO.</p>
           </Field>
           <Field label="Dirección de vía" required error={errors.idDireccionVia}>
             <CatalogSelect items={direccionesVia} value={form.idDireccionVia} onChange={(v) => set("idDireccionVia", v)} disabled={catalogs.isLoading} />
