@@ -9,8 +9,11 @@ import { ContingenciaForm } from "@/features/contingencias/components/Contingenc
 import { useCreateContingencia } from "@/features/contingencias/hooks/useContingencias";
 import { apiErrorMessage } from "@/lib/api";
 import type { CreateContingenciaDto } from "@/features/contingencias/types";
+import { useAuth } from "@/features/auth/auth";
+import { contingenciaStorageKeys } from "@/features/contingencias/draft";
 
 export function Registro() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const createContingencia = useCreateContingencia();
   const [success, setSuccess] = useState<string | null>(null);
@@ -18,7 +21,10 @@ export function Registro() {
   const handleSubmit = (data: CreateContingenciaDto) => {
     createContingencia.mutate(data, {
       onSuccess: () => {
-        window.localStorage.removeItem("contingencia-draft");
+        const keys = contingenciaStorageKeys(user?.id_usuario);
+        if (keys) {
+          try { window.localStorage.removeItem(keys.draft); } catch { /* Saving the event does not require browser draft storage. */ }
+        }
         toast.success("Evento de contingencia registrado correctamente");
         setSuccess("ok");
       },

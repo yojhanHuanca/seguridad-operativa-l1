@@ -70,6 +70,7 @@ export class EventoService {
   static async createEvento(rawBody: unknown, actor?: Actor) {
     const dto = createEventoSchema.parse(rawBody);
     await validarCatalogos(dto);
+    await validarMaterialRodante(dto.id_modelo_mr, dto.id_numero_mr);
     const creado = await EventoRepository.create(dto, actor?.id_usuario);
     if (actor) {
       await AuditoriaService.registrar({
@@ -88,6 +89,12 @@ export class EventoService {
     const dto = updateEventoSchema.parse(rawBody);
     await validarCatalogos(dto);
     const antes = await EventoRepository.findById(id);
+    if (!antes) throw new Error("Evento no encontrado");
+    if (dto.id_modelo_mr !== undefined || dto.id_numero_mr !== undefined) {
+      const model = dto.id_modelo_mr === undefined ? antes?.modelo_mr : dto.id_modelo_mr;
+      const unit = dto.id_numero_mr === undefined ? antes?.numero_mr : dto.id_numero_mr;
+      if (model !== antes?.modelo_mr || unit !== antes?.numero_mr) await validarMaterialRodante(model, unit);
+    }
     const actualizado = await EventoRepository.update(id, dto);
     if (actor) {
       await AuditoriaService.registrar({
@@ -146,6 +153,9 @@ export class EventoService {
 
     const destinatario = await UserRepository.findById(dto.id_usuario);
     if (!destinatario) throw new Error(`El usuario con id ${dto.id_usuario} no existe`);
+    if ((destinatario.estado ?? "").trim().toLowerCase() !== "activo") {
+      throw new Error("No se puede asignar el evento a una cuenta inactiva");
+    }
     if (destinatario.roles?.nombre_rol !== "Seguridad Operativa") {
       throw new Error(`"${destinatario.nombre}" no pertenece al rol "Seguridad Operativa"`);
     }
@@ -167,4 +177,16 @@ export class EventoService {
 
     return { id_usuario: dto.id_usuario, nombre: destinatario.nombre };
   }
+}
+
+export async function validarMaterialRodante(modelId?: number | null, unitId?: number | null) {
+  if (!unitId) return;
+  const unit = await EventoRepository.findCatalogoDetalleById(unitId);
+  if (!unit || unit.catalogos.nombre !== "Nro. MR") throw new Error("La unidad de material rodante no es válida");
+  if (unit.nombre.trim().toUpperCase() === "N/A") return;
+  if (unit.estado === false) throw new Error("La unidad seleccionada está desactivada");
+  if (!unit.clasificacion_mr) throw new Error("La unidad no tiene clasificación. Solicita al administrador que la complete");
+  const model = modelId ? await EventoRepository.findCatalogoDetalleById(modelId) : null;
+  const expected = unit.clasificacion_mr === "AUXILIAR" ? "N/A" : unit.clasificacion_mr;
+  if (!model || model.catalogos.nombre !== "Modelo MR" || model.nombre.trim().toUpperCase() !== expected || model.estado === false) throw new Error("La unidad no corresponde al modelo de material rodante seleccionado");
 }

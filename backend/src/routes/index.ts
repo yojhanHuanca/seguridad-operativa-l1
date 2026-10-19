@@ -25,6 +25,7 @@ import { CatalogController } from "../modules/catalogs/catalog.controller.js";
 import { ReportController } from "../modules/reports/report.controller.js";
 import { uploadEvidencia, verificarContenidoEvidencia } from "../middlewares/upload.middleware.js";
 import { publicReportRateLimit } from "../middlewares/loginRateLimit.middleware.js";
+import { requireUpdatedPassword } from "../middlewares/passwordChange.middleware.js";
 
 const router = Router();
 
@@ -44,10 +45,9 @@ router.use("/auth", authRoutes);
 // todo lo demás de /reports y /catalogs sigue exigiendo sesión más abajo.
 router.get("/catalogs", CatalogController.getAll);
 router.post("/reports", publicReportRateLimit, optionalVerifyToken, uploadEvidencia.array("evidencia", 10), verificarContenidoEvidencia, ReportController.create);
-// El código real del caso hace de "llave" de seguimiento: quien reportó sin
-// cuenta lo usa para consultar su estado después, sin loguearse.
+// Seguimiento sin cuenta: código del caso y cookie del navegador que reportó.
 router.get("/reports/consulta/:codigo", ReportController.getByCodigo);
-// Responder una solicitud de información sin cuenta: mismo código como llave.
+// Responder sin cuenta: se exige la misma cookie de acceso al reporte.
 router.post(
   "/reports/consulta/:codigo/responder-info",
   publicReportRateLimit,
@@ -58,6 +58,7 @@ router.post(
 router.get("/configuracion/publica", ConfiguracionController.publica);
 
 router.use(verifyToken);
+router.use(requireUpdatedPassword);
 router.use("/users", usersRoutes);
 router.use("/catalogs", catalogsRoutes);
 router.use("/areas", areasRoutes);

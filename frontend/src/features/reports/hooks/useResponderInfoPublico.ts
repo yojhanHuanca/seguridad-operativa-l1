@@ -22,7 +22,7 @@ async function responderInfo({ codigo, id_solicitud, respuesta, files }: Respond
   if (!data.success) throw new Error(data.message);
 }
 
-/** Responder una solicitud de información sin cuenta — mismo código como llave que la consulta pública. */
+/** Responder sin cuenta, con la cookie del navegador que registró el reporte. */
 export function useResponderInfoPublico(codigo: string) {
   const queryClient = useQueryClient();
   return useMutation({

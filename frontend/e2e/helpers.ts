@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 
-type TestRole = 'Admin' | 'Seguridad Operativa' | 'Jefe de Área' | 'Monitorista';
+type TestRole = 'Admin' | 'Seguridad Operativa' | 'Jefe de Área' | 'Monitorista' | 'Gestión de Planes de Contingencia';
 
 const now = new Date('2026-08-24T12:00:00.000Z').toISOString();
 
@@ -182,6 +182,16 @@ export async function mockApi(page: Page) {
     if (path.startsWith('/eventos/asignados/')) return json([]);
     if (path === '/eventos') return json([], { total: 0 });
     if (path === '/dashboard/indicadores') return json(indicadores);
+    if (path === '/contingencias/indicadores/mensual') {
+      // Contrato actual: doce meses y tasas pendientes si no hay afluencia.
+      const [year, month] = (url.searchParams.get('mes') ?? '2026-09').split('-').map(Number);
+      const items = Array.from({ length: 12 }, (_, offset) => {
+        const date = new Date(Date.UTC(year, month - 12 + offset, 1));
+        return { mes: date.toISOString().slice(0, 7), accidentes: 0, noAccidentes: 0, sinClasificar: 0, total: 0,
+          afluencia: 0, diasRegistrados: 0, diasEsperados: new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0)).getUTCDate(), tasa: null };
+      });
+      return json({ desde: `${items[0].mes}-01`, hasta: new Date(Date.UTC(year, month, 0)).toISOString().slice(0, 10), items });
+    }
     if (path === '/auditoria') return json([], { total: 0 });
     if (path === '/auditoria/tablas') return json([]);
     if (path === '/auditoria/counts') return json({});
@@ -208,7 +218,7 @@ export async function mockApi(page: Page) {
   });
 }
 
-export async function loginAs(page: Page, role: TestRole) {
+export async function loginAs(page: Page, role: TestRole, overrides: { es_responsable?: boolean } = {}) {
   const user = {
     id_usuario: role === 'Admin' ? 1 : role === 'Seguridad Operativa' ? 2 : role === 'Jefe de Área' ? 3 : 5,
     codigo_usuario: 'EMP-TEST',
@@ -222,6 +232,7 @@ export async function loginAs(page: Page, role: TestRole) {
     es_responsable: role === 'Seguridad Operativa',
     puede_reabrir_casos: false,
     puede_rechazar_reportes: false,
+    ...overrides,
   };
 
   await page.addInitScript(({ user }) => {

@@ -8,6 +8,7 @@ import { useAreas } from "@/features/reports/hooks/useAreas";
 import { useRoles } from "../hooks/useRoles";
 import { useCreateUser, useUpdateUser } from "../hooks/useUserActions";
 import { apiErrorMessage } from "@/lib/api";
+import { newPasswordError } from "@/lib/password";
 import { cn } from "@/lib/utils";
 import type { UserListItem } from "../types";
 
@@ -77,6 +78,8 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
   const [stepIndex, setStepIndex] = useState(0);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [error, setError] = useState<string | null>(null);
+  const [changePassword, setChangePassword] = useState(false);
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const isEdit = !!user;
 
   const areas = useAreas();
@@ -93,6 +96,8 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
     const timer = window.setTimeout(() => {
       setStepIndex(0);
       setError(null);
+      setChangePassword(false);
+      setPasswordConfirmation("");
       setForm(user ? fromUser(user) : EMPTY_FORM);
     }, 0);
     return () => window.clearTimeout(timer);
@@ -111,7 +116,8 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
   const esSeguridadOperativa = nombreRolSeleccionado === "Seguridad Operativa";
   const esJefeArea = nombreRolSeleccionado === ROL_JEFE_AREA;
   const datosValidos = form.nombres.trim() && form.apellidos.trim() && form.correo.trim();
-  const accesoValido = form.id_rol && (!esJefeArea || form.id_area) && (isEdit || form.password.trim().length >= 6);
+  const needsPassword = !isEdit || changePassword;
+  const accesoValido = form.id_rol && (!esJefeArea || form.id_area) && (!needsPassword || form.password.length >= 6);
 
   useEffect(() => {
     if (!open || esSeguridadOperativa) return;
@@ -153,9 +159,16 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
       } else if (esJefeArea && !form.id_area) {
         setError("Selecciona un área para el Jefe de Área.");
       } else {
-        setError(isEdit ? "Completa los datos de acceso." : "Define una contraseña de al menos 6 caracteres.");
+        setError("Define una contraseña de al menos 6 caracteres.");
       }
       return;
+    }
+    if (needsPassword) {
+      const validation = newPasswordError(form.password, passwordConfirmation);
+      if (validation) {
+        setError(validation);
+        return;
+      }
     }
     setError(null);
 
@@ -173,10 +186,10 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
 
     if (isEdit) {
       updateUser.mutate(
-        { id_usuario: user!.id_usuario, ...base, estado: form.estado, ...(form.password.trim() ? { password: form.password.trim() } : {}) },
+        { id_usuario: user!.id_usuario, ...base, estado: form.estado, ...(changePassword ? { password: form.password } : {}) },
         {
           onSuccess: () => {
-            toast.success("Usuario actualizado");
+            toast.success(changePassword ? "Contraseña temporal restablecida" : "Usuario actualizado");
             onClose();
           },
           onError: (e) => toast.error(apiErrorMessage(e, "No se pudo actualizar el usuario")),
@@ -186,7 +199,7 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
     }
 
     createUser.mutate(
-      { password: form.password.trim(), ...base },
+      { password: form.password, ...base },
       {
         onSuccess: () => {
           toast.success("Usuario creado");
@@ -200,12 +213,12 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={() => { if (!pending) onClose(); }}
       title={isEdit ? `Editar ${user!.nombre}` : "Nuevo usuario"}
-      subtitle={isEdit ? "Actualiza sus datos, área o rol asignado." : "Crea una cuenta para Seguridad Operativa, Jefe de Área o Monitorista."}
+      subtitle={isEdit ? "Actualiza sus datos, área o rol asignado." : "Asigna el rol y una contraseña temporal para el primer acceso."}
       footer={
         <>
-          <Button variant="ghost" size="sm" onClick={goBack} disabled={stepIndex === 0}>
+          <Button variant="ghost" size="sm" onClick={goBack} disabled={stepIndex === 0 || pending}>
             <ChevronLeft className="h-4 w-4" /> Atrás
           </Button>
           {step === "datos" ? (
@@ -253,7 +266,7 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
         })}
       </ol>
 
-      <div className="mt-5 space-y-4">
+      <fieldset disabled={pending} className="mt-5 space-y-4">
         {step === "datos" ? (
           <>
             {!isEdit && (
@@ -361,24 +374,45 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
                 </label>
               </div>
             )}
-            <Field
-              label={isEdit ? "Restablecer contraseña" : "Contraseña"}
-              required={!isEdit}
-              hint={isEdit ? "Déjalo en blanco para no cambiarla." : "Mínimo 6 caracteres."}
+            {isEdit && (
+              <div className="rounded-lg border border-line p-3">
+                <p className="text-sm font-medium text-ink">{changePassword ? "Restablecimiento de contraseña" : "Contraseña actual conservada"}</p>
+                <p className="mt-1 text-xs text-ink-quiet">{changePassword ? "Define una contraseña temporal y confírmala para reemplazar la actual." : "Puedes guardar los cambios sin escribir otra contraseña. La contraseña actual no se muestra por seguridad."}</p>
+                <label className="mt-3 flex items-center gap-2 text-sm text-ink">
+                  <input type="checkbox" checked={changePassword} onChange={(event) => {
+                    setChangePassword(event.target.checked);
+                    set("password", "");
+                    setPasswordConfirmation("");
+                    setError(null);
+                  }} />
+                  Cambiar contraseña
+                </label>
+              </div>
+            )}
+            {needsPassword && <><Field
+              label={isEdit ? "Restablecer contraseña temporal" : "Contraseña temporal"}
+              required
+              hint="Mínimo 6 caracteres."
             >
               <Input
                 type="password"
                 value={form.password}
                 onChange={(e) => set("password", e.target.value)}
-                placeholder={isEdit ? "••••••••" : "Contraseña de acceso"}
+                placeholder={isEdit ? "Nueva contraseña" : "Contraseña de acceso"}
                 autoComplete="new-password"
+                disabled={pending}
               />
             </Field>
+            <Field label="Confirmar contraseña temporal" required>
+              <Input type="password" value={passwordConfirmation} onChange={event => setPasswordConfirmation(event.target.value)} placeholder="Repite la contraseña temporal" autoComplete="new-password" disabled={pending} />
+            </Field>
+            <p className="text-xs leading-5 text-ink-quiet">El usuario deberá cambiar esta contraseña al iniciar sesión.{isEdit && " Se cerrarán sus sesiones actuales."}</p>
+            </>}
           </>
         )}
 
-        {error && <p className="text-[12.5px] text-critical">{error}</p>}
-      </div>
+        {error && <p role="alert" className="text-[12.5px] text-critical">{error}</p>}
+      </fieldset>
     </Modal>
   );
 }

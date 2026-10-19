@@ -86,7 +86,7 @@ export class ReportController {
 
       const actor = (req as AuthenticatedRequest).user;
       const result = await ReportService.createReport(req.body, files, actor);
-      if (!actor) res.setHeader("Set-Cookie", cookieAccesoReporte(crearAccesoReporte(result.caso.codigo_sop)));
+      if (!actor) res.setHeader("Set-Cookie", cookieAccesoReporte(crearAccesoReporte(result.caso.codigo_sop), result.caso.codigo_sop));
       const { modalidad, origen } = textoOrigenReporte(req.body);
       const fuente =
         origen === "seguridad_operativa"

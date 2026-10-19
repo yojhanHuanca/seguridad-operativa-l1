@@ -13,6 +13,7 @@ export interface AuthTokenPayload {
     /** Permisos puntuales dentro del rol — ver comentario en el modelo `usuarios`. */
     puede_reabrir_casos?: boolean;
     puede_rechazar_reportes?: boolean;
+    debe_cambiar_password?: boolean;
     /** Puede faltar en tokens emitidos antes de este campo — ver areaDelActor(). */
     id_area?: number | null;
     /** Puede faltar en tokens viejos — ver nombreDelActor(). */
@@ -84,6 +85,9 @@ export const optionalVerifyToken = async (
         if (!Number.isSafeInteger(decoded.id_usuario) || !Number.isSafeInteger(decoded.id_sesion)) return next();
         const actor = await AuthRepository.obtenerActorDeSesion(decoded.id_sesion!, decoded.id_usuario);
         if (!actor) return next();
+        if (actor.debe_cambiar_password) {
+            return _res.status(403).json({ success: false, code: "PASSWORD_CHANGE_REQUIRED", message: "Debes cambiar tu contraseña temporal antes de continuar" });
+        }
         req.user = actor;
     } catch {
         // El endpoint sigue siendo público; un token vencido no debe bloquear

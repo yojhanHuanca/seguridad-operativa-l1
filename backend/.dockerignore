@@ -6,4 +6,11 @@ uploads
 !.env.example
 src/generated
 *.log
+**/*.md
+**/*.MD
 .git
+coverage
+tmp
+scripts/qa-*.mts
+scripts/qa-*.mjs
+*.tsbuildinfo

@@ -152,6 +152,7 @@ model casos_sop {
 }
 
 model catalogo_detalle {
+  clasificacion_mr String? @db.VarChar(30)
   id_detalle                                                                   Int                  @id @default(autoincrement())
   id_catalogo                                                                  Int
   codigo                                                                       String?              @db.VarChar(30)
@@ -420,6 +421,7 @@ model datos_operativos {
   fecha             DateTime @unique @db.Date
   qty_carreras      Decimal  @db.Decimal(15, 2)
   qty_pasajeros     Decimal  @db.Decimal(15, 2)
+  afluencia         Decimal? @db.Decimal(15, 0)
   km_comercial      Decimal  @db.Decimal(15, 2)
   km_no_comercial   Decimal  @db.Decimal(15, 2)
   paradas_estacion  Decimal  @db.Decimal(15, 2)
@@ -870,6 +872,7 @@ model usuarios {
   id_area                                                        Int?
   id_rol                                                         Int?
   password_hash                                                  String?               @db.VarChar(255)
+  debe_cambiar_password                                          Boolean               @default(false)
   foto_url                                                       String?               @db.VarChar(255)
   ultimo_acceso                                                  DateTime?             @db.Timestamp(6)
   es_responsable                                                 Boolean               @default(false)

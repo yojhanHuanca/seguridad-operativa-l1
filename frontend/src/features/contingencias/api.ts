@@ -8,7 +8,35 @@ import type {
   ContingenciaPageResponse,
 } from "./types";
 
+export interface ContingenciaRate {
+  desde: string;
+  hasta: string;
+  eventos: number;
+  afluencia: number;
+  diasRegistrados: number;
+  diasEsperados: number;
+  diasPendientes: number;
+  tasa: number | null;
+}
+
+export interface ContingenciaMonthlyIndicator {
+  desde: string;
+  hasta: string;
+  items: Array<{
+    mes: string; accidentes: number; noAccidentes: number; sinClasificar: number;
+    total: number; afluencia: number; diasRegistrados: number; diasEsperados: number; tasa: number | null;
+  }>;
+}
+
 export const contingenciasApi = {
+  async monthlyIndicator(mes: string): Promise<ContingenciaMonthlyIndicator> {
+    const { data } = await api.get("/contingencias/indicadores/mensual", { params: { mes } });
+    return data.data;
+  },
+  async rate(desde: string, hasta: string): Promise<ContingenciaRate> {
+    const { data } = await api.get("/contingencias/indicadores/tasa", { params: { desde, hasta } });
+    return data.data;
+  },
   async getCatalogos(): Promise<ContingenciaCatalogo[]> {
     const { data } = await api.get("/contingencias/catalogos");
     return data.data;

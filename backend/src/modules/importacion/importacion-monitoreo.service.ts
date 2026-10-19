@@ -1,5 +1,5 @@
+import { createImportRowReader } from "./import-row-reader.js";
 import { withImportLock } from "./import-lock.js";
-import { importFingerprint, dateRange } from "./import-fingerprint.js";
 import prisma from "../../lib/prisma.js";
 import { EventoRepository } from "../eventos/evento.repository.js";
 import type { CreateEventoDto } from "../eventos/evento.types.js";
@@ -19,16 +19,6 @@ function cleanCell(value: unknown): string {
   if (value === null || value === undefined) return "";
   if (value instanceof Date) return value.toISOString().slice(0, 10);
   return String(value).trim();
-}
-
-function getCell(row: MonitoreoRow, aliases: readonly string[]): string {
-  for (const [key, value] of Object.entries(row)) {
-    const normalizedKey = normalizeText(key);
-    for (const alias of aliases) {
-      if (normalizedKey === normalizeText(alias)) return cleanCell(value);
-    }
-  }
-  return "";
 }
 
 function isEmptyRow(row: MonitoreoRow): boolean {
@@ -119,14 +109,11 @@ const ALL_COLUMNS: string[] = [
 ];
 
 interface CatalogCache {
+  materialRodante?: Record<string, string | null>;
   catalogos: Record<string, Record<string, number>>;
 }
 
-function getFieldValue(row: MonitoreoRow, field: string): string {
-  const aliases = ALIASES[field];
-  if (!aliases) return "";
-  return getCell(row, aliases);
-}
+const getFieldValue = createImportRowReader(ALIASES);
 
 function rowToDto(row: MonitoreoRow): CreateEventoDto {
   const fecha = parseDate(getFieldValue(row, "fecha"));
@@ -244,20 +231,17 @@ function validateField(row: MonitoreoRow, rowNumber: number, issues: Importacion
     }
   }
 
+  const unitName = getFieldValue(row, "numero_mr");
+  const unitKey = normalizeText(unitName);
+  if (unitName && unitKey !== normalizeText("N/A") && catalogos.materialRodante && Object.hasOwn(catalogos.materialRodante, unitKey)) {
+    const classification = catalogos.materialRodante[unitKey];
+    const expected = classification === "AUXILIAR" ? "N/A" : classification;
+    if (!expected || normalizeText(getFieldValue(row, "modelo_mr")) !== normalizeText(expected)) {
+      addIssue(issues, { row: rowNumber, field: "Nro. MR", severity: "error", message: classification ? "La unidad no corresponde al modelo MR seleccionado." : "La unidad no tiene clasificación. Completa el catálogo antes de importar.", value: unitName });
+      valid = false;
+    }
+  }
   return valid;
-}
-
-function findDuplicates(rows: MonitoreoRow[], catalogos: CatalogCache): Set<number> {
-  const duplicateRows = new Set<number>();
-  const seenRows = new Set<string>();
-  rows.forEach((row, index) => {
-    if (isEmptyRow(row)) return;
-    const dto = resolvedDto(row, catalogos);
-    const signature = importFingerprint(Object.keys(dto), dto);
-    if (seenRows.has(signature)) duplicateRows.add(index + 2);
-    seenRows.add(signature);
-  });
-  return duplicateRows;
 }
 
 async function loadCatalogos(): Promise<CatalogCache> {
@@ -266,7 +250,7 @@ async function loadCatalogos(): Promise<CatalogCache> {
     where: { estado: true },
   });
 
-  const cache: CatalogCache = { catalogos: {} };
+  const cache: CatalogCache = { catalogos: {}, materialRodante: {} };
   const catalogoNames = [
     "Tipo de incidente operativo", "Ubicación", "Tipo de vía",
     "Dirección de vía", "Lugar de Incidente", "Modelo MR",
@@ -281,6 +265,7 @@ async function loadCatalogos(): Promise<CatalogCache> {
       cache.catalogos[nombreCatalogo] = {};
     }
     cache.catalogos[nombreCatalogo][normalizeText(detalle.nombre)] = detalle.id_detalle;
+    if (nombreCatalogo === "Nro. MR") cache.materialRodante![normalizeText(detalle.nombre)] = detalle.clasificacion_mr;
   }
 
   return cache;
@@ -296,19 +281,7 @@ async function buildPreview(payload: { filename: string | null; rows: MonitoreoR
     throw new Error(`Faltan columnas obligatorias: ${faltantes.join(", ")}`);
   }
 
-  const duplicateRows = findDuplicates(rows, catalogos);
-  const range = dateRange(rows.map(row => parseDate(getFieldValue(row, "fecha"))));
-  if (range) {
-    const existing = await prisma.eventos_monitoreo.findMany({ where: { fecha: range } });
-    const fields = Object.keys(resolvedDto({}, catalogos));
-    const signatures = new Set(existing.map(event => {
-      const record = event as unknown as Record<string, unknown>;
-      return importFingerprint(fields, Object.fromEntries(fields.map(field => [field, record[field.replace(/^id_/, "")]])));
-    }));
-    rows.forEach((row, index) => { if (signatures.has(importFingerprint(fields, resolvedDto(row, catalogos)))) duplicateRows.add(index + 2); });
-  }
-
-
+  // No hay identificador externo único: dos filas iguales pueden ser eventos distintos.
   const parsed: Array<{ row: number; valid: boolean }> = [];
   const validRows: MonitoreoRow[] = [];
 
@@ -318,12 +291,8 @@ async function buildPreview(payload: { filename: string | null; rows: MonitoreoR
 
     const isValid = validateField(row, rowNumber, issues, catalogos);
 
-    if (duplicateRows.has(rowNumber)) {
-      addIssue(issues, { row: rowNumber, field: "Fecha/Tipo", severity: "warning", message: "Registro duplicado en el archivo o ya almacenado; se omitirá.", value: getFieldValue(row, "tipo_incidente") });
-    }
-
     parsed.push({ row: rowNumber, valid: isValid });
-    if (isValid && !duplicateRows.has(rowNumber)) {
+    if (isValid) {
       validRows.push(row);
     }
   });
@@ -338,7 +307,7 @@ async function buildPreview(payload: { filename: string | null; rows: MonitoreoR
       casosDetectados: parsed.length,
       planesDetectados: 0,
       listos: validRows.length,
-      duplicados: duplicateRows.size,
+      duplicados: 0,
       errores,
       advertencias,
     },
@@ -354,7 +323,7 @@ async function buildPreview(payload: { filename: string | null; rows: MonitoreoR
       riesgo: null,
       fecha: getFieldValue(rows[p.row - 2] || {}, "fecha") || "Sin fecha",
       planes: 0,
-      status: !p.valid ? "error" : duplicateRows.has(p.row) ? "skipped" : "valid",
+      status: !p.valid ? "error" : "valid",
     })),
     canImport: errores === 0 && validRows.length > 0,
     requiredColumns: REQUIRED_COLUMNS,

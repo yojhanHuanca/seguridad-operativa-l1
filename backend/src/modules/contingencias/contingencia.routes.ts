@@ -6,6 +6,8 @@ const router = Router();
 const CONTINGENCIAS = requireRoles("Gestión de Planes de Contingencia", "Admin");
 
 router.get("/catalogos", CONTINGENCIAS, ContingenciaController.catalogos);
+router.get("/indicadores/tasa", CONTINGENCIAS, ContingenciaController.rate);
+router.get("/indicadores/mensual", CONTINGENCIAS, ContingenciaController.monthlyIndicator);
 router.get("/", CONTINGENCIAS, ContingenciaController.getAll);
 router.get("/:id", CONTINGENCIAS, ContingenciaController.getById);
 router.post("/", CONTINGENCIAS, ContingenciaController.create);

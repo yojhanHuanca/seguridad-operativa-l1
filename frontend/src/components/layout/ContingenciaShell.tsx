@@ -1,10 +1,10 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ChevronsLeft, ChevronsRight, ClipboardList, Database, History, Menu, TrendingUp, type LucideIcon } from "lucide-react";
-import { SessionExitButton } from "@/features/auth/SessionExitButton";
+import { SidebarAccount } from "./SidebarAccount";
 import { AdminViewingBanner } from "@/features/auth/AdminViewingBanner";
 import { AdminPanelSwitcher } from "@/features/auth/AdminPanelSwitcher";
-import { useAuth } from "@/features/auth/auth";
+
 import { Logo } from "@/components/brand/Logo";
 import { nombreSistema, useConfiguracion } from "@/features/configuracion/hooks/useConfiguracion";
 import { cn } from "@/lib/utils";
@@ -54,7 +54,7 @@ function NavItemLink({ item, collapsed, onNavigate }: { item: NavItem; collapsed
     <Link
       to={item.to}
       onClick={onNavigate}
-      title={collapsed ? item.label : undefined}
+      aria-label={collapsed ? item.label : undefined} aria-current={active ? "page" : undefined} title={collapsed ? item.label : undefined}
       className={cn(
         "flex h-10 items-center gap-3 rounded-xl px-2.5 text-[13px] font-medium transition-colors",
         collapsed && "justify-center px-0",
@@ -68,9 +68,6 @@ function NavItemLink({ item, collapsed, onNavigate }: { item: NavItem; collapsed
 }
 
 function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
-  const { user } = useAuth();
-  const nombre = user?.nombre?.trim() || "Contingencias";
-  const inicial = nombre.charAt(0).toUpperCase() || "C";
 
   return (
     <>
@@ -95,18 +92,7 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
         </div>
       </nav>
 
-      {!collapsed && (
-        <div className="shrink-0 border-t border-line-soft p-3">
-          <SessionExitButton withLabel className="mb-2 w-full justify-start" />
-          <Link to="/contingencias/perfil" onClick={onNavigate} className="flex items-center gap-3 rounded-2xl bg-surface px-3 py-3 transition-colors hover:bg-surface-2">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-700 text-[13px] font-bold text-white">{inicial}</div>
-            <div className="min-w-0 leading-tight">
-              <p className="truncate text-[13px] font-semibold text-ink">{nombre}</p>
-              <p className="mt-0.5 truncate text-[11.5px] text-ink-quiet">Línea 1 · Metro de Lima</p>
-            </div>
-          </Link>
-        </div>
-      )}
+      <SidebarAccount collapsed={collapsed} to="/contingencias/perfil" role="Contingencias" onNavigate={onNavigate} />
     </>
   );
 }
@@ -128,7 +114,7 @@ export function ContingenciaShell({ children }: { children: ReactNode }) {
     <>
       <AdminViewingBanner roleLabel="Gestión de Planes de Contingencia" />
       <div className="min-h-screen bg-surface md:flex">
-      <aside
+      <aside data-sidebar data-collapsed={collapsed}
         data-print="hide"
         className={cn(
           "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-line bg-white transition-[width] duration-200 md:flex",
@@ -149,7 +135,7 @@ export function ContingenciaShell({ children }: { children: ReactNode }) {
       {mobileOpen && (
         <div data-print="hide" className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileOpenPath(null)} aria-hidden />
-          <aside className="absolute left-0 top-0 flex h-full w-[264px] flex-col bg-white shadow-xl">
+          <aside data-sidebar data-mobile="true" className="absolute left-0 top-0 flex h-full w-[264px] flex-col bg-white shadow-xl">
             <SidebarContent collapsed={false} onNavigate={() => setMobileOpenPath(null)} />
           </aside>
         </div>

@@ -1,3 +1,4 @@
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -33,7 +34,7 @@ type PermisoKey = "es_responsable" | "puede_reabrir_casos" | "puede_rechazar_rep
 type PermissionFilter = "todos" | "con_permisos" | PermisoKey;
 
 const POR_PAGINA = 15;
-const ACCESS_LIMIT = 500;
+const ACCESS_LIMIT = 100;
 
 const PERMISOS: { key: PermisoKey; label: string; shortLabel: string; hint: string }[] = [
   { key: "es_responsable", label: "Responsable SO", shortLabel: "RSO", hint: "Acceso responsable a Monitoreo y Eventos Operativos." },
@@ -142,15 +143,7 @@ function estadoActivo(estado: string | null) {
   return (estado ?? "Activo").toLowerCase() === "activo";
 }
 
-function initials(nombre: string) {
-  return nombre
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
-}
+
 
 function roleStyle(nombreRol?: string | null) {
   return nombreRol ? ROL_STYLE[nombreRol] ?? ROL_STYLE_DEFAULT : ROL_STYLE_DEFAULT;
@@ -228,7 +221,7 @@ function StatusBadge({ estado }: { estado: string | null }) {
 function UserIdentity({ user }: { user: UserListItem }) {
   return (
     <div className="flex min-w-0 items-center gap-3">
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-100 text-[10.5px] font-semibold text-brand-800">{initials(user.nombre)}</span>
+      <UserAvatar nombre={user.nombre} fotoUrl={user.foto_url} />
       <div className="min-w-0">
         <p className="truncate font-medium text-ink">{user.nombre}</p>
         <p className="mt-0.5 truncate text-[10.5px] text-ink-faint">{user.correo}</p>
@@ -464,12 +457,13 @@ export function AdminUsuariosPage() {
     return () => clearTimeout(t);
   }, [query]);
 
-  const { data: pageData, isLoading } = useUsers({
+  const { data: pageData, isLoading, isError, isPlaceholderData, refetch } = useUsers({
     search: debouncedQuery.trim() || undefined,
     rol: roleFilter !== "todos" ? Number(roleFilter) : undefined,
     estado: statusFilter !== "todos" ? statusFilter : undefined,
     page: rolesView ? 1 : pagina,
     limit: rolesView ? ACCESS_LIMIT : POR_PAGINA,
+    all: rolesView,
   });
 
   const pageUsers = useMemo(() => pageData?.items ?? [], [pageData]);
@@ -522,6 +516,14 @@ export function AdminUsuariosPage() {
     );
   };
 
+  const loadError = (
+    <Card role="alert" className="mt-4 p-5 text-center">
+      <p className="text-[13px] font-semibold text-critical">No se pudieron cargar los usuarios</p>
+      <p className="mt-1 text-[12px] text-ink-quiet">Intenta nuevamente para consultar los resultados de estos filtros.</p>
+      <Button variant="outline" size="sm" className="mt-3" onClick={() => void refetch()}>Reintentar</Button>
+    </Card>
+  );
+
   return (
     <AdminShell>
       {rolesView ? (
@@ -572,14 +574,16 @@ export function AdminUsuariosPage() {
           </div>
 
           <div className="mt-4">
+            {isError ? loadError : (
             <AccessUsersTable
               users={accessUsers}
-              isLoading={isLoading}
+              isLoading={isLoading || isPlaceholderData}
               permissionFilter={permissionFilter}
               updatePending={updateUser.isPending}
               onToggle={togglePermiso}
               onEdit={abrirEditar}
             />
+            )}
           </div>
 
           <div className="mt-4">
@@ -618,7 +622,7 @@ export function AdminUsuariosPage() {
             </Select>
           </div>
 
-          {isLoading ? (
+          {isError ? loadError : isLoading || isPlaceholderData ? (
             <Card className="mt-4 p-8 text-center text-[13px] text-ink-quiet">Cargando usuarios...</Card>
           ) : pageUsers.length === 0 ? (
             <Card className="mt-4 flex flex-col items-center gap-2 border-dashed p-9 text-center">

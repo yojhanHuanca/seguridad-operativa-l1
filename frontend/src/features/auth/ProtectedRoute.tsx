@@ -19,6 +19,7 @@ export function ProtectedRoute({
   const location = useLocation();
 
   if (!user || !token) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  if (user.debe_cambiar_password) return <Navigate to="/cambiar-contrasena" replace />;
   // Admin tiene acceso a todos los paneles, no solo al propio.
   const esAdmin = user.rol.toLowerCase() === "admin";
   const tieneRolPermitido = roles?.some((role) => role.toLowerCase() === user.rol.toLowerCase());

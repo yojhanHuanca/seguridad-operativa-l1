@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, type ApiEnvelope } from "@/lib/api";
 
@@ -34,7 +34,8 @@ interface BandejaNotificaciones {
 
 async function fetchNotifications(limit: number): Promise<BandejaNotificaciones> {
   const { data } = await api.get<ApiEnvelope<BandejaNotificaciones>>("/notifications", { params: { limit } });
-  return data.data ?? { id_usuario: 0, no_leidas: 0, items: [], hasMore: false };
+  if (!data.data || !Array.isArray(data.data.items)) throw new Error("No se pudieron cargar las notificaciones");
+  return data.data;
 }
 
 const PAGE_SIZE = 20;
@@ -49,19 +50,29 @@ const PAGE_SIZE = 20;
  */
 export function useNotifications() {
   const [limit, setLimit] = useState(PAGE_SIZE);
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+    const receive = (event: MessageEvent) => {
+      if (event.data?.type === "NOTIFICATION_RECEIVED") void queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    };
+    navigator.serviceWorker.addEventListener("message", receive);
+    return () => navigator.serviceWorker.removeEventListener("message", receive);
+  }, [queryClient]);
   const query = useQuery({
     queryKey: ["notifications", limit],
     queryFn: () => fetchNotifications(limit),
     // Las notificaciones nacen de acciones de otras personas, así que no
     // llegan por invalidación local: hay que ir a buscarlas cada tanto.
     refetchInterval: 60_000,
+    staleTime: 0,
     // Al regresar desde otra pestaña o ventana, consultar inmediatamente
     // para que la campana no espere al siguiente intervalo.
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
   });
 
-  return { ...query, cargarMas: () => setLimit((l) => l + PAGE_SIZE) };
+  return { ...query, puedeCargarMas: limit < 100, cargarMas: () => setLimit((l) => Math.min(100, l + PAGE_SIZE)) };
 }
 
 export function useMarkNotificationRead() {

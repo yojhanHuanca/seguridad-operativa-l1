@@ -24,8 +24,8 @@ function formatFecha(iso: string | null) {
 }
 
 /**
- * Formulario de respuesta, sin cuenta: el código SOP de la página es la única
- * llave, la misma que ya usa esta pantalla para consultar. Colapsado por
+ * Formulario sin cuenta: la API exige la cookie emitida al registrar el
+ * reporte desde este navegador. Colapsado por
  * defecto para no abrumar a alguien que solo vino a ver el estado.
  */
 function ResponderSolicitudForm({ codigo, idSolicitud }: { codigo: string; idSolicitud: number }) {
@@ -79,9 +79,8 @@ function ResponderSolicitudForm({ codigo, idSolicitud }: { codigo: string; idSol
 }
 
 /**
- * Seguimiento sin cuenta: quien reportó sin loguearse usa el código que se le
- * mostró al enviar su reporte como única llave — sin password, igual que un
- * número de seguimiento de un envío.
+ * Seguimiento sin cuenta: el código identifica el reporte y la cookie del
+ * navegador que lo registró autoriza su consulta, sin contraseña.
  */
 export function ConsultarReportePage() {
   const [params] = useSearchParams();
@@ -100,6 +99,7 @@ export function ConsultarReportePage() {
   };
 
   const lugar = reporte?.evento_caso?.[0]?.eventos_operativos?.catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle?.nombre;
+  const tipoReporte = reporte?.evento_caso?.[0]?.eventos_operativos?.catalogo_detalle_eventos_operativos_tipo_incidenteTocatalogo_detalle?.nombre;
 
   return (
     <ReportanteShell>
@@ -121,7 +121,7 @@ export function ConsultarReportePage() {
             </div>
             <h1 className="mt-3 text-[24px] font-bold tracking-tight text-white">Consultar mi reporte</h1>
             <p className="mx-auto mt-1.5 max-w-[520px] text-[13.5px] leading-6 text-white/75">
-              Ingresa el código que se te mostró al enviar tu reporte — no necesitas cuenta ni contraseña.
+              Consulta desde el mismo navegador donde registraste el reporte. No necesitas cuenta ni contraseña; conserva las cookies para mantener el acceso.
             </p>
           </div>
         </motion.div>
@@ -165,7 +165,7 @@ export function ConsultarReportePage() {
               ))}
             </div>
             <p className="mt-2.5 text-[11px] text-ink-faint">
-              Esta lista solo vive en este navegador — si cambias de dispositivo, usa el código directamente.
+              Esta lista solo vive en este navegador. El código por sí solo no permite consultar desde otro navegador o dispositivo.
             </p>
           </Card>
           </motion.div>
@@ -201,7 +201,7 @@ export function ConsultarReportePage() {
               <div>
                 <p className="font-mono text-[13px] font-semibold text-brand-700">{reporte.codigo_sop}</p>
                 <h2 className="mt-1 text-[16px] font-semibold text-ink">
-                  {reporte.catalogo_detalle_casos_sop_tipoTocatalogo_detalle?.nombre ?? "Reporte"}
+                  {reporte.titulo?.trim() || tipoReporte || reporte.catalogo_detalle_casos_sop_tipoTocatalogo_detalle?.nombre || "Reporte"}
                 </h2>
               </div>
               <EstadoPill estado={reporte.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle?.nombre ?? "—"} />

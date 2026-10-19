@@ -19,7 +19,12 @@ app.set("trust proxy", env.TRUST_PROXY_HOPS);
 // Antes `cors()` sin argumentos reflejaba cualquier origen — inofensivo hoy
 // porque la sesión va por Bearer token (no por cookie), pero no es la
 // configuración correcta para una API que va a producción.
-const ORIGENES_PERMITIDOS = new Set([env.FRONTEND_URL, "http://localhost:5173", "http://localhost:4173"]);
+const ORIGENES_PERMITIDOS = new Set([env.FRONTEND_URL]);
+if (process.env.NODE_ENV !== "production") {
+  for (const host of ["localhost", "127.0.0.1"]) {
+    for (const port of [5173, 4173]) ORIGENES_PERMITIDOS.add(`http://${host}:${port}`);
+  }
+}
 app.use(
   cors({
     credentials: true,

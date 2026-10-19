@@ -5,6 +5,7 @@ import crypto from "node:crypto";
 import { Transform, pipeline } from "node:stream";
 import type { Request, Response, NextFunction } from "express";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { enqueueImagePreviews } from "./image-optimization.js";
 
 const UPLOAD_DIR = path.resolve(process.cwd(), "uploads", "casos");
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -142,7 +143,7 @@ function leerCabecera(rutaArchivo: string): Buffer {
   return cabecera;
 }
 
-function verificarContenidoReal(obtenerArchivos: (req: Request) => Express.Multer.File[]) {
+function verificarContenidoReal(obtenerArchivos: (req: Request) => Express.Multer.File[], optimizarImagenes = false) {
   return (req: Request, res: Response, next: NextFunction) => {
     const archivos = obtenerArchivos(req);
     for (const archivo of archivos) {
@@ -160,13 +161,15 @@ function verificarContenidoReal(obtenerArchivos: (req: Request) => Express.Multe
         );
       }
     }
+    if (optimizarImagenes) enqueueImagePreviews(archivos);
     next();
   };
 }
 
 /** Va después de `uploadEvidencia.array(...)` en la ruta. */
 export const verificarContenidoEvidencia = verificarContenidoReal(
-  (req) => (req.files as Express.Multer.File[] | undefined) ?? []
+  (req) => (req.files as Express.Multer.File[] | undefined) ?? [],
+  true
 );
 
 /** Va después de `uploadAvatar.single(...)` en la ruta. */

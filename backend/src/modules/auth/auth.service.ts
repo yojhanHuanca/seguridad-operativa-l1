@@ -1,12 +1,12 @@
 import { OAuth2Client } from "google-auth-library";
 import { randomBytes, createHash } from "node:crypto";
 import { AuthRepository } from "./auth.repository.js";
-import { UserRepository } from "../users/users.repository.js";
 import { BcryptHelper } from "../../utils/bcrypt.js";
 import { JwtHelper } from "../../utils/jwt.js";
 import { AuditoriaService } from "../auditoria/auditoria.service.js";
 import { enviarCorreoRecuperacion } from "../../utils/mailer.js";
 import { env } from "../../config/env.js";
+import { nuevaPasswordSchema } from "../../utils/password.js";
 
 const RESET_TOKEN_TTL_MINUTOS = 30;
 
@@ -31,7 +31,7 @@ export class AuthService {
         direccion_ip?: string,
         navegador?: string,
     ) {
-        const sesion = await AuthRepository.crearSesion(user.id_usuario, direccion_ip, navegador);
+        const sesion = await AuthRepository.crearSesion(user.id_usuario, user.password_hash, direccion_ip, navegador);
 
         await AuditoriaService.registrar({
             tabla: "sesiones",
@@ -76,6 +76,7 @@ export class AuthService {
                 es_responsable: user.es_responsable,
                 puede_reabrir_casos: user.puede_reabrir_casos,
                 puede_rechazar_reportes: user.puede_rechazar_reportes,
+                debe_cambiar_password: user.debe_cambiar_password,
             },
         };
     }
@@ -208,16 +209,14 @@ export class AuthService {
     }
 
     static async resetPassword(token: string, nuevaPassword: string, direccion_ip?: string, navegador?: string) {
+        nuevaPasswordSchema.parse(nuevaPassword);
         const reset = await AuthRepository.findPasswordResetVigente(hashToken(token));
         if (!reset) {
             throw new Error("Este link ya no es válido. Pide uno nuevo.");
         }
 
         const password_hash = await BcryptHelper.hash(nuevaPassword);
-        await AuthRepository.marcarPasswordResetUsado(reset.id_reset);
-        await AuthRepository.cerrarTodasLasSesiones(reset.usuario);
-
-        await UserRepository.update(reset.usuario, { password_hash });
+        await AuthRepository.restablecerPassword(reset.id_reset, reset.usuario, password_hash);
 
         await AuditoriaService.registrar({
             tabla: "usuarios",

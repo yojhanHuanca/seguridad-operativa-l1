@@ -1,0 +1,147 @@
+SMS L1 — ENTREGA TÉCNICA
+
+ALCANCE
+Código fuente de backend, frontend, migraciones, catálogos base y pruebas.
+No incluye bases de datos, usuarios locales, contraseñas, claves de proveedores,
+adjuntos, respaldos, logs ni archivos usados en las demostraciones.
+Los reportantes públicos no necesitan una cuenta; la consulta se vincula al
+navegador que registró el reporte mediante cookies de acceso.
+
+ESTRUCTURA Y REQUISITOS
+backend/: Node.js, Express, TypeScript, Prisma y PostgreSQL.
+frontend/: React, Vite y TypeScript. La compilación genera archivos estáticos.
+Referencia de las imágenes incluidas: Node 22 y PostgreSQL 16.
+Los package-lock.json fijan las dependencias; instalar con npm ci.
+docker-compose.yml es para desarrollo con Mailpit (no entrega correo real).
+docker-compose.production.yml prepara una instalación administrada por TI.
+ENTREGA-TI.txt es esta guía. No se incluyen los informes locales en Markdown.
+
+CONFIGURACIÓN
+Crear los archivos privados a partir de los ejemplos, sin versionarlos:
+  backend/.env.example -> backend/.env (instalación sin contenedores)
+  frontend/.env.example -> frontend/.env (compilación sin contenedores)
+  .env.production.example -> .env.production (Docker de producción)
+Generar secretos distintos para PostgreSQL y JWT. El ejemplo Docker espera una
+contraseña PostgreSQL hexadecimal; otros caracteres requieren codificación URL.
+Usar un gestor de secretos para los valores definitivos.
+
+Google: configurar un cliente OAuth Web de la empresa, autorizar el origen HTTPS
+definitivo y usar el mismo ID en GOOGLE_CLIENT_ID y VITE_GOOGLE_CLIENT_ID.
+Google permite entrar a usuarios ya registrados y activos; no crea cuentas.
+Correo: elegir Resend con dominio verificado o SMTP de la empresa. Si SMTP_HOST
+está definido, tiene prioridad sobre Resend. Puerto 465 usa SMTP_SECURE=true;
+587 utiliza STARTTLS para SMTP autenticado. Gmail requiere contraseña de aplicación.
+Push: crear claves VAPID propias y hacer coincidir VAPID_PUBLIC_KEY y
+VITE_VAPID_PUBLIC_KEY. El navegador necesita HTTPS y autorización del usuario.
+Las variables VITE_* son públicas y se incorporan al compilar el frontend;
+cambiar OAuth o la clave pública push exige reconstruirlo.
+Configurar FRONTEND_URL y TRUST_PROXY_HOPS según la URL y cadena real de proxies.
+
+PRIMERA INSTALACIÓN SIN DOCKER (BASE VACÍA)
+Desde backend/:
+  npm ci
+  npx prisma migrate deploy
+  npm run build
+  npm run setup:catalogs
+Desde frontend/:
+  npm ci
+  npm run build
+Servir frontend/dist con fallback SPA a index.html y proxy /api hacia la API.
+Iniciar backend con npm start, en un servicio supervisado por TI.
+Persistir backend/uploads; no tratarlo como código ni exponer adjuntos privados
+por una carpeta estática pública. Las descargas protegidas usan las rutas API.
+
+ADMINISTRADOR INICIAL
+No hay contraseña predeterminada ni cuentas de demostración en la inicialización.
+setup:catalogs / npm run seed solo preparan catálogos, áreas y roles.
+Para crear el primer administrador, desde backend/ en PowerShell:
+  $env:INITIAL_ADMIN_EMAIL = 'administrador@empresa.example'
+  $env:INITIAL_ADMIN_NAME = 'Administrador de la empresa'
+  $adminSecret = Read-Host 'Contraseña temporal (mínimo 16 caracteres)' -AsSecureString
+  $env:INITIAL_ADMIN_PASSWORD = [System.Net.NetworkCredential]::new('', $adminSecret).Password
+  npm run setup:admin
+  Remove-Item Env:INITIAL_ADMIN_PASSWORD
+El primer acceso exige cambiar la contraseña. El comando rechaza cuentas
+existentes y no funciona si ya hay un administrador; no sirve para restablecerlo.
+El administrador crea los demás usuarios mediante la gestión normal de la web.
+
+PRIMERA INSTALACIÓN CON DOCKER (BASE VACÍA)
+Desde la raíz, completar primero .env.production:
+  docker compose --env-file .env.production -f docker-compose.production.yml build
+  docker compose --env-file .env.production -f docker-compose.production.yml up -d postgres
+  docker compose --env-file .env.production -f docker-compose.production.yml run --rm schema
+  docker compose --env-file .env.production -f docker-compose.production.yml run --rm --no-deps backend npm run setup:catalogs
+Para el administrador, definir INITIAL_ADMIN_EMAIL, INITIAL_ADMIN_NAME e
+INITIAL_ADMIN_PASSWORD de forma privada en el entorno, como en el ejemplo anterior:
+  docker compose --env-file .env.production -f docker-compose.production.yml run --rm --no-deps -e INITIAL_ADMIN_EMAIL -e INITIAL_ADMIN_NAME -e INITIAL_ADMIN_PASSWORD backend npm run setup:admin
+  Remove-Item Env:INITIAL_ADMIN_PASSWORD
+  docker compose --env-file .env.production -f docker-compose.production.yml up -d backend frontend
+  docker compose --env-file .env.production -f docker-compose.production.yml ps
+Publicar el frontend detrás del HTTPS de la empresa. PostgreSQL y backend se
+mantienen en la red interna del compose. No usar el servidor Vite de desarrollo.
+
+BASES EXISTENTES Y ACTUALIZACIONES
+No ejecutar migrate reset, db push, seeds antiguos ni eliminar volúmenes.
+Antes de migrar una base existente, revisar su historial con prisma migrate status
+y comparar su esquema. Si fue creada fuera de migraciones, TI debe reconciliar
+la línea base antes de migrate deploy. La entrega contiene las siete migraciones,
+incluyendo importacion_locks, necesaria para confirmar las importaciones.
+Respaldar base y adjuntos antes de actualizar, y probar la restauración.
+prisma/sql/auditoria_inmutable.sql es una opción de retención que TI debe evaluar
+con su política: impide modificar o borrar auditorías existentes.
+
+RESPALDOS DOCKER (EJEMPLO POWERSHELL)
+Respaldar ambos volúmenes, no solo el código. Conservar fuera del servidor y cifrar
+según la política de TI. Estos comandos no borran ni restauran datos:
+  New-Item -ItemType Directory -Force backups | Out-Null
+  $backupStamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+  docker compose --env-file .env.production -f docker-compose.production.yml exec -T postgres pg_dump -U seguridad_operativa -d seguridad_operativa -Fc -f /tmp/seguridad_operativa.dump
+  docker compose --env-file .env.production -f docker-compose.production.yml cp postgres:/tmp/seguridad_operativa.dump "backups/db-$backupStamp.dump"
+  docker compose --env-file .env.production -f docker-compose.production.yml exec -T backend tar -czf /tmp/uploads.tar.gz -C /app uploads
+  docker compose --env-file .env.production -f docker-compose.production.yml cp backend:/tmp/uploads.tar.gz "backups/uploads-$backupStamp.tar.gz"
+La restauración debe ensayarse en otro entorno, sin reemplazar la base activa.
+
+IMPORTACIONES E INDICADORES
+Monitoreo y Contingencias aceptan registros sin identificador externo: cada fila
+válida se guarda por separado, aunque coincida con otra. Reimportar crea registros
+adicionales. SOP mantiene sus controles por códigos y estados.
+Elegir la hoja de datos, validar, revisar el diagnóstico y confirmar una vez.
+Las fechas, horas, catálogos y límites de campos siguen siendo obligatorios.
+Si se pierde la conexión, consultar el historial antes de repetir la carga.
+Los indicadores consultan los eventos persistidos, incluyendo los importados,
+por fecha y clasificación. Revertir una carga también modifica sus indicadores.
+Monitoreo requiere km comerciales y pasajeros para sus índices.
+Contingencias distingue Accidentes y Problemas de salud; tipos distintos aparecen
+sin clasificar. Su tasa mensual requiere afluencia completa y clasificación válida.
+No completar divisores desconocidos con valores inventados para obtener una tasa.
+Se probaron XLSX de 3000 filas por módulo y guardado real en PostgreSQL de pruebas.
+Los tiempos locales no garantizan los del servidor de la empresa.
+
+VERIFICACIÓN
+Backend, desde backend/:
+  npm ci
+  npm test
+  npm run build
+Para integración usar exclusivamente seguridad_operativa_test en PostgreSQL local:
+  copiar .env.test.example a .env.test y completar sus valores privados
+  npm run test:db:prepare
+  npm run test:integration
+  npm run test:coverage
+Frontend, desde frontend/:
+  npm ci
+  npm run build
+  npx playwright install chromium
+  npm run test:e2e:chromium
+Los XLSX de las pruebas se generan en memoria, sin depender de archivos locales.
+Comprobar /api/health, acceso por roles, una carga controlada con sus indicadores,
+Google, correo recibido y push en el dominio definitivo antes de habilitarlo.
+TI debe verificar imágenes, HTTPS, capacidad, restauración y políticas de acceso
+en su infraestructura. Las imágenes Docker no se ejecutaron en esta revisión
+porque el motor Docker local no estaba disponible; se verificó la sintaxis compose.
+
+REPOSITORIO Y TRANSFERENCIA
+El repositorio de la empresa lo crea TI; configurar ese remoto cuando proporcionen
+la URL. No copiar .env, outputs, backups, uploads, node_modules, dist, cobertura ni
+sesiones de Playwright. Los logs y Markdown locales están excluidos de Git.
+Las credenciales de la demostración no se transfieren: TI define las cuentas reales.
+Las claves privadas usadas durante el desarrollo no forman parte de esta entrega.

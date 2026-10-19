@@ -123,7 +123,9 @@ export function EventoFormFields({
   const direccionesVia = catalogs.byName.get("Dirección de vía")?.catalogo_detalle ?? [];
   const lugares = catalogs.byName.get("Lugar de Incidente")?.catalogo_detalle ?? [];
   const modelosMr = catalogs.byName.get("Modelo MR")?.catalogo_detalle ?? [];
-  const numerosMr = catalogs.byName.get("Nro. MR")?.catalogo_detalle ?? [];
+  const todasUnidades = catalogs.byName.get("Nro. MR")?.catalogo_detalle ?? [];
+  const modeloSeleccionado = modelosMr.find(item => String(item.id_detalle) === form.idModeloMr)?.nombre.trim().toUpperCase();
+  const numerosMr = todasUnidades.filter(item => item.nombre.trim().toUpperCase() === "N/A" || (!!modeloSeleccionado && item.clasificacion_mr === (modeloSeleccionado === "N/A" ? "AUXILIAR" : modeloSeleccionado)) || String(item.id_detalle) === form.idNumeroMr);
   const personalInvolucrado = catalogs.byName.get("Personal o falla Involucrado")?.catalogo_detalle ?? [];
   const tiposCausa = catalogs.byName.get("Tipo Causa")?.catalogo_detalle ?? [];
   const posiblesCausas = catalogs.byName.get("Posible Causa")?.catalogo_detalle ?? [];
@@ -240,7 +242,7 @@ export function EventoFormFields({
       <FormSection icon={Train} title="Operación ferroviaria">
         <div className="grid grid-cols-2 gap-x-2.5 gap-y-2 md:grid-cols-3 lg:grid-cols-6">
           <Field label="Modelo MR" required error={errors.idModeloMr}>
-            <CatalogSelect items={modelosMr} value={form.idModeloMr} onChange={(v) => set("idModeloMr", v)} disabled={catalogs.isLoading} />
+            <CatalogSelect items={modelosMr.map(item => item.nombre.trim().toUpperCase() === "N/A" ? { ...item, nombre: "Vehículos auxiliares / No aplica" } : item)} value={form.idModeloMr} onChange={(v) => { set("idModeloMr", v); set("idNumeroMr", ""); }} disabled={catalogs.isLoading} />
           </Field>
           <Field label="N.° MR" required error={errors.idNumeroMr}>
             <CatalogSelect items={numerosMr} value={form.idNumeroMr} onChange={(v) => set("idNumeroMr", v)} disabled={catalogs.isLoading} />

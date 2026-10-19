@@ -1,161 +1,68 @@
 import { useState } from "react";
-import { TrainFront, Wrench } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Search, TrainFront, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { AdminShell } from "@/components/layout/AdminShell";
 import { LoadingState } from "@/components/feedback/LoadingState";
-import { cn } from "@/lib/utils";
-import { apiErrorMessage } from "@/lib/api";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { Card } from "@/design-system/primitives/Card";
+import { Button } from "@/design-system/primitives/Button";
+import { Input, Select } from "@/design-system/primitives/Input";
+import { api, apiErrorMessage } from "@/lib/api";
 import { UnitEditModal } from "@/features/catalogs/components/UnitEditModal";
-import { UnitGridCard, type UnitGroup } from "@/features/catalogs/components/UnitGridCard";
+import { UnitGridCard } from "@/features/catalogs/components/UnitGridCard";
 import { useCatalogs } from "@/features/reports/hooks/useCatalogs";
-import {
-  useCatalogGroupAdmin,
-  useCreateCatalogItem,
-  useDeactivateCatalogItem,
-  useRenameCatalogItem,
-  useRestoreCatalogItem,
-  type CatalogDetalleAdmin,
-} from "@/features/catalogs/hooks/useCatalogGroupAdmin";
+import { useCatalogGroupAdmin, useDeactivateCatalogItem, useRestoreCatalogItem, type CatalogDetalleAdmin } from "@/features/catalogs/hooks/useCatalogGroupAdmin";
 
-// La flota real de Línea 1: ANSALDO es T01-T05, ALSTOM es T06 en adelante
-// (confirmado con el cliente). El catálogo no guarda a qué fabricante
-// pertenece cada unidad (son dos catálogos separados, sin relación en la
-// base), así que se agrupan por este corte fijo — cualquier unidad que se
-// agregue de T06 para arriba cae en ALSTOM por defecto.
-const CORTE_FABRICANTE = 5;
-
-function numeroDeSerie(nombre: string): number | null {
-  const m = nombre.trim().match(/^T0*(\d+)$/i);
-  return m ? Number(m[1]) : null;
-}
-
-// "Auxiliar" es todo lo que no sea una serie T## ni el placeholder "N/A" —
-// así cualquier nombre que se le ocurra escribir al Admin siempre aparece en
-// alguna pestaña, nunca queda invisible por no matchear un patrón fijo.
-const esVehiculoAuxiliar = (nombre: string) => numeroDeSerie(nombre) === null && nombre.trim().toUpperCase() !== "N/A";
-
-type Tab = "series" | "auxiliares";
-
+const groups = [{ key: "ALSTOM", name: "ALSTOM" }, { key: "ANSALDO", name: "ANSALDO" }, { key: "AUXILIAR", name: "Vehículos auxiliares" }, { key: "", name: "Sin clasificar" }];
 export function AdminMaterialRodantePage() {
-  const [tab, setTab] = useState<Tab>("series");
+  const catalogs = useCatalogs();
+  const id = catalogs.byName.get("Nro. MR")?.id_catalogo;
+  const units = useCatalogGroupAdmin(id);
+  const client = useQueryClient();
   const [editing, setEditing] = useState<CatalogDetalleAdmin | null>(null);
-
-  const { byName, isLoading: loadingGroups } = useCatalogs();
-  const idModelo = byName.get("Modelo MR")?.id_catalogo;
-  const idNumero = byName.get("Nro. MR")?.id_catalogo;
-
-  const { data: modeloGroup } = useCatalogGroupAdmin(idModelo);
-  const { data: numeroGroup, isLoading: loadingNumero } = useCatalogGroupAdmin(idNumero);
-
-  const createItem = useCreateCatalogItem(idNumero);
-  const renameItem = useRenameCatalogItem(idNumero);
-  const deactivateItem = useDeactivateCatalogItem(idNumero);
-  const restoreItem = useRestoreCatalogItem(idNumero);
-  const pending = createItem.isPending || renameItem.isPending || deactivateItem.isPending || restoreItem.isPending;
-
-  const items = numeroGroup?.catalogo_detalle ?? [];
-  const fabricantes = (modeloGroup?.catalogo_detalle ?? []).filter((m) => m.nombre.trim().toUpperCase() !== "N/A");
-
-  const series = items.filter((i) => numeroDeSerie(i.nombre) !== null);
-  const auxiliares = items.filter((i) => esVehiculoAuxiliar(i.nombre));
-
-  const alstom = fabricantes.find((f) => f.nombre.trim().toUpperCase() === "ALSTOM");
-  const ansaldo = fabricantes.find((f) => f.nombre.trim().toUpperCase() === "ANSALDO");
-
-  const seriesGroups: UnitGroup[] =
-    alstom && ansaldo
-      ? [
-          { title: alstom.nombre, items: series.filter((i) => (numeroDeSerie(i.nombre) ?? 0) > CORTE_FABRICANTE) },
-          { title: ansaldo.nombre, items: series.filter((i) => (numeroDeSerie(i.nombre) ?? 0) <= CORTE_FABRICANTE) },
-        ]
-      : [{ title: "Series", items: series }];
-
-  const auxiliaresGroups: UnitGroup[] = [{ title: "Vehículos auxiliares", items: auxiliares }];
-
-  const abrirCrear = () => setEditing({ id_detalle: 0, nombre: "", estado: true });
-  const esNuevo = editing?.id_detalle === 0;
-
-  const guardar = async (nombre: string) => {
+  const [search, setSearch] = useState("");
+  const [classification, setClassification] = useState("");
+  const [status, setStatus] = useState("");
+  const [confirm, setConfirm] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const deactivate = useDeactivateCatalogItem(id);
+  const restore = useRestoreCatalogItem(id);
+  const save = useMutation({
+    mutationFn: async (data: { nombre: string; clasificacion_mr?: string }) => {
+      if (!id || !editing) throw new Error("No se pudo cargar el catálogo");
+      if (editing.id_detalle === 0) await api.post(`/catalogs/${id}/detalle`, data);
+      else await api.patch(`/catalogs/detalle/${editing.id_detalle}`, data);
+    },
+    onSuccess: async () => {
+      await Promise.all([client.invalidateQueries({ queryKey: ["catalog-group-admin", id] }), client.invalidateQueries({ queryKey: ["catalogs"] })]);
+      toast.success(editing?.id_detalle === 0 ? "Unidad registrada" : "Unidad actualizada");
+      setEditing(null);
+    },
+    onError: cause => toast.error(apiErrorMessage(cause, "No se pudo guardar la unidad")),
+  });
+  const pending = save.isPending || deactivate.isPending || restore.isPending;
+  const all = (units.data?.catalogo_detalle ?? []).filter(item => item.nombre.trim().toUpperCase() !== "N/A");
+  const visible = all.filter(item => item.nombre.toLowerCase().includes(search.toLowerCase().trim()) && (!classification || (item.clasificacion_mr ?? "") === (classification === "UNCLASSIFIED" ? "" : classification)) && (!status || (item.estado !== false) === (status === "active")));
+  const grouped = groups.map(group => ({ title: group.name, items: visible.filter(item => (item.clasificacion_mr ?? "") === group.key).sort((a, b) => a.nombre.localeCompare(b.nombre, "es", { numeric: true })) })).filter(group => group.items.length);
+  const toggle = async () => {
     if (!editing) return;
+    setError(null);
     try {
-      if (esNuevo) {
-        await createItem.mutateAsync(nombre);
-        toast.success("Unidad creada");
-      } else {
-        await renameItem.mutateAsync({ id_detalle: editing.id_detalle, nombre });
-        toast.success("Unidad actualizada");
-      }
-      setEditing(null);
-    } catch (error) {
-      toast.error(apiErrorMessage(error, "No se pudo guardar la unidad"));
-    }
+      if (editing.estado === false) await restore.mutateAsync(editing.id_detalle);
+      else await deactivate.mutateAsync(editing.id_detalle);
+      toast.success(editing.estado === false ? "Unidad reactivada" : "Unidad desactivada");
+      setConfirm(false); setEditing(null);
+    } catch (cause) { setError(apiErrorMessage(cause, "No se pudo actualizar la unidad")); }
   };
-
-  const toggleActivo = async () => {
-    if (!editing || esNuevo) return;
-    try {
-      if (editing.estado !== false) {
-        await deactivateItem.mutateAsync(editing.id_detalle);
-        toast.success(`${editing.nombre} desactivada`);
-      } else {
-        await restoreItem.mutateAsync(editing.id_detalle);
-        toast.success(`${editing.nombre} reactivada`);
-      }
-      setEditing(null);
-    } catch (error) {
-      toast.error(apiErrorMessage(error, "No se pudo actualizar la unidad"));
-    }
-  };
-
-  return (
-    <AdminShell>
-      <p className="text-[12.5px] text-ink-quiet">
-        Trenes y vehículos auxiliares de Línea 1 usados al registrar eventos operativos.
-      </p>
-
-      <div className="mt-4 mb-4 flex items-center gap-1 rounded-xl border border-line bg-white p-1 w-fit">
-        <button
-          type="button"
-          onClick={() => setTab("series")}
-          className={cn(
-            "flex h-9 items-center gap-2 rounded-lg px-3.5 text-[12.5px] font-medium transition-colors",
-            tab === "series" ? "bg-brand-700 text-white shadow-sm" : "text-ink-soft hover:bg-surface"
-          )}
-        >
-          <TrainFront className="h-4 w-4" /> Trenes (Series)
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("auxiliares")}
-          className={cn(
-            "flex h-9 items-center gap-2 rounded-lg px-3.5 text-[12.5px] font-medium transition-colors",
-            tab === "auxiliares" ? "bg-brand-700 text-white shadow-sm" : "text-ink-soft hover:bg-surface"
-          )}
-        >
-          <Wrench className="h-4 w-4" /> Vehículos Auxiliares
-        </button>
-      </div>
-
-      {loadingGroups || loadingNumero ? (
-        <LoadingState label="Cargando material rodante" compact />
-      ) : (
-        <UnitGridCard
-          title={tab === "series" ? "Trenes (Series)" : "Vehículos Auxiliares"}
-          icon={tab === "series" ? TrainFront : Wrench}
-          groups={tab === "series" ? seriesGroups : auxiliaresGroups}
-          onCreate={abrirCrear}
-          onSelect={setEditing}
-        />
-      )}
-
-      <UnitEditModal
-        open={!!editing}
-        onClose={() => setEditing(null)}
-        item={editing}
-        pending={pending}
-        onSave={guardar}
-        onToggleActivo={toggleActivo}
-      />
-    </AdminShell>
-  );
+  return <AdminShell>
+    <div className="mb-4 flex flex-wrap items-center gap-2">
+      <div className="relative w-full sm:w-64"><Search className="absolute left-3 top-3 h-4 w-4 text-ink-faint" /><Input aria-label="Buscar unidad" placeholder="Buscar código de unidad…" value={search} onChange={e => setSearch(e.target.value)} className="pl-9" /></div>
+      <Select aria-label="Filtrar clasificación" className="w-full sm:w-auto" value={classification} onChange={e => setClassification(e.target.value)}><option value="">Todas las clasificaciones</option>{groups.map(g => <option key={g.key} value={g.key || "UNCLASSIFIED"}>{g.name}</option>)}</Select>
+      <Select aria-label="Filtrar estado" className="w-full sm:w-auto" value={status} onChange={e => setStatus(e.target.value)}><option value="">Activas e inactivas</option><option value="active">Activas</option><option value="inactive">Inactivas</option></Select>
+    </div>
+    {catalogs.isLoading || units.isLoading ? <LoadingState label="Cargando material rodante" compact /> : catalogs.isError || units.isError || !id ? <Card><p role="alert">No se pudo cargar el catálogo de material rodante.</p><Button onClick={() => { void catalogs.refetch(); void units.refetch(); }} variant="outline">Reintentar</Button></Card> : <UnitGridCard showStatus title="Material rodante" icon={classification === "AUXILIAR" ? Wrench : TrainFront} groups={grouped} onCreate={() => setEditing({ id_detalle: 0, nombre: "", estado: true, clasificacion_mr: groups.some(g => g.key === classification) ? classification : "" })} onSelect={setEditing} />}
+    <UnitEditModal materialRodante open={!!editing && !confirm} item={editing} onClose={() => setEditing(null)} pending={pending} onSave={(nombre, clasificacion_mr) => save.mutate({ nombre, clasificacion_mr })} onToggleActivo={() => { setError(null); setConfirm(true); }} />
+    <ConfirmDialog open={confirm} title={editing?.estado === false ? "¿Reactivar unidad?" : "¿Desactivar unidad?"} description="Los eventos existentes conservarán su referencia. Una unidad desactivada no estará disponible para nuevos registros." confirmLabel={editing?.estado === false ? "Reactivar" : "Desactivar"} pending={pending} error={error} onCancel={() => setConfirm(false)} onConfirm={() => void toggle()} />
+  </AdminShell>;
 }

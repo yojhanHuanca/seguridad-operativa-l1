@@ -28,7 +28,10 @@ export function useUpdatePhone() {
       const { data } = await api.patch<ApiEnvelope<MyProfile>>("/profile/me", { telefono });
       return data.data;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["profile", "me"] }),
+    onSuccess: profile => {
+      if (profile) queryClient.setQueryData(["profile", "me"], profile);
+      return queryClient.invalidateQueries({ queryKey: ["profile", "me"] });
+    },
   });
 }
 
@@ -43,15 +46,41 @@ export function useUploadAvatar() {
       });
       return data.data;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["profile", "me"] }),
+    onSuccess: async profile => {
+      if (profile) queryClient.setQueryData(["profile", "me"], profile);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["profile", "me"] }),
+        queryClient.invalidateQueries({ queryKey: ["users"] }),
+        queryClient.invalidateQueries({ queryKey: ["users-paginado"] }),
+      ]);
+    },
   });
 }
 
 export function useChangePassword() {
   return useMutation({
-    mutationFn: async (input: { password_actual: string; password_nueva: string }) => {
+    mutationFn: async (input: { password_actual: string; password_nueva: string; password_confirmacion: string }) => {
       const { data } = await api.patch<ApiEnvelope<null>>("/profile/me/password", input);
       return data;
+    },
+  });
+}
+
+export function useRemoveAvatar() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data } = await api.delete<ApiEnvelope<MyProfile>>("/profile/me/foto");
+      return data.data;
+    },
+    onSuccess: async profile => {
+      if (profile) queryClient.setQueryData(["profile", "me"], profile);
+      queryClient.removeQueries({ queryKey: ["avatar"] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["profile", "me"] }),
+        queryClient.invalidateQueries({ queryKey: ["users"] }),
+        queryClient.invalidateQueries({ queryKey: ["users-paginado"] }),
+      ]);
     },
   });
 }

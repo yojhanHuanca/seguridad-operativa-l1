@@ -40,6 +40,9 @@ export function useImportarRegistros(tipo: ImportacionTipo = "casos") {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: ImportacionPayload) => importarRegistros(tipo, payload),
+    // Una respuesta perdida no significa que el servidor no haya guardado la carga.
+    retry: false,
+    onError: () => { void queryClient.invalidateQueries({ queryKey: ["importaciones-historial"] }); },
     onSuccess: () => {
       for (const queryKey of ENDPOINTS[tipo].queryKeys) {
         void queryClient.invalidateQueries({ queryKey: [queryKey] });
@@ -55,6 +58,7 @@ export function useImportarCasos() {
 export function useHistorialImportaciones(page = 1) {
   return useQuery({
     queryKey: ["importaciones-historial", page],
+    refetchInterval: query => query.state.data?.items.some(item => item.estado === "procesando") ? 2000 : false,
     queryFn: async () => {
       const { data } = await api.get<ApiEnvelope<{ items: ImportacionHistorialItem[]; total: number }>>("/importacion/historial", { params: { page, limit: 20 } });
       if (!data.data) throw new Error("La API no devolvió el historial");

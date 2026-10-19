@@ -19,7 +19,7 @@ import { usePlans } from "@/features/plans/hooks/usePlans";
 import { useJefeAreaFilter } from "@/features/plans/hooks/useJefeAreaFilter";
 import { planStatusCounts } from "@/features/plans/lib/planStatus";
 import { cn } from "@/lib/utils";
-import { SessionExitButton } from "@/features/auth/SessionExitButton";
+import { SidebarAccount } from "./SidebarAccount";
 import { AdminPanelSwitcher } from "@/features/auth/AdminPanelSwitcher";
 import { AdminViewingBanner } from "@/features/auth/AdminViewingBanner";
 import { useAuth } from "@/features/auth/auth";
@@ -57,7 +57,7 @@ function NavLink({ item, collapsed, active, onNavigate }: { item: NavItem; colla
     <Link
       to={item.to}
       onClick={onNavigate}
-      title={collapsed ? item.label : undefined}
+      aria-label={collapsed ? item.label : undefined} aria-current={active ? "page" : undefined} title={collapsed ? item.label : undefined}
       className={cn(
         "flex h-10 items-center gap-3 rounded-xl px-2.5 text-[13px] font-medium transition-colors",
         collapsed && "justify-center px-0",
@@ -113,7 +113,7 @@ function SidebarContent({ collapsed, onNavigate, area }: { collapsed: boolean; o
         </Link>
       </div>
 
-      <nav className="scrollbar-none flex-1 overflow-y-auto px-3 py-4">
+      <nav aria-label="Navegación de jefe de área" className="scrollbar-none flex-1 overflow-y-auto px-3 py-4">
         {!collapsed && <p className="mb-2 px-2.5 text-[10.5px] font-bold uppercase tracking-[0.14em] text-ink-faint">Mis planes de acción</p>}
         <div className="space-y-1">
           {items.map((item) => (
@@ -122,18 +122,7 @@ function SidebarContent({ collapsed, onNavigate, area }: { collapsed: boolean; o
         </div>
       </nav>
 
-      {!collapsed && (
-        <div className="shrink-0 border-t border-line-soft p-3">
-          <SessionExitButton withLabel className="mb-2 w-full justify-start" />
-          <Link to="/jefe/perfil" onClick={onNavigate} className="flex items-center gap-3 rounded-2xl bg-surface px-3 py-3 transition-colors hover:bg-surface-2">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-700 text-[13px] font-bold text-white">JA</div>
-            <div className="min-w-0 leading-tight">
-              <p className="truncate text-[13px] font-semibold text-ink">Jefe de {area}</p>
-              <p className="mt-0.5 truncate text-[11.5px] text-ink-quiet">Línea 1 · Metro de Lima</p>
-            </div>
-          </Link>
-        </div>
-      )}
+      <SidebarAccount collapsed={collapsed} to="/jefe/perfil" role="Jefe de Área" onNavigate={onNavigate} />
     </>
   );
 }
@@ -161,7 +150,7 @@ export function JefeShell({ children }: { children: ReactNode }) {
       <AdminViewingBanner roleLabel="Jefe de Área" />
       <div className="min-h-screen bg-surface md:flex">
         {/* Desktop sidebar */}
-        <aside
+        <aside data-sidebar data-collapsed={collapsed}
           data-print="hide"
           className={cn(
             "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-line bg-white transition-[width] duration-200 md:flex",
@@ -183,7 +172,7 @@ export function JefeShell({ children }: { children: ReactNode }) {
         {mobileOpen && (
           <div data-print="hide" className="fixed inset-0 z-40 md:hidden">
             <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileOpenPath(null)} aria-hidden />
-            <aside className="absolute left-0 top-0 flex h-full w-[280px] flex-col bg-white shadow-xl">
+            <aside data-sidebar data-mobile="true" className="absolute left-0 top-0 flex h-full w-[280px] flex-col bg-white shadow-xl">
               <SidebarContent collapsed={false} area={firstArea} onNavigate={() => setMobileOpenPath(null)} />
             </aside>
           </div>

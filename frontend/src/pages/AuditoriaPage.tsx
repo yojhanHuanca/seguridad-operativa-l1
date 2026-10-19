@@ -1,12 +1,12 @@
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useEffect, useState } from "react";
-import { ChevronDown, ChevronLeft, ChevronRight, History, LogIn, PlusCircle, Search, ShieldAlert, Trash2, UserCog, UserRound } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, History, LogIn, PlusCircle, Search, ShieldAlert, Trash2, UserCog } from "lucide-react";
 import { AdminShell } from "@/components/layout/AdminShell";
 import { LoadingState } from "@/components/feedback/LoadingState";
 import { Button } from "@/design-system/primitives/Button";
 import { Input } from "@/design-system/primitives/Input";
 import { Card } from "@/components/ui/card";
-import { useAuditoria, useAuditoriaCounts, useAuditoriaActores, useAuditoriaTablas, exportarAuditoria } from "@/features/auditoria/hooks/useAuditoria";
-import { isAxiosError } from "axios";
+import { useAuditoria, useAuditoriaCounts, useAuditoriaActores, useAuditoriaTablas } from "@/features/auditoria/hooks/useAuditoria";
 import { cn } from "@/lib/utils";
 import type { AccionAuditoria, AuditoriaItem } from "@/features/auditoria/types";
 
@@ -176,7 +176,7 @@ function FilaAuditoria({ registro }: { registro: AuditoriaItem }) {
         </td>
         <td className="px-4 py-3">
           <div className="flex min-w-0 items-center gap-2.5">
-            <UserRound className="h-4 w-4 shrink-0 text-ink-faint" />
+            <UserAvatar nombre={registro.usuarios.nombre} userId={registro.usuario} className="h-8 w-8" />
             <div className="min-w-0">
               <p className="font-semibold text-ink">{registro.usuarios.nombre}</p>
               <p className="text-[11.5px] text-ink-faint">({actorCargo})</p>
@@ -234,8 +234,6 @@ export function AuditoriaPanelContent() {
   const [tabla, setTabla] = useState("");
   const [desde, setDesde] = useState("");
   const [hasta, setHasta] = useState("");
-  const [exportando, setExportando] = useState(false);
-  const [exportError, setExportError] = useState("");
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -261,22 +259,6 @@ export function AuditoriaPanelContent() {
   const tablas = useAuditoriaTablas();
   const fechasInvalidas = Boolean(desde && hasta && desde > hasta);
 
-  async function descargar() {
-    setExportando(true);
-    setExportError("");
-    try { await exportarAuditoria(filtrosActivos); }
-    catch (error) {
-      let message = "No se pudo exportar la auditoría. Intenta nuevamente.";
-      if (isAxiosError(error)) {
-        try {
-          const body = typeof error.response?.data === "string" ? JSON.parse(error.response.data) : error.response?.data;
-          message = body?.message || message;
-        } catch { /* Retain the readable fallback for non-JSON errors. */ }
-      }
-      setExportError(message);
-    } finally { setExportando(false); }
-  }
-
   const registros = pageData?.items ?? [];
   const total = pageData?.total ?? 0;
   const totalPaginas = Math.max(1, Math.ceil(total / POR_PAGINA));
@@ -288,7 +270,7 @@ export function AuditoriaPanelContent() {
     setQuery("");
     setDebouncedQuery("");
     setPagina(1);
-    setUsuario(""); setTabla(""); setDesde(""); setHasta(""); setExportError("");
+    setUsuario(""); setTabla(""); setDesde(""); setHasta("");
   }
 
   return (
@@ -357,9 +339,7 @@ export function AuditoriaPanelContent() {
           <label>Hasta<Input aria-label="Hasta" type="date" value={hasta} onChange={e => { setHasta(e.target.value); setPagina(1); }} /></label>
         </div>
         {(actores.isError || tablas.isError || counts.isError) && <p role="alert">No se pudieron cargar algunos filtros o conteos. <button onClick={() => { void actores.refetch(); void tablas.refetch(); void counts.refetch(); }}>Reintentar filtros</button></p>}
-        <p className="mb-3 text-xs">Los conteos por acción corresponden a todo el sistema. CSV: todos los resultados filtrados, máximo 20 000; si se supera, se rechaza sin truncar.</p>
-        <Button onClick={descargar} disabled={exportando || isLoading || isError || fechasInvalidas || query.trim() !== debouncedQuery}>{exportando ? "Exportando…" : "Exportar CSV filtrado"}</Button>
-        {exportError && <p role="alert">{exportError}</p>}
+        <p className="mb-3 text-xs">Los conteos por acción corresponden a todo el sistema.</p>
         {fechasInvalidas && <p role="alert">La fecha desde no puede ser posterior a hasta.</p>}
         <div className="relative">
           <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
@@ -434,3 +414,5 @@ export function AdminAuditoriaPage() {
     </AdminShell>
   );
 }
+
+

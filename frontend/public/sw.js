@@ -17,13 +17,19 @@ self.addEventListener("push", (event) => {
   } catch {
     data = { title: "SMS L1", body: event.data.text() };
   }
-  const title = data.title || "SMS L1";
+  if (!data || typeof data !== "object") data = {};
+  const title = typeof data.title === "string" ? data.title : "SMS L1";
   const options = {
-    body: data.body || "",
+    body: typeof data.body === "string" ? data.body : "",
     icon: "/logo-linea1.png",
     badge: "/logo-linea1.png",
   };
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(Promise.all([
+    self.registration.showNotification(title, options),
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(clients => {
+      clients.forEach(client => client.postMessage({ type: "NOTIFICATION_RECEIVED" }));
+    }),
+  ]));
 });
 
 // Al tocar la notificación, enfoca una pestaña ya abierta del sitio si hay

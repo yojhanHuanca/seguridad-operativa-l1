@@ -1,19 +1,20 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Activity, CalendarDays, Clock3, Download, Filter, Info, MapPin, PieChart, RefreshCcw, Timer, TrendingUp, X } from 'lucide-react';
+import { Activity, CalendarDays, Clock3, Filter, Info, MapPin, PieChart, RefreshCcw, Timer, TrendingUp, X } from 'lucide-react';
 import { ContingenciaShell } from '@/components/layout/ContingenciaShell';
 import { LoadingState } from '@/components/feedback/LoadingState';
 import { contingenciasApi } from '@/features/contingencias/api';
 import type { ContingenciaEvento } from '@/features/contingencias/types';
 import type { DatoOperativo } from '@/features/datos-operativos/hooks/useDatosOperativos';
 import { api, type ApiEnvelope } from '@/lib/api';
-import { countBy, dayKey, distribution, eventTimes, formatMetric as fmt, heatmap, monthKey, percentChange, periodFor, summarize } from '@/features/contingencias/analytics';
+import { countBy, dayKey, eventTimes, formatMetric as fmt, monthKey, percentChange, periodFor, summarize } from '@/features/contingencias/analytics';
 import { ChartPanel, Evolution, HourHeatmap, PlaceDotplot, ResponseBoxplot, Sparkline, TypeTreemap } from '@/features/contingencias/components/AnalyticsCharts';
+import { MonthlyIndicatorChart } from '@/features/contingencias/components/MonthlyIndicatorChart';
 import './indicadores.css';
 
-type OperationMetric = 'qty_pasajeros' | 'qty_carreras' | 'km_comercial';
-const metricNames: Record<OperationMetric, string> = { qty_pasajeros: 'Pasajeros', qty_carreras: 'Carreras', km_comercial: 'Km comerciales' };
+type OperationMetric = 'qty_pasajeros' | 'afluencia' | 'qty_carreras' | 'km_comercial';
+const metricNames: Record<OperationMetric, string> = { qty_pasajeros: 'QTY pasajeros', afluencia: 'Afluencia diaria', qty_carreras: 'Carreras', km_comercial: 'Km comerciales' };
 const kpis = [
   { label: 'Eventos registrados', icon: Activity, suffix: '' },
   { label: 'Atención acumulada', icon: Clock3, suffix: ' h' },
@@ -46,7 +47,7 @@ export function Indicadores() {
   const [station, setStation] = useState('');
   const [tipo, setTipo] = useState('');
   const [view, setView] = useState<'eventos' | 'operacion'>('eventos');
-  const [metric, setMetric] = useState<OperationMetric>('qty_pasajeros');
+  const [metric, setMetric] = useState<OperationMetric>('afluencia');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const reduce = useReducedMotion();
   const period = periodFor(month);
@@ -60,7 +61,11 @@ export function Indicadores() {
     queryFn: () => loadOperations(period.start, period.end),
     staleTime: 60_000,
   });
-
+  const monthlyQuery = useQuery({
+    queryKey: ['contingencias', 'indicador-mensual', month],
+    queryFn: () => contingenciasApi.monthlyIndicator(month),
+    staleTime: 60_000,
+  });
   const analytics = useMemo(() => {
     const all = eventsQuery.data ?? [];
     const matches = (e: ContingenciaEvento) => (!station || e.lugar_evento?.trim() === station) && (!tipo || e.tipo_evento?.trim() === tipo);
@@ -79,36 +84,11 @@ export function Indicadores() {
     return { currentAll, events, previous, operations, daily, summary: summarize(events), previousSummary: summarize(previous), times: eventTimes(events), types: countBy(events, 'tipo_evento'), places: countBy(events, 'lugar_evento') };
   }, [eventsQuery.data, opsQuery.data, month, metric, station, tipo, period.start, period.end, period.previousStart, period.previousEnd, period.days]);
 
-  const refresh = () => { void eventsQuery.refetch(); void opsQuery.refetch(); };
-  const busy = eventsQuery.isFetching || opsQuery.isFetching;
+  const refresh = () => { void eventsQuery.refetch(); void opsQuery.refetch(); void monthlyQuery.refetch(); };
+  const busy = eventsQuery.isFetching || opsQuery.isFetching || monthlyQuery.isFetching;
   const loading = eventsQuery.isPending;
   const error = eventsQuery.isError;
   const filtered = !!station || !!tipo;
-  const exportSummary = () => {
-    const hourly = heatmap(analytics.events);
-    const rows = [
-      ['Sección', 'Concepto', 'Valor'],
-      ['Periodo', 'Desde', period.start], ['Periodo', 'Hasta', period.end],
-      ['Filtro', 'Lugar', station || 'Todos'], ['Filtro', 'Tipo', tipo || 'Todos'],
-      ['Resumen', 'Eventos', String(analytics.events.length)],
-      ...kpis.slice(1).map((kpi, index) => ['Resumen', kpi.label, analytics.summary[index + 1] === null ? 'Sin dato' : String(analytics.summary[index + 1])]),
-      ...analytics.types.map(row => ['Tipo', row.name, String(row.value)]),
-      ...analytics.places.map(row => ['Lugar', row.name, String(row.value)]),
-      ...hourly.cells.flatMap((row, day) => row.map((value, hour) => ['Concentración horaria', ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'][day] + ' / ' + hour * 4 + '–' + (hour + 1) * 4 + ' h', String(value)])),
-      ['Concentración horaria', 'Sin hora válida (excluidos)', String(hourly.excluded)],
-      ...analytics.times.flatMap(row => {
-        const stats = distribution(row.values);
-        return [['Muestra de tiempos', row.name, String(row.values.length)], ...(['min', 'q1', 'median', 'q3', 'max'] as const).map(key => ['Tiempo (min)', row.name + ' / ' + key, stats ? String(stats[key]) : 'Sin dato'])];
-      }),
-      ...analytics.daily.map(row => ['Evolución diaria', row.date, String(row.eventos)]),
-      ...analytics.daily.map(row => ['Operación global / ' + metricNames[metric], row.date, row.operacion === null ? 'Sin dato' : String(row.operacion)]),
-    ];
-    const csv = rows.map(row => row.map(value => '"' + value.replace(/^[=+@-]/, "'$&").replaceAll('"', '""') + '"').join(',')).join('\r\n');
-    const url = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }));
-    const link = document.createElement('a');
-    link.href = url; link.download = 'contingencias-' + month + '.csv'; link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  };
   const chooseMonth = (value: string) => { if (/^\d{4}-\d{2}$/.test(value) && +value.slice(5) >= 1 && +value.slice(5) <= 12) { setMonth(value); setStation(''); setTipo(''); } };
 
   return (
@@ -117,10 +97,9 @@ export function Indicadores() {
         <header className="ctg-heading">
           <div><h1>Indicadores de contingencias</h1><p>Frecuencia, distribución y tiempos de atención</p></div>
           <div className="ctg-actions">
-            <label className="ctg-month"><CalendarDays /><input type="month" aria-label="Periodo" value={month} onChange={e => chooseMonth(e.target.value)} /></label>
+            <label className="ctg-month"><CalendarDays /><input type="month" aria-label="Periodo" value={month} max={monthKey(new Date())} onChange={e => chooseMonth(e.target.value)} /></label>
             <button className="ctg-button" aria-expanded={filtersOpen} aria-controls="ctg-filters" onClick={() => setFiltersOpen(!filtersOpen)}><Filter />Filtros{filtered ? ' · ' + [station, tipo].filter(Boolean).length : ''}</button>
             <button className="ctg-button" aria-label="Actualizar estadísticas" onClick={refresh} disabled={busy}><RefreshCcw className={busy ? 'animate-spin' : ''} /></button>
-            <button className="ctg-button" onClick={exportSummary} disabled={loading || error || opsQuery.isPending || opsQuery.isError || busy || (!analytics.events.length && !analytics.operations.length)}><Download />Exportar</button>
           </div>
         </header>
         {(filtersOpen || filtered) && <div id="ctg-filters" className="ctg-filters">
@@ -132,6 +111,9 @@ export function Indicadores() {
           <button className="ctg-button" onClick={() => { setStation(''); setTipo(''); }}><X />Restablecer</button>
         </div>}
         {loading ? <LoadingState label="Preparando indicadores de contingencias" /> : error ? <div className="ctg-error" role="alert">No se pudieron cargar las contingencias. <button className="ctg-button" onClick={refresh}>Reintentar</button></div> : <>
+          <section className="ctg-panel ctg-monthly-panel" aria-label="Atenciones y eventos por millón de pasajeros"><div className="ctg-panel-body">
+            {monthlyQuery.isPending ? <LoadingState label="Cargando indicador mensual" /> : monthlyQuery.isError ? <div className="ctg-error" role="alert">No se pudo cargar el gráfico. <button className="ctg-button" onClick={() => void monthlyQuery.refetch()}>Reintentar</button></div> : <MonthlyIndicatorChart data={monthlyQuery.data} />}
+          </div></section>
           <div className="ctg-kpis">
             {kpis.map((kpi, index) => {
               const value = analytics.summary[index];

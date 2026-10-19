@@ -30,8 +30,8 @@ const camposEvento = {
 };
 
 export const createEventoSchema = z.object({
-  fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida (AAAA-MM-DD)"),
-  hora: z.string().regex(/^\d{2}:\d{2}$/, "Hora inválida (HH:MM)"),
+  fecha: z.iso.date("Fecha inválida (AAAA-MM-DD)"),
+  hora: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Hora inválida (HH:MM)"),
   id_tipo_incidente: z.coerce.number().int().positive(),
   ...camposEvento,
 });
@@ -39,8 +39,8 @@ export const createEventoSchema = z.object({
 export const ESTADOS_EVENTO = ["Registrado", "En investigación", "Cerrado"] as const;
 
 export const updateEventoSchema = z.object({
-  fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida (AAAA-MM-DD)").optional(),
-  hora: z.string().regex(/^\d{2}:\d{2}$/, "Hora inválida (HH:MM)").optional(),
+  fecha: z.iso.date("Fecha inválida (AAAA-MM-DD)").optional(),
+  hora: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Hora inválida (HH:MM)").optional(),
   id_tipo_incidente: z.coerce.number().int().positive().optional(),
   estado: z.enum(ESTADOS_EVENTO).optional(),
   ...camposEvento,

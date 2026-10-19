@@ -1,3 +1,4 @@
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useMemo, useState } from "react";
 import { AlertCircle, ClipboardList, FileText, Microscope } from "lucide-react";
 import { Card } from "@/design-system/primitives/Card";
@@ -97,7 +98,7 @@ export function PlanInfoCard({ plan }: { plan: PlanItem }) {
                                 {parsed.descripcion || plan.descripcion || "Sin descripción registrada."}
                               </p>
                               <p className="mt-1 text-[11px] text-ink-quiet break-words">
-                                {actividad.usuarios?.nombre ?? "Sin responsable"}
+                                {actividad.usuarios ? <span className="inline-flex items-center gap-1.5"><UserAvatar nombre={actividad.usuarios.nombre} userId={actividad.usuarios.id_usuario} className="h-5 w-5 text-[9px]" />{actividad.usuarios.nombre}</span> : "Sin responsable"}
                                 {actividad.usuarios?.cargo ? ` · ${actividad.usuarios.cargo}` : ""}
                                 {(parsed.meta.tipoAccion ?? planTipoAccion(plan)) && ` · ${parsed.meta.tipoAccion ?? planTipoAccion(plan)}`}
                                 {(parsed.meta.areaNombre ?? plan.areas.nombre_area) && ` · ${parsed.meta.areaNombre ?? plan.areas.nombre_area}`}
@@ -174,3 +175,4 @@ export function PlanInfoCard({ plan }: { plan: PlanItem }) {
     </Card>
   );
 }
+

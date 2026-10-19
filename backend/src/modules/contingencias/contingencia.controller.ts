@@ -17,6 +17,24 @@ function contingenciaErrorMessage(error: unknown, fallback: string) {
 }
 
 export class ContingenciaController {
+  static async monthlyIndicator(req: Request, res: Response) {
+    try {
+      const data = await ContingenciaService.monthlyIndicator(req.query as Record<string, unknown>);
+      return res.json(ApiResponse.success("Indicador mensual obtenido correctamente", data));
+    } catch (error) {
+      return res.status(400).json(ApiResponse.error(contingenciaErrorMessage(error, "No se pudo calcular el indicador mensual"), error));
+    }
+  }
+
+  static async rate(req: Request, res: Response) {
+    try {
+      const data = await ContingenciaService.rate(req.query as Record<string, unknown>);
+      return res.json(ApiResponse.success("Tasa de contingencias calculada correctamente", data));
+    } catch (error) {
+      return res.status(400).json(ApiResponse.error(contingenciaErrorMessage(error, "No se pudo calcular la tasa de contingencias"), error));
+    }
+  }
+
   static async catalogos(_req: Request, res: Response) {
     try {
       const data = await ContingenciaService.catalogos();

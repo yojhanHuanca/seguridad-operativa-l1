@@ -87,7 +87,7 @@ function agruparConsecutivas(items: Notificacion[]): (Notificacion | Grupo)[] {
 }
 
 export function NotificationsInbox({ description }: { description: string }) {
-  const { data, isLoading, cargarMas, isFetching } = useNotifications();
+  const { data, isLoading, isError, refetch, cargarMas, puedeCargarMas, isFetching } = useNotifications();
   const marcarLeida = useMarkNotificationRead();
   const marcarTodas = useMarkAllNotificationsRead();
 
@@ -110,7 +110,7 @@ export function NotificationsInbox({ description }: { description: string }) {
           <Button
             variant="ghost"
             size="sm"
-            disabled={noLeidas === 0 || marcarTodas.isPending}
+            disabled={isError || noLeidas === 0 || marcarTodas.isPending}
             onClick={() =>
               marcarTodas.mutate(undefined, {
                 onSuccess: () => toast.success("Todas marcadas como leídas"),
@@ -138,6 +138,8 @@ export function NotificationsInbox({ description }: { description: string }) {
               </Card>
             ))}
           </div>
+        ) : isError ? (
+          <Card><p role="alert">No se pudieron cargar las notificaciones.</p><Button variant="outline" size="sm" disabled={isFetching} onClick={() => void refetch()}>Reintentar</Button></Card>
         ) : items.length === 0 ? (
           <EmptyState
             icon={<Bell className="h-6 w-6" />}
@@ -172,7 +174,7 @@ export function NotificationsInbox({ description }: { description: string }) {
               )}
             </motion.div>
 
-            {data?.hasMore && (
+            {data?.hasMore && puedeCargarMas && (
               <div className="mt-4 flex justify-center">
                 <Button variant="outline" size="sm" onClick={cargarMas} disabled={isFetching}>
                   {isFetching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
@@ -180,6 +182,7 @@ export function NotificationsInbox({ description }: { description: string }) {
                 </Button>
               </div>
             )}
+            {data?.hasMore && !puedeCargarMas && <p className="mt-4 text-center text-sm text-ink-quiet">Mostrando las 100 notificaciones más recientes.</p>}
           </>
         )}
       </div>

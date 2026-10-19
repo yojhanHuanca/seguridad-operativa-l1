@@ -3,6 +3,7 @@ import "@/features/importacion/importacion-editor.css";
 import { SopImportActions } from "@/features/importacion/SopImportActions";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { isAxiosError } from "axios";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -168,7 +169,10 @@ async function parseXlsx(file: File): Promise<ImportSheet[]> {
       });
       matrix.push(rowValues);
     });
-    return matrix.length > 1 ? [matrixToSheet(worksheet.name, matrix)] : [];
+    // Una hoja auxiliar (por ejemplo, Guía) puede empezar vacía. No debe
+    // impedir importar otras hojas que sí tienen encabezados y registros.
+    const hasHeaders = matrix[0]?.some(value => value.trim().length > 0);
+    return matrix.length > 1 && hasHeaders ? [matrixToSheet(worksheet.name, matrix)] : [];
   });
   if (!sheets.length) throw new Error("El archivo no contiene hojas con encabezados y datos.");
   return sheets;
@@ -252,9 +256,13 @@ function ResultBanner({ result }: { result: ImportacionResult | null }) {
   );
 }
 
-function CellPreview({ sheet, preview, sensitive }: { sheet: ImportSheet; preview: ImportacionPreview; sensitive: boolean }) {
-  const visibleHeaders = sheet.headers.slice(0, 12);
-  const visibleRows = sheet.rows.slice(0, 100);
+function CellPreview({ sheet, preview }: { sheet: ImportSheet; preview: ImportacionPreview }) {
+  const [page, setPage] = useState(0);
+  const pageCount = Math.max(1, Math.ceil(sheet.rows.length / 100));
+  const currentPage = Math.min(page, pageCount - 1);
+  const startRow = currentPage * 100;
+  const visibleHeaders = sheet.headers;
+  const visibleRows = sheet.rows.slice(startRow, startRow + 100);
   const issueMap = new Map<string, typeof preview.issues>();
   preview.issues.forEach(issue => {
     const key = `${issue.row}:${normalizeImportHeader(issue.field)}`;
@@ -264,27 +272,34 @@ function CellPreview({ sheet, preview, sensitive }: { sheet: ImportSheet; previe
     <Card className="mt-5 overflow-hidden rounded-lg border border-line bg-white p-0">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-surface px-4 py-3">
         <div><p className="text-[13px] font-semibold text-ink">Vista previa por celdas</p><p className="mt-0.5 text-[11.5px] text-ink-quiet">Verde: válido · amarillo: advertencia · rojo: error · gris: vacío opcional</p></div>
-        <span className="text-[11.5px] text-ink-quiet">Primeras {visibleRows.length} filas</span>
+        <span className="text-[11.5px] text-ink-quiet">Filas {startRow + 1}–{startRow + visibleRows.length} de {sheet.rows.length} · {sheet.headers.length} columnas</span>
       </div>
       <div className="overflow-x-auto">
         <table className="min-w-max text-left text-[12px]">
           <thead><tr className="border-b border-line">{["Fila", ...visibleHeaders].map(header => <th key={header} className="whitespace-nowrap bg-white px-3 py-2.5 font-semibold text-ink">{header}</th>)}</tr></thead>
           <tbody>{visibleRows.map((row, rowIndex) => <tr key={rowIndex} className="border-b border-line-soft last:border-0">
-            <td className="bg-surface px-3 py-2 font-mono text-ink-quiet">{rowIndex + 2}</td>
+            <td className="bg-surface px-3 py-2 font-mono text-ink-quiet">{startRow + rowIndex + 2}</td>
             {visibleHeaders.map(header => {
               const value = String(row[header] ?? "").trim();
-              const issues = issueMap.get(`${rowIndex + 2}:${normalizeImportHeader(header)}`) ?? [];
+              const issues = issueMap.get(`${startRow + rowIndex + 2}:${normalizeImportHeader(header)}`) ?? [];
               const error = issues.find(issue => issue.severity === "error");
               const warning = issues.find(issue => issue.severity === "warning");
               const title = (error ?? warning)?.message;
               return <td key={header} title={title} className={cn("max-w-[260px] px-3 py-2 align-top", error ? "bg-red-50 text-red-800 ring-1 ring-inset ring-red-200" : warning ? "bg-amber-50 text-amber-800" : value ? "bg-emerald-50/45 text-ink" : "bg-slate-50 text-ink-faint")}>
-                <span className="block max-w-[240px] truncate">{value ? sensitive ? "Dato protegido" : value : "Vacío"}</span>{title && <span className="mt-1 block max-w-[240px] text-[10.5px] font-medium">{title}</span>}
+                <span className="block w-[240px] whitespace-pre-wrap break-words">{value || "Vacío"}</span>{title && <span className="mt-1 block max-w-[240px] text-[10.5px] font-medium">{title}</span>}
               </td>;
             })}
           </tr>)}</tbody>
         </table>
       </div>
-      {(sheet.rows.length > visibleRows.length || sheet.headers.length > visibleHeaders.length) && <p className="border-t border-line px-4 py-2 text-[11.5px] text-ink-quiet">La vista está limitada para mantener la página rápida. La validación considera todas las filas y columnas.</p>}
+      {pageCount > 1 && <div className="flex items-center justify-end gap-3 border-t border-line px-4 py-2 text-[12px]">
+        <Button type="button" variant="outline" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}>Filas anteriores</Button>
+        <span>Página {currentPage + 1} de {pageCount}</span>
+        <select aria-label="Página de filas" value={currentPage} onChange={event => setPage(Number(event.target.value))} className="rounded border border-line bg-white px-2 py-1">
+          {Array.from({ length: pageCount }, (_, index) => <option key={index} value={index}>Filas {index * 100 + 1}–{Math.min((index + 1) * 100, sheet.rows.length)}</option>)}
+        </select>
+        <Button type="button" variant="outline" disabled={currentPage + 1 >= pageCount} onClick={() => setPage(currentPage + 1)}>Filas siguientes</Button>
+      </div>}
     </Card>
   );
 }
@@ -293,7 +308,10 @@ export function AdminImportacionPage() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [parsed, setParsed] = useState<ParsedImportFile | null>(null);
   const [sheetIndex, setSheetIndex] = useState(0);
+  const [resultPage, setResultPage] = useState(0);
   const [preview, setPreview] = useState<ImportacionPreview | null>(null);
+  const resultPageCount = Math.max(1, Math.ceil((preview?.cases.length ?? 0) / 100));
+  const currentResultPage = Math.min(resultPage, resultPageCount - 1);
   const [result, setResult] = useState<ImportacionResult | null>(null);
   const [decisions, setDecisions] = useState<DecisionSop[]>([]);
   const [dirty, setDirty] = useState(false);
@@ -316,7 +334,9 @@ export function AdminImportacionPage() {
   const serverError = validar.error
     ? apiErrorMessage(validar.error, "No se pudo validar el archivo")
     : importar.error
-      ? apiErrorMessage(importar.error, "No se pudo importar el archivo")
+      ? isAxiosError(importar.error) && (!importar.error.response || importar.error.response.status >= 500)
+        ? "No se pudo confirmar el resultado de la carga. Puede seguir procesándose: consulta el historial antes de volver a importar para evitar registros adicionales."
+        : apiErrorMessage(importar.error, "No se pudo importar el archivo")
       : null;
 
   function cambiarTipoImportacion(tipo: ImportacionTipo) {
@@ -324,6 +344,7 @@ export function AdminImportacionPage() {
     setTipoImportacion(tipo);
     setParsed(null);
     setSheetIndex(0);
+    setResultPage(0);
     setPreview(null);
     setDecisions([]);
     setDirty(false);
@@ -337,6 +358,7 @@ export function AdminImportacionPage() {
 
   async function handleFileChange(file: File | undefined) {
     if (!file) return;
+    setResultPage(0);
     setParsing(true);
     setParseError(null);
     setPreview(null);
@@ -370,6 +392,7 @@ export function AdminImportacionPage() {
 
   function handleSheetChange(index: number) {
     setSheetIndex(index);
+    setResultPage(0);
     setPreview(null);
     setDecisions([]);
     setDirty(false);
@@ -496,8 +519,8 @@ export function AdminImportacionPage() {
       </aside>
       <section className="import-review">
         <div className="import-review-heading"><div><span className="import-kicker">REVISIÓN DE LA CARGA</span><h2>{preview ? "Resultados y decisiones" : "Prepara tus registros"}</h2></div><span className="import-status-dot">{result ? "Finalizada" : dirty ? "Cambios por validar" : preview ? "Validado" : "Pendiente"}</span></div>
-        {!preview && <div className="import-review-empty"><div className="import-file-visual" aria-hidden="true"><FileSpreadsheet size={32} strokeWidth={1.3} /><span>CSV / EXCEL</span></div><h3>Todo listo para revisar tu archivo</h3><p>Selecciona el archivo de origen y pulsa <strong>Validar</strong>.<br />Aquí podrás revisar los registros antes de confirmar la carga.</p><div className="import-review-checks">{(tipoImportacion === "casos" ? ["Selecciona uno o varios SOP pendientes", "Asigna responsables o cambia el estado de los planes", "Prepara el cierre de SOP resueltos internamente"] : tipoImportacion === "monitoreo" ? ["Comprueba los campos y catálogos operativos", "Identifica registros duplicados", "Revisa las observaciones de cada fila"] : ["Revisa fechas y tiempos de atención", "Identifica duplicados y datos incompletos", "Consulta el diagnóstico con datos personales protegidos"]).map(text => <div key={text}><CheckCircle2 size={16} /><span>{text}</span></div>)}</div></div>}
-        {preview && tipoImportacion !== "casos" && <div className="import-review-summary"><strong>{preview.resumen.listos} registros listos</strong><p>{preview.resumen.duplicados} duplicados omitidos · {preview.resumen.errores} errores · {preview.resumen.advertencias} advertencias</p><p>Revisa el detalle de las filas y confirma la carga desde el panel de archivo.</p></div>}
+        {!preview && <div className="import-review-empty"><div className="import-file-visual" aria-hidden="true"><FileSpreadsheet size={32} strokeWidth={1.3} /><span>CSV / EXCEL</span></div><h3>Todo listo para revisar tu archivo</h3><p>Selecciona el archivo de origen y pulsa <strong>Validar</strong>.<br />Aquí podrás revisar los registros antes de confirmar la carga.</p><div className="import-review-checks">{(tipoImportacion === "casos" ? ["Selecciona uno o varios SOP pendientes", "Asigna responsables o cambia el estado de los planes", "Prepara el cierre de SOP resueltos internamente"] : tipoImportacion === "monitoreo" ? ["Comprueba los campos y catálogos operativos", "Cada fila se registra de forma independiente", "Revisa las observaciones de cada fila"] : ["Revisa fechas y tiempos de atención", "Revisa los datos completos de cada atención", "Comprueba los campos antes de confirmar"]).map(text => <div key={text}><CheckCircle2 size={16} /><span>{text}</span></div>)}</div></div>}
+        {preview && tipoImportacion !== "casos" && <div className="import-review-summary"><strong>{preview.resumen.listos} registros listos</strong><p>{preview.resumen.errores} errores · {preview.resumen.advertencias} advertencias</p><p>Revisa el detalle de las filas y confirma la carga desde el panel de archivo.</p></div>}
       <ResultBanner result={result} />
       {tipoImportacion === "contingencias" && <p className="mt-4 rounded border border-amber-200 bg-amber-50 p-4 text-sm">Esta carga contiene información personal y clínica. La vista previa oculta los valores del archivo y el diagnóstico descargable contiene únicamente referencias de fila y campo.</p>}
       {tipoImportacion === "casos" && preview && !result && <SopImportActions preview={preview} decisions={decisions} disabled={pending} needsValidation={dirty} onChange={value => { setDecisions(value); setDirty(true); toast.info("Decisión preparada. Valida para revisar el resultado antes de importar."); }} />}
@@ -515,11 +538,13 @@ export function AdminImportacionPage() {
               <p><span className="block text-xs text-ink-quiet">Hoja</span><strong className="text-ink">{selectedSheet.name}</strong></p>
               <p><span className="block text-xs text-ink-quiet">Filas encontradas</span><strong className="text-ink">{preview.resumen.totalFilas}</strong></p>
               <p><span className="block text-xs text-ink-quiet">Registros nuevos</span><strong className="text-emerald-700">{preview.resumen.listos}</strong></p>
-              <p><span className="block text-xs text-ink-quiet">Duplicados omitidos</span><strong className="text-amber-700">{preview.resumen.duplicados}</strong></p>
+              {tipoImportacion === "casos" && <p><span className="block text-xs text-ink-quiet">Duplicados omitidos</span><strong className="text-amber-700">{preview.resumen.duplicados}</strong></p>}
               <p><span className="block text-xs text-ink-quiet">Errores</span><strong className="text-ink">{preview.resumen.errores}</strong></p>
             </div>
             <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-[12.5px] text-emerald-900">
-              Se crearán {preview.resumen.listos} registros nuevos. Se aplicarán las decisiones validadas a {decisions.length} SOP. Los códigos y registros existentes se conservarán.
+              Se crearán {preview.resumen.listos} registros nuevos. {tipoImportacion === "casos"
+                ? `Se aplicarán las decisiones validadas a ${decisions.length} SOP. Los códigos y registros existentes se conservarán.`
+                : "Cada fila se guardará como un registro independiente. Si vuelves a cargar este archivo, se crearán registros adicionales, aunque tengan los mismos datos."}
             </div>
             <div className="mt-5 flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setConfirming(false)}>Cancelar</Button>
@@ -535,13 +560,13 @@ export function AdminImportacionPage() {
             <StatTile label="Filas" value={preview.resumen.totalFilas} />
             <StatTile label={tipoImportacion === "casos" ? "Casos" : "Eventos"} value={preview.resumen.casosDetectados} />
             <StatTile label="Listos" value={preview.resumen.listos} tone="good" />
-            <StatTile label="Duplicados" value={preview.resumen.duplicados} tone={preview.resumen.duplicados > 0 ? "warn" : "neutral"} />
+            {tipoImportacion === "casos" && <StatTile label="Duplicados" value={preview.resumen.duplicados} tone={preview.resumen.duplicados > 0 ? "warn" : "neutral"} />}
             <StatTile label="Planes" value={preview.resumen.planesDetectados} />
             <StatTile label="Advertencias" value={preview.resumen.advertencias} tone="warn" />
             <StatTile label="Errores" value={preview.resumen.errores} tone={preview.resumen.errores > 0 ? "bad" : "neutral"} />
           </div>
 
-          {selectedSheet && <CellPreview sheet={selectedSheet} preview={preview} sensitive={tipoImportacion === "contingencias"} />}
+          {selectedSheet && <CellPreview key={`${parsed?.filename}:${selectedSheet.name}`} sheet={selectedSheet} preview={preview} />}
 
           {preview.issues.length > 0 && (
             <Card className="mt-5 overflow-hidden rounded-lg border border-line bg-white p-0">
@@ -577,7 +602,7 @@ export function AdminImportacionPage() {
                         </td>
                         <td className="px-4 py-3 font-medium text-ink">{issue.field}</td>
                         <td className="px-4 py-3 text-ink-soft">{issue.message}</td>
-                        <td className="px-4 py-3 text-ink-quiet">{tipoImportacion === "contingencias" ? "Protegido" : issue.value ?? "—"}</td>
+                        <td className="px-4 py-3 text-ink-quiet">{issue.value ?? "—"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -605,7 +630,7 @@ export function AdminImportacionPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {preview.cases.map((item, rowIndex) => {
+                  {preview.cases.slice(currentResultPage * 100, (currentResultPage + 1) * 100).map((item, rowIndex) => {
                     const tone =
                       item.status === "valid"
                         ? "bg-emerald-50 text-emerald-700"
@@ -623,7 +648,7 @@ export function AdminImportacionPage() {
                             {label}
                           </span>
                         </td>
-                        <td className="px-4 py-3 font-mono text-[11.5px] text-ink">{tipoImportacion === "casos" ? item.codigo : rowIndex + 1}</td>
+                        <td className="px-4 py-3 font-mono text-[11.5px] text-ink">{tipoImportacion === "casos" ? item.codigo : currentResultPage * 100 + rowIndex + 1}</td>
                         <td className="max-w-[320px] px-4 py-3 font-medium text-ink">{item.titulo}</td>
                         <td className="px-4 py-3 text-ink-soft">{item.tipo}</td>
                         <td className="px-4 py-3 text-ink-soft">{item.estacion}</td>
@@ -636,6 +661,12 @@ export function AdminImportacionPage() {
                 </tbody>
               </table>
             </div>
+            {resultPageCount > 1 && <div className="flex items-center justify-end gap-3 border-t border-line px-4 py-2 text-[12px]">
+              <span>Página {currentResultPage + 1} de {resultPageCount}</span>
+              <select aria-label="Página de resultados" value={currentResultPage} onChange={event => setResultPage(Number(event.target.value))} className="rounded border border-line bg-white px-2 py-1">
+                {Array.from({ length: resultPageCount }, (_, index) => <option key={index} value={index}>Registros {index * 100 + 1}–{Math.min((index + 1) * 100, preview.cases.length)}</option>)}
+              </select>
+            </div>}
           </Card>
         </>
       )}

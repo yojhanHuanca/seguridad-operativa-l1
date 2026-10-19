@@ -7,7 +7,10 @@ const router = Router();
 router.get("/me", ProfileController.getMe);
 router.patch("/me", ProfileController.updateMe);
 router.post("/me/foto", uploadAvatar.single("foto"), verificarContenidoAvatar, ProfileController.uploadFoto);
+router.delete("/me/foto", ProfileController.removeFoto);
 router.patch("/me/password", ProfileController.changePassword);
 router.get("/me/actividad", ProfileController.getActividad);
+router.get("/me/reciente", ProfileController.getRecent);
+router.get("/me/sesiones", ProfileController.getSessions);
 
 export default router;

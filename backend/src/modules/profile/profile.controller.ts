@@ -2,8 +2,27 @@ import type { Response } from "express";
 import { ProfileService } from "./profile.service.js";
 import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
+import { cambiarPasswordSchema } from "../../utils/password.js";
+import { ZodError } from "zod";
 
 export class ProfileController {
+  static async getSessions(req: AuthenticatedRequest, res: Response) {
+    try {
+      const data = await ProfileService.getSessions(req.user!.id_usuario, req.user!.id_sesion);
+      return res.json(ApiResponse.success("Sesiones de tu cuenta", data));
+    } catch (error) {
+      return res.status(500).json(ApiResponse.error("No se pudieron obtener las sesiones", error));
+    }
+  }
+  static async getRecent(req: AuthenticatedRequest, res: Response) {
+    try {
+      const data = await ProfileService.getRecent(req.user!.id_usuario);
+      return res.json(ApiResponse.success("Actividad reciente", data));
+    } catch (error) {
+      return res.status(500).json(ApiResponse.error(safeErrorMessage(error, "No se pudo obtener la actividad reciente")));
+    }
+  }
+
   static async getMe(req: AuthenticatedRequest, res: Response) {
     try {
       const user = await ProfileService.getMe(req.user!.id_usuario);
@@ -29,22 +48,29 @@ export class ProfileController {
       if (!file) throw new Error("No se recibió ninguna imagen");
 
       const foto_url = `/uploads/avatars/${file.filename}`;
-      const user = await ProfileService.updateContact(req.user!.id_usuario, { foto_url });
+      const user = await ProfileService.replaceAvatar(req.user!.id_usuario, foto_url);
       return res.json(ApiResponse.success("Foto de perfil actualizada", user));
     } catch (error) {
       return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "No se pudo subir la foto")));
     }
   }
 
+  static async removeFoto(req: AuthenticatedRequest, res: Response) {
+    try {
+      const user = await ProfileService.replaceAvatar(req.user!.id_usuario, null);
+      return res.json(ApiResponse.success("Foto de perfil eliminada", user));
+    } catch (error) {
+      return res.status(500).json(ApiResponse.error("No se pudo eliminar la foto", error));
+    }
+  }
+
   static async changePassword(req: AuthenticatedRequest, res: Response) {
     try {
-      const { password_actual, password_nueva } = req.body ?? {};
-      if (!password_actual || !password_nueva) {
-        throw new Error("Ingresa tu contraseña actual y la nueva");
-      }
+      const { password_actual, password_nueva } = cambiarPasswordSchema.parse(req.body ?? {});
       await ProfileService.changePassword(req.user!.id_usuario, password_actual, password_nueva);
       return res.json(ApiResponse.success("Contraseña actualizada correctamente"));
     } catch (error) {
+      if (error instanceof ZodError) return res.status(400).json(ApiResponse.error(error.issues[0]?.message ?? "Datos inválidos"));
       return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "No se pudo cambiar la contraseña")));
     }
   }
@@ -58,3 +84,4 @@ export class ProfileController {
     }
   }
 }
+

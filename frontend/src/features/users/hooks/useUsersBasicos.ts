@@ -14,6 +14,6 @@ async function fetchUsersBasicos(): Promise<UserBasic[]> {
   return data.data ?? [];
 }
 
-export function useUsersBasicos() {
-  return useQuery({ queryKey: ["users", "basicos"], queryFn: fetchUsersBasicos });
+export function useUsersBasicos(enabled = true) {
+  return useQuery({ queryKey: ["users", "basicos"], queryFn: fetchUsersBasicos, enabled, staleTime: 60_000 });
 }

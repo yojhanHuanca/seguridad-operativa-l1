@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import {
   Ambulance,
   Ban,
@@ -21,6 +21,8 @@ import { useContingenciaCatalogos } from "../hooks/useContingencias";
 import { CONTINGENCIA_FIELDS, formValues, type ContingenciaField, type ContingenciaFormValues } from "../fields";
 import { CONTINGENCIA_RULES, allowedOption } from "../rules";
 import type { ContingenciaCatalogo, CreateContingenciaDto } from "../types";
+import { useAuth } from "@/features/auth/auth";
+import { contingenciaStorageKeys } from "../draft";
 
 interface Props {
   initialData?: Partial<CreateContingenciaDto>;
@@ -31,8 +33,6 @@ interface Props {
 
 type FlowId = "spaa" | "ambulancia_spaa" | "ambulancia_terceros" | "sin_traslado";
 type FieldName = keyof CreateContingenciaDto;
-const FLOW_STORAGE_KEY = "contingencia-flow";
-const DRAFT_STORAGE_KEY = "contingencia-draft";
 
 const BASIC_FIELDS: FieldName[] = [
   "fecha",
@@ -132,6 +132,7 @@ const TIMELINE_BY_FLOW: Record<FlowId, FieldName[]> = {
     "hora_llegada_estacion",
     "hora_salida_centro_salud",
     "hora_llegada_centro_medico",
+    "hora_retiro_centro_medico",
     "hora_retorno_puesto",
   ],
   ambulancia_terceros: [
@@ -240,26 +241,35 @@ function timelineLabel(label: string) {
   return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
 }
 
-function draftValues(initialData?: Partial<CreateContingenciaDto>) {
+function draftValues(initialData: Partial<CreateContingenciaDto> | undefined, storageKey?: string) {
   const base = formValues(initialData);
-  if (initialData) return base;
+  if (initialData || !storageKey) return base;
   try {
-    const saved = window.localStorage.getItem(DRAFT_STORAGE_KEY);
+    const saved = window.localStorage.getItem(storageKey);
     if (!saved) return base;
-    const parsed = JSON.parse(saved) as Partial<ContingenciaFormValues>;
-    return { ...base, ...parsed };
+    const parsed: unknown = JSON.parse(saved);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return base;
+    const fields = Object.fromEntries(Object.entries(parsed).filter(([key, value]) => key in base && typeof value === "string"));
+    return { ...base, ...fields };
   } catch {
     return base;
   }
 }
 
 export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting = false }: Props) {
-  const [values, setValues] = useState(() => draftValues(initialData));
+  const { user } = useAuth();
+  const keys = contingenciaStorageKeys(user?.id_usuario);
+  const draftKey = keys?.draft;
+  const flowKey = keys?.flow;
+  const [values, setValues] = useState(() => draftValues(initialData, keys?.draft));
   const [errors, setErrors] = useState<Partial<ContingenciaFormValues>>({});
+  const invalidFieldToFocus = useRef<FieldName | null>(null);
   const [notice, setNotice] = useState("");
   const [flow, setFlow] = useState<FlowId>(() => {
-    const saved = window.localStorage.getItem(FLOW_STORAGE_KEY);
-    return FLOW_OPTIONS.some((option) => option.id === saved) ? saved as FlowId : "spaa";
+    try {
+      const saved = keys ? window.localStorage.getItem(keys.flow) : null;
+      return FLOW_OPTIONS.some((option) => option.id === saved) ? saved as FlowId : "spaa";
+    } catch { return "spaa"; }
   });
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     firstAid: true,
@@ -277,13 +287,24 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
   const percent = Math.round((completed / progressFields.length) * 100);
 
   useEffect(() => {
-    window.localStorage.setItem(FLOW_STORAGE_KEY, flow);
-  }, [flow]);
+    if (!flowKey) return;
+    try { window.localStorage.setItem(flowKey, flow); } catch { /* Optional draft storage may be unavailable. */ }
+  }, [flow, flowKey]);
 
   useEffect(() => {
-    if (initialData) return;
-    window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(values));
-  }, [initialData, values]);
+    if (initialData || !draftKey) return;
+    try { window.localStorage.setItem(draftKey, JSON.stringify(values)); } catch { /* Keep the form usable without draft storage. */ }
+  }, [initialData, values, draftKey]);
+
+  useEffect(() => {
+    const name = invalidFieldToFocus.current;
+    if (!name) return;
+    const input = document.getElementById("cont-" + name) ?? document.getElementById("cont-timeline-" + name);
+    if (input) {
+      input.focus();
+      invalidFieldToFocus.current = null;
+    }
+  }, [errors, openSections, flow]);
 
   function applyRules(next: ContingenciaFormValues, nextErrors: Partial<ContingenciaFormValues>) {
     let message = "";
@@ -355,7 +376,13 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
     setErrors(found);
     const invalid = CONTINGENCIA_FIELDS.find((item) => found[item.name]);
     if (invalid) {
-      document.getElementById("cont-" + invalid.name)?.focus();
+      invalidFieldToFocus.current = invalid.name;
+      const section = accordions.find((item) => item.fields.includes(invalid.name));
+      if (section) setOpenSections((current) => ({ ...current, [section.id]: true }));
+      if (TIME_FIELDS.includes(invalid.name) && !timelineFields.includes(invalid.name)) {
+        const visibleFlow = FLOW_OPTIONS.find((option) => TIMELINE_BY_FLOW[option.id].includes(invalid.name));
+        if (visibleFlow) setFlow(visibleFlow.id);
+      }
       return;
     }
     const { edad, estado, ...rest } = values;
@@ -462,7 +489,7 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
             ) : (
               <div className="rounded-lg border border-line bg-surface-2 p-3 text-sm text-ink-soft">Selecciona la categoría para aplicar reglas condicionales.</div>
             )}
-            {Object.keys(errors).length > 0 && <p role="alert" className="rounded-lg bg-critical/10 p-3 text-sm text-critical">Revisa los campos senalados antes de guardar.</p>}
+            {Object.values(errors).some(Boolean) && <p role="alert" className="rounded-lg bg-critical/10 p-3 text-sm text-critical">Revisa los campos señalados antes de guardar.</p>}
             {notice && <p role="alert" className="rounded-lg bg-warning/10 p-3 text-sm text-ink">{notice}</p>}
           </div>
         </Card>
@@ -503,7 +530,7 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
                     </span>
                     <span className="text-xs font-semibold text-ink">{timelineLabel(item.label)}</span>
                   </div>
-                  <Input id={"cont-" + name} name={name} type="time" value={values[name]} onChange={(event) => update(name, event.target.value)} aria-invalid={Boolean(errors[name])} />
+                  <Input id={"cont-timeline-" + name} name={name} type="time" value={values[name]} onChange={(event) => update(name, event.target.value)} aria-label={item.label} aria-invalid={Boolean(errors[name])} />
                   <div className="mt-2 grid grid-cols-3 gap-1.5">
                     <Button type="button" size="sm" variant="secondary" onClick={() => quickTime(name, "now")}>Ahora</Button>
                     <Button type="button" size="sm" variant="outline" onClick={() => quickTime(name, "plus5")}>+5</Button>
@@ -526,6 +553,7 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
             <Card key={section.id} className="p-0">
               <button
                 type="button"
+                aria-expanded={Boolean(open)}
                 onClick={() => setOpenSections((current) => ({ ...current, [section.id]: !current[section.id] }))}
                 className="flex w-full items-center justify-between gap-4 p-4 text-left sm:p-5"
               >

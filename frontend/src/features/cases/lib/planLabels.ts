@@ -25,7 +25,8 @@ export function numeroDePlan(codigo?: string | null): number | null {
 }
 
 export function compactPlanCodes(value?: string | null): string {
-  return (value ?? "").replace(/\b[A-Z0-9]{2,12}[-\s]*\d+[-\s]*\d{4}[-\s]*([A-Z0-9]{2,12})[-\s]*(\d+)\b/gi, (_match, prefix, number) => {
+  // Los separadores evitan interpretar referencias libres como códigos de plan.
+  return (value ?? "").replace(/\b[A-Z0-9]{2,12}[-\s]+\d+[-\s]+\d{4}[-\s]+([A-Z0-9]{2,12})[-\s]+(\d+)\b/gi, (_match, prefix, number) => {
     const numeric = Number(number);
     const normalizedPrefix = String(prefix).toUpperCase();
     return Number.isFinite(numeric) && numeric > 0 ? `${normalizedPrefix}-${String(numeric).padStart(2, "0")}` : `${normalizedPrefix}-${number}`;

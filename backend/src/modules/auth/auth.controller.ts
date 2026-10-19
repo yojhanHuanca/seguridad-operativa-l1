@@ -3,6 +3,8 @@ import type { Request, Response } from "express";
 import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 import { AuthService } from "./auth.service.js";
 import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
+import { nuevaPasswordSchema } from "../../utils/password.js";
+import { ZodError } from "zod";
 
 
 export class AuthController {
@@ -97,12 +99,10 @@ export class AuthController {
         if (!token || !password) {
             return res.status(400).json(ApiResponse.error("Faltan datos"));
         }
-        if (String(password).length < 6) {
-            return res.status(400).json(ApiResponse.error("La contraseña debe tener al menos 6 caracteres"));
-        }
-        await AuthService.resetPassword(token, password, req.ip, req.headers["user-agent"]);
+        await AuthService.resetPassword(token, nuevaPasswordSchema.parse(password), req.ip, req.headers["user-agent"]);
         return res.status(200).json(ApiResponse.success("Contraseña actualizada. Ya puedes iniciar sesión."));
       } catch (error) {
+         if (error instanceof ZodError) return res.status(400).json(ApiResponse.error(error.issues[0]?.message ?? "Datos inválidos"));
          return res.status(400).json(
            ApiResponse.error(
              safeErrorMessage(error, "No se pudo restablecer la contraseña"),

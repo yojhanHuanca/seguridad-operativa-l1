@@ -7,6 +7,7 @@ const PUBLIC_SELECT = {
   id_usuario: true,
   codigo_usuario: true,
   nombre: true,
+  foto_url: true,
   correo: true,
   cargo: true,
   telefono: true,
@@ -18,6 +19,7 @@ const PUBLIC_SELECT = {
   puede_rechazar_reportes: true,
   id_area: true,
   id_rol: true,
+  debe_cambiar_password: true,
   roles: true,
   areas: true,
 } as const;
@@ -31,6 +33,7 @@ const BASIC_SELECT = {
   id_usuario: true,
   codigo_usuario: true,
   nombre: true,
+  foto_url: true,
   cargo: true,
   estado: true,
   es_responsable: true,
@@ -81,6 +84,7 @@ export class UserRepository {
             id_usuario: true,
             codigo_usuario: true,
             nombre: true,
+  foto_url: true,
             correo: true,
             cargo: true,
             telefono: true,
@@ -176,6 +180,7 @@ export class UserRepository {
             nombre: data.nombre,
             correo: data.correo,
             password_hash: data.password_hash,
+            debe_cambiar_password: true,
             cargo: data.cargo ?? null,
             telefono: data.telefono ?? null,
             id_area: data.id_area ?? null,
@@ -196,9 +201,9 @@ export class UserRepository {
     }
 
     static async findByEmail(email: string) {
-        return await prisma.usuarios.findUnique({
+        return await prisma.usuarios.findFirst({
             where:{
-                correo: email,
+                correo: { equals: email.trim(), mode: "insensitive" },
             },
         });
 
@@ -216,11 +221,15 @@ export class UserRepository {
       puede_reabrir_casos?: boolean;
       puede_rechazar_reportes?: boolean;
       password_hash?: string;
+      debe_cambiar_password?: boolean;
     }) {
-      return await prisma.usuarios.update({
-        where: { id_usuario: id },
-        data,
-        select: PUBLIC_SELECT,
+      return await prisma.$transaction(async tx => {
+        const user = await tx.usuarios.update({ where: { id_usuario: id }, data, select: PUBLIC_SELECT });
+        if (data.password_hash) {
+          await tx.sesiones.updateMany({ where: { usuario: id, estado: "activa" }, data: { estado: "cerrada", fecha_fin: new Date() } });
+          await tx.password_resets.updateMany({ where: { usuario: id, used_at: null }, data: { used_at: new Date() } });
+        }
+        return user;
       });
     }
 }

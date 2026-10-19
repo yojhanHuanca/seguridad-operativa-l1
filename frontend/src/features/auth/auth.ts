@@ -13,6 +13,7 @@ export interface AuthUser {
   es_responsable: boolean;
   puede_reabrir_casos: boolean;
   puede_rechazar_reportes: boolean;
+  debe_cambiar_password?: boolean;
 }
 
 export interface AuthValue {
@@ -21,6 +22,7 @@ export interface AuthValue {
   login: (correo: string, password: string) => Promise<AuthUser>;
   loginWithGoogle: (credential: string) => Promise<AuthUser>;
   logout: () => Promise<void>;
+  clearSession: (reason?: "password-changed") => void;
 }
 
 export const AuthContext = createContext<AuthValue | null>(null);

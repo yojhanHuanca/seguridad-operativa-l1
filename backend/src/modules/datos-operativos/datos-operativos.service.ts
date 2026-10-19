@@ -9,6 +9,7 @@ const datosSchema = z.object({
   fecha: fechaSchema,
   qty_carreras: numeroSchema("QTY carreras"),
   qty_pasajeros: numeroSchema("QTY pasajeros"),
+  afluencia: numeroSchema("Afluencia diaria").int("La afluencia debe ser un número entero").nullable().optional(),
   km_comercial: numeroSchema("Km comercial"),
   km_no_comercial: numeroSchema("Km no comercial"),
   paradas_estacion: numeroSchema("Paradas en estación"),
@@ -38,6 +39,7 @@ function serializar(item: {
   fecha: Date;
   qty_carreras: unknown;
   qty_pasajeros: unknown;
+  afluencia?: unknown;
   km_comercial: unknown;
   km_no_comercial: unknown;
   paradas_estacion: unknown;
@@ -48,6 +50,7 @@ function serializar(item: {
     ...item,
     qty_carreras: Number(item.qty_carreras),
     qty_pasajeros: Number(item.qty_pasajeros),
+    afluencia: item.afluencia == null ? null : Number(item.afluencia),
     km_comercial: Number(item.km_comercial),
     km_no_comercial: Number(item.km_no_comercial),
     paradas_estacion: Number(item.paradas_estacion),

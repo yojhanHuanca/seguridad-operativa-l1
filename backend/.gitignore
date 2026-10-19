@@ -1,5 +1,3 @@
-
-/src/generated/prisma
-
 /src/generated/prisma
 /uploads
+.env.test

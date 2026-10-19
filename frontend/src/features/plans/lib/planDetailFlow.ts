@@ -10,6 +10,7 @@ import {
 } from "@/features/cases/lib/planEvidence";
 import { daysUntil } from "@/lib/format";
 import type { AnexoPlanCaso, PlanActividad, PlanItem } from "../types";
+import { isRiskLevel, riskCategory, RISK_CATEGORY_SHORT_LABELS } from "@/features/cases/domain";
 
 /**
  * Lógica de estado/derivados exclusiva de la pantalla de detalle de plan
@@ -86,6 +87,7 @@ export function planFlow(plan: PlanItem) {
   const aceptado = estadoKey.includes("aceptad") || estadoKey.includes("ejecucion") || finalizado || estadoKey.includes("cerrad");
   const pendienteAceptacion = !aceptado && !finalizado && !cerrado && !rechazado && !enVerificacion && !prorrogaPendiente;
   const puedeTrabajar = aceptado && !finalizado && !cerrado && !rechazado && !enVerificacion && !prorrogaPendiente;
+  const puedeSolicitarProrroga = puedeTrabajar && etapaKey === "ejecucion";
   const todasCompletadas = (plan.actividades_plan ?? []).length > 0 && plan.actividades_plan.every((a) => activityProgressValue(a) >= 100);
 
   return {
@@ -99,6 +101,7 @@ export function planFlow(plan: PlanItem) {
     aceptado,
     pendienteAceptacion,
     puedeTrabajar,
+    puedeSolicitarProrroga,
     todasCompletadas,
   };
 }
@@ -115,6 +118,17 @@ export function statusLabel(flow: ReturnType<typeof planFlow>): { label: string;
 
 export function priorityInfo(plan: PlanItem): { label: string; tone: StatusTone; rank: number } {
   const riesgo = plan.casos_sop.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle;
+  const codigo = riesgo?.codigo?.trim().toUpperCase();
+  if (isRiskLevel(codigo)) {
+    const category = riskCategory(codigo);
+    const styles: Record<typeof category, { tone: StatusTone; rank: number }> = {
+      inaceptable: { tone: "critical", rank: 0 },
+      no_deseable: { tone: "warning", rank: 1 },
+      aceptable_revision: { tone: "info", rank: 2 },
+      aceptable_sin_revision: { tone: "neutral", rank: 3 },
+    };
+    return { label: RISK_CATEGORY_SHORT_LABELS[category], ...styles[category] };
+  }
   const text = normalize(`${riesgo?.codigo ?? ""} ${riesgo?.nombre ?? ""}`);
   const tokens = text.split(/[^a-z0-9]+/).filter(Boolean);
 

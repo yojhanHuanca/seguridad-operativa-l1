@@ -3,8 +3,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, CheckCircle2, Eye, EyeOff, Loader2, LockKeyhole, ShieldCheck, X, XCircle } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { AuthLayout } from "@/features/auth/AuthLayout";
+import { useAuth } from "@/features/auth/auth";
 import { api, apiErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { newPasswordError } from "@/lib/password";
 import { riseItem, EASE_OUT, SHAKE_X, SHAKE_TRANSITION, SPRING_SNAPPY } from "@/design-system/motion/variants";
 
 /** Mismo texto que manda `AuthService.resetPassword` para un token vencido, ya usado o inexistente. */
@@ -32,6 +34,7 @@ function RequisitoPassword({ cumple, children }: { cumple: boolean; children: Re
 }
 
 export function ResetPasswordPage() {
+  const { clearSession } = useAuth();
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const token = params.get("token");
@@ -47,7 +50,7 @@ export function ResetPasswordPage() {
   // que la persona entienda de inmediato que no es un typo en la contraseña.
   const [vencido, setVencido] = useState(false);
 
-  const tieneLargo = password.length >= 6;
+  const tieneLargo = password.trim().length >= 6;
   const coincide = confirmar.length > 0 && password === confirmar;
   const puedeEnviar = tieneLargo && coincide;
 
@@ -55,9 +58,12 @@ export function ResetPasswordPage() {
     event.preventDefault();
     setError("");
     if (!puedeEnviar) return;
+    const validation = newPasswordError(password, confirmar);
+    if (validation) { setError(validation); return; }
     setLoading(true);
     try {
       await api.post("/auth/reset-password", { token, password });
+      clearSession("password-changed");
       setDone(true);
       window.setTimeout(() => navigate("/login", { replace: true }), 2500);
     } catch (requestError) {

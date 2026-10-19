@@ -1,3 +1,4 @@
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useState } from "react";
 import { Microscope, Check, FileSearch, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
@@ -93,7 +94,7 @@ export function InvestigationCard({ caso }: { caso: CaseDetail }) {
           {inv.updated_at && (
             <p className="text-[11px] text-ink-faint pt-2 border-t border-line-soft">
               Actualizado {formatDateTime(inv.updated_at)}
-              {inv.usuarios ? ` · ${inv.usuarios.nombre}` : ""}
+              {inv.usuarios && <span className="ml-1 inline-flex items-center gap-1.5"><UserAvatar nombre={inv.usuarios.nombre} userId={inv.usuarios.id_usuario} className="h-5 w-5 text-[9px]" />{inv.usuarios.nombre}</span>}
             </p>
           )}
         </div>
@@ -165,3 +166,4 @@ export function InvestigationCard({ caso }: { caso: CaseDetail }) {
     </StageSection>
   );
 }
+

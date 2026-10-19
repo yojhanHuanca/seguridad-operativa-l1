@@ -36,7 +36,20 @@ async function getSmtpTransport(): Promise<Transporter | null> {
     return smtpTransport;
   }
 
-  smtpTransport = nodemailer.createTransport({ host: env.SMTP_HOST, port: env.SMTP_PORT, secure: false });
+  const hasUser = Boolean(env.SMTP_USER);
+  const hasPassword = Boolean(env.SMTP_PASS);
+  if (hasUser !== hasPassword || (env.SMTP_HOST.toLowerCase() === "smtp.gmail.com" && !hasUser)) {
+    throw new Error("Configura SMTP_USER y SMTP_PASS para autenticar el envío de correos SMTP");
+  }
+  smtpTransport = nodemailer.createTransport({
+    host: env.SMTP_HOST,
+    port: env.SMTP_PORT,
+    secure: env.SMTP_SECURE,
+    ...(hasUser ? {
+      auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
+      ...(!env.SMTP_SECURE ? { requireTLS: true } : {}),
+    } : {}),
+  });
   return smtpTransport;
 }
 
