@@ -9,11 +9,13 @@ import { cn } from "@/lib/utils";
 import { SPRING_SNAPPY } from "@/design-system/motion/variants";
 import type { ReportFormValues } from "@/features/reports/schema";
 import type { CatalogGroup } from "@/features/reports/types";
+import { nombrePatioCanonico } from "@/features/reports/lib/patios";
 
 function findLabel(catalogs: Map<string, CatalogGroup>, groupName: string, id?: number): string {
   if (!id) return "—";
   const item = catalogs.get(groupName)?.catalogo_detalle.find((d) => d.id_detalle === id);
-  return item?.nombre ?? "—";
+  if (!item) return "—";
+  return groupName === "Lugar de Incidente" ? nombrePatioCanonico(item.nombre) ?? item.nombre : item.nombre;
 }
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
@@ -128,7 +130,7 @@ export function ReviewStep({
         <p className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Resumen del reporte</p>
         <div className="grid gap-4 sm:grid-cols-2">
           <SummaryRow label="Tipo de reporte" value={findLabel(catalogs, "Tipo de Reporte", v.id_tipo)} />
-          <SummaryRow label={v.tipo_ubicacion === "patio_taller" ? "Patio Taller" : "Estación"} value={lugarLabel} />
+          <SummaryRow label={v.tipo_ubicacion === "patio_taller" ? "Patio" : "Estación"} value={lugarLabel} />
           {v.id_lugar_especifico && (
             <SummaryRow label="Lugar" value={findLabel(catalogs, "Lugar Específico", v.id_lugar_especifico)} />
           )}

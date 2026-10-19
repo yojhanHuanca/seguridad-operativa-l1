@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { SPRING_SNAPPY } from "@/design-system/motion/variants";
 import type { ReportFormValues } from "@/features/reports/schema";
 import type { CatalogGroup } from "@/features/reports/types";
+import { patiosDelCatalogo } from "@/features/reports/lib/patios";
 
 export function LocationStep({
   form,
@@ -25,7 +26,7 @@ export function LocationStep({
 
   const lugares = useMemo(() => catalogs.get("Lugar de Incidente")?.catalogo_detalle ?? [], [catalogs]);
   const estaciones = useMemo(() => lugares.filter((l) => !!l.codigo), [lugares]);
-  const patios = useMemo(() => lugares.filter((l) => !l.codigo), [lugares]);
+  const patios = useMemo(() => patiosDelCatalogo(lugares), [lugares]);
   const lugaresEspecificos = catalogs.get("Lugar Específico")?.catalogo_detalle ?? [];
 
   const setTipoUbicacion = (v: ReportFormValues["tipo_ubicacion"]) => {
@@ -83,7 +84,7 @@ export function LocationStep({
             <div className={cn("grid h-10 w-10 shrink-0 place-items-center rounded-lg transition-colors", tipoUbicacion === "patio_taller" ? "bg-brand-700 text-white shadow-[0_10px_24px_-16px_rgba(15,107,62,0.8)]" : "bg-surface-2 text-ink-soft")}>
               <Building2 className="h-4 w-4" />
             </div>
-            <p className="text-[13.5px] font-semibold text-ink">Patio Taller</p>
+            <p className="text-[13.5px] font-semibold text-ink">Patio</p>
           </motion.button>
         </div>
       </Field>
@@ -127,7 +128,7 @@ export function LocationStep({
       )}
 
       {tipoUbicacion === "patio_taller" && (
-        <Field label="Patio Taller" required error={errors.id_lugar?.message} className="mt-4">
+        <Field label="Patio" required error={errors.id_lugar?.message} className="mt-4">
           <CatalogSelect control={form.control} name="id_lugar" items={patios} placeholder="Selecciona un patio…" />
         </Field>
       )}

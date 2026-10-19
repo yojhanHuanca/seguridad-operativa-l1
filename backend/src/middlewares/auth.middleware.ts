@@ -107,6 +107,19 @@ export const requireRoles = (...roles: string[]) => (
     next();
 };
 
+/** Permite una acción sensible solo a responsables de los roles indicados. */
+export const requireResponsableRoles = (...roles: string[]) => (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction,
+) => {
+    const rolNombre = req.user?.rol_nombre?.toLowerCase();
+    if (req.user?.es_responsable && rolNombre && roles.some((role) => role.toLowerCase() === rolNombre)) {
+        return next();
+    }
+    return res.status(403).json({ success: false, message: "No tienes permisos para realizar esta acción" });
+};
+
 /**
  * Deja pasar a los roles listados en `roles` sin condición, o a los listados
  * en `responsableRoles` solo si además tienen el flag `es_responsable` (ej.

@@ -6,7 +6,7 @@ import { z } from "zod";
 const incidenciaSchema = z.object({
   id_tipo: z.coerce.number({ error: "Selecciona el tipo de evento" }).int().positive(),
   tipo_ubicacion: z.enum(["estacion", "patio_taller"]),
-  id_lugar: z.coerce.number({ error: "Selecciona una estación o patio taller" }).int().positive(),
+  id_lugar: z.coerce.number({ error: "Selecciona una estación o patio" }).int().positive(),
   id_lugar_especifico: z.coerce.number().int().positive().optional(),
   descripcion: z
     .string()

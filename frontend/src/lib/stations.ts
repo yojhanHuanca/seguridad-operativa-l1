@@ -32,8 +32,8 @@ export const STATION_COORDS: { name: string; x: number; y: number; km: number }[
 export const STATIONS: string[] = STATION_COORDS.map((s) => s.name);
 
 export const TALLERES: { name: string; x: number; y: number; km: number; tipo: string; capacidad: string }[] = [
-  { name: "Taller Villa El Salvador", x: 30, y: 460, km: 0, tipo: "Mantenimiento pesado", capacidad: "8 unidades" },
-  { name: "Taller Bayóvar", x: 1192, y: 320, km: 34, tipo: "Mantenimiento ligero y garaje", capacidad: "12 unidades" },
+  { name: "Patio taller Villa El Salvador", x: 30, y: 460, km: 0, tipo: "Mantenimiento pesado", capacidad: "8 unidades" },
+  { name: "Patio de maniobras Bayovar", x: 1192, y: 320, km: 34, tipo: "Mantenimiento ligero y garaje", capacidad: "12 unidades" },
 ];
 
 /** Tamaño base del lienzo: el trazado actual de 26 estaciones + 2 talleres cabe justo aquí. */
@@ -76,7 +76,9 @@ export function computeMapSize(
 
 /** No son estaciones de la línea, aunque vivan en el mismo catálogo "Lugar de Incidente". */
 export function esTaller(nombre: string) {
-  return nombre.trim().toLowerCase().startsWith("taller");
+  const valor = nombre.trim().toLowerCase();
+  return valor.startsWith("taller") || valor.startsWith("patio taller") ||
+    valor.startsWith("patio de maniobras") || valor === "maniobras bayovar";
 }
 
 const NO_ES_ESTACION = new Set(["exteriores"]);
@@ -124,7 +126,7 @@ export function resolveStationCoords(catalogItems: { nombre: string }[]): { name
  * Mismo criterio que resolveStationCoords, pero para los talleres — con una
  * diferencia importante: un taller nuevo NO se agrega "siguiendo la línea"
  * como una estación más, porque no lo es. Se ubica pegado a la última
- * estación real del trazado (como ya hace "Taller Bayóvar" con Bayovar), con
+ * estación real del trazado (como ya hace "Patio de maniobras Bayovar" con Bayovar), con
  * un pequeño desplazamiento hacia abajo para que se lea como lo que es: un
  * taller al costado de la vía, no una parada más.
  */
@@ -140,7 +142,10 @@ export function resolveTalleresCoords(
   let nuevosSinUbicacion = 0;
 
   for (const nombre of nombresTalleres) {
-    const known = conocidos.get(nombre.toLowerCase());
+    const normalizado = nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+    const known = conocidos.get(nombre.toLowerCase()) ??
+      (normalizado === "taller villa el salvador" ? TALLERES[0] : undefined) ??
+      (["taller bayovar", "patio taller bayovar", "maniobras bayovar"].includes(normalizado) ? TALLERES[1] : undefined);
     if (known) {
       resultado.push(known);
       continue;

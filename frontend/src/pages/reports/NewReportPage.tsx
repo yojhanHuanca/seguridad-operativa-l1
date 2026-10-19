@@ -172,9 +172,8 @@ function ReportIntroHero({ onStart }: { onStart: () => void }) {
           </motion.div>
 
           <div className="max-w-[620px]">
-            <motion.p variants={heroRise} className="text-[12px] font-semibold uppercase tracking-[0.18em] text-brand-100">Reporte ciudadano y operativo</motion.p>
             <motion.h1 variants={heroRise} className="mt-3 text-[40px] font-bold leading-[1.02] tracking-normal text-white sm:text-[56px] lg:text-[64px]">
-              Reporta una condición de seguridad
+              Reporte de seguridad
             </motion.h1>
             <motion.div variants={heroRise} className="mt-5 h-1 w-28 overflow-hidden rounded-full bg-white/16">
               <motion.div
@@ -192,7 +191,7 @@ function ReportIntroHero({ onStart }: { onStart: () => void }) {
               <motion.div whileHover={reduced ? undefined : { scale: 1.025, y: -2 }} whileTap={reduced ? undefined : { scale: 0.98 }} transition={SPRING_SNAPPY}>
                 <Button type="button" size="lg" onClick={onStart} className="h-12 w-full justify-center text-[15px] shadow-[0_18px_40px_-18px_rgba(31,157,82,0.75)]">
                   <Send className="h-4 w-4" />
-                  Iniciar reporte
+                  Nuevo reporte
                 </Button>
               </motion.div>
               <MotionLink
