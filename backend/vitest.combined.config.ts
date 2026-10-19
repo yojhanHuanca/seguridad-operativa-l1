@@ -1,6 +1,6 @@
 import { mergeConfig } from "vitest/config";
-import integration from "./vitest.integration.config";
-import { coverageOptions } from "./vitest.coverage";
+import integration from "./vitest.integration.config.ts";
+import { coverageOptions } from "./vitest.coverage.ts";
 
 // The integration config loads and validates .env.test before any test imports.
 // Each test file remains isolated: unit mocks cannot replace the real database

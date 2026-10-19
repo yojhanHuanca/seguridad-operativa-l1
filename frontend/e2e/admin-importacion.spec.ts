@@ -1,8 +1,39 @@
 import { expect, test } from '@playwright/test';
-import { readFile } from 'node:fs/promises';
 import { posix } from 'node:path';
 import { loginAs, mockApi } from './helpers';
 import type { ImportacionPayload, ImportacionPreview } from '../src/features/importacion/types';
+
+test('XLSX: una guía sin encabezados y una hoja vacía no bloquean la hoja Datos', async ({ page }) => {
+  await mockApi(page);
+  await loginAs(page, 'Admin');
+  await page.route('**/api/importacion/historial**', route => route.fulfill({ json: { success: true, data: { items: [], total: 0 } } }));
+  const ExcelJS = (await import('exceljs')).default;
+  const workbook = new ExcelJS.Workbook();
+  const guide = workbook.addWorksheet('Guía');
+  guide.getCell('A2').value = 'Instrucciones de demostración';
+  guide.getCell('A4').value = 'Importar únicamente la hoja Datos';
+  workbook.addWorksheet('Vacía').getCell('A3').font = { bold: true };
+  const data = workbook.addWorksheet('Datos');
+  data.addRow(['Código', 'Tipo', 'Estado', 'Fecha']);
+  data.addRow(['DEMO-001', 'Hallazgo', 'Recepción', '2026-10-12']);
+  let payload: ImportacionPayload | undefined;
+  await page.route('**/api/importacion/casos/validar', route => {
+    payload = route.request().postDataJSON();
+    return route.fulfill({ json: { success: true, data: {
+      filename: 'demo-con-guia.xlsx', canImport: true, requiredColumns: [], optionalColumns: [], issues: [], cases: [],
+      resumen: { totalFilas: 1, casosDetectados: 1, planesDetectados: 0, listos: 1, duplicados: 0, errores: 0, advertencias: 0 },
+    } } });
+  });
+  await page.goto('/admin/importacion');
+  await page.locator('input[type=file]').setInputFiles({
+    name: 'demo-con-guia.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    buffer: Buffer.from(await workbook.xlsx.writeBuffer()),
+  });
+  await expect(page.getByText('demo-con-guia.xlsx', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Validar', exact: true }).click();
+  await expect.poll(() => payload?.hoja).toBe('Datos');
+  expect(payload?.rows).toEqual([{ Código: 'DEMO-001', Tipo: 'Hallazgo', Estado: 'Recepción', Fecha: '2026-10-12' }]);
+});
 
 test('diseño empresarial visible antes de cargar un archivo', async ({ page }) => {
   await mockApi(page);
@@ -24,7 +55,16 @@ test('SOP: lee XLSX con prefijos OOXML y selecciona la hoja con datos', async ({
   await loginAs(page, 'Admin');
   await page.route('**/api/importacion/historial**', route => route.fulfill({ json: { success: true, data: { items: [], total: 0 } } }));
   await page.goto('/admin/importacion');
-  const source = await readFile('../outputs/2026-09-28-sop-import-sample/Ejemplo_importacion_SOP_10_datos.xlsx');
+  const ExcelJS = (await import('exceljs')).default;
+  const workbook = new ExcelJS.Workbook();
+  const dataSheet = workbook.addWorksheet('Datos');
+  const headers = ['Código', 'Tipo', 'Estado', 'Fecha', 'Título', 'Estación', 'Reportante', 'Área', 'Riesgo', 'Descripción', 'Procedencia', 'Tipo SOP', 'Subtipo SOP', 'Peligro', 'Consecuencias', 'ACR', 'Responsable de Hallazgo', 'Código Plan', 'Descripción Plan', 'Estado Plan', 'Fecha Plan', 'Fecha Reprogramada', 'Área Plan', 'Responsable Plan', 'Observaciones Plan'];
+  dataSheet.addRow(headers);
+  for (let i = 1; i <= 10; i++) {
+    const row: Record<string, string> = { Código: `QA-${i}`, Tipo: 'Hallazgo', Estado: 'Recepción', Fecha: '2026-10-18' };
+    dataSheet.addRow(headers.map(header => row[header] ?? ''));
+  }
+  const source = await workbook.xlsx.writeBuffer();
   const JSZip = (await import('jszip')).default;
   const archive = await JSZip.loadAsync(source);
   const spreadsheetNamespace = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
@@ -109,7 +149,7 @@ test('SOP: exige revalidación, protege terminados y envía decisiones separadas
   await expect(page.getByRole('button', { name: 'Importar casos', exact: true })).toBeDisabled();
 });
 
-test('Contingencias: oculta valores privados y comunica una carga parcial', async ({ page }) => {
+test('Contingencias: muestra los datos completos y comunica una carga parcial', async ({ page }) => {
   await mockApi(page);
   await loginAs(page, 'Admin');
   const preview = { filename: 'cont.csv', canImport: true, requiredColumns: [], optionalColumns: [], issues: [], cases: [], resumen: { totalFilas: 2, casosDetectados: 2, planesDetectados: 0, listos: 2, duplicados: 0, errores: 0, advertencias: 0 } };
@@ -121,10 +161,11 @@ test('Contingencias: oculta valores privados y comunica una carga parcial', asyn
   await page.goto('/admin/importacion');
   await page.locator('input[type=file]').setInputFiles({ name: 'cont.csv', mimeType: 'text/csv', buffer: Buffer.from('Fecha,Hora de Reporte,Tipo de evento,Lugar del evento,Nombre persona,DNI\n2026-09-01,10:00,Atención,Estación,PERSONA PRIVADA,12345678\n2026-09-01,11:00,Atención,Estación,PERSONA PRIVADA,12345678') });
   await page.getByRole('button', { name: 'Validar', exact: true }).click();
-  await expect(page.getByText('Dato protegido').first()).toBeVisible();
-  await expect(page.getByText('PERSONA PRIVADA', { exact: true })).toHaveCount(0);
-  await expect(page.getByText('12345678', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('Dato protegido', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('PERSONA PRIVADA', { exact: true }).first()).toBeVisible();
+  await expect(page.getByText('12345678', { exact: true }).first()).toBeVisible();
   await page.getByRole('button', { name: 'Importar contingencias', exact: true }).click();
+  await expect(page.getByRole('dialog')).toContainText('Si vuelves a cargar este archivo, se crearán registros adicionales');
   await page.getByRole('button', { name: 'Confirmar importación', exact: true }).click();
   await expect(page.getByText('Importación con errores:', { exact: true })).toBeVisible();
   await expect(page.getByText('1 errores · 0 omitidos')).toBeVisible();
@@ -139,4 +180,60 @@ test('Contingencias: oculta valores privados y comunica una carga parcial', asyn
   expect(content).toContain('Guardado');
   expect(content).not.toContain('PERSONA PRIVADA');
   expect(content).not.toContain('12345678');
+});
+
+for (const module of ['contingencias', 'monitoreo'] as const) {
+  test(`${module}: permite revisar columnas posteriores a la 12 y filas posteriores a la 100`, async ({ page }) => {
+    await mockApi(page);
+    await loginAs(page, 'Admin');
+    const headers = module === 'contingencias'
+      ? ['Fecha', 'Hora de Reporte', 'Tipo de evento', 'Lugar del evento', 'Lugar exacto del evento', 'Quién reporta', 'Nombre persona', 'DNI', 'Sexo', 'Edad', 'Atención inicial', 'Atención final', 'Diagnóstico presuntivo']
+      : ['Fecha', 'Hora de evento', 'Tipo de incidente operativo', 'Descripción del evento', 'Ubicación', 'Lugar de Incidente', 'Año', 'Mes', 'Sem', 'Día', 'Tipo de vía', 'Dirección de vía', 'Información adicional'];
+    let payload: ImportacionPayload | undefined;
+    await page.route('**/api/importacion/**', route => {
+      if (route.request().url().includes('historial')) return route.fulfill({ json: { success: true, data: { items: [], total: 0 } } });
+      payload = route.request().postDataJSON();
+      return route.fulfill({ json: { success: true, data: {
+        filename: 'completo.csv', canImport: true, requiredColumns: [], optionalColumns: [], issues: [], cases: [],
+        resumen: { totalFilas: 101, casosDetectados: 101, planesDetectados: 0, listos: 101, duplicados: 0, errores: 0, advertencias: 0 },
+      } } });
+    });
+    const rows = Array.from({ length: 101 }, (_, i) => headers.map((_, column) => column === 0 ? '2026-10-12' : column === 12 ? `Detalle íntegro ${i + 1}` : `valor-${i + 1}-${column}`));
+    await page.goto('/admin/importacion');
+    await page.locator('input[type=file]').setInputFiles({ name: 'completo.csv', mimeType: 'text/csv', buffer: Buffer.from([headers, ...rows].map(row => row.join(',')).join('\n')) });
+    await page.getByRole('button', { name: 'Validar', exact: true }).click();
+    await expect(page.getByText('Detalle íntegro 1', { exact: true })).toBeVisible();
+    await expect(page.getByText('Detalle íntegro 101', { exact: true })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Filas siguientes', exact: true }).click();
+    await expect(page.getByText('Detalle íntegro 101', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Filas siguientes', exact: true })).toBeDisabled();
+    await page.getByRole('button', { name: 'Filas anteriores', exact: true }).click();
+    await expect(page.getByText('Detalle íntegro 1', { exact: true })).toBeVisible();
+    expect(payload?.rows).toHaveLength(101);
+    expect(payload?.rows[100]?.[headers[12]]).toBe('Detalle íntegro 101');
+  });
+}
+
+test('una conexión perdida no reintenta la importación e indica consultar el historial', async ({ page }) => {
+  await mockApi(page);
+  await loginAs(page, 'Admin');
+  let attempts = 0;
+  await page.route('**/api/importacion/**', route => {
+    if (route.request().url().includes('historial')) return route.fulfill({ json: { success: true, data: { items: [], total: 0 } } });
+    if (route.request().url().endsWith('/importar')) {
+      attempts++;
+      return route.abort('failed');
+    }
+    return route.fulfill({ json: { success: true, data: {
+      filename: 'cont.csv', canImport: true, requiredColumns: [], optionalColumns: [], issues: [], cases: [],
+      resumen: { totalFilas: 1, casosDetectados: 1, planesDetectados: 0, listos: 1, duplicados: 0, errores: 0, advertencias: 0 },
+    } } });
+  });
+  await page.goto('/admin/importacion');
+  await page.locator('input[type=file]').setInputFiles({ name: 'cont.csv', mimeType: 'text/csv', buffer: Buffer.from('Fecha,Hora de Reporte,Tipo de evento,Lugar del evento,Quién reporta\n2026-10-18,10:00,Atención,Estación,Operador QA') });
+  await page.getByRole('button', { name: 'Validar', exact: true }).click();
+  await page.getByRole('button', { name: 'Importar contingencias', exact: true }).click();
+  await page.getByRole('button', { name: 'Confirmar importación', exact: true }).click();
+  await expect(page.getByText(/consulta el historial antes de volver a importar/)).toBeVisible();
+  expect(attempts).toBe(1);
 });

@@ -16,6 +16,10 @@ frontend/.env
 # Código compilado: se genera con `npm run build`, no se versiona.
 backend/dist/
 frontend/dist/
+backend/src/**/*.js
+backend/src/**/*.js.map
+backend/src/**/*.d.ts.map
+backend/src/lib/prisma.d.ts
 
 # Evidencias subidas por los usuarios: van en el volumen del servidor.
 backend/uploads/

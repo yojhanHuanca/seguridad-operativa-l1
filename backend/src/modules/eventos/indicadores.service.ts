@@ -31,12 +31,10 @@ async function divisorPorMes(nombreIndicador: string): Promise<Map<string, numbe
     select: { id_indicador: true },
   });
   const out = new Map<string, number>();
-  if (!indicador) return out;
-
-  const valores = await prisma.historial_indicadores.findMany({
+  const valores = indicador ? await prisma.historial_indicadores.findMany({
     where: { id_indicador: indicador.id_indicador },
     select: { fecha: true, valor: true },
-  });
+  }) : [];
   for (const { fecha, valor } of valores) {
     if (!fecha || valor == null) continue;
     const key = mesKey(fecha.getUTCFullYear(), fecha.getUTCMonth() + 1);
@@ -111,16 +109,15 @@ async function valorDelMes(nombreIndicador: string, anio: number, mes: number): 
     where: { nombre: nombreIndicador },
     select: { id_indicador: true },
   });
-  if (!indicador) return null;
   const desde = fechaMes(anio, mes);
   const hasta = new Date(Date.UTC(anio, mes, 1));
-  const valores = await prisma.historial_indicadores.findMany({
+  const valores = indicador ? await prisma.historial_indicadores.findMany({
     where: {
       id_indicador: indicador.id_indicador,
       fecha: { gte: desde, lt: hasta },
     },
     select: { valor: true },
-  });
+  }) : [];
   const total = valores.reduce((sum, item) => sum + Number(item.valor ?? 0), 0);
   if (nombreIndicador === INDICADOR_KM || nombreIndicador === INDICADOR_PASAJEROS) {
     try {

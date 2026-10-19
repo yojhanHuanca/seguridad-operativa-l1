@@ -17,6 +17,16 @@ beforeEach(() => {
   mocks.eventos_monitoreo.findMany.mockResolvedValue([]);
 });
 describe("indicadores: guardado y cálculo", () => {
+  it("usa datos operativos diarios aunque no exista todavía el indicador mensual", async () => {
+    mocks.indicadores.findFirst.mockResolvedValue(null);
+    mocks.datos_operativos.findMany.mockResolvedValue([{ fecha: new Date('2026-10-01Z'), km_comercial: 100, qty_pasajeros: 2000 }]);
+    mocks.eventos_monitoreo.findMany.mockResolvedValue([{ fecha: new Date('2026-10-01Z'), catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle: { nombre: 'NO ABRE PUERTAS' }, catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle: { nombre: 'ESTACIÓN' }, catalogo_detalle_eventos_monitoreo_tipo_causaTocatalogo_detalle: null }]);
+    const result = await service.calcular({ anio: '2026', mes: '10' });
+    expect(result.datosMes).toEqual({ kmComercial: 100, afluenciaPasajeros: 2000 });
+    expect(result.faltanDatos).toEqual([]);
+    expect(result.indiceErrores.valor).toBe(10000);
+    expect(mocks.historial_indicadores.findMany).not.toHaveBeenCalled();
+  });
   it.each([{ anio: 1999 }, { mes: 13 }, { mes: 0 }, { kmComercial: -1 }, { afluenciaPasajeros: "abc" }])("rechaza valores inválidos sin abrir transacción %j", async invalid => {
     await expect(service.guardarDatosMes({ anio: 2026, mes: 10, kmComercial: 100, afluenciaPasajeros: 200, ...invalid })).rejects.toThrow();
     expect(mocks.transaction).not.toHaveBeenCalled();

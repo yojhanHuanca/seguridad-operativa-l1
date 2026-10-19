@@ -1,6 +1,5 @@
+import { createImportRowReader } from "./import-row-reader.js";
 import { withImportLock } from "./import-lock.js";
-import prisma from "../../lib/prisma.js";
-import { importFingerprint, dateRange } from "./import-fingerprint.js";
 import { ContingenciaRepository } from "../contingencias/contingencia.repository.js";
 import { createContingenciaSchema, type CreateContingenciaDto } from "../contingencias/contingencia.types.js";
 import type {
@@ -25,16 +24,6 @@ function cleanCell(value: unknown): string {
   if (value === null || value === undefined) return "";
   if (value instanceof Date) return value.toISOString().slice(0, 10);
   return String(value).trim();
-}
-
-function getCell(row: ContingenciaRow, aliases: readonly string[]): string {
-  for (const [key, value] of Object.entries(row)) {
-    const normalizedKey = normalizeText(key);
-    for (const alias of aliases) {
-      if (normalizedKey === normalizeText(alias)) return cleanCell(value);
-    }
-  }
-  return "";
 }
 
 function isEmptyRow(row: ContingenciaRow): boolean {
@@ -138,6 +127,40 @@ const ALIASES: Record<string, readonly string[]> = {
   numero_dni_acompanante: ["NÚMERO DE DNI DEL ACOMPLEÑANTE", "numero_dni_acompanante", "Número de DNI del acompañante"],
 };
 
+// También se reconocen exactamente los encabezados cortos que ofrece la plantilla.
+const TEMPLATE_HEADERS: Record<string, string> = {
+  medio_comunicacion_primer_reporte: "Medio de comunicación",
+  estado_usuario_reportado: "Estado del usuario",
+  hora_llamado_pco_sppa: "Hora llamada PCO",
+  hora_llegada_spaa: "Hora llegada SPAA",
+  hora_inicio_spaa: "Hora inicio SPAA",
+  hora_termino_atencion_inicio_traslado: "Hora término atención",
+  estacion_partida_spaa: "Estación partida SPAA",
+  medio_transporte_spaa: "Medio transporte SPAA",
+  estacion_partida_ambulancia: "Estación partida ambulancia",
+  estacion_llegada_ambulancia: "Estación llegada ambulancia",
+  hora_llamado_ambulancia: "Hora llamada ambulancia",
+  hora_llegada_estacion: "Hora llegada estación",
+  hora_salida_centro_salud: "Hora salida centro salud",
+  hora_llegada_centro_medico: "Hora llegada centro médico",
+  hora_retiro_centro_medico: "Hora retiro centro médico",
+  hora_retorno_puesto: "Hora retorno puesto",
+  hora_llamado_ambulancia_tercero: "Hora llamada ambulancia terceros",
+  hora_llegada_ambulancia_terceros: "Hora llegada ambulancia terceros",
+  hora_inicio_traslado_ambulancia_terceros: "Hora inicio traslado terceros",
+  reporte_pco: "Reporte PCO",
+  reporte_cliente: "Reporte cliente",
+  zona_lesion: "Zona lesión",
+  categoria_paciente: "Categoría paciente",
+  tipo_declaracion_jurada: "Tipo declaración jurada",
+  nro_declaracion_jurada: "Número declaración jurada",
+  breve_descripcion_hecho: "Breve descripción",
+  casos_sospechosos_covid_19: "Casos sospechosos COVID",
+  estacion_origen_usuario: "Estación origen usuario",
+  estacion_destino_usuario: "Estación destino usuario",
+};
+for (const [field, label] of Object.entries(TEMPLATE_HEADERS)) ALIASES[field] = [...(ALIASES[field] ?? []), label];
+
 const REQUIRED_COLUMNS: string[] = [
   "Fecha", "Hora de Reporte", "TIPO DE EVENTO", "LUGAR DEL EVENTO",
   "LUGAR EXACTO DEL EVENTO", "Quién reporta",
@@ -167,11 +190,7 @@ const ALL_COLUMNS: string[] = [
   "Acompañante", "Número DNI acompañante",
 ];
 
-function getFieldValue(row: ContingenciaRow, field: string): string {
-  const aliases = ALIASES[field];
-  if (!aliases) return "";
-  return getCell(row, aliases);
-}
+const getFieldValue = createImportRowReader(ALIASES);
 
 function rowToDto(row: ContingenciaRow): CreateContingenciaDto {
   const fecha = parseDate(getFieldValue(row, "fecha"));
@@ -238,19 +257,6 @@ function rowToDto(row: ContingenciaRow): CreateContingenciaDto {
     casos_sospechosos_covid_19: getFieldValue(row, "casos_sospechosos_covid_19") || undefined,
     estado: (getFieldValue(row, "estado") || "Registrado") as "Registrado" | "Revisado" | "Cerrado",
   };
-}
-
-function findDuplicates(rows: ContingenciaRow[]): Set<number> {
-  const duplicateRows = new Set<number>();
-  const seenRows = new Set<string>();
-  rows.forEach((row, index) => {
-    if (isEmptyRow(row)) return;
-    const dto = rowToDto(row);
-    const signature = importFingerprint(Object.keys(dto), dto);
-    if (seenRows.has(signature)) duplicateRows.add(index + 2);
-    seenRows.add(signature);
-  });
-  return duplicateRows;
 }
 
 function validateField(row: ContingenciaRow, rowNumber: number, issues: ImportacionIssue[]): boolean {
@@ -326,16 +332,7 @@ async function buildPreview(payload: { filename: string | null; rows: Contingenc
     throw new Error(`Faltan columnas obligatorias: ${faltantes.join(", ")}`);
   }
 
-  const duplicateRows = findDuplicates(rows);
-  const range = dateRange(rows.map(row => parseDate(getFieldValue(row, "fecha"))));
-  if (range) {
-    const existing = await prisma.contingencia_eventos.findMany({ where: { fecha: range }, include: { atencion: true, traslado: true, persona: true, diagnostico: true, cierre: true } });
-    const fields = Object.keys(rowToDto({}));
-    const signatures = new Set(existing.map(event => importFingerprint(fields, { ...event, ...event.atencion, ...event.traslado, ...event.persona, ...event.diagnostico, ...event.cierre })));
-    rows.forEach((row, index) => { if (signatures.has(importFingerprint(fields, rowToDto(row)))) duplicateRows.add(index + 2); });
-  }
-
-
+  // No hay identificador externo único: no se descartan atenciones por su contenido.
   const parsed: Array<{ row: number; dto: CreateContingenciaDto; valid: boolean }> = [];
   const validRows: ContingenciaRow[] = [];
 
@@ -358,12 +355,8 @@ async function buildPreview(payload: { filename: string | null; rows: Contingenc
       for (const issue of validated.error.issues) addIssue(issues, { row: rowNumber, field: issue.path.join("."), severity: "error", message: "Valor inválido para este campo; revisa el formato y los límites de la plantilla.", value: null });
     }
 
-    if (duplicateRows.has(rowNumber)) {
-      addIssue(issues, { row: rowNumber, field: "Fecha/Tipo", severity: "warning", message: "Registro duplicado en el archivo o ya almacenado; se omitirá.", value: dto.tipo_evento });
-    }
-
     parsed.push({ row: rowNumber, dto, valid: isValid });
-    if (isValid && !duplicateRows.has(rowNumber)) {
+    if (isValid) {
       validRows.push(row);
     }
   });
@@ -382,7 +375,7 @@ async function buildPreview(payload: { filename: string | null; rows: Contingenc
     riesgo: null,
     fecha: p.dto.fecha || "Sin fecha",
     planes: 0,
-    status: !p.valid ? "error" : duplicateRows.has(p.row) ? "skipped" : "valid",
+    status: !p.valid ? "error" : "valid",
   }));
 
   return {
@@ -392,11 +385,11 @@ async function buildPreview(payload: { filename: string | null; rows: Contingenc
       casosDetectados: parsed.length,
       planesDetectados: 0,
       listos: validRows.length,
-      duplicados: duplicateRows.size,
+      duplicados: 0,
       errores,
       advertencias,
     },
-    issues: issues.map(issue => ({ ...issue, value: null })),
+    issues,
     cases,
     canImport: errores === 0 && validRows.length > 0,
     requiredColumns: REQUIRED_COLUMNS,

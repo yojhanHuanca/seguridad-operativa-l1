@@ -1,6 +1,6 @@
 # Despliegue autocontenido para un servidor administrado por el área de TI.
 # PostgreSQL y la API quedan en la red privada de Docker; solo se publica Nginx.
-# Revisar README-DOCKER.md antes del primer inicio y respaldar ambos volúmenes.
+# Revisar ENTREGA-TI.txt antes del primer inicio y respaldar ambos volúmenes.
 
 services:
   postgres:
@@ -52,6 +52,11 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       EMAIL_FROM: ${EMAIL_FROM:?Define EMAIL_FROM en .env.production}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
       VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:soporte@lineauno.pe}
