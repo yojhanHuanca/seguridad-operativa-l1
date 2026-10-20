@@ -26,6 +26,7 @@ export type ReportOrigin = "reportante" | "seguridad_operativa";
 
 export interface CreateReportResult {
   codigo_sop: string;
+  codigo_consulta: string;
   id_caso: number;
   id_evento: number;
 }
@@ -42,6 +43,7 @@ export interface SolicitudInformacion {
 export interface ReportListItem {
   id_caso: number;
   codigo_sop: string;
+  codigo_consulta: string | null;
   titulo: string | null;
   descripcion: string;
   fecha_hallazgo: string;

@@ -10,11 +10,12 @@ interface SimpleNameModalProps {
   title: string;
   fieldLabel: string;
   initialValue?: string;
+  maxLength?: number;
   pending?: boolean;
   onSubmit: (nombre: string) => void;
 }
 
-export function SimpleNameModal({ open, onClose, title, fieldLabel, initialValue = "", pending, onSubmit }: SimpleNameModalProps) {
+export function SimpleNameModal({ open, onClose, title, fieldLabel, initialValue = "", maxLength, pending, onSubmit }: SimpleNameModalProps) {
   const [value, setValue] = useState(initialValue);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,7 +54,7 @@ export function SimpleNameModal({ open, onClose, title, fieldLabel, initialValue
       }
     >
       <Field label={fieldLabel} required>
-        <Input value={value} onChange={(e) => setValue(e.target.value)} autoFocus />
+        <Input value={value} onChange={(e) => setValue(e.target.value)} autoFocus maxLength={maxLength} />
       </Field>
       {error && <p className="mt-2 text-[12.5px] text-critical">{error}</p>}
     </Modal>

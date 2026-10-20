@@ -1,12 +1,14 @@
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useEffect, useState } from "react";
-import { ChevronDown, ChevronLeft, ChevronRight, History, LogIn, PlusCircle, Search, ShieldAlert, Trash2, UserCog } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Download, History, LoaderCircle, LogIn, PlusCircle, Search, ShieldAlert, Trash2, UserCog } from "lucide-react";
+import { toast } from "sonner";
 import { AdminShell } from "@/components/layout/AdminShell";
 import { LoadingState } from "@/components/feedback/LoadingState";
 import { Button } from "@/design-system/primitives/Button";
 import { Input } from "@/design-system/primitives/Input";
 import { Card } from "@/components/ui/card";
-import { useAuditoria, useAuditoriaCounts, useAuditoriaActores, useAuditoriaTablas } from "@/features/auditoria/hooks/useAuditoria";
+import { exportarAuditoria, useAuditoria, useAuditoriaCounts, useAuditoriaActores, useAuditoriaTablas } from "@/features/auditoria/hooks/useAuditoria";
+import { apiErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { AccionAuditoria, AuditoriaItem } from "@/features/auditoria/types";
 
@@ -234,6 +236,7 @@ export function AuditoriaPanelContent() {
   const [tabla, setTabla] = useState("");
   const [desde, setDesde] = useState("");
   const [hasta, setHasta] = useState("");
+  const [exportando, setExportando] = useState(false);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -273,6 +276,18 @@ export function AuditoriaPanelContent() {
     setUsuario(""); setTabla(""); setDesde(""); setHasta("");
   }
 
+  async function descargarExcel() {
+    setExportando(true);
+    try {
+      await exportarAuditoria(filtrosActivos);
+      toast.success("Archivo Excel de auditorías descargado");
+    } catch (error) {
+      toast.error(apiErrorMessage(error, "No se pudo descargar la auditoría"));
+    } finally {
+      setExportando(false);
+    }
+  }
+
   return (
     <>
       <section className="rounded-2xl border border-line bg-white p-4 shadow-sm sm:p-5">
@@ -283,13 +298,15 @@ export function AuditoriaPanelContent() {
               {total} {total === 1 ? "registro" : "registros"}
               {hayFiltros ? " filtrados" : " del sistema"}
             </p>
-            <p className="mt-1 text-[12.5px] text-ink-quiet">Historial completo de acciones administrativas. Fechas en Lima (UTC−5), días completos incluidos.</p>
+            <p className="mt-1 text-[12.5px] text-ink-quiet">Historial completo de acciones administrativas. La descarga incluye todos los resultados filtrados, no solo esta página.</p>
           </div>
-          {hayFiltros && (
-            <Button variant="ghost" size="sm" onClick={limpiarFiltros}>
-              Limpiar filtros
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => void descargarExcel()} disabled={exportando || fechasInvalidas || total === 0}>
+              {exportando ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              {exportando ? "Preparando Excel…" : "Descargar Excel"}
             </Button>
-          )}
+            {hayFiltros && <Button variant="ghost" size="sm" onClick={limpiarFiltros}>Limpiar filtros</Button>}
+          </div>
         </div>
 
         <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">

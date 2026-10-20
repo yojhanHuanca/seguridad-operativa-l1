@@ -136,6 +136,11 @@ export class EventoService {
     return EventoRepository.findByAsignado(objetivo);
   }
 
+  /** Bandeja global de asignaciones, disponible solo para el rol Admin. */
+  static async getTodosAsignados() {
+    return EventoRepository.findAllAsignados();
+  }
+
   /**
    * Asigna el evento a una persona de Seguridad Operativa: le llega una
    * notificación personal para que sea ella quien arme el hallazgo (no se

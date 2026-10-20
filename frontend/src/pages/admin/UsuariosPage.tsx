@@ -165,13 +165,22 @@ function userIsSO(user: UserListItem) {
   return user.roles?.nombre_rol === "Seguridad Operativa";
 }
 
+function userIsAdmin(user: UserListItem) {
+  return user.roles?.nombre_rol === "Admin";
+}
+
 function userHasSpecialPermission(user: UserListItem) {
-  return userIsSO(user) && PERMISOS.some((permiso) => Boolean(user[permiso.key]));
+  return userIsAdmin(user) || (userIsSO(user) && PERMISOS.some((permiso) => Boolean(user[permiso.key])));
 }
 
 function permissionLabels(user: UserListItem) {
+  if (userIsAdmin(user)) return [{ key: "admin-total", shortLabel: "Acceso total" }];
   if (!userIsSO(user)) return [];
   return PERMISOS.filter((permiso) => Boolean(user[permiso.key]));
+}
+
+function hasPermission(user: UserListItem, permission: PermisoKey) {
+  return userIsAdmin(user) || (userIsSO(user) && Boolean(user[permission]));
 }
 
 function Toggle({ checked, onChange, label, disabled }: { checked: boolean; onChange: (checked: boolean) => void; label: string; disabled?: boolean }) {
@@ -360,10 +369,10 @@ function AccessUsersTable({
                       <td key={permiso.key} className="px-4 py-3">
                         <div className="flex justify-center">
                           <Toggle
-                            checked={Boolean(user[permiso.key])}
+                            checked={hasPermission(user, permiso.key)}
                             onChange={(checked) => onToggle(user, permiso.key, checked)}
                             label={`${permiso.label} — ${user.nombre}`}
-                            disabled={!isSO || updatePending}
+                            disabled={!isSO || userIsAdmin(user) || updatePending}
                           />
                         </div>
                       </td>
@@ -503,6 +512,10 @@ export function AdminUsuariosPage() {
   };
 
   const togglePermiso = (user: UserListItem, permiso: PermisoKey, checked: boolean) => {
+    if (userIsAdmin(user)) {
+      toast.info("El Administrador ya cuenta con acceso total por su rol.");
+      return;
+    }
     if (!userIsSO(user)) {
       toast.warning("Los permisos especiales solo aplican a Seguridad Operativa");
       return;

@@ -15,11 +15,12 @@ function useCaseMutation<TInput>(codigo: string, fn: (input: TInput) => Promise<
 }
 
 export interface EvaluateInput {
-  id_riesgo: number;
+  id_riesgo?: number;
   id_area?: number | null;
   id_responsable?: number | null;
   clasificacion: string;
   descripcion_evento: string;
+  posibles_causas?: string | null;
   peligro?: string | null;
   consecuencia?: string | null;
   observaciones?: string | null;
@@ -49,6 +50,8 @@ export interface RollbackStageInput {
 }
 
 export interface InvestigationInput {
+  id_riesgo: number;
+  hallazgos: string;
   causa_raiz: string;
   conclusiones: string;
   observaciones?: string;

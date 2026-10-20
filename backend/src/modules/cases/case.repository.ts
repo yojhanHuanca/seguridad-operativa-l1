@@ -412,7 +412,10 @@ export class CaseRepository {
   }
 
   static async findByCodigo(codigo_sop: string) {
-    return prisma.casos_sop.findUnique({ where: { codigo_sop }, include: DETAIL_INCLUDE });
+    return prisma.casos_sop.findFirst({
+      where: { OR: [{ codigo_sop }, { codigo_consulta: codigo_sop }] },
+      include: DETAIL_INCLUDE,
+    });
   }
 
   /**
@@ -537,11 +540,13 @@ export class CaseRepository {
   }
 
   static async findBasicByCodigo(codigo_sop: string) {
-    return prisma.casos_sop.findUnique({
-      where: { codigo_sop },
+    return prisma.casos_sop.findFirst({
+      where: { OR: [{ codigo_sop }, { codigo_consulta: codigo_sop }] },
       select: {
         id_caso: true,
         codigo_sop: true,
+        codigo_consulta: true,
+        analisis_riesgo: true,
         catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { select: { id_detalle: true, nombre: true } },
       },
     });
@@ -628,12 +633,32 @@ export class CaseRepository {
   static async approve(id_caso: number, expectedStateId: number, actor = ACTOR_SO) {
     const estado = await CaseRepository.findEstado("Evaluación");
     return prisma.$transaction(async (tx) => {
-      const caso = await updateCaseIfStateMatches(tx, id_caso, expectedStateId, { estado_hallazgo: estado.id_detalle });
+      // Bloquea el reporte antes de asignar el correlativo para que dos
+      // aprobaciones simultáneas no consuman dos números para el mismo SOP.
+      const [actual] = await tx.$queryRaw<{
+        codigo_sop: string;
+        sop_asignado: boolean;
+        fecha_hallazgo: Date;
+        estado_hallazgo: number;
+      }[]> `SELECT codigo_sop, sop_asignado, fecha_hallazgo, estado_hallazgo
+          FROM casos_sop WHERE id_caso = ${id_caso} FOR UPDATE`;
+      if (!actual || actual.estado_hallazgo !== expectedStateId) {
+        throw new Error("El estado del SOP cambió mientras se procesaba. Recarga el caso e inténtalo otra vez.");
+      }
+      const codigo_sop = actual.sop_asignado
+        ? actual.codigo_sop
+        : await ConfiguracionService.nextCodigoExpediente(tx, actual.fecha_hallazgo);
+      const caso = await updateCaseIfStateMatches(tx, id_caso, expectedStateId, {
+        codigo_sop,
+        sop_asignado: true,
+        estado_hallazgo: estado.id_detalle,
+      });
       await CaseRepository.pushTimeline(tx, id_caso, {
         kind: "aprobado",
         actor,
         actor_rol: "seguridad",
-        titulo: "Reporte aprobado — pasa a Evaluación",
+        titulo: actual.sop_asignado ? "Reporte aprobado — pasa a Evaluación" : `Reporte aceptado como ${codigo_sop}`,
+        detalle: actual.sop_asignado ? null : `Código de consulta: ${caso.codigo_consulta ?? actual.codigo_sop}.`,
       });
       return caso;
     });
@@ -706,9 +731,10 @@ export class CaseRepository {
     const estado = await CaseRepository.findEstado(destino);
     return prisma.$transaction(async (tx) => {
       const caso = await updateCaseIfStateMatches(tx, id_caso, expectedStateId, {
-          analisis_riesgo: dto.id_riesgo,
+          ...(dto.id_riesgo != null ? { analisis_riesgo: dto.id_riesgo } : {}),
           clasificacion: dto.clasificacion,
           descripcion_evento: dto.descripcion_evento,
+          ...(dto.posibles_causas !== undefined ? { posibles_causas: dto.posibles_causas } : {}),
           estado_hallazgo: estado.id_detalle,
           ...(dto.id_area != null ? { area_responsable: dto.id_area } : {}),
           ...(dto.id_responsable != null ? { responsable_hallazgo: dto.id_responsable } : {}),
@@ -857,23 +883,18 @@ export class CaseRepository {
   static async saveInvestigation(id_caso: number, dto: SaveInvestigationDto, actor = ACTOR_SO) {
     const estado = await CaseRepository.findEstado("Plan de Acción");
     return prisma.$transaction(async (tx) => {
-      // La descripción del evento se escribió en Evaluación; acá solo se
-      // copia como "hallazgos" para no duplicar el campo en el formulario.
-      const caso = await tx.casos_sop.findUniqueOrThrow({ where: { id_caso }, select: { descripcion_evento: true } });
-      const hallazgos = caso.descripcion_evento?.trim() || "Sin descripción registrada en Evaluación.";
-
       const investigacion = await tx.investigacion_caso.upsert({
         where: { id_caso },
         create: {
           id_caso,
-          hallazgos,
+          hallazgos: dto.hallazgos,
           causa_raiz: dto.causa_raiz,
           conclusiones: dto.conclusiones,
           observaciones: dto.observaciones ?? null,
           investigador: dto.investigador ?? null,
         },
         update: {
-          hallazgos,
+          hallazgos: dto.hallazgos,
           causa_raiz: dto.causa_raiz,
           conclusiones: dto.conclusiones,
           observaciones: dto.observaciones ?? null,
@@ -881,13 +902,17 @@ export class CaseRepository {
           updated_at: new Date(),
         },
       });
-      await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estado.id_detalle } });
+      const riesgo = await tx.catalogo_detalle.findUnique({
+        where: { id_detalle: dto.id_riesgo },
+        select: { codigo: true, nombre: true },
+      });
+      await tx.casos_sop.update({ where: { id_caso }, data: { analisis_riesgo: dto.id_riesgo, estado_hallazgo: estado.id_detalle } });
       await CaseRepository.pushTimeline(tx, id_caso, {
         kind: "investigacion",
         actor,
         actor_rol: "seguridad",
         titulo: "Investigación registrada — pasa a Plan de Acción",
-        detalle: `Causa raíz: ${dto.causa_raiz}`,
+        detalle: `Análisis de riesgo: ${riesgo?.codigo ?? "—"} — ${riesgo?.nombre ?? "Sin detalle"}. Causa raíz: ${dto.causa_raiz}`,
       });
       return investigacion;
     });

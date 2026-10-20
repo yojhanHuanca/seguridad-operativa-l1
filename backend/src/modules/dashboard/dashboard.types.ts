@@ -12,7 +12,7 @@ export interface ChartSlice {
 export interface IndicadoresResponse {
   totalReportes: number;
   reportesPorTipo: CountItem[];
-  reportesCerradoVsProceso: ChartSlice[];
+  reportesPorEstado: ChartSlice[];
   planes: { total: number; abiertos: number; donut: ChartSlice[] };
   tendenciaMensual: { label: string; value: number }[];
   analisisRiesgo: ChartSlice[];

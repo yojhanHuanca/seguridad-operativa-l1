@@ -43,6 +43,16 @@ export class CatalogRepository {
 
   static findGroup(id_catalogo: number) { return prisma.catalogos.findUnique({ where: { id_catalogo } }); }
   static listNames(id_catalogo: number) { return prisma.catalogo_detalle.findMany({ where: { id_catalogo }, select: { id_detalle: true, nombre: true } }); }
+  static findActiveModelByName(nombre: string) {
+    return prisma.catalogo_detalle.findFirst({
+      where: {
+        nombre: { equals: nombre, mode: "insensitive" },
+        estado: true,
+        catalogos: { codigo: "MODELO_MR", estado: true },
+      },
+      select: { id_detalle: true },
+    });
+  }
   static async findDetalleById(id_detalle: number) {
     return prisma.catalogo_detalle.findUnique({
       where: { id_detalle },

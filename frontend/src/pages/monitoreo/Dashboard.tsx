@@ -55,7 +55,7 @@ function contarPorLugar(eventos: EventoListItem[]) {
 export function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const puedeAsignar = Boolean(user && user.rol.toLowerCase() === "seguridad operativa" && user.es_responsable);
+  const puedeAsignar = Boolean(user && (user.rol.toLowerCase() === "admin" || (user.rol.toLowerCase() === "seguridad operativa" && user.es_responsable)));
   const { data: eventos, isLoading } = useEventos();
   const deleteEvento = useDeleteEvento();
   const [query, setQuery] = useState("");

@@ -24,7 +24,7 @@ const POR_PAGINA = 20;
 export function Historial() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const puedeAsignar = Boolean(user && user.rol.toLowerCase() === "seguridad operativa" && user.es_responsable);
+  const puedeAsignar = Boolean(user && (user.rol.toLowerCase() === "admin" || (user.rol.toLowerCase() === "seguridad operativa" && user.es_responsable)));
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState(query);
   const [desde, setDesde] = useState("");

@@ -9,7 +9,7 @@ vi.mock("../modules/auth/auth.repository.js", () => ({
   AuthRepository: { obtenerActorDeSesion: actorSesionMock },
 }));
 
-const { verifyToken, optionalVerifyToken, requireRoles, requireRolesOrResponsable, requireRolesAndPermission } =
+const { verifyToken, optionalVerifyToken, requireRoles, requireRolesOrResponsable, requireRolesAndPermission, requireResponsableRoles } =
   await import("./auth.middleware.js");
 import type { AuthTokenPayload } from "./auth.middleware.js";
 
@@ -217,5 +217,14 @@ describe("requireRolesAndPermission", () => {
     requireRolesAndPermission(["Seguridad Operativa", "Admin"], "puede_reabrir_casos")(req, res, next);
     expect(res.status).toHaveBeenCalledWith(403);
     expect(next).not.toHaveBeenCalled();
+  });
+});
+
+describe("requireResponsableRoles", () => {
+  it("permite al Admin aunque no tenga la marca de responsable", () => {
+    const req = { user: ADMIN } as unknown as Parameters<ReturnType<typeof requireResponsableRoles>>[0];
+    const next = vi.fn();
+    requireResponsableRoles("Seguridad Operativa")(req, mockRes(), next);
+    expect(next).toHaveBeenCalledOnce();
   });
 });

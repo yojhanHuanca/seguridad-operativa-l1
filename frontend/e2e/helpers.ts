@@ -80,7 +80,7 @@ const configuracion = {
 const indicadores = {
   totalReportes: 0,
   reportesPorTipo: [],
-  reportesCerradoVsProceso: [],
+  reportesPorEstado: [],
   planes: { total: 0, abiertos: 0, donut: [] },
   tendenciaMensual: [],
   analisisRiesgo: [],

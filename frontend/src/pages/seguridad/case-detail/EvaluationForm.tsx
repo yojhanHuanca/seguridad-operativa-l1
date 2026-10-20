@@ -13,6 +13,7 @@ import type { RiskLevel } from "@/features/cases/domain";
 import { apiErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { CaseDetail } from "@/features/cases/types";
+import { getEvaluationDetails } from "./evaluationDetails";
 
 // Portado de pages/seguridad/CaseFile.tsx → EvaluationForm.
 export function EvaluationForm({ caso }: { caso: CaseDetail }) {
@@ -23,13 +24,18 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
   const riesgoItems = catalogs.byName.get("Análisis de riesgo")?.catalogo_detalle ?? [];
   const subtipos = catalogs.byName.get("Subtipo SOP")?.catalogo_detalle ?? [];
   const tiposIncidente = catalogs.byName.get("Tipo de incidente operativo")?.catalogo_detalle ?? [];
+  const evento = caso.evento_caso[0]?.eventos_operativos;
+  const posibleCausa = evento?.catalogo_detalle_eventos_operativos_posible_causaTocatalogo_detalle?.nombre;
+  const evaluationDetails = getEvaluationDetails(caso);
+  const tipoCausa = evento?.catalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalle?.nombre;
 
   const riesgoActual = caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle;
   const [idRiesgo, setIdRiesgo] = useState<number | null>(riesgoActual?.id_detalle ?? null);
   const [classification, setClassification] = useState(caso.clasificacion ?? "");
   const [requiresInvestigation, setRequiresInvestigation] = useState(true);
   const [observations, setObservations] = useState("");
-  const [descripcionEvento, setDescripcionEvento] = useState(caso.descripcion_evento ?? "");
+  const [descripcionEvento, setDescripcionEvento] = useState(evaluationDetails.descripcion);
+  const [posiblesCausas, setPosiblesCausas] = useState(evaluationDetails.posiblesCausas);
   const [peligro, setPeligro] = useState(caso.peligro ?? "");
   const [consecuencia, setConsecuencia] = useState(caso.consecuencia ?? "");
 
@@ -39,8 +45,8 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
   const motivoOmision = observations.trim();
   const canSave =
     cleanClassification.length > 0 &&
-    idRiesgo != null &&
     descripcionEvento.trim().length > 0 &&
+    (requiresInvestigation || idRiesgo != null) &&
     (requiresInvestigation || motivoOmision.length > 0);
 
   const riesgoSel = riesgoItems.find((r) => r.id_detalle === idRiesgo);
@@ -67,9 +73,9 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
       <div className="rounded-lg bg-info-soft border border-info/20 p-3.5 flex items-start gap-2.5">
         <FileSearch className="h-4 w-4 text-info-ink shrink-0 mt-0.5" />
         <p className="text-[12.5px] text-info-ink">
-          <span className="font-semibold">Análisis del caso.</span> Defina el análisis de riesgo (matriz 1A-4E),
-          clasificación y si requiere investigación. Al guardar, el caso pasa a Investigación o directamente a Plan de
-          Acción.
+          <span className="font-semibold">Descripción y posibles causas.</span> Registre lo ocurrido y complete las
+          causas posibles. Si el caso requiere investigación, el análisis de riesgo se completará en esa etapa;
+          si pasa directo al Plan de Acción, deberá registrarlo aquí.
         </p>
       </div>
 
@@ -77,12 +83,25 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
           acá porque el evento ya se conoce desde la evaluación y el resto del
           análisis (peligro, consecuencia) se redacta a partir de esta
           descripción. */}
-      <Field label="Descripción de evento" required>
+      <Field label="Descripción de evento" required hint="Precargada desde el reporte original; revísela y edítela si hace falta.">
         <Textarea
           value={descripcionEvento}
           onChange={(e) => setDescripcionEvento(e.target.value)}
           placeholder="¿Qué se encontró durante la inspección o qué ocurrió?"
           rows={3}
+        />
+      </Field>
+
+      <Field
+        label="Posibles causas"
+        hint={tipoCausa || posibleCausa ? `Dato del evento: ${[tipoCausa, posibleCausa].filter(Boolean).join(" · ")}` : "Describa las causas que podrían haber originado el evento."}
+      >
+        <Textarea
+          value={posiblesCausas}
+          onChange={(e) => setPosiblesCausas(e.target.value)}
+          placeholder="Describa las causas posibles identificadas…"
+          rows={3}
+          maxLength={2000}
         />
       </Field>
 
@@ -92,22 +111,6 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
 
       <Field label="Consecuencia">
         <Textarea value={consecuencia} onChange={(e) => setConsecuencia(e.target.value)} placeholder="Describa la posible consecuencia del peligro…" rows={2} />
-      </Field>
-
-      {/* Matriz 4×5 (severidad 1-4 × probabilidad A-E), como en el prototipo:
-          se elige la celda directamente en vez de buscarla en una lista. */}
-      <Field label="Riesgo evaluado (matriz 1A-4E)" required>
-        {riesgoItems.length > 0 ? (
-          <RiskMatrixPicker items={riesgoItems} value={idRiesgo} onChange={setIdRiesgo} />
-        ) : (
-          <p className="text-[12px] text-ink-faint">Cargando matriz de riesgo…</p>
-        )}
-        {risk && (
-          <div className="mt-2.5 flex items-center gap-2 flex-wrap">
-            <RiskPill risk={risk} showCategory />
-            <span className="text-[11px] text-ink-quiet">Gravedad derivada: {gravedad ?? "—"}</span>
-          </div>
-        )}
       </Field>
 
       <Field label="Clasificación del caso" required>
@@ -176,18 +179,35 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
       </Field>
 
       {!requiresInvestigation && (
-        <Field
-          label="Motivo para no realizar investigación"
-          required
-          hint="Explique por qué el caso pasará directo al Plan de Acción."
-        >
-          <Textarea
-            value={observations}
-            onChange={(e) => setObservations(e.target.value)}
-            rows={3}
-            placeholder="Detalle por qué no corresponde abrir investigación para este caso…"
-          />
-        </Field>
+        <>
+          {/* La ruta directa omite Investigación, por eso requiere conservar
+              la evaluación del riesgo en esta etapa antes de crear el plan. */}
+          <Field label="Riesgo evaluado para ruta directa (matriz 1A-4E)" required>
+            {riesgoItems.length > 0 ? (
+              <RiskMatrixPicker items={riesgoItems} value={idRiesgo} onChange={setIdRiesgo} />
+            ) : (
+              <p className="text-[12px] text-ink-faint">Cargando matriz de riesgo…</p>
+            )}
+            {risk && (
+              <div className="mt-2.5 flex items-center gap-2 flex-wrap">
+                <RiskPill risk={risk} showCategory />
+                <span className="text-[11px] text-ink-quiet">Gravedad derivada: {gravedad ?? "—"}</span>
+              </div>
+            )}
+          </Field>
+          <Field
+            label="Motivo para no realizar investigación"
+            required
+            hint="Explique por qué el caso pasará directo al Plan de Acción."
+          >
+            <Textarea
+              value={observations}
+              onChange={(e) => setObservations(e.target.value)}
+              rows={3}
+              placeholder="Detalle por qué no corresponde abrir investigación para este caso…"
+            />
+          </Field>
+        </>
       )}
 
       <div className="pt-3 border-t border-line-soft flex items-center justify-end gap-2">
@@ -197,9 +217,10 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
           onClick={() =>
             evaluate.mutate(
               {
-                id_riesgo: Number(idRiesgo),
+                ...(!requiresInvestigation ? { id_riesgo: Number(idRiesgo) } : {}),
                 clasificacion: cleanClassification,
                 descripcion_evento: descripcionEvento.trim(),
+                posibles_causas: posiblesCausas.trim() || null,
                 peligro: peligro.trim() || null,
                 consecuencia: consecuencia.trim() || null,
                 observaciones: requiresInvestigation ? null : motivoOmision,

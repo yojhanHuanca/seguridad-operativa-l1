@@ -13,15 +13,22 @@ export class PlanAjenoError extends Error {}
 const idPositivo = z.coerce.number().int().positive();
 
 const evaluateSchema = z.object({
-  id_riesgo: idPositivo,
+  // Los casos que requieren investigación registran el riesgo en esa etapa.
+  // La ruta directa al Plan debe dejarlo evaluado antes de continuar.
+  id_riesgo: idPositivo.optional(),
   id_area: idPositivo.optional().nullable(),
   id_responsable: idPositivo.optional().nullable(),
   clasificacion: z.string().trim().min(1, "Seleccione una clasificación").max(200),
   descripcion_evento: z.string().trim().min(5, "Describa el evento"),
+  posibles_causas: z.string().trim().max(2000).optional().nullable(),
   peligro: z.string().trim().max(1000).optional().nullable(),
   consecuencia: z.string().trim().max(1000).optional().nullable(),
   observaciones: z.string().trim().max(2000).optional().nullable(),
   requiere_investigacion: z.coerce.boolean(),
+}).superRefine((value, ctx) => {
+  if (!value.requiere_investigacion && value.id_riesgo == null) {
+    ctx.addIssue({ code: "custom", message: "Seleccione el análisis de riesgo antes de pasar directo al Plan de Acción", path: ["id_riesgo"] });
+  }
 });
 
 const rejectSchema = z.object({
@@ -132,8 +139,8 @@ const respondInfoSchema = z.object({
 });
 
 const investigationSchema = z.object({
-  // La descripción del evento ("hallazgos") se escribe en Evaluación
-  // (casos_sop.descripcion_evento) y se copia acá al guardar la investigación.
+  id_riesgo: idPositivo,
+  hallazgos: z.string().trim().min(5, "Describa los hallazgos de la investigación"),
   causa_raiz: z.string().trim().min(5, "Describa la causa raíz"),
   conclusiones: z.string().trim().min(5, "Describa las conclusiones"),
   observaciones: z.string().trim().max(1000).optional().nullable(),
@@ -364,6 +371,7 @@ export class CaseService {
     const dto = planSchema.parse(rawBody) as CreatePlanDto;
     await validarResponsablesJefeDeArea([dto]);
     const caso = await getCasoBasico(codigo, "createPlan");
+    if (caso.analisis_riesgo == null) throw new Error("Debe registrar el análisis de riesgo antes de crear el Plan de Acción.");
     return CaseRepository.createPlan(caso.id_caso, caso.codigo_sop, dto, await nombreDelActor(actor));
   }
 
@@ -371,6 +379,7 @@ export class CaseService {
     const dto = plansBatchSchema.parse(rawBody);
     await validarResponsablesJefeDeArea(dto.planes as CreatePlanDto[]);
     const caso = await getCasoBasico(codigo, "createPlan");
+    if (caso.analisis_riesgo == null) throw new Error("Debe registrar el análisis de riesgo antes de crear el Plan de Acción.");
     return CaseRepository.createPlans(caso.id_caso, caso.codigo_sop, dto.planes as CreatePlanDto[], await nombreDelActor(actor));
   }
 

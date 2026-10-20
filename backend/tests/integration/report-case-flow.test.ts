@@ -7,6 +7,8 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import app from "../../src/app.js";
 import prisma from "../../src/lib/prisma.js";
 import { ConfiguracionService } from "../../src/modules/configuracion/configuracion.service.js";
+import { currentSequenceValue, SEQ_CASOS_SOP } from "../../src/modules/configuracion/sequences.js";
+import { DashboardService } from "../../src/modules/dashboard/dashboard.service.js";
 
 const run = randomUUID().slice(0, 8);
 const password = `Test-${randomUUID()}`;
@@ -56,6 +58,7 @@ beforeAll(async () => {
     const user = await prisma.usuarios.create({ data: {
       codigo_usuario: `T-${userIds.length}-${run}`, nombre: `Usuario ${key} ${run}`, correo: `${key}-${run}@example.invalid`,
       password_hash: hash, id_rol: role.id_rol, id_area: area.id_area, estado: "Activo",
+      ...(key === "so" ? { puede_rechazar_reportes: true } : {}),
     } });
     userIds.push(user.id_usuario);
     const login = await request(app).post("/api/auth/login").send({ correo: user.correo, password }).expect(200);
@@ -101,6 +104,13 @@ async function createReport(identified = false) {
   caseIds.push(id_caso); eventIds.push(id_evento); codes.push(codigo_sop);
   return { client, id: id_caso as number, code: codigo_sop as string };
 }
+async function createPublicReport() {
+  const client = request.agent(app);
+  const response = await client.post("/api/reports").send(reportBody()).expect(201);
+  const { id_caso, id_evento, codigo_sop, codigo_consulta } = response.body.data;
+  caseIds.push(id_caso); eventIds.push(id_evento); codes.push(codigo_sop, codigo_consulta);
+  return { client, id: id_caso as number, code: codigo_consulta as string };
+}
 async function state(id: number) {
   const row = await prisma.casos_sop.findUniqueOrThrow({ where: { id_caso: id }, include: { catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: true } });
   return row.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre;
@@ -122,6 +132,44 @@ async function plannedCase() {
 }
 
 describe("API real: reportes y ciclo de planes", () => {
+  it("mantiene la consulta del rechazado y no consume SOP; el siguiente aceptado recibe ese correlativo", async () => {
+    const before = await currentSequenceValue(prisma, SEQ_CASOS_SOP);
+      const indicadoresAntes = await DashboardService.getIndicadores();
+    const rejected = await createPublicReport();
+    expect(rejected.code).toMatch(/^REP-[A-F0-9]{24}$/);
+    await request(app).post(`/api/cases/${encodeURIComponent(rejected.code)}/reject`)
+      .set("Authorization", auth())
+      .send({ motivo: "No corresponde a un hallazgo operativo" })
+      .expect(200);
+    expect(await currentSequenceValue(prisma, SEQ_CASOS_SOP)).toBe(before);
+      const indicadoresRechazo = await DashboardService.getIndicadores();
+      expect(indicadoresRechazo.totalReportes).toBe(indicadoresAntes.totalReportes + 1);
+      expect(indicadoresRechazo.reportesPorEstado.find((item) => item.name === "Rechazado")?.value)
+        .toBe((indicadoresAntes.reportesPorEstado.find((item) => item.name === "Rechazado")?.value ?? 0) + 1);
+    const rejectedQuery = await rejected.client.get(`/api/reports/consulta/${encodeURIComponent(rejected.code)}`).expect(200);
+    expect(rejectedQuery.body.data.codigo_consulta).toBe(rejected.code);
+    expect(rejectedQuery.body.data.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre).toBe("Rechazado");
+
+    const accepted = await createPublicReport();
+    await request(app).post(`/api/cases/${encodeURIComponent(accepted.code)}/approve`)
+      .set("Authorization", auth()).expect(200);
+    const saved = await prisma.casos_sop.findUniqueOrThrow({ where: { id_caso: accepted.id } });
+    const config = await ConfiguracionService.get();
+    expect(saved.codigo_sop).toBe(`${config.numeracion.prefijoExpedientes} ${String(before + 1).padStart(2, "0")}-${saved.fecha_hallazgo.getUTCFullYear()}`);
+    expect(saved.sop_asignado).toBe(true);
+    expect(saved.codigo_consulta).toBe(accepted.code);
+    expect(await currentSequenceValue(prisma, SEQ_CASOS_SOP)).toBe(before + 1);
+      const indicadoresAceptado = await DashboardService.getIndicadores();
+      expect(indicadoresAceptado.totalReportes).toBe(indicadoresAntes.totalReportes + 2);
+      expect(indicadoresAceptado.reportesPorEstado.find((item) => item.name === "Rechazado")?.value)
+        .toBe(indicadoresRechazo.reportesPorEstado.find((item) => item.name === "Rechazado")?.value);
+      expect(indicadoresAceptado.reportesPorEstado.find((item) => item.name === "En Proceso")?.value)
+        .toBe((indicadoresRechazo.reportesPorEstado.find((item) => item.name === "En Proceso")?.value ?? 0) + 1);
+    const acceptedQuery = await accepted.client.get(`/api/reports/consulta/${encodeURIComponent(accepted.code)}`).expect(200);
+    expect(acceptedQuery.body.data.codigo_sop).toBe(saved.codigo_sop);
+      await request(app).get(`/api/reports/consulta/${encodeURIComponent(accepted.code)}`).expect(403);
+  });
+
   it("importación SOP valida antes de escribir, conserva relaciones y evita duplicados", async () => {
     const sequence = 100000 + Number.parseInt(run, 16) % 100000;
     const codigo = `SOP ${sequence}-2026`;

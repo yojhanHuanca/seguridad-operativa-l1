@@ -12,11 +12,12 @@ interface UnitEditModalProps {
   pending?: boolean;
   onSave: (nombre: string, clasificacion_mr?: string) => void;
   materialRodante?: boolean;
+  classificationOptions?: { value: string; label: string }[];
   onToggleActivo: () => void;
 }
 
 /** Un solo lugar para renombrar y activar/desactivar una unidad — nada escondido, las dos acciones a la vista. */
-export function UnitEditModal({ open, onClose, item, pending, onSave, onToggleActivo, materialRodante }: UnitEditModalProps) {
+export function UnitEditModal({ open, onClose, item, pending, onSave, onToggleActivo, materialRodante, classificationOptions = [] }: UnitEditModalProps) {
   const esNuevo = item?.id_detalle === 0;
   const [value, setValue] = useState("");
   const [classification, setClassification] = useState("");
@@ -68,12 +69,12 @@ export function UnitEditModal({ open, onClose, item, pending, onSave, onToggleAc
       }
     >
       <div className="space-y-4">
-      {materialRodante && <Field label="Clasificación de la unidad" required><Select aria-label="Clasificación de la unidad" value={classification} onChange={e => setClassification(e.target.value)} disabled={pending}><option value="">Selecciona una clasificación</option><option value="ALSTOM">ALSTOM</option><option value="ANSALDO">ANSALDO</option><option value="AUXILIAR">Vehículos auxiliares</option></Select></Field>}
+      {materialRodante && <Field label="Tipo o marca del tren" required><Select aria-label="Tipo o marca del tren" value={classification} onChange={e => setClassification(e.target.value)} disabled={pending}><option value="">Selecciona un tipo o marca</option>{classificationOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</Select></Field>}
       <Field label="Código de unidad" required>
         <Input aria-label="Código de unidad" value={value} onChange={(e) => setValue(e.target.value)} autoFocus maxLength={200} disabled={pending} placeholder={materialRodante && classification !== "AUXILIAR" ? "Ej. T45" : "Ej. V-DRESINA"} />
       </Field>
       </div>
-      {materialRodante && <p className="mt-3 text-xs leading-relaxed text-ink-quiet">La clasificación se guarda para los formularios operativos. El código no determina automáticamente el fabricante.</p>}
+      {materialRodante && <p className="mt-3 text-xs leading-relaxed text-ink-quiet">El tipo seleccionado se usará para filtrar las unidades disponibles en los formularios operativos.</p>}
       {error && <p className="mt-2 text-[12.5px] text-critical">{error}</p>}
       {!esNuevo && !activo && (
         <p className="mt-3 rounded-lg bg-surface px-3 py-2 text-[12px] text-ink-quiet">

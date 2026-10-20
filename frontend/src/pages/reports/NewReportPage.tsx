@@ -338,9 +338,9 @@ export function NewReportPage() {
       { values, files },
       {
         onSuccess: (result) => {
-          toast.success(`Reporte ${result.codigo_sop} registrado correctamente`);
-          guardarReporteLocal(result.codigo_sop);
-          navigate("/reportes/consulta?codigo=" + encodeURIComponent(result.codigo_sop));
+          toast.success(`Reporte recibido. Código de consulta: ${result.codigo_consulta}`);
+          guardarReporteLocal(result.codigo_consulta);
+          navigate("/reportes/consulta?codigo=" + encodeURIComponent(result.codigo_consulta));
         },
         onError: (error) => {
           toast.error(apiErrorMessage(error, "No se pudo registrar el reporte"));

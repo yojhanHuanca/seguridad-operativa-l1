@@ -19,6 +19,7 @@ import { apiErrorMessage } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { StageRollbackButton } from "./StageRollbackButton";
+import { getEvaluationDetails } from "./evaluationDetails";
 import type { CaseDetail } from "@/features/cases/types";
 import type { ConfiguracionGeneral } from "@/features/configuracion/types";
 import type { UserBasic } from "@/features/users/types";
@@ -153,6 +154,7 @@ export function PlanCard({ caso }: { caso: CaseDetail }) {
   const { data: configuracion, isLoading: configuracionLoading } = useConfiguracion();
 
   const inv = caso.investigacion_caso;
+  const evaluacion = getEvaluationDetails(caso);
   const riesgo = caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle;
   const risk = riesgo?.codigo as RiskLevel | undefined;
   const editing = editingId != null ? caso.planes_accion.find((p) => p.id_plan === editingId) : undefined;
@@ -177,30 +179,46 @@ export function PlanCard({ caso }: { caso: CaseDetail }) {
           )}
           <StageRollbackButton
             codigo={caso.codigo_sop}
-            destino="Investigación"
-            label="Volver a Investigación"
-            title="Volver a investigación"
-            description="El caso regresará a Investigación para corregir o completar hallazgos, causa raíz y conclusiones. Los planes de acción ya cargados se mantienen guardados."
+            destino={inv ? "Investigación" : "Evaluación"}
+            label={inv ? "Volver a Investigación" : "Volver a Evaluación"}
+            title={inv ? "Volver a Investigación" : "Volver a Evaluación"}
+            description={inv
+              ? "El caso regresará a Investigación para corregir o completar hallazgos, causa raíz, conclusiones y análisis de riesgo. Los planes ya cargados se mantienen guardados."
+              : "El caso regresará a Evaluación para registrar o corregir el análisis de riesgo antes de continuar con el Plan de Acción."}
           />
         </div>
       }
     >
+      {risk && (
+        <div className="mb-4 rounded-lg border border-line-soft bg-surface/60 p-3.5">
+          <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Análisis de riesgo</p>
+          <RiskPill risk={risk} showCategory />
+        </div>
+      )}
+      {!riesgo && !plan && (
+        <div className="mb-4 rounded-lg border border-warning/30 bg-warning-soft p-3.5">
+          <p className="text-[12.5px] font-semibold text-warning-ink">Falta registrar el análisis de riesgo.</p>
+          <p className="mt-1 text-[12px] text-warning-ink">Antes de crear el Plan de Acción, vuelva a Evaluación y complete la matriz de riesgo.</p>
+        </div>
+      )}
+      {!inv && (evaluacion.descripcion || evaluacion.posiblesCausas) && (
+        <div className="mb-4 rounded-lg border border-line-soft bg-surface/60 p-3.5 space-y-3">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Descripción y posibles causas</p>
+          {evaluacion.descripcion && <InvBlock label="Descripción del evento" value={evaluacion.descripcion} />}
+          {evaluacion.posiblesCausas && <InvBlock label="Posibles causas" value={evaluacion.posiblesCausas} />}
+        </div>
+      )}
       {plan && !formOpen ? (
         <>
           {inv && (
             <div className="mb-4">
-              <p className="text-[11px] font-semibold tracking-wide uppercase text-ink-faint mb-2.5">Resumen de la investigación</p>
+              <p className="text-[11px] font-semibold tracking-wide uppercase text-ink-faint mb-2.5">Resumen de investigación</p>
               <div className="space-y-4">
-                {risk && (
-                  <div>
-                    <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Riesgo evaluado</p>
-                    <RiskPill risk={risk} showCategory />
-                  </div>
-                )}
-                <InvBlock label="Causa raíz" value={inv.causa_raiz} tone="critical" />
-                <InvBlock label="Conclusiones" value={inv.conclusiones} />
+                <InvBlock label="Hallazgos de la investigación" value={inv.hallazgos} />
+                {inv && <InvBlock label="Causa raíz" value={inv.causa_raiz} tone="critical" />}
+                {inv && <InvBlock label="Conclusiones" value={inv.conclusiones} />}
                 {/* Opcional en el formulario, así que solo se muestra si se llenó. */}
-                {inv.observaciones && <InvBlock label="Observaciones" value={inv.observaciones} />}
+                {inv?.observaciones && <InvBlock label="Observaciones" value={inv.observaciones} />}
               </div>
             </div>
           )}
@@ -228,6 +246,10 @@ export function PlanCard({ caso }: { caso: CaseDetail }) {
             </Button>
           </div>
         </>
+      ) : !risk && !editing ? (
+        <div className="rounded-xl border border-warning/30 bg-warning-soft p-4 text-[13px] text-warning-ink">
+          No se puede crear el plan mientras falte el análisis de riesgo. Regrese a Evaluación y registre la matriz.
+        </div>
       ) : configuracionLoading && !configuracion ? (
         <div className="rounded-xl border border-line bg-white p-4 text-[13px] text-ink-quiet">Cargando parámetros de configuración...</div>
       ) : (

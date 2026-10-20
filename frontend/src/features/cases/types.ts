@@ -3,12 +3,14 @@ export interface CaseListItem {
   codigo_sop: string;
   titulo: string | null;
   descripcion: string;
+  descripcion_evento?: string | null;
   nombre_reportante: string | null;
   fecha_hallazgo: string;
   fecha_evento: string | null;
   dias_abierto: number | null;
   peligro: string | null;
   consecuencia: string | null;
+  posibles_causas?: string | null;
   acr: string | null;
   created_at: string;
   catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle: { nombre: string; color: string | null };

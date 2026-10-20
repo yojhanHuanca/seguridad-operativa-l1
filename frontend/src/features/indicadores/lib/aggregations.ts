@@ -45,22 +45,21 @@ export function reportesPorTipo(cases: CaseListItem[]): CountItem[] {
     .sort((a, b) => b.value - a.value);
 }
 
-/**
- * Cerrado vs En Proceso a nivel de reporte SOP. Los casos rechazados quedan
- * fuera de las dos barras: ya son un estado terminal, no "en proceso", pero
- * tampoco el "Cerrado" que se está midiendo acá (caso resuelto).
- */
-export function reportesCerradoVsProceso(cases: CaseListItem[]): ChartSlice[] {
+/** Estados de todos los reportes, con rechazo explícito para mantener trazabilidad. */
+export function reportesPorEstado(cases: CaseListItem[]): ChartSlice[] {
   let cerrado = 0;
   let enProceso = 0;
+  let rechazado = 0;
   cases.forEach((c) => {
     const status = estadoReporteIndicador(c);
     if (status === "Cerrado") cerrado++;
     else if (status === "En Proceso") enProceso++;
+    else if (status === "Rechazado") rechazado++;
   });
   return [
     { name: "Cerrado", value: cerrado, color: CHART_COLORS.brand },
     { name: "En Proceso", value: enProceso, color: CHART_COLORS.warning },
+    { name: "Rechazado", value: rechazado, color: CHART_COLORS.critical },
   ];
 }
 
@@ -80,11 +79,12 @@ function planBucket(plan: PlanAccion, caso: CaseListItem): PlanBucket {
   return "enProceso";
 }
 
-export function estadoReporteIndicador(caso: CaseListItem): "Cerrado" | "En Proceso" | null {
+export function estadoReporteIndicador(caso: CaseListItem): "Cerrado" | "En Proceso" | "Rechazado" | null {
   const stage = stageFromEstado(caso.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre);
   const status = STAGE_STATUS[stage];
   if (status === "cerrado") return "Cerrado";
   if (status === "abierto") return "En Proceso";
+  if (status === "rechazado") return "Rechazado";
   return null;
 }
 

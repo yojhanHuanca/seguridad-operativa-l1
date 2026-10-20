@@ -132,7 +132,7 @@ export function JefeIndicadoresPage() {
             porTipo={porTipo}
             // El gráfico de estado usa `label` acá y `name` en el documento
             // compartido, que es el que espera recharts para el eje.
-            cerradoVsProceso={cerradoVsProceso.map((item) => ({ name: item.label, value: item.value, color: item.color }))}
+            reportesPorEstado={cerradoVsProceso.map((item) => ({ name: item.label, value: item.value, color: item.color }))}
             planesSubtitle={planesSubtitle}
             planes={planTotals}
             tendencia={tendencia}
@@ -173,7 +173,7 @@ export function JefeIndicadoresPage() {
               <FileBarChart2 className="h-4.5 w-4.5" />
             </span>
             <div>
-              <h2 className="text-[15px] font-semibold leading-tight text-ink">Total de Reportes SOP</h2>
+              <h2 className="text-[15px] font-semibold leading-tight text-ink">Total de reportes</h2>
               <p className="mt-0.5 text-[12.5px] text-ink-quiet">{reportesSubtitle}</p>
             </div>
           </div>
@@ -500,14 +500,17 @@ function countReportTypes(reports: PlanReport[]) {
 function reportStatusChart(reports: PlanReport[]) {
   let cerrado = 0;
   let enProceso = 0;
+  let rechazado = 0;
   reports.forEach((report) => {
     const status = reportStatusLabel(report);
     if (status === "Cerrado") cerrado++;
     else if (status === "En Proceso") enProceso++;
+    else if (status === "Rechazado") rechazado++;
   });
   return [
     { label: "Cerrado", value: cerrado, color: CHART_COLORS.brand },
     { label: "En Proceso", value: enProceso, color: CHART_COLORS.warning },
+    { label: "Rechazado", value: rechazado, color: CHART_COLORS.critical },
   ];
 }
 
@@ -610,10 +613,11 @@ function monthlyTrend(plans: PlanItem[], selectedYear: string, selectedMonth: st
 }
 
 
-function reportStatusLabel(report: PlanReport): "Cerrado" | "En Proceso" | null {
+function reportStatusLabel(report: PlanReport): "Cerrado" | "En Proceso" | "Rechazado" | null {
   const status = STAGE_STATUS[stageFromEstado(report.estado)];
   if (status === "cerrado") return "Cerrado";
   if (status === "abierto") return "En Proceso";
+  if (status === "rechazado") return "Rechazado";
   return null;
 }
 

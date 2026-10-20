@@ -9,6 +9,7 @@ import { Modal } from "@/design-system/primitives/Modal";
 import { EmptyState } from "@/design-system/primitives/Progress";
 import { useEventosAsignados } from "@/features/eventos/hooks/useEventos";
 import { useCurrentSoUser } from "@/features/users/hooks/useCurrentSoUser";
+import { useAuth } from "@/features/auth/auth";
 import { ESTADO_TONE } from "@/features/eventos/lib/estado";
 import { CSV_HEADERS, filaCsv, nombreLugar, nombreTipo } from "@/features/eventos/lib/tabla";
 import { NuevoReporteModal } from "@/features/reports/components/NuevoReporteModal";
@@ -31,7 +32,9 @@ type Pestana = "pendientes" | "historial";
 
 export function EventosAsignadosPage() {
   const { user, isLoading: cargandoUsuario } = useCurrentSoUser();
-  const { data: eventos, isLoading } = useEventosAsignados(user?.id_usuario);
+  const { user: authUser } = useAuth();
+  const esAdmin = authUser?.rol.toLowerCase() === "admin";
+  const { data: eventos, isLoading } = useEventosAsignados(user?.id_usuario, esAdmin);
   const [viendo, setViendo] = useState<EventoListItem | null>(null);
   const [creandoPara, setCreandoPara] = useState<EventoListItem | null>(null);
   const [pestana, setPestana] = useState<Pestana>("pendientes");
@@ -48,8 +51,9 @@ export function EventosAsignadosPage() {
     <SeguridadOperativaShell>
       <div className="mb-3">
         <p className="text-[13px] text-ink-quiet">
-          Eventos de Monitoreo que le asignaron a {user?.nombre ?? "usted"}. Revise el detalle y registre el hallazgo
-          correspondiente.
+          {esAdmin
+            ? "Bandeja global de eventos asignados a Seguridad Operativa. Revise a quién se asignó cada evento y su seguimiento."
+            : `Eventos de Monitoreo que le asignaron a ${user?.nombre ?? "usted"}. Revise el detalle y registre el hallazgo correspondiente.`}
         </p>
       </div>
 
@@ -108,6 +112,11 @@ export function EventosAsignadosPage() {
                   {nombreTipo(evento)} · {nombreLugar(evento)}
                 </p>
                 <p className="mt-0.5 line-clamp-2 text-[12.5px] text-ink-quiet">{evento.descripcion || "Sin descripción."}</p>
+                {esAdmin && evento.usuarios_eventos_monitoreo_asignado_aTousuarios && (
+                  <p className="mt-1 text-[11.5px] font-medium text-brand-800">
+                    Asignado a: {evento.usuarios_eventos_monitoreo_asignado_aTousuarios.nombre}
+                  </p>
+                )}
                 <p className="mt-0.5 text-[11.5px] text-ink-faint">{formatDate(evento.fecha)}</p>
               </div>
               <div className="mt-2.5 flex items-center gap-1.5 border-t border-line-soft pt-2.5">

@@ -309,7 +309,7 @@ export function ReceptionStage({
         open={tipoOpen}
         onClose={() => setTipoOpen(false)}
         title="Corregir tipo de reporte"
-        subtitle={`${caso.codigo_sop} · para cuando el reportante lo marcó mal`}
+        subtitle={`${caso.codigo_sop} · Corrección de información reportada`}
         size="sm"
         footer={
           <>

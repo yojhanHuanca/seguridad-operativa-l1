@@ -90,6 +90,8 @@ model bitacora {
 model casos_sop {
   id_caso                                                      Int                       @id @default(autoincrement())
   codigo_sop                                                   String                    @unique @db.VarChar(30)
+  codigo_consulta                                               String?                   @unique @db.VarChar(30)
+  sop_asignado                                                  Boolean                   @default(true)
   fecha_hallazgo                                               DateTime                  @db.Date
   fecha_evento                                                 DateTime?                 @db.Timestamp(6)
   estado_hallazgo                                              Int
@@ -111,6 +113,7 @@ model casos_sop {
   fecha_reprogramada                                           DateTime?                 @db.Date
   dias_abierto_plan                                            Int?                      @default(0)
   observaciones                                                String?
+  posibles_causas                                              String?
   created_by                                                   Int?
   created_at                                                   DateTime?                 @default(now()) @db.Timestamp(6)
   updated_at                                                   DateTime?                 @default(now()) @db.Timestamp(6)

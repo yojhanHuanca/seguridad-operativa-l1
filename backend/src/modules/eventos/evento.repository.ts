@@ -42,23 +42,29 @@ const LIST_INCLUDE = {
   casos_sop: { select: { codigo_sop: true } },
 } as const;
 
-function datosDesdeDto(dto: CreateEventoDto | UpdateEventoDto) {
-  return {
-    descripcion: dto.descripcion ?? null,
-    ubicacion: dto.id_ubicacion ?? null,
-    tipo_via: dto.id_tipo_via ?? null,
-    direccion_via: dto.id_direccion_via ?? null,
-    lugar_incidente: dto.id_lugar_incidente ?? null,
-    modelo_mr: dto.id_modelo_mr ?? null,
-    numero_mr: dto.id_numero_mr ?? null,
-    numero_carrera: dto.numero_carrera ?? null,
-    personal_involucrado: dto.id_personal_involucrado ?? null,
-    tipo_causa: dto.id_tipo_causa ?? null,
-    posible_causa: dto.id_posible_causa ?? null,
-    informacion_adicional: dto.informacion_adicional ?? null,
-    camara_monitoreada: dto.camara_monitoreada ?? null,
-    demora: dto.demora ?? null,
+function datosDesdeDto(dto: CreateEventoDto | UpdateEventoDto, parcial = false) {
+  const campos = {
+    descripcion: dto.descripcion,
+    ubicacion: dto.id_ubicacion,
+    tipo_via: dto.id_tipo_via,
+    direccion_via: dto.id_direccion_via,
+    lugar_incidente: dto.id_lugar_incidente,
+    modelo_mr: dto.id_modelo_mr,
+    numero_mr: dto.id_numero_mr,
+    numero_carrera: dto.numero_carrera,
+    personal_involucrado: dto.id_personal_involucrado,
+    tipo_causa: dto.id_tipo_causa,
+    posible_causa: dto.id_posible_causa,
+    informacion_adicional: dto.informacion_adicional,
+    camara_monitoreada: dto.camara_monitoreada,
+    demora: dto.demora,
   };
+
+  return Object.fromEntries(
+    Object.entries(campos)
+      .filter(([, value]) => !parcial || value !== undefined)
+      .map(([key, value]) => [key, value ?? null]),
+  );
 }
 
 export class EventoRepository {
@@ -149,6 +155,15 @@ export class EventoRepository {
     });
   }
 
+  /** Bandeja global de eventos ya asignados; se reserva para Admin. */
+  static async findAllAsignados() {
+    return prisma.eventos_monitoreo.findMany({
+      where: { asignado_a: { not: null } },
+      include: LIST_INCLUDE,
+      orderBy: [{ fecha: "desc" }, { id_evento: "desc" }],
+    });
+  }
+
   static async asignar(id_evento: number, id_usuario: number) {
     return prisma.eventos_monitoreo.update({ where: { id_evento }, data: { asignado_a: id_usuario } });
   }
@@ -196,7 +211,10 @@ export class EventoRepository {
   }
 
   static async update(id_evento: number, dto: UpdateEventoDto) {
-    const data: Record<string, unknown> = datosDesdeDto(dto);
+    // PATCH semántico: los campos que no vienen en el DTO deben conservarse.
+    // La asignación de un evento solo cambia `asignado_a` y luego `estado`;
+    // convertir aquí los campos omitidos a null borraba todos sus detalles.
+    const data: Record<string, unknown> = datosDesdeDto(dto, true);
 
     if (dto.fecha) {
       const match = dto.fecha.match(/^(\d{4})-(\d{2})-(\d{2})$/);
