@@ -9,6 +9,7 @@ import prisma from "../../src/lib/prisma.js";
 import { ConfiguracionService } from "../../src/modules/configuracion/configuracion.service.js";
 import { currentSequenceValue, SEQ_CASOS_SOP } from "../../src/modules/configuracion/sequences.js";
 import { DashboardService } from "../../src/modules/dashboard/dashboard.service.js";
+import { UsersHandoverService } from "../../src/modules/users/users-handover.service.js";
 
 const run = randomUUID().slice(0, 8);
 const password = `Test-${randomUUID()}`;
@@ -132,6 +133,83 @@ async function plannedCase() {
 }
 
 describe("API real: reportes y ciclo de planes", () => {
+  it("reasigna responsabilidades antes de dar de baja al jefe sin perder avances ni historial", async () => {
+    const area = await prisma.areas.create({ data: { nombre_area: `Entrega de jefe ${run}` } });
+    areaIds.push(area.id_area);
+    const role = await prisma.roles.findUniqueOrThrow({ where: { nombre_rol: "Jefe de Área" } });
+    const hash = await bcrypt.hash(password, 10);
+    const people = [];
+    for (const name of ["saliente", "reemplazo"]) {
+      const user = await prisma.usuarios.create({ data: {
+        codigo_usuario: `TH-${name[0]}-${run}`, nombre: `Jefe ${name}`, correo: `${name}-${run}@example.invalid`,
+        password_hash: hash, id_rol: role.id_rol, id_area: area.id_area, estado: "Activo",
+      } });
+      userIds.push(user.id_usuario); people.push(user);
+    }
+    const [source, target] = people as [typeof people[number], typeof people[number]];
+    const login = await request(app).post("/api/auth/login").send({ correo: source!.correo, password }).expect(200);
+    const sourceAuth = `Bearer ${login.body.data.token}`;
+    const report = await createReport();
+    const url = `/api/cases/${encodeURIComponent(report.code)}`;
+    await request(app).post(`${url}/approve`).set("Authorization", auth()).expect(200);
+    await request(app).post(`${url}/evaluate`).set("Authorization", auth()).send({
+      id_riesgo: catalogs[`Riesgo-${run}`], id_area: area.id_area, clasificacion: "Condición insegura",
+      descripcion_evento: "Evaluación de prueba para entrega de responsabilidades", requiere_investigacion: false,
+    }).expect(200);
+    const response = await request(app).post(`${url}/plans`).set("Authorization", auth()).send({
+      descripcion: "Continuar el plan tras el cambio de jefe", id_area: area.id_area, responsable: source!.id_usuario,
+      fecha_plan: "2026-12-31", actividades: [
+        { descripcion: "Actividad pendiente con avance", responsable: source!.id_usuario },
+        { descripcion: "Actividad histórica completada", responsable: source!.id_usuario },
+      ],
+    }).expect(201);
+    const planId = response.body.data.id_plan as number;
+    await request(app).post(`/api/cases/planes/${planId}/accept`).set("Authorization", sourceAuth).expect(200);
+    const activities = await prisma.actividades_plan.findMany({ where: { id_plan: planId }, orderBy: { id_actividad: "asc" } });
+    await prisma.actividades_plan.update({ where: { id_actividad: activities[0]!.id_actividad }, data: { estado: catalogs["En progreso"], porcentaje: 50 } });
+    await prisma.actividades_plan.update({ where: { id_actividad: activities[1]!.id_actividad }, data: { estado: catalogs.Completado, porcentaje: 100 } });
+    const original = await prisma.planes_accion.findUniqueOrThrow({ where: { id_plan: planId } });
+    const history = await prisma.planes_accion.create({ data: {
+      id_caso: report.id, codigo_plan: `HIST-${run}`, descripcion: "Plan cerrado que conserva responsable histórico",
+      id_area: area.id_area, responsable: source!.id_usuario, fecha_plan: original.fecha_plan, estado: catalogs.Cerrado!,
+    } });
+    const listUrl = `/api/users/${source!.id_usuario}/pending-plans`;
+    await request(app).get(listUrl).expect(401);
+    await request(app).get(listUrl).set("Authorization", auth()).expect(403);
+    const pending = await request(app).get(listUrl).set("Authorization", auth("admin")).expect(200);
+    expect(pending.body.data.map((item: { id_plan: number }) => item.id_plan)).toEqual([planId]);
+    expect(pending.body.data[0].actividades_plan).toEqual([{ id_actividad: activities[0]!.id_actividad }]);
+    const monitorRole = await prisma.roles.findUniqueOrThrow({ where: { nombre_rol: "Monitorista" } });
+    for (const body of [{ estado: "Inactivo" }, { id_rol: monitorRole.id_rol }, { id_area: actors.ajeno!.area }]) {
+      const blocked = await request(app).patch(`/api/users/${source!.id_usuario}`).set("Authorization", auth("admin")).send(body).expect(400);
+      expect(blocked.body.message).toContain("Reasigna primero");
+      await request(app).get("/api/profile/me/sesiones").set("Authorization", sourceAuth).expect(200);
+    }
+    const body = { planes: [planId], asignaciones: [{ id_area: area.id_area, id_usuario: target!.id_usuario }], motivo: "Cambio de jefe y transferencia de funciones" };
+    const transferUrl = `/api/users/${source!.id_usuario}/reassign-plans`;
+    await request(app).post(transferUrl).set("Authorization", sourceAuth).send(body).expect(403);
+    await request(app).post(transferUrl).set("Authorization", auth("admin")).send({ ...body, asignaciones: [{ id_area: area.id_area, id_usuario: actors.ajeno!.id }] }).expect(409);
+    await request(app).post(transferUrl).set("Authorization", auth("admin")).send({ ...body, planes: [planId, 1999999999] }).expect(409);
+    // Force a failure after ownership changes: the failed audit must roll back everything.
+    await expect(UsersHandoverService.reasignar(source!.id_usuario, body, {
+      id_usuario: 1999999999, correo: "invalido@example.invalid", rol: 1, rol_nombre: "Admin",
+    })).rejects.toThrow();
+    expect((await prisma.planes_accion.findUniqueOrThrow({ where: { id_plan: planId } })).responsable).toBe(source!.id_usuario);
+    const transferred = await request(app).post(transferUrl).set("Authorization", auth("admin")).send(body).expect(200);
+    expect(transferred.body.data).toEqual({ planes: 1, actividades: 1 });
+    const after = await prisma.planes_accion.findUniqueOrThrow({ where: { id_plan: planId } });
+    expect(after).toMatchObject({ responsable: target!.id_usuario, estado: original.estado, fecha_plan: original.fecha_plan, fecha_reprogramada: original.fecha_reprogramada });
+    const afterActivities = await prisma.actividades_plan.findMany({ where: { id_plan: planId }, orderBy: { id_actividad: "asc" } });
+    expect(afterActivities[0]!.responsable).toBe(target!.id_usuario);
+    expect(Number(afterActivities[0]!.porcentaje)).toBe(50);
+    expect(afterActivities[1]!.responsable).toBe(source!.id_usuario);
+    expect(Number(afterActivities[1]!.porcentaje)).toBe(100);
+    expect((await prisma.planes_accion.findUniqueOrThrow({ where: { id_plan: history.id_plan } })).responsable).toBe(source!.id_usuario);
+    expect(await prisma.notificaciones.count({ where: { usuario: target!.id_usuario, tipo: "plan_asignado" } })).toBe(1);
+    expect(await prisma.auditoria.count({ where: { tabla_afectada: "planes_accion", id_registro: planId, descripcion: { contains: body.motivo } } })).toBe(1);
+    await request(app).patch(`/api/users/${source!.id_usuario}`).set("Authorization", auth("admin")).send({ estado: "Inactivo" }).expect(200);
+    expect((await prisma.usuarios.findUniqueOrThrow({ where: { id_usuario: source!.id_usuario } })).estado).toBe("Inactivo");
+  }, 30_000);
   it("mantiene la consulta del rechazado y no consume SOP; el siguiente aceptado recibe ese correlativo", async () => {
     const before = await currentSequenceValue(prisma, SEQ_CASOS_SOP);
       const indicadoresAntes = await DashboardService.getIndicadores();
@@ -260,7 +338,7 @@ describe("API real: reportes y ciclo de planes", () => {
     await request(app).post(`${url}/evaluate`).set("Authorization", auth()).send({ id_riesgo: catalogs[`Riesgo-${run}`], clasificacion: "Condición insegura", descripcion_evento: "Descripción del evento investigado", requiere_investigacion: true }).expect(200);
     expect(await state(report.id)).toBe("Investigación");
     await request(app).post(`${url}/investigation`).set("Authorization", auth()).send({ causa_raiz: "x", conclusiones: "y" }).expect(400);
-    await request(app).post(`${url}/investigation`).set("Authorization", auth()).send({ causa_raiz: "Falta de mantenimiento preventivo", conclusiones: "Actualizar el programa de mantenimiento" }).expect(200);
+    await request(app).post(`${url}/investigation`).set("Authorization", auth()).send({ id_riesgo: catalogs[`Riesgo-${run}`], hallazgos: "Se detectaron componentes sin mantenimiento", causa_raiz: "Falta de mantenimiento preventivo", conclusiones: "Actualizar el programa de mantenimiento" }).expect(200);
     expect(await state(report.id)).toBe("Plan de Acción");
     expect(await prisma.investigacion_caso.findUniqueOrThrow({ where: { id_caso: report.id } })).toMatchObject({ causa_raiz: "Falta de mantenimiento preventivo", conclusiones: "Actualizar el programa de mantenimiento", investigador: actors.so!.id });
   });
@@ -270,6 +348,7 @@ describe("API real: reportes y ciclo de planes", () => {
     await request(app).post(`${url}/approve`).set("Authorization", auth()).expect(200);
     await request(app).post(`${url}/evaluate`).set("Authorization", auth()).send({ id_riesgo: catalogs[`Riesgo-${run}`], clasificacion: "Condición insegura", descripcion_evento: "Evaluación de identidad del investigador", requiere_investigacion: true }).expect(200);
     await request(app).post(`${url}/investigation`).set("Authorization", auth()).send({
+      id_riesgo: catalogs[`Riesgo-${run}`], hallazgos: "Hallazgo de prueba con autoría verificable",
       causa_raiz: "Causa de prueba para verificar autoría", conclusiones: "La autoría debe provenir de la sesión",
       investigador: actors.admin!.id,
     }).expect(200);

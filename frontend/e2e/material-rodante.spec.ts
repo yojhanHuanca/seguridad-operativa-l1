@@ -8,7 +8,12 @@ async function setup(page: Page) {
     { id_detalle: 3, nombre: 'V-GRUA', clasificacion_mr: 'AUXILIAR', estado: true },
     { id_detalle: 4, nombre: 'T99', clasificacion_mr: null, estado: false },
   ];
-  await page.route('**/api/catalogs', route => route.fulfill({ json: { success: true, data: [{ id_catalogo: 9, nombre: 'Nro. MR', codigo: 'NUMERO_MR', catalogo_detalle: items.filter(i => i.estado) }] } }));
+  const models = [{ id_detalle: 80, nombre: 'ALSTOM', estado: true }, { id_detalle: 81, nombre: 'ANSALDO', estado: true }, { id_detalle: 82, nombre: 'N/A', estado: true }];
+  await page.route('**/api/catalogs', route => route.fulfill({ json: { success: true, data: [
+    { id_catalogo: 8, nombre: 'Modelo MR', catalogo_detalle: models },
+    { id_catalogo: 9, nombre: 'Nro. MR', codigo: 'NUMERO_MR', catalogo_detalle: items.filter(i => i.estado) },
+  ] } }));
+  await page.route('**/api/catalogs/8/admin', route => route.fulfill({ json: { success: true, data: { id_catalogo: 8, catalogo_detalle: models } } }));
   await page.route('**/api/catalogs/9/admin', route => route.fulfill({ json: { success: true, data: { id_catalogo: 9, catalogo_detalle: items } } }));
   await page.route('**/api/catalogs/9/detalle', route => {
     const body = route.request().postDataJSON();
@@ -30,7 +35,7 @@ test('alta exige clasificación y respeta el fabricante elegido para T45', async
   await page.getByRole('textbox', { name: 'Código de unidad' }).fill('T45');
   await page.getByRole('button', { name: 'Guardar', exact: true }).click();
   await expect(page.getByText('Selecciona la clasificación de la unidad.', { exact: true })).toBeVisible();
-  await page.getByRole('combobox', { name: 'Clasificación de la unidad' }).selectOption('ANSALDO');
+  await page.getByRole('combobox', { name: 'Tipo o marca del tren' }).selectOption('ANSALDO');
   await page.getByRole('button', { name: 'Guardar', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Nueva unidad', exact: true })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'T45 Activa', exact: true })).toBeVisible();
@@ -42,7 +47,7 @@ test('alta exige clasificación y respeta el fabricante elegido para T45', async
 test('edición conserva clasificación y cancelar desactivación no cambia la unidad', async ({ page }) => {
   const items = await setup(page);
   await page.getByRole('button', { name: 'T6 Activa', exact: true }).click();
-  await expect(page.getByRole('combobox', { name: 'Clasificación de la unidad' })).toHaveValue('ALSTOM');
+  await expect(page.getByRole('combobox', { name: 'Tipo o marca del tren' })).toHaveValue('ALSTOM');
   await page.getByRole('button', { name: 'Desactivar', exact: true }).click();
   await page.getByRole('dialog', { name: '¿Desactivar unidad?' }).getByRole('button', { name: 'Cancelar' }).click();
   expect(items[1].estado).toBe(true);
@@ -67,11 +72,11 @@ test('un fallo al guardar conserva código y clasificación para reintentar', as
   await page.route('**/api/catalogs/9/detalle', route => route.fulfill({ status: 400, json: { success: false, message: 'Ya existe una unidad con ese código' } }));
   await page.getByRole('button', { name: 'Nueva unidad', exact: true }).click();
   await page.getByRole('textbox', { name: 'Código de unidad' }).fill('T6');
-  await page.getByRole('combobox', { name: 'Clasificación de la unidad' }).selectOption('ALSTOM');
+  await page.getByRole('combobox', { name: 'Tipo o marca del tren' }).selectOption('ALSTOM');
   await page.getByRole('button', { name: 'Guardar', exact: true }).click();
   await expect(page.getByText('Ya existe una unidad con ese código', { exact: true })).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Código de unidad' })).toHaveValue('T6');
-  await expect(page.getByRole('combobox', { name: 'Clasificación de la unidad' })).toHaveValue('ALSTOM');
+  await expect(page.getByRole('combobox', { name: 'Tipo o marca del tren' })).toHaveValue('ALSTOM');
 });
 
 test('eventos filtra las unidades por fabricante y borra la selección al cambiarlo', async ({ page }) => {

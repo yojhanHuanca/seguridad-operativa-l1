@@ -22,6 +22,7 @@ import { Button } from "@/design-system/primitives/Button";
 import { IMPORTACION_MODULOS } from "@/features/importacion/importacionConfig";
 import { apiErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { readExcelWorkbook } from "@/lib/readExcelWorkbook";
 import { useHistorialImportaciones, useImportarRegistros, useRevertirImportacion, useValidarImportacion } from "@/features/importacion/hooks/useImportacion";
 import type { DecisionSop, ImportacionPayload, ImportacionPreview, ImportacionResult, ImportacionRow, ImportacionTipo } from "@/features/importacion/types";
 import {
@@ -98,68 +99,7 @@ function matrixToSheet(name: string, matrix: string[][]): ImportSheet {
 }
 
 async function parseXlsx(file: File): Promise<ImportSheet[]> {
-  const ExcelJS = await import("exceljs");
-  const source = await file.arrayBuffer();
-  let workbook = new ExcelJS.Workbook();
-  try {
-    await workbook.xlsx.load(source);
-  } catch {
-    // Algunos generadores válidos de XLSX usan el prefijo "x:" para el
-    // namespace principal y rutas de relación absolutas. ExcelJS no reconoce
-    // esas variantes aunque Excel sí. Normalizamos solo el paquete OOXML y
-    // volvemos a leerlo para que la importación admita ambos formatos.
-    try {
-      const JSZip = (await import("jszip")).default;
-      const archive = await JSZip.loadAsync(source);
-      const xmlEntries = Object.keys(archive.files).filter((name) => name.endsWith(".xml"));
-      await Promise.all(xmlEntries.map(async (name) => {
-        const entry = archive.file(name);
-        if (!entry) return;
-        let xml = await entry.async("string");
-        const spreadsheetNamespace = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
-        if (xml.includes(`xmlns:x="${spreadsheetNamespace}"`)) {
-          if (xml.includes(`xmlns="${spreadsheetNamespace}"`)) {
-            xml = xml.replace(`xmlns:x="${spreadsheetNamespace}"`, "");
-          } else {
-            xml = xml.replace(`xmlns:x="${spreadsheetNamespace}"`, `xmlns="${spreadsheetNamespace}"`);
-          }
-          xml = xml.replace(/(<\/?)(x:)/g, "$1");
-        }
-
-        if (name.endsWith(".rels") && name.includes("/_rels/")) {
-          const sourceDirectory = name.slice(0, name.indexOf("/_rels/"));
-          const from = sourceDirectory.split("/").filter(Boolean);
-          xml = xml.replace(/Target="(\/[^"]+)"/g, (_match, target: string) => {
-            const to = target.slice(1).split("/").filter(Boolean);
-            let common = 0;
-            while (common < from.length && common < to.length && from[common] === to[common]) common += 1;
-            return `Target="${[...Array(from.length - common).fill(".."), ...to.slice(common)].join("/")}"`;
-          });
-        }
-
-        // Las tablas con formato de Excel solo decoran un rango y no cambian
-        // los valores que importa SIGMA. ExcelJS falla con algunas rutas de
-        // relación de esas tablas, así que quitamos esa metadata del paquete
-        // temporal que leemos (nunca se modifica el archivo del usuario).
-        if (name.endsWith(".rels")) {
-          xml = xml.replace(/<Relationship\b(?=[^>]*\bType="[^"]*\/table")[^>]*(?:\/>|>[\s\S]*?<\/Relationship>)/g, "");
-        }
-        if (name.startsWith("xl/worksheets/") && name.endsWith(".xml")) {
-          xml = xml.replace(/<tableParts\b[^>]*(?:\/>|>[\s\S]*?<\/tableParts>)/g, "");
-        }
-        if (name === "[Content_Types].xml") {
-          xml = xml.replace(/<Override\b(?=[^>]*\bPartName="\/xl\/tables\/)[^>]*\/>/g, "");
-        }
-        archive.file(name, xml);
-      }));
-      Object.keys(archive.files).filter((name) => name.startsWith("xl/tables/")).forEach((name) => archive.remove(name));
-
-      workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.load(await archive.generateAsync({ type: "arraybuffer" }));
-    } catch {
-      throw new Error("No se pudo leer el libro de Excel. Vuelve a guardarlo como .xlsx y revisa que no esté dañado o protegido.");
-    }
-  }
+  const workbook = await readExcelWorkbook(await file.arrayBuffer());
   const sheets = workbook.worksheets.flatMap((worksheet) => {
     const matrix: string[][] = [];
     worksheet.eachRow({ includeEmpty: true }, (sheetRow) => {
@@ -676,7 +616,7 @@ export function AdminImportacionPage() {
           <History className="h-4 w-4 text-brand-700" />
           <div><p className="text-[13px] font-semibold text-ink">Historial de importaciones</p><p className="mt-0.5 text-[11.5px] text-ink-quiet">Trazabilidad de archivos cargados y operaciones revertidas.</p></div>
         </div>
-        {historial.isLoading ? <p className="p-5 text-sm text-ink-quiet">Cargando historial…</p> : historial.isError ? <p className="p-5 text-sm text-red-700">No se pudo cargar el historial. La migración de base de datos debe estar aplicada.</p> : (
+        {historial.isLoading ? <p className="p-5 text-sm text-ink-quiet">Cargando historial…</p> : historial.isError ? <div className="p-5"><p role="alert" className="text-sm text-red-700">No se pudo cargar el historial. Comprueba la conexión y vuelve a intentarlo. Si persiste, avisa al administrador.</p><Button variant="outline" className="mt-3" onClick={() => void historial.refetch()}>Reintentar historial de importaciones</Button></div> : (
           <div className="overflow-x-auto"><table className="w-full min-w-[900px] text-left text-[12.5px]">
             <thead className="border-b border-line text-[11px] uppercase text-ink-faint"><tr>{["Fecha", "Usuario", "Módulo", "Archivo / hoja", "Importados", "Estado", "Acción"].map(label => <th key={label} className="px-4 py-3 font-semibold">{label}</th>)}</tr></thead>
             <tbody>{historial.data?.items?.map(item => <tr key={item.id_importacion} className="border-b border-line-soft last:border-0">

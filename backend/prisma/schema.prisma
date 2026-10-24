@@ -870,6 +870,8 @@ model usuarios {
   cargo                                                          String?               @db.VarChar(100)
   correo                                                         String                @unique @db.VarChar(150)
   telefono                                                       String?               @db.VarChar(20)
+  unidad_organizativa                                            String?               @db.VarChar(150)
+  jefe_inmediato                                                 String?               @db.VarChar(150)
   estado                                                         String?               @default("Activo") @db.VarChar(20)
   fecha_ingreso                                                  DateTime?             @db.Date
   id_area                                                        Int?

@@ -61,7 +61,7 @@ export function useHistorialImportaciones(page = 1) {
     refetchInterval: query => query.state.data?.items.some(item => item.estado === "procesando") ? 2000 : false,
     queryFn: async () => {
       const { data } = await api.get<ApiEnvelope<{ items: ImportacionHistorialItem[]; total: number }>>("/importacion/historial", { params: { page, limit: 20 } });
-      if (!data.data) throw new Error("La API no devolvió el historial");
+      if (!data.data || !Array.isArray(data.data.items) || typeof data.data.total !== "number") throw new Error("La API no devolvió un historial válido");
       return data.data;
     },
   });

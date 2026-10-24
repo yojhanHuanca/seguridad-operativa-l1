@@ -14,6 +14,8 @@ test('los planes permiten comenzar hoy en Lima después del cambio de día UTC',
     catalogo_detalle_casos_sop_tipoTocatalogo_detalle: { nombre: 'Condición Insegura' },
     catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle: { nombre: 'Hallazgo' },
     catalogo_detalle_casos_sop_procedenciaTocatalogo_detalle: { nombre: 'Reporte público' },
+    analisis_riesgo: 40,
+    catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: { id_detalle: 40, codigo: '4E', nombre: 'Bajo' },
     anexos_caso: [], planes_accion: [], evento_caso: [], solicitudes_informacion: [], timeline_caso: [],
     investigacion_caso: null, areas: null,
   } } }));

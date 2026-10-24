@@ -44,6 +44,7 @@ const ContingenciaEditarPage = lazyNamed(() => import("@/pages/contingencias/Edi
 const ContingenciaPerfilPage = lazyNamed(() => import("@/pages/contingencias/Perfil"), "Perfil");
 const ContingenciaIndicadoresPage = lazyNamed(() => import("@/pages/contingencias/Indicadores"), "Indicadores");
 const AdminUsuariosPage = lazyNamed(() => import("@/pages/admin/UsuariosPage"), "AdminUsuariosPage");
+const AdminImportarUsuariosPage = lazyNamed(() => import("@/pages/admin/ImportarUsuariosPage"), "AdminImportarUsuariosPage");
 const AdminAreasPage = lazyNamed(() => import("@/pages/admin/AreasPage"), "AdminAreasPage");
 const AdminEstacionesPage = lazyNamed(() => import("@/pages/admin/EstacionesPage"), "AdminEstacionesPage");
 const AdminMaterialRodantePage = lazyNamed(() => import("@/pages/admin/MaterialRodantePage"), "AdminMaterialRodantePage");
@@ -127,6 +128,7 @@ export function AppRouter() {
           {/* Panel de Administrador — sin login todavía */}
           <Route path="/admin" element={<ProtectedRoute roles={["Admin"]}><AdminUsuariosPage /></ProtectedRoute>} />
           <Route path="/admin/usuarios" element={<ProtectedRoute roles={["Admin"]}><AdminUsuariosPage /></ProtectedRoute>} />
+          <Route path="/admin/usuarios/importar" element={<ProtectedRoute roles={["Admin"]}><AdminImportarUsuariosPage /></ProtectedRoute>} />
           <Route path="/admin/roles" element={<ProtectedRoute roles={["Admin"]}><AdminUsuariosPage /></ProtectedRoute>} />
           <Route path="/admin/catalogos" element={<ProtectedRoute roles={["Admin"]}><AdminAreasPage /></ProtectedRoute>} />
           <Route path="/admin/estaciones" element={<ProtectedRoute roles={["Admin"]}><AdminEstacionesPage /></ProtectedRoute>} />

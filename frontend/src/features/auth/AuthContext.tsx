@@ -11,9 +11,19 @@ const USER_KEY = "sigma_auth_user";
 function readUser(): AuthUser | null {
   try {
     const value = localStorage.getItem(USER_KEY);
-    return value ? JSON.parse(value) as AuthUser : null;
+    if (!value) return null;
+    const parsed: unknown = JSON.parse(value);
+    if (!parsed || typeof parsed !== "object" ||
+      !("id_usuario" in parsed) || !Number.isInteger(parsed.id_usuario) || Number(parsed.id_usuario) <= 0 ||
+      !("rol" in parsed) || typeof parsed.rol !== "string" || !parsed.rol.trim() ||
+      !("nombre" in parsed) || typeof parsed.nombre !== "string" ||
+      !("correo" in parsed) || typeof parsed.correo !== "string") {
+      throw new Error("Sesión guardada no válida");
+    }
+    return parsed as AuthUser;
   } catch {
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(TOKEN_KEY);
     return null;
   }
 }

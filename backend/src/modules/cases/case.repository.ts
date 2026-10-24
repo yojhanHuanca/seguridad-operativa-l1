@@ -121,6 +121,12 @@ type TimelineClient = {
   };
 };
 
+async function assertCurrentPlanAssignees(tx: Prisma.TransactionClient, plans: CreatePlanDto[]) {
+  const ids = [...new Set(plans.flatMap(plan => [plan.responsable, ...plan.actividades.map(activity => activity.responsable).filter((id): id is number => id != null)]))];
+  const valid = await tx.usuarios.count({ where: { id_usuario: { in: ids }, estado: "Activo", roles: { nombre_rol: "Jefe de Área" } } });
+  if (valid !== ids.length) throw new Error("Uno de los responsables ya no es un Jefe de Área activo. Actualiza la selección antes de guardar.");
+}
+
 async function updateCaseIfStateMatches(
   tx: Prisma.TransactionClient,
   id_caso: number,
@@ -990,6 +996,7 @@ export class CaseRepository {
     ]);
 
     const plan = await prisma.$transaction(async (tx) => {
+      await assertCurrentPlanAssignees(tx, [dto]);
       const codigo_plan = await ConfiguracionService.nextCodigoPlan(tx, codigo_sop);
 
       const plan = await tx.planes_accion.create({
@@ -1037,7 +1044,7 @@ export class CaseRepository {
       });
 
       return plan;
-    });
+    }, { isolationLevel: "Serializable" });
 
     void CaseRepository.avisarPlanesAsignados([plan.id_plan]);
     return plan;
@@ -1053,6 +1060,7 @@ export class CaseRepository {
     ]);
 
     return prisma.$transaction(async (tx) => {
+      await assertCurrentPlanAssignees(tx, dtos);
       const codigosPlan = await ConfiguracionService.nextCodigosPlan(tx, codigo_sop, dtos.length);
       const creados = [];
 
@@ -1110,7 +1118,7 @@ export class CaseRepository {
 
       await tx.casos_sop.update({ where: { id_caso }, data: { estado_hallazgo: estadoCasoPlan.id_detalle } });
       return creados;
-    }).then((creados) => {
+    }, { isolationLevel: "Serializable" }).then((creados) => {
       void CaseRepository.avisarPlanesAsignados(creados.map((plan) => plan.id_plan));
       return creados;
     });
@@ -1125,6 +1133,7 @@ export class CaseRepository {
   static async updatePlan(id_plan: number, dto: CreatePlanDto, actor = ACTOR_SO) {
     const estadoActPendiente = await CaseRepository.findEstadoActividad("Pendiente");
     return prisma.$transaction(async (tx) => {
+      await assertCurrentPlanAssignees(tx, [dto]);
       const actividadesActuales = await tx.actividades_plan.findMany({
         where: { id_plan },
         select: {
@@ -1196,7 +1205,7 @@ export class CaseRepository {
       });
 
       return plan;
-    });
+    }, { isolationLevel: "Serializable" });
   }
 
   /** ETAPA 5 — el Jefe del Área acepta un plan específico del reporte. */

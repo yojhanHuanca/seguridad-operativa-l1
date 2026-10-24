@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Crown,
+  FileSpreadsheet,
   KeyRound,
   Pencil,
   Radar,
@@ -14,7 +15,7 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { AdminShell } from "@/components/layout/AdminShell";
 import { Button } from "@/design-system/primitives/Button";
@@ -42,7 +43,7 @@ const PERMISOS: { key: PermisoKey; label: string; shortLabel: string; hint: stri
   { key: "puede_rechazar_reportes", label: "Rechazar reportes", shortLabel: "Rechazar", hint: "Rechazo de reportes antes del flujo de gestión." },
 ];
 
-const ROLE_ORDER = ["Admin", "Seguridad Operativa", "Jefe de Área", "Monitorista"];
+const ROLE_ORDER = ["Admin", "Seguridad Operativa", "Jefe de Área", "Monitorista", "Gestión de Planes de Contingencia"];
 const ROLES_OCULTOS_ADMIN = new Set(["Reportante"]);
 
 const ROL_STYLE: Record<string, { icon: typeof ShieldCheck; badge: string; dot: string; active: string }> = {
@@ -72,6 +73,7 @@ const MATRIZ_PERMISOS: { modulo: string; accesos: Record<string, string> }[] = [
       "Seguridad Operativa": "Ver indicadores SO",
       "Jefe de Área": "Ver planes asignados",
       Monitorista: "Ver operación",
+      "Gestión de Planes de Contingencia": "Registrar y consultar contingencias",
     },
   },
   {
@@ -95,7 +97,7 @@ const MATRIZ_PERMISOS: { modulo: string; accesos: Record<string, string> }[] = [
   {
     modulo: "Auditoría",
     accesos: {
-      Admin: "Ver y exportar",
+      Admin: "Consultar",
       "Seguridad Operativa": "Sin acceso",
       "Jefe de Área": "Sin acceso",
       Monitorista: "Sin acceso",
@@ -104,7 +106,7 @@ const MATRIZ_PERMISOS: { modulo: string; accesos: Record<string, string> }[] = [
   {
     modulo: "Importación",
     accesos: {
-      Admin: "Importar histórico",
+      Admin: "Importar histórico y usuarios",
       "Seguridad Operativa": "Sin acceso",
       "Jefe de Área": "Sin acceso",
       Monitorista: "Sin acceso",
@@ -124,8 +126,23 @@ const MATRIZ_PERMISOS: { modulo: string; accesos: Record<string, string> }[] = [
     accesos: {
       Admin: "Ver y exportar",
       "Seguridad Operativa": "Ver y exportar",
-      "Jefe de Área": "Ver área",
+      "Jefe de Área": "Sin acceso",
       Monitorista: "Ver operación",
+      "Gestión de Planes de Contingencia": "Indicadores de contingencias",
+    },
+  },
+  {
+    modulo: "Contingencias",
+    accesos: {
+      Admin: "Gestionar",
+      "Gestión de Planes de Contingencia": "Registrar y consultar",
+    },
+  },
+  {
+    modulo: "Datos operativos",
+    accesos: {
+      Admin: "Gestionar", "Seguridad Operativa": "Gestionar",
+      Monitorista: "Gestionar", "Gestión de Planes de Contingencia": "Gestionar",
     },
   },
   {
@@ -607,9 +624,12 @@ export function AdminUsuariosPage() {
         <>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <p className="text-[12.5px] text-ink-quiet">{counts?.total ?? 0} usuarios registrados · {counts?.activos ?? 0} activos</p>
-            <Button size="sm" onClick={abrirCrear}>
-              <UserPlus className="h-4 w-4" /> Nuevo usuario
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Link to="/admin/usuarios/importar" className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-line-strong bg-white px-3 text-[12.5px] font-medium text-ink hover:bg-surface-2"><FileSpreadsheet className="h-4 w-4" /> Importar desde Excel</Link>
+              <Button size="sm" onClick={abrirCrear}>
+                <UserPlus className="h-4 w-4" /> Nuevo usuario
+              </Button>
+            </div>
           </div>
 
           <div className="mt-5 grid gap-3 rounded-2xl border border-line bg-white p-4 sm:grid-cols-[minmax(260px,1fr)_minmax(190px,1fr)_minmax(170px,1fr)]">

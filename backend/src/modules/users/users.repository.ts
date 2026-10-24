@@ -1,5 +1,7 @@
 import prisma from "../../lib/prisma.js";
 import { randomUUID } from "node:crypto";
+import type { Prisma } from "../../generated/prisma/client.js";
+import { assertChiefCanChangeAccess, pendingPlansForUser, type AccessChange } from "./user-plan-responsibilities.js";
 
 const SYSTEM_AUDIT_USER_CODE = "SYS-AUDIT";
 
@@ -11,6 +13,8 @@ const PUBLIC_SELECT = {
   correo: true,
   cargo: true,
   telefono: true,
+  unidad_organizativa: true,
+  jefe_inmediato: true,
   estado: true,
   fecha_ingreso: true,
   ultimo_acceso: true,
@@ -44,6 +48,11 @@ const BASIC_SELECT = {
 } as const;
 
 export class UserRepository {
+     static async assertAccessChangeAllowed(id: number, current: Parameters<typeof assertChiefCanChangeAccess>[2], data: AccessChange) {
+       return assertChiefCanChangeAccess(prisma, id, current, data);
+     }
+
+     static async pendingPlans(id: number) { return pendingPlansForUser(prisma, id); }
      /** Directorio reducido, sin datos de contacto — ver BASIC_SELECT. */
      static async findAllBasic() {
         return prisma.usuarios.findMany({
@@ -88,6 +97,8 @@ export class UserRepository {
             correo: true,
             cargo: true,
             telefono: true,
+            unidad_organizativa: true,
+            jefe_inmediato: true,
             estado: true,
             ultimo_acceso: true,
             es_responsable: true,
@@ -167,13 +178,15 @@ export class UserRepository {
       password_hash: string;
       cargo?: string | null;
       telefono?: string | null;
+      unidad_organizativa?: string | null;
+      jefe_inmediato?: string | null;
       id_area?: number | null;
       id_rol: number;
       es_responsable?: boolean;
       puede_reabrir_casos?: boolean;
       puede_rechazar_reportes?: boolean;
-    }) {
-      return prisma.$transaction(async (tx) => {
+    }, transaction?: Prisma.TransactionClient) {
+      const create = async (tx: Prisma.TransactionClient) => {
         const created = await tx.usuarios.create({
           data: {
             codigo_usuario: `TMP-${randomUUID().replaceAll("-", "").slice(0, 12)}`,
@@ -183,6 +196,8 @@ export class UserRepository {
             debe_cambiar_password: true,
             cargo: data.cargo ?? null,
             telefono: data.telefono ?? null,
+            unidad_organizativa: data.unidad_organizativa ?? null,
+            jefe_inmediato: data.jefe_inmediato ?? null,
             id_area: data.id_area ?? null,
             id_rol: data.id_rol,
             es_responsable: data.es_responsable ?? false,
@@ -197,7 +212,8 @@ export class UserRepository {
           data: { codigo_usuario: `EMP-${String(created.id_usuario).padStart(4, "0")}` },
           select: PUBLIC_SELECT,
         });
-      });
+      };
+      return transaction ? create(transaction) : prisma.$transaction(create);
     }
 
     static async findByEmail(email: string) {
@@ -224,13 +240,16 @@ export class UserRepository {
       debe_cambiar_password?: boolean;
     }) {
       return await prisma.$transaction(async tx => {
+        const current = await tx.usuarios.findUnique({ where: { id_usuario: id }, select: { id_rol: true, id_area: true, estado: true, roles: { select: { nombre_rol: true } } } });
+        if (!current) throw new Error("Usuario no encontrado");
+        await assertChiefCanChangeAccess(tx, id, current, data);
         const user = await tx.usuarios.update({ where: { id_usuario: id }, data, select: PUBLIC_SELECT });
         if (data.password_hash) {
           await tx.sesiones.updateMany({ where: { usuario: id, estado: "activa" }, data: { estado: "cerrada", fecha_fin: new Date() } });
           await tx.password_resets.updateMany({ where: { usuario: id, used_at: null }, data: { used_at: new Date() } });
         }
         return user;
-      });
+      }, { isolationLevel: "Serializable" });
     }
 }
 

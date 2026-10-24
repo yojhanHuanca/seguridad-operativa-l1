@@ -161,7 +161,8 @@ test('asignar un plan muestra la foto del jefe en búsqueda y selección sin cam
     catalogo_detalle_casos_sop_tipoTocatalogo_detalle: { nombre: 'Condición Insegura' },
     catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle: { nombre: 'Hallazgo' },
     catalogo_detalle_casos_sop_procedenciaTocatalogo_detalle: { nombre: 'Interno' },
-    catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: null,
+    analisis_riesgo: 40,
+    catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle: { id_detalle: 40, codigo: '4E', nombre: 'Bajo' },
     areas: { id_area: 1, nombre_area: 'Operaciones' },
     planes_accion: [], solicitudes_informacion: [], timeline_caso: [], evento_caso: [], anexos_caso: [], investigacion_caso: null,
   };

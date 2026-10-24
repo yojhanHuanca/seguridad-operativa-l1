@@ -34,7 +34,7 @@ for (const width of [1600, 390]) {
     await mockApi(page);
     await page.addInitScript(() => {
       localStorage.setItem('sigma_auth_token', 'token-e2e');
-      localStorage.setItem('sigma_auth_user', JSON.stringify({ id_usuario: 6, nombre: 'Prueba', rol: 'Gestión de Planes de Contingencia', estado: 'Activo', area: 'Operaciones' }));
+      localStorage.setItem('sigma_auth_user', JSON.stringify({ id_usuario: 6, nombre: 'Prueba', correo: 'prueba@example.invalid', rol: 'Gestión de Planes de Contingencia', estado: 'Activo', area: null }));
     });
     await page.route('**/api/contingencias?**', route => {
       const number = Number(new URL(route.request().url()).searchParams.get('page'));

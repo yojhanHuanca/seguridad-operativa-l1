@@ -2,6 +2,25 @@ import { expect, test } from '@playwright/test';
 import { posix } from 'node:path';
 import { loginAs, mockApi } from './helpers';
 import type { ImportacionPayload, ImportacionPreview } from '../src/features/importacion/types';
+import { usersPrefixedWorkbook } from './fixtures/users-prefixed-workbook';
+
+test('el mismo XLSX independiente también se puede leer en Importación Histórica', async ({ page }) => {
+  await mockApi(page);
+  await loginAs(page, 'Admin');
+  await page.route('**/api/importacion/historial**', route => route.fulfill({ json: { success: true, data: { items: [], total: 0 } } }));
+  let writes = 0;
+  await page.route('**/api/importacion/**/importar', route => { writes++; return route.abort(); });
+  await page.goto('/admin/importacion');
+  await page.locator('input[type=file]').setInputFiles({
+    name: 'usuarios-prueba-importacion.xlsx',
+    mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    buffer: usersPrefixedWorkbook,
+  });
+  await expect(page.getByLabel('Hoja que se importará').locator('option')).toHaveText([
+    'Usuarios válidos — 9 filas — 6 columnas', 'Errores intencionales — 4 filas — 6 columnas',
+  ]);
+  expect(writes).toBe(0);
+});
 
 test('XLSX: una guía sin encabezados y una hoja vacía no bloquean la hoja Datos', async ({ page }) => {
   await mockApi(page);
@@ -50,7 +69,8 @@ test('diseño empresarial visible antes de cargar un archivo', async ({ page }) 
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 
-test('SOP: lee XLSX con prefijos OOXML y selecciona la hoja con datos', async ({ page }) => {
+for (const prefix of ['x', 'sheet']) {
+test(`SOP: lee XLSX con prefijo ${prefix}, tablas y relaciones absolutas`, async ({ page }) => {
   await mockApi(page);
   await loginAs(page, 'Admin');
   await page.route('**/api/importacion/historial**', route => route.fulfill({ json: { success: true, data: { items: [], total: 0 } } }));
@@ -77,13 +97,13 @@ test('SOP: lee XLSX con prefijos OOXML y selecciona la hoja con datos', async ({
   archive.file('xl/worksheets/_rels/sheet1.xml.rels', `<?xml version="1.0" encoding="utf-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Type="${relationshipNamespace}/table" Target="../tables/table1.xml" Id="rIdTable" /></Relationships>`);
   archive.file('xl/tables/table1.xml', `<?xml version="1.0" encoding="utf-8"?><table xmlns="${spreadsheetNamespace}" id="1" name="SopTestTable" displayName="SopTestTable" ref="A1:A11" headerRowCount="1"><tableColumns count="1"><tableColumn id="1" name="Código" /></tableColumns></table>`);
   archive.file('[Content_Types].xml', (await contentTypesEntry.async('string')).replace('</Types>', '<Override PartName="/xl/tables/table1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml" /></Types>'));
-  await Promise.all(Object.keys(archive.files).filter(name => name.endsWith('.xml')).map(async name => {
+  await Promise.all(Object.keys(archive.files).filter(name => /\.(xml|rels)$/.test(name)).map(async name => {
     const entry = archive.file(name);
     if (!entry) return;
     let xml = await entry.async('string');
     if (xml.includes(`xmlns="${spreadsheetNamespace}"`)) {
-      xml = xml.replace(`xmlns="${spreadsheetNamespace}"`, `xmlns:x="${spreadsheetNamespace}"`);
-      xml = xml.replace(/(<\/?)([A-Za-z_][\w.-]*)(?=[\s/>])/g, '$1x:$2');
+      xml = xml.replace(`xmlns="${spreadsheetNamespace}"`, `xmlns:${prefix}="${spreadsheetNamespace}"`);
+      xml = xml.replace(/(<\/?)([A-Za-z_][\w.-]*)(?=[\s/>])/g, `$1${prefix}:$2`);
     }
     if (name.endsWith('.rels') && name.includes('/_rels/')) {
       const sourceDirectory = name.slice(0, name.indexOf('/_rels/'));
@@ -95,6 +115,14 @@ test('SOP: lee XLSX con prefijos OOXML y selecciona la hoja con datos', async ({
     archive.file(name, xml);
   }));
   const buffer = Buffer.from(await archive.generateAsync({ type: 'arraybuffer' }));
+  let payload: ImportacionPayload | undefined;
+  await page.route('**/api/importacion/casos/validar', route => {
+    payload = route.request().postDataJSON();
+    return route.fulfill({ json: { success: true, data: {
+      filename: 'Ejemplo_importacion_SOP_10_datos.xlsx', canImport: true, requiredColumns: [], optionalColumns: [], issues: [], cases: [],
+      resumen: { totalFilas: 10, casosDetectados: 10, planesDetectados: 0, listos: 10, duplicados: 0, errores: 0, advertencias: 0 },
+    } } });
+  });
   await page.locator('input[type=file]').setInputFiles({
     name: 'Ejemplo_importacion_SOP_10_datos.xlsx',
     mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -103,7 +131,12 @@ test('SOP: lee XLSX con prefijos OOXML y selecciona la hoja con datos', async ({
   await expect(page.getByText('Ejemplo_importacion_SOP_10_datos.xlsx')).toBeVisible();
   await expect(page.getByLabel('Hoja que se importará')).toHaveValue('0');
   await expect(page.getByLabel('Hoja que se importará').locator('option:checked')).toHaveText(/10 filas — 25 columnas/);
+  await page.getByRole('button', { name: 'Validar', exact: true }).click();
+  await expect.poll(() => payload?.rows.length).toBe(10);
+  expect(payload?.rows[0]).toMatchObject({ Código: 'QA-1', Tipo: 'Hallazgo', Estado: 'Recepción', Fecha: '2026-10-18' });
+  expect(payload?.rows[9]?.Código).toBe('QA-10');
 });
+}
 
 test('SOP: exige revalidación, protege terminados y envía decisiones separadas del archivo', async ({ page }) => {
   await mockApi(page);

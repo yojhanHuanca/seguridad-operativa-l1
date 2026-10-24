@@ -3,12 +3,29 @@ import { ZodError } from "zod";
 import { UsersService } from "./users.service.js";
 import { ApiResponse, safeErrorMessage } from "../../utils/ApiResponse.js";
 import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
+import { UsersHandoverService } from "./users-handover.service.js";
 
 function isZodError(error: unknown): error is ZodError {
   return error instanceof ZodError;
 }
 
 export class UsersController {
+  static async pendingPlans(req: Request, res: Response) {
+    res.setHeader("Cache-Control", "no-store");
+    try { return res.json(ApiResponse.success("Responsabilidades pendientes", await UsersHandoverService.pendientes(req.params.id))); }
+    catch (error) { return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "No se pudieron consultar los planes pendientes"), error)); }
+  }
+
+  static async reassignPlans(req: Request, res: Response) {
+    res.setHeader("Cache-Control", "no-store");
+    const actor = (req as AuthenticatedRequest).user;
+    if (!actor) return res.status(401).json(ApiResponse.error("Sesión requerida"));
+    try { return res.json(ApiResponse.success("Responsabilidades reasignadas", await UsersHandoverService.reasignar(req.params.id, req.body, actor, req.ip))); }
+    catch (error) {
+      const message = error instanceof ZodError ? "Revisa el motivo y los reemplazos seleccionados." : safeErrorMessage(error, "No se pudo reasignar. Actualiza la revisión antes de intentarlo otra vez.");
+      return res.status(409).json(ApiResponse.error(message, error));
+    }
+  }
   static async getAll(req: Request, res: Response) {
     try {
       const { data, total } = await UsersService.getAllUsers(req.query as Record<string, string>);

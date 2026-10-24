@@ -15,6 +15,8 @@ router.get("/basicos", UsersController.getBasicos);
 router.get("/counts", requireRoles("Admin"), UsersController.getCounts);
 router.get("/", requireRoles("Admin"), UsersController.getAll);
 router.get("/:id", requireRoles("Admin"), UsersController.getById);
+router.get("/:id/pending-plans", requireRoles("Admin"), UsersController.pendingPlans);
+router.post("/:id/reassign-plans", requireRoles("Admin"), UsersController.reassignPlans);
 router.post("/", requireRoles("Admin"), UsersController.create);
 router.patch("/:id", requireRoles("Admin"), UsersController.update);
 
