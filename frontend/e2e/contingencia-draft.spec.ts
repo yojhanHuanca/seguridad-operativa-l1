@@ -23,7 +23,16 @@ test('el borrador persiste al recargar y queda separado de otra cuenta', async (
   await page.goto('/contingencias/registro');
   await expect(page.locator('input[type="date"]').first()).toHaveValue('2026-10-08');
   await page.locator('input[type="date"]').first().fill('2026-10-07');
-  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('contingencia-draft:5')!).fecha)).toBe('2026-10-07');
+  await expect.poll(() => page.evaluate(() => new Promise<string>((resolve, reject) => {
+    const request = indexedDB.open('sms-l1-workspace-v1', 1);
+    request.onsuccess = () => {
+      const db = request.result;
+      const read = db.transaction('drafts').objectStore('drafts').getAll();
+      read.onsuccess = () => { resolve(JSON.stringify(read.result)); db.close(); };
+      read.onerror = () => reject(read.error);
+    };
+    request.onerror = () => reject(request.error);
+  }))).toContain('2026-10-07');
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('contingencia-draft:6')!).fecha)).toBe('2026-10-09');
   await page.reload();
   await expect(page.locator('input[type="date"]').first()).toHaveValue('2026-10-07');

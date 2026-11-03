@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useDraftState } from "@/features/drafts/useDraftState";
+import { useClearDraft } from "@/features/drafts/useDraftState";
+import { useDraftForm } from "@/features/drafts/useDraftForm";
 import { Link } from "react-router-dom";
 import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -72,9 +74,11 @@ export function NuevoReporteModal({
   /** Si viene de "Eventos asignados" de Monitoreo: el evento que dio origen a este hallazgo. */
   idEventoMonitoreo?: number;
 }) {
-  const [stepIndex, setStepIndex] = useState(0);
-  const [files, setFiles] = useState<File[]>([]);
-  const [codigoCreado, setCodigoCreado] = useState<string | null>(null);
+  const draftScope = `features/reports/components/NuevoReporteModal:${idEventoMonitoreo ?? "nuevo"}:`;
+  const clearDraft = useClearDraft(draftScope);
+  const [stepIndex, setStepIndex] = useDraftState(draftScope + "stepIndex", 0);
+  const [files, setFiles] = useDraftState<File[]>(draftScope + "files", []);
+  const [codigoCreado, setCodigoCreado] = useDraftState<string | null>(draftScope + "codigoCreado", null);
 
   const catalogs = useCatalogs();
   const createReport = useCreateReport();
@@ -88,6 +92,7 @@ export function NuevoReporteModal({
     defaultValues: { tipo_ubicacion: "estacion" },
   });
 
+  useDraftForm(draftScope + "values", form);
   const valores = useWatch({ control: form.control }) as Partial<SoReportFormValues>;
   const tipos = catalogs.byName.get("Tipo de Reporte")?.catalogo_detalle ?? [];
   // Las estaciones llevan código; las dos ubicaciones de patio se eligen por nombre.
@@ -118,6 +123,7 @@ export function NuevoReporteModal({
     setFiles([]);
     setStepIndex(0);
     setCodigoCreado(null);
+    clearDraft();
   };
 
   // Cerrar deja la ventana lista para el siguiente registro: si se reabre, no
@@ -146,6 +152,7 @@ export function NuevoReporteModal({
       },
       {
         onSuccess: (result) => {
+          clearDraft();
           toast.success(`Reporte ${result.codigo_sop} registrado correctamente`);
           setCodigoCreado(result.codigo_sop);
         },

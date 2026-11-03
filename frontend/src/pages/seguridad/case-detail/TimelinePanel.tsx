@@ -1,4 +1,6 @@
-import { useMemo, useState } from "react";
+import { clearPageDraft } from "@/lib/workspaceDrafts";
+import { useDraftState } from "@/features/drafts/useDraftState";
+import { useMemo } from "react";
 import {
   FileText, Check, X, Mail, CornerUpLeft, Send, Microscope, ClipboardList,
   CheckCircle2, AlertCircle, Rocket, Timer, Activity, Gavel, Paperclip,
@@ -40,8 +42,8 @@ const ROL_FALLBACK = { avatar: "bg-surface-2 text-ink-soft", etiqueta: "bg-surfa
 type RolFiltro = "todos" | "seguridad" | "reportante" | "jefe";
 
 export function TimelinePanel({ caso, puedeComentar = true }: { caso: CaseDetail; puedeComentar?: boolean }) {
-  const [comment, setComment] = useState("");
-  const [rol, setRol] = useState<RolFiltro>("todos");
+  const [comment, setComment] = useDraftState("pages/seguridad/case-detail/TimelinePanel:comment", "");
+  const [rol, setRol] = useDraftState<RolFiltro>("pages/seguridad/case-detail/TimelinePanel:rol", "todos");
   const addComment = useAddComment(caso.codigo_sop);
 
   const events = useMemo(
@@ -134,7 +136,7 @@ export function TimelinePanel({ caso, puedeComentar = true }: { caso: CaseDetail
                 addComment.mutate(
                   { texto: comment.trim() },
                   {
-                    onSuccess: () => {
+                    onSuccess: () => { clearPageDraft("pages/seguridad/case-detail/TimelinePanel:");
                       toast.success("Comentario agregado");
                       setComment("");
                     },

@@ -2,6 +2,8 @@ import { ImportacionHeader } from "@/features/importacion/ImportacionHeader";
 import "@/features/importacion/importacion-editor.css";
 import { SopImportActions } from "@/features/importacion/SopImportActions";
 import { useMemo, useRef, useState } from "react";
+import { useClearDraft, useDraftState } from "@/features/drafts/useDraftState";
+import { clearPageDraft } from "@/lib/workspaceDrafts";
 import { toast } from "sonner";
 import { isAxiosError } from "axios";
 import {
@@ -197,7 +199,7 @@ function ResultBanner({ result }: { result: ImportacionResult | null }) {
 }
 
 function CellPreview({ sheet, preview }: { sheet: ImportSheet; preview: ImportacionPreview }) {
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useDraftState("pages/admin/ImportacionPage:page", 0);
   const pageCount = Math.max(1, Math.ceil(sheet.rows.length / 100));
   const currentPage = Math.min(page, pageCount - 1);
   const startRow = currentPage * 100;
@@ -246,22 +248,31 @@ function CellPreview({ sheet, preview }: { sheet: ImportSheet; preview: Importac
 
 export function AdminImportacionPage() {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [parsed, setParsed] = useState<ParsedImportFile | null>(null);
-  const [sheetIndex, setSheetIndex] = useState(0);
-  const [resultPage, setResultPage] = useState(0);
-  const [preview, setPreview] = useState<ImportacionPreview | null>(null);
+  const clearImportDraft = useClearDraft("history-import:");
+  const clearDecisionsDraft = () => {
+    clearPageDraft("features/importacion/SopImportActions:");
+    clearPageDraft("pages/admin/ImportacionPage:page");
+  };
+  const clearDraft = () => { clearImportDraft(); clearDecisionsDraft(); };
+  const [parsed, setParsed] = useDraftState<ParsedImportFile | null>("history-import:file", null);
+  const [sheetIndex, setSheetIndex] = useDraftState("history-import:sheet", 0);
+  const [resultPage, setResultPage] = useDraftState("history-import:page", 0);
+  const [savedPreview, setPreview] = useDraftState<ImportacionPreview | null>("history-import:preview", null);
+  const [validatedHere, setValidatedHere] = useState(false);
+  const preview = savedPreview ? { ...savedPreview, canImport: savedPreview.canImport && validatedHere } : null;
   const resultPageCount = Math.max(1, Math.ceil((preview?.cases.length ?? 0) / 100));
   const currentResultPage = Math.min(resultPage, resultPageCount - 1);
-  const [result, setResult] = useState<ImportacionResult | null>(null);
-  const [decisions, setDecisions] = useState<DecisionSop[]>([]);
-  const [dirty, setDirty] = useState(false);
-  const [historyPage, setHistoryPage] = useState(1);
+  const [result, setResult] = useDraftState<ImportacionResult | null>("history-import:result", null);
+  const [decisions, setDecisions] = useDraftState<DecisionSop[]>("history-import:decisions", []);
+  const [dirty, setDirty] = useDraftState("history-import:dirty", false);
+  const [historyPage, setHistoryPage] = useDraftState("history-import:history-page", 1);
   const [confirming, setConfirming] = useState(false);
-  const [revertingId, setRevertingId] = useState<number | null>(null);
-  const [revertReason, setRevertReason] = useState("");
+  const [revertingId, setRevertingId] = useDraftState<number | null>("pages/admin/ImportacionPage:revertingId", null);
+  const [revertReason, setRevertReason] = useDraftState("pages/admin/ImportacionPage:revertReason", "");
   const [parseError, setParseError] = useState<string | null>(null);
   const [parsing, setParsing] = useState(false);
-  const [tipoImportacion, setTipoImportacion] = useState<ImportacionTipo>("casos");
+  const [tipoImportacion, setTipoImportacion] = useDraftState<ImportacionTipo>("history-import-type", "casos");
+  const [confirmationStarted, setConfirmationStarted] = useDraftState("history-import:started", false);
   const modulo = IMPORTACION_MODULOS[tipoImportacion];
   const validar = useValidarImportacion(tipoImportacion);
   const importar = useImportarRegistros(tipoImportacion);
@@ -281,6 +292,8 @@ export function AdminImportacionPage() {
 
   function cambiarTipoImportacion(tipo: ImportacionTipo) {
     if (tipo === tipoImportacion) return;
+    clearDraft();
+    setValidatedHere(false);
     setTipoImportacion(tipo);
     setParsed(null);
     setSheetIndex(0);
@@ -298,6 +311,8 @@ export function AdminImportacionPage() {
 
   async function handleFileChange(file: File | undefined) {
     if (!file) return;
+    clearDraft();
+    setValidatedHere(false);
     setResultPage(0);
     setParsing(true);
     setParseError(null);
@@ -327,10 +342,13 @@ export function AdminImportacionPage() {
     setResult(null);
     validar.reset();
     importar.reset();
-    try { const validation = await validar.mutateAsync(payload); setPreview(validation); setDirty(false); } catch { /* Mutation error is rendered above. */ }
+    setValidatedHere(false);
+    try { const validation = await validar.mutateAsync(payload); setPreview(validation); setDirty(false); setValidatedHere(true); } catch { /* Mutation error is rendered above. */ }
   }
 
   function handleSheetChange(index: number) {
+    clearDecisionsDraft();
+    setValidatedHere(false);
     setSheetIndex(index);
     setResultPage(0);
     setPreview(null);
@@ -346,20 +364,25 @@ export function AdminImportacionPage() {
 
   async function handleImport() {
     if (!payload || !preview?.canImport || dirty) return;
+    setConfirmationStarted(true);
     try {
     const imported = await importar.mutateAsync(payload);
     setResult(imported);
     setPreview(imported);
     setConfirming(false);
+    setValidatedHere(false);
+    setDirty(false);
+    setConfirmationStarted(false);
+    clearDecisionsDraft();
     const totalImportados = imported.imported.eventos + imported.imported.casos + imported.imported.planes;
     (imported.resumen.errores ? toast.warning : toast.success)(imported.resumen.errores ? "Importación con errores: revisa las filas indicadas" : "Importación completada correctamente", {
       description: `${totalImportados.toLocaleString("es-PE")} registro${totalImportados === 1 ? "" : "s"} de ${modulo.label} importado${totalImportados === 1 ? "" : "s"}. Revisa el resumen de la carga.`,
       duration: 6000,
     });
-    } catch { setConfirming(false); }
+    } catch { setConfirming(false); setValidatedHere(false); }
   }
 
-  const importBlockedReason = dirty ? "Hay decisiones pendientes: pulsa Validar antes de importar." : !preview
+  const importBlockedReason = dirty || (savedPreview && !validatedHere) ? "Hay decisiones pendientes: pulsa Validar antes de importar." : !preview
     ? "Primero valida la hoja seleccionada."
     : preview.resumen.errores > 0
       ? `Corrige ${preview.resumen.errores} error${preview.resumen.errores === 1 ? "" : "es"} antes de importar.`
@@ -371,6 +394,8 @@ export function AdminImportacionPage() {
     <AdminShell>
       <div className="import-workspace">
       <ImportacionHeader />
+      {parsed && <p role="status" className="mb-3 rounded-lg border border-line bg-white p-3 text-sm text-ink-soft">Tu archivo y las decisiones se conservan en esta pestaña. Después de recargar, pulsa Validar para actualizar la revisión antes de importar.</p>}
+      {confirmationStarted && <div role="alert" className="mb-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">Se inició una carga anteriormente. Revisa el historial antes de volver a importar para evitar registros adicionales. No se reenvían cargas al recargar.<Button variant="outline" className="ml-3" onClick={() => setConfirmationStarted(false)}>Ya revisé el historial</Button></div>}
       <div className="import-module-tabs" role="tablist" aria-label="Módulo de importación">{(Object.keys(IMPORTACION_MODULOS) as ImportacionTipo[]).map(tipo => <button key={tipo} role="tab" aria-selected={tipoImportacion === tipo} disabled={pending} onClick={() => cambiarTipoImportacion(tipo)}>{tipo === "monitoreo" ? "Monitoreo" : IMPORTACION_MODULOS[tipo].label}</button>)}</div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-ink-quiet">{modulo.description}</p>{!result && !dirty && <ValidationBadge preview={preview} />}</div>
 
@@ -463,7 +488,7 @@ export function AdminImportacionPage() {
         {preview && tipoImportacion !== "casos" && <div className="import-review-summary"><strong>{preview.resumen.listos} registros listos</strong><p>{preview.resumen.errores} errores · {preview.resumen.advertencias} advertencias</p><p>Revisa el detalle de las filas y confirma la carga desde el panel de archivo.</p></div>}
       <ResultBanner result={result} />
       {tipoImportacion === "contingencias" && <p className="mt-4 rounded border border-amber-200 bg-amber-50 p-4 text-sm">Esta carga contiene información personal y clínica. La vista previa oculta los valores del archivo y el diagnóstico descargable contiene únicamente referencias de fila y campo.</p>}
-      {tipoImportacion === "casos" && preview && !result && <SopImportActions preview={preview} decisions={decisions} disabled={pending} needsValidation={dirty} onChange={value => { setDecisions(value); setDirty(true); toast.info("Decisión preparada. Valida para revisar el resultado antes de importar."); }} />}
+      {tipoImportacion === "casos" && preview && !result && <SopImportActions preview={preview} decisions={decisions} disabled={pending} needsValidation={dirty || !validatedHere} onChange={value => { setDecisions(value); setDirty(true); toast.info("Decisión preparada. Valida para revisar el resultado antes de importar."); }} />}
 
         <div className="import-review-foot"><CheckCircle2 size={15} /><span>Se conservan los códigos de origen. Cada carga queda registrada en el historial.</span></div>
       </section>

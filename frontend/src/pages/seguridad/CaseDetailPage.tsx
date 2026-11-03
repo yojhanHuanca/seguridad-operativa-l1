@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -92,8 +93,8 @@ export function CaseDetailPage() {
 function CaseFileContent({ caso }: { caso: CaseDetail }) {
   const { data: configuracion } = useConfiguracion();
   const systemName = nombreSistema(configuracion);
-  const [showEvidence, setShowEvidence] = useState(false);
-  const [showTimeline, setShowTimeline] = useState(false);
+  const [showEvidence, setShowEvidence] = useDraftState("pages/seguridad/CaseDetailPage:showEvidence", false);
+  const [showTimeline, setShowTimeline] = useDraftState("pages/seguridad/CaseDetailPage:showTimeline", false);
   const [exportPlanActive, setExportPlanActive] = useState(false);
   const [exportFullActive, setExportFullActive] = useState(false);
 

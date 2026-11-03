@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { clearPageDraft } from "@/lib/workspaceDrafts";
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { useSearchParams } from "react-router-dom";
 import { AlertCircle, Mail, CornerUpLeft, Undo2, MessageSquarePlus } from "lucide-react";
 import { toast } from "sonner";
@@ -30,10 +31,10 @@ export function PendingInfoCard({ caso }: { caso: CaseDetail }) {
     else next.delete("vista");
     setSearchParams(next, { replace: true });
   };
-  const [mostrarComentario, setMostrarComentario] = useState(false);
+  const [mostrarComentario, setMostrarComentario] = useDraftState("pages/seguridad/case-detail/PendingInfoCard:mostrarComentario", false);
   const solicitud = caso.solicitudes_informacion.find((s) => !s.respondida);
   const historicas = caso.solicitudes_informacion.filter((s) => s.respondida);
-  const [respuesta, setRespuesta] = useState("");
+  const [respuesta, setRespuesta] = useDraftState("pages/seguridad/case-detail/PendingInfoCard:respuesta", "");
   const respond = useRespondInfo(caso.codigo_sop);
 
   if (!solicitud) return null;
@@ -140,7 +141,7 @@ export function PendingInfoCard({ caso }: { caso: CaseDetail }) {
                 respond.mutate(
                   { id_solicitud: solicitud.id_solicitud, respuesta: respuesta.trim() || undefined },
                   {
-                    onSuccess: () => {
+                    onSuccess: () => { clearPageDraft("pages/seguridad/case-detail/PendingInfoCard:");
                       toast.success(`Respuesta registrada, el caso vuelve a ${vuelveA}`);
                       setRespuesta("");
                       setMostrarComentario(false);

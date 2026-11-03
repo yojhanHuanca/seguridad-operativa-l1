@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { useMemo, useState } from "react";
 import {
   AlertTriangle,
@@ -64,9 +65,9 @@ export function JefeIndicadoresPage() {
   const { data: configuracion } = useConfiguracion();
   const systemName = nombreSistema(configuracion);
   const { printActive, printReport } = useIndicadoresPrint(`Indicadores ${systemName} - Jefe de Area`);
-  const [selectedYear, setSelectedYear] = useState<string>(ALL);
-  const [selectedMonth, setSelectedMonth] = useState<string>(ALL);
-  const [selection, setSelection] = useState<DashboardSelection | null>(null);
+  const [selectedYear, setSelectedYear] = useDraftState<string>("pages/jefe/IndicadoresPage:selectedYear", ALL);
+  const [selectedMonth, setSelectedMonth] = useDraftState<string>("pages/jefe/IndicadoresPage:selectedMonth", ALL);
+  const [selection, setSelection] = useDraftState<DashboardSelection | null>("pages/jefe/IndicadoresPage:selection", null);
   const plans = useMemo(() => rawPlans ?? [], [rawPlans]);
 
   const filteredPlans = useMemo(

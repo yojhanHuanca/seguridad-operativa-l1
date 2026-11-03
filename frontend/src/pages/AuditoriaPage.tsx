@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useEffect, useState } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight, Download, History, LoaderCircle, LogIn, PlusCircle, Search, ShieldAlert, Trash2, UserCog } from "lucide-react";
@@ -228,23 +229,23 @@ function FilaAuditoria({ registro }: { registro: AuditoriaItem }) {
 }
 
 export function AuditoriaPanelContent() {
-  const [accionFiltro, setAccionFiltro] = useState("todas");
-  const [query, setQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [pagina, setPagina] = useState(1);
-  const [usuario, setUsuario] = useState("");
-  const [tabla, setTabla] = useState("");
-  const [desde, setDesde] = useState("");
-  const [hasta, setHasta] = useState("");
+  const [accionFiltro, setAccionFiltro] = useDraftState("pages/AuditoriaPage:accionFiltro", "todas");
+  const [query, setQuery] = useDraftState("pages/AuditoriaPage:query", "");
+  const [debouncedQuery, setDebouncedQuery] = useState(query.trim());
+  const [pagina, setPagina] = useDraftState("pages/AuditoriaPage:pagina", 1);
+  const [usuario, setUsuario] = useDraftState("pages/AuditoriaPage:usuario", "");
+  const [tabla, setTabla] = useDraftState("pages/AuditoriaPage:tabla", "");
+  const [desde, setDesde] = useDraftState("pages/AuditoriaPage:desde", "");
+  const [hasta, setHasta] = useDraftState("pages/AuditoriaPage:hasta", "");
   const [exportando, setExportando] = useState(false);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
       setDebouncedQuery(query.trim());
-      setPagina(1);
+      if (query.trim() !== debouncedQuery) setPagina(1);
     }, 300);
     return () => window.clearTimeout(timeout);
-  }, [query]);
+  }, [query, debouncedQuery, setPagina]);
 
   const filtrosActivos = {
     usuario: usuario ? Number(usuario) : undefined,

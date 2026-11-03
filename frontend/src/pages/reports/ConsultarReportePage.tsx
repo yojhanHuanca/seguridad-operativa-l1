@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useClearDraft, useDraftState } from "@/features/drafts/useDraftState";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -29,9 +30,11 @@ function formatFecha(iso: string | null) {
  * defecto para no abrumar a alguien que solo vino a ver el estado.
  */
 function ResponderSolicitudForm({ codigo, idSolicitud }: { codigo: string; idSolicitud: number }) {
-  const [abierto, setAbierto] = useState(false);
-  const [respuesta, setRespuesta] = useState("");
-  const [files, setFiles] = useState<File[]>([]);
+  const scope = `public-response:${codigo}:${idSolicitud}:`;
+  const clearDraft = useClearDraft(scope);
+  const [abierto, setAbierto] = useDraftState(scope + "open", false);
+  const [respuesta, setRespuesta] = useDraftState(scope + "text", "");
+  const [files, setFiles] = useDraftState<File[]>(scope + "files", []);
   const responder = useResponderInfoPublico(codigo);
 
   if (!abierto) {
@@ -62,7 +65,7 @@ function ResponderSolicitudForm({ codigo, idSolicitud }: { codigo: string; idSol
             responder.mutate(
               { id_solicitud: idSolicitud, respuesta: respuesta.trim(), files },
               {
-                onSuccess: () => toast.success("Tu respuesta fue enviada a Seguridad Operativa"),
+                onSuccess: () => { clearDraft(); toast.success("Tu respuesta fue enviada a Seguridad Operativa"); },
                 onError: (e) => toast.error(apiErrorMessage(e, "No se pudo enviar tu respuesta")),
               }
             )
@@ -84,8 +87,8 @@ function ResponderSolicitudForm({ codigo, idSolicitud }: { codigo: string; idSol
  */
 export function ConsultarReportePage() {
   const [params] = useSearchParams();
-  const [input, setInput] = useState(params.get("codigo") ?? "");
-  const [buscado, setBuscado] = useState<string | null>(params.get("codigo"));
+  const [input, setInput] = useDraftState(`public-search:${params.get("codigo") ?? ""}:input`, params.get("codigo") ?? "");
+  const [buscado, setBuscado] = useDraftState<string | null>(`public-search:${params.get("codigo") ?? ""}:code`, params.get("codigo"));
   const [guardados] = useState(() => leerReportesLocales());
   const reducedMotion = useReducedMotion();
 

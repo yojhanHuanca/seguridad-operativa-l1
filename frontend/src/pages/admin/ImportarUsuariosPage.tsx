@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
@@ -12,24 +12,38 @@ import { useAreas } from "@/features/reports/hooks/useAreas";
 import { useRoles } from "@/features/users/hooks/useRoles";
 import { downloadTemporaryAccess, MAX_USER_IMPORT_ROWS, parseUserImportFile, YELLOW_FIELDS } from "@/features/users/import/excel";
 import { unitKey, type UserImportFile, type UserImportPayload, type UserImportPreview, type UserImportResult } from "@/features/users/import/types";
+import { useClearDraft, useDraftState } from "@/features/drafts/useDraftState";
 
 const STEPS = ["Archivo", "Asignar roles", "Áreas de jefes", "Confirmar"];
 const PAGE_SIZE = 25;
 
 export function AdminImportarUsuariosPage() {
   const fileInput = useRef<HTMLInputElement>(null);
-  const [file, setFile] = useState<UserImportFile | null>(null);
-  const [sheetIndex, setSheetIndex] = useState(0);
-  const [areaMap, setAreaMap] = useState<Record<string, string>>({});
-  const [roleMap, setRoleMap] = useState<Record<number, number>>({});
-  const [bulkRole, setBulkRole] = useState("");
-  const [step, setStep] = useState(0);
-  const [page, setPage] = useState(0);
+  const clearDraft = useClearDraft("users-import:");
+  const [file, setFile] = useDraftState<UserImportFile | null>("users-import:file", null);
+  const [sheetIndex, setSheetIndex] = useDraftState("users-import:sheet", 0);
+  const [areaMap, setAreaMap] = useDraftState<Record<string, string>>("users-import:areas", {});
+  const [roleMap, setRoleMap] = useDraftState<Record<number, number>>("users-import:roles", {});
+  const [bulkRole, setBulkRole] = useDraftState("users-import:bulk-role", "");
+  const [savedStep, setStep] = useDraftState("users-import:step", 0);
+  const [page, setPage] = useDraftState("users-import:page", 0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<UserImportPreview | null>(null);
   const [result, setResult] = useState<UserImportResult | null>(null);
+  const [completed, setCompleted] = useDraftState<Pick<UserImportResult, "batchId" | "created"> | null>("users-import:completed", null);
+  const finished = result ?? completed;
   const [downloaded, setDownloaded] = useState(false);
+  const [confirmationStarted, setConfirmationStarted] = useDraftState("users-import:confirmation-started", false);
+  // Una validación anterior no autoriza el guardado tras recargar: volver a
+  // validar conserva el archivo y las selecciones, pero consulta el estado real.
+  const step = savedStep === 3 && !preview ? 2 : savedStep;
+  useEffect(() => {
+    if (!busy && (!result || downloaded)) return;
+    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [busy, result, downloaded]);
   const areas = useAreas();
   const roles = useRoles();
   const queryClient = useQueryClient();
@@ -59,6 +73,7 @@ export function AdminImportarUsuariosPage() {
   async function selectFile(source?: File) {
     if (!source || busy) return;
     setBusy(true);
+    clearDraft();
     setError(null);
     setFile(null);
     setPreview(null);
@@ -100,11 +115,14 @@ export function AdminImportarUsuariosPage() {
   async function confirm() {
     if (busy || !preview?.canImport || result) return;
     setBusy(true);
+    setConfirmationStarted(true);
     setError(null);
     try {
       const response = await api.post<ApiEnvelope<UserImportResult>>("/importacion/usuarios/importar", payload());
       if (!response.data.data) throw new Error("La API no devolvió el resultado.");
       setResult(response.data.data);
+      clearDraft();
+      setCompleted({ batchId: response.data.data.batchId, created: response.data.data.created });
       setFile(null);
       setPreview(null);
       setRoleMap({});
@@ -132,21 +150,24 @@ export function AdminImportarUsuariosPage() {
           {!busy && <Link to="/admin/usuarios" className="inline-flex items-center gap-2 rounded-lg border border-line-strong bg-white px-3 py-2 text-sm text-ink"><ArrowLeft className="h-4 w-4" /> Volver a usuarios</Link>}
         </div>
 
-        {result ? (
+        {finished ? (
           <section className="rounded-2xl border border-line bg-white p-6 sm:p-8" aria-labelledby="import-success">
             <CheckCircle2 className="mb-4 h-10 w-10 text-brand-700" />
-            <h2 id="import-success" className="text-xl font-semibold text-ink">{result.created} usuarios creados</h2>
+            <h2 id="import-success" className="text-xl font-semibold text-ink">{finished.created} usuarios creados</h2>
             <p className="mt-2 text-sm text-ink-soft">Cada cuenta conserva el rol revisado. Solo los Jefes de Área tienen área asignada; los permisos especiales quedan desactivados.</p>
             <div className="mt-6 rounded-xl border border-line bg-surface p-5">
               <h3 className="font-semibold text-ink">Accesos temporales</h3>
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-soft">Se generó una contraseña distinta para cada persona. Deben cambiarla en su primer ingreso. Descarga los accesos antes de salir: están disponibles únicamente en esta pantalla y no se enviaron correos.</p>
-              <Button className="mt-4" onClick={() => { downloadTemporaryAccess(result); setDownloaded(true); }}><Download className="h-4 w-4" /> Descargar accesos temporales</Button>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-soft">{result ? "Se generó una contraseña distinta para cada persona. Deben cambiarla en su primer ingreso. Descarga los accesos antes de salir: están disponibles únicamente en esta pantalla y no se enviaron correos." : "La carga ya se completó. Los accesos temporales no se guardan como borrador: usa la descarga que preparaste antes de salir. Si no la conservas, restablece la contraseña de las cuentas afectadas desde Gestión de Usuarios."}</p>
+              {result && <Button className="mt-4" onClick={() => { downloadTemporaryAccess(result); setDownloaded(true); }}><Download className="h-4 w-4" /> Descargar accesos temporales</Button>}
               {downloaded && <p role="status" className="mt-3 text-sm text-brand-800">Descarga preparada. Entrega cada acceso únicamente a su titular.</p>}
             </div>
-            <p className="mt-5 break-all text-xs text-ink-quiet">La creación de cada cuenta quedó registrada en Auditoría. Lote: {result.batchId}.</p>
+            <p className="mt-5 break-all text-xs text-ink-quiet">La creación de cada cuenta quedó registrada en Auditoría. Lote: {finished.batchId}.</p>
+            <Button variant="outline" className="mt-5" disabled={!!result && !downloaded} onClick={() => { clearDraft(); setResult(null); setDownloaded(false); }}>Importar otro archivo</Button>
           </section>
         ) : (
           <>
+            {file && <p role="status" className="rounded-lg border border-line bg-surface p-3 text-sm text-ink-soft">El archivo leído, los roles y las áreas se conservan en esta pestaña al recargar. Debes volver a validar antes de confirmar una carga recuperada.</p>}
+            {confirmationStarted && <p role="alert" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">Se inició una carga anteriormente. Comprueba Gestión de Usuarios antes de continuar: recargar no cancela el trabajo del servidor ni vuelve a crear cuentas automáticamente.</p>}
             <ol aria-label="Pasos de importación" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {STEPS.map((label, index) => <li key={label} aria-current={step === index ? "step" : undefined} className={cn("flex items-center gap-2 border-b-2 pb-3 text-xs font-medium sm:text-sm", index <= step ? "border-brand-700 text-brand-800" : "border-line text-ink-quiet")}><span className={cn("grid h-7 w-7 shrink-0 place-items-center rounded-full", index <= step ? "bg-brand-700 text-white" : "bg-surface-2 text-ink-soft")}>{index < step ? <Check className="h-4 w-4" /> : index + 1}</span>{label}</li>)}
             </ol>
@@ -199,7 +220,7 @@ export function AdminImportarUsuariosPage() {
             <div className="flex flex-wrap items-center justify-between gap-4 border-t border-line pt-5">
               <p className="flex max-w-xl items-start gap-2 text-xs leading-relaxed text-ink-quiet"><Info className="h-4 w-4 shrink-0" />{step === 3 ? "Al confirmar se guardarán todas las cuentas del lote junto con su registro de auditoría." : "La carga se realiza únicamente al confirmar en el último paso."}</p>
               <div className="ml-auto flex gap-2">
-                {step > 0 && <Button variant="outline" disabled={busy} onClick={() => { setStep(value => value - 1); setPage(0); setError(null); }}>Volver</Button>}
+                {step > 0 && <Button variant="outline" disabled={busy} onClick={() => { setStep(step - 1); setPage(0); setError(null); }}>Volver</Button>}
                 {step < 2 && <Button disabled={busy || !rows.length || (step === 1 && (!!pendingRoles || catalogError || catalogPending))} onClick={() => { setStep(value => value + 1); setError(null); }}>Continuar <ArrowRight className="h-4 w-4" /></Button>}
                 {step === 2 && <Button disabled={busy || !!pendingRoles || !!pendingAreas || catalogError || catalogPending} onClick={() => void validate()}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Validar y continuar</Button>}
                 {step === 3 && <Button disabled={busy || !preview?.canImport} onClick={() => void confirm()}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Users className="h-4 w-4" />}{busy ? "Creando usuarios…" : `Crear ${rows.length} usuarios`}</Button>}

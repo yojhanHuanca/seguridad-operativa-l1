@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { Link } from "react-router-dom";
 import { CheckCircle2, ClipboardList, Eye, ShieldAlert } from "lucide-react";
 import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
@@ -35,9 +35,9 @@ export function EventosAsignadosPage() {
   const { user: authUser } = useAuth();
   const esAdmin = authUser?.rol.toLowerCase() === "admin";
   const { data: eventos, isLoading } = useEventosAsignados(user?.id_usuario, esAdmin);
-  const [viendo, setViendo] = useState<EventoListItem | null>(null);
-  const [creandoPara, setCreandoPara] = useState<EventoListItem | null>(null);
-  const [pestana, setPestana] = useState<Pestana>("pendientes");
+  const [viendo, setViendo] = useDraftState<EventoListItem | null>("pages/seguridad/EventosAsignadosPage:viendo", null);
+  const [creandoPara, setCreandoPara] = useDraftState<EventoListItem | null>("pages/seguridad/EventosAsignadosPage:creandoPara", null);
+  const [pestana, setPestana] = useDraftState<Pestana>("pages/seguridad/EventosAsignadosPage:pestana", "pendientes");
 
   const lista = eventos ?? [];
   // Ya se creó un hallazgo desde este evento en cuanto tiene un caso

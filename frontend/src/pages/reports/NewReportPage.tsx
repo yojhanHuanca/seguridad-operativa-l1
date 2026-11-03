@@ -1,3 +1,6 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
+import { useClearDraft } from "@/features/drafts/useDraftState";
+import { useDraftForm } from "@/features/drafts/useDraftForm";
 import { useEffect, useRef, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -302,11 +305,12 @@ function ReportStepper({ stepIndex }: { stepIndex: number }) {
 }
 
 export function NewReportPage() {
+  const clearDraft = useClearDraft("pages/reports/NewReportPage:");
   const navigate = useNavigate();
-  const [introVisible, setIntroVisible] = useState(true);
-  const [stepIndex, setStepIndex] = useState(0);
+  const [introVisible, setIntroVisible] = useDraftState("pages/reports/NewReportPage:introVisible", true);
+  const [stepIndex, setStepIndex] = useDraftState("pages/reports/NewReportPage:stepIndex", 0);
   const [direction, setDirection] = useState<Direction>("forward");
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useDraftState<File[]>("pages/reports/NewReportPage:files", []);
   const step = REPORT_STEPS[stepIndex];
 
   const catalogs = useCatalogs();
@@ -319,6 +323,8 @@ export function NewReportPage() {
       modalidad: "anonimo",
     },
   });
+
+  useDraftForm("pages/reports/NewReportPage:values", form);
 
   const goNext = async () => {
     const fields = STEP_FIELDS[step];
@@ -338,6 +344,7 @@ export function NewReportPage() {
       { values, files },
       {
         onSuccess: (result) => {
+          clearDraft();
           toast.success(`Reporte recibido. Código de consulta: ${result.codigo_consulta}`);
           guardarReporteLocal(result.codigo_consulta);
           navigate("/reportes/consulta?codigo=" + encodeURIComponent(result.codigo_consulta));

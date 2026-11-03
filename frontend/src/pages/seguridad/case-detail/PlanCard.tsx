@@ -1,3 +1,5 @@
+import { clearPageDraft } from "@/lib/workspaceDrafts";
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { useState } from "react";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { BriefcaseBusiness, ClipboardList, Plus, Rocket, Search, Send, Trash2, FileSearch } from "lucide-react";
@@ -148,9 +150,9 @@ function ResponsableSearch({
 
 export function PlanCard({ caso }: { caso: CaseDetail }) {
   const plan = caso.planes_accion[0];
-  const [formOpen, setFormOpen] = useState(!plan);
+  const [formOpen, setFormOpen] = useDraftState("pages/seguridad/case-detail/PlanCard:formOpen", !plan);
   // null = crear uno nuevo; id = modificar ese plan precargándolo.
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useDraftState<number | null>("pages/seguridad/case-detail/PlanCard:editingId", null);
   const { data: configuracion, isLoading: configuracionLoading } = useConfiguracion();
 
   const inv = caso.investigacion_caso;
@@ -313,7 +315,7 @@ function IniciarEjecucion({ caso }: { caso: CaseDetail }) {
           disabled={iniciar.isPending}
           onClick={() =>
             iniciar.mutate(undefined, {
-              onSuccess: () => toast.success(`El caso pasó a Ejecución con ${aceptados.length} plan(es) en marcha`),
+              onSuccess: () => { clearPageDraft("pages/seguridad/case-detail/PlanCard:"); return toast.success(`El caso pasó a Ejecución con ${aceptados.length} plan(es) en marcha`); },
               onError: (e) => toast.error(apiErrorMessage(e, "No se pudo iniciar la ejecución")),
             })
           }
@@ -457,7 +459,7 @@ function PlanForm({
   const soloFecha = (v?: string | null) => (v ? v.slice(0, 10) : "");
   const defaultArea = plan ? String(plan.areas.id_area) : caso.areas ? String(caso.areas.id_area) : "";
 
-  const [actividades, setActividades] = useState<PlanFormActivityInput[]>(
+  const [actividades, setActividades] = useDraftState<PlanFormActivityInput[]>(`pages/seguridad/case-detail/PlanCard:actividades:${plan?.id_plan ?? "nuevo"}`,
     plan && plan.actividades_plan.length > 0
       ? plan.actividades_plan.map((a) => {
           const parsed = parseActivityDescription(a.descripcion);
@@ -530,7 +532,7 @@ function PlanForm({
 
     const planesPayload = actividadesValidas.map(planPayload);
     const opts = {
-      onSuccess: () => {
+      onSuccess: () => { clearPageDraft("pages/seguridad/case-detail/PlanCard:");
         toast.success(
           esEdicion
             ? "Plan de acción actualizado"

@@ -125,6 +125,17 @@ no se modifican. Descargar los accesos temporales al terminar y entregar cada
 credencial solo a su titular; no se envían correos de alta automáticamente.
 Cada persona debe cambiar su contraseña al primer ingreso. Probar este circuito
 con cuentas de ensayo antes de importar personal real.
+Los formularios, pasos, filtros y adjuntos seleccionados conservan borradores
+en el navegador de la misma pestaña y cuenta durante un máximo de 24 horas.
+Recargar recupera el avance; no equivale a guardar en el servidor ni reenvía
+operaciones. Cerrar sesión limpia los borradores de esa pestaña. Borrar datos
+del navegador o trabajar en otro dispositivo no permite recuperar ese avance.
+Las contraseñas y los accesos temporales descargables no se guardan como
+borradores. Descargar los accesos del lote antes de salir de su pantalla.
+Después de recargar una importación, validar otra vez antes de confirmar. Si
+se inició una carga, revisar usuarios o historial: recargar no cancela al servidor.
+Si el navegador impide guardar borradores, la web muestra una advertencia y pide
+guardar antes de recargar. Los borradores no reemplazan el respaldo de la base.
 Monitoreo y Contingencias aceptan registros sin identificador externo: cada fila
 válida se guarda por separado, aunque coincida con otra. Reimportar crea registros
 adicionales. SOP mantiene sus controles por códigos y estados.

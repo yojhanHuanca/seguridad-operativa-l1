@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useClearDraft, useDraftState } from "@/features/drafts/useDraftState";
 import { Loader2, Save } from "lucide-react";
 import { Modal } from "@/design-system/primitives/Modal";
 import { Button } from "@/design-system/primitives/Button";
@@ -16,17 +17,20 @@ interface SimpleNameModalProps {
 }
 
 export function SimpleNameModal({ open, onClose, title, fieldLabel, initialValue = "", maxLength, pending, onSubmit }: SimpleNameModalProps) {
-  const [value, setValue] = useState(initialValue);
+  const scope = `catalog-name:${title}:${initialValue}:`;
+  const clearDraft = useClearDraft(scope);
+  const [value, setValue] = useDraftState(scope + "value", initialValue);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
     const timer = window.setTimeout(() => {
-      setValue(initialValue);
       setError(null);
     }, 0);
     return () => window.clearTimeout(timer);
   }, [open, initialValue]);
+
+  const close = () => { setValue(initialValue); clearDraft(); onClose(); };
 
   const submit = () => {
     if (!value.trim()) {
@@ -40,12 +44,12 @@ export function SimpleNameModal({ open, onClose, title, fieldLabel, initialValue
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={close}
       title={title}
       size="sm"
       footer={
         <>
-          <Button variant="ghost" size="sm" onClick={onClose}>Cancelar</Button>
+          <Button variant="ghost" size="sm" onClick={close}>Cancelar</Button>
           <Button size="sm" onClick={submit} disabled={pending}>
             {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Guardar

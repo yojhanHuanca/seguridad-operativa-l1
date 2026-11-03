@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
@@ -466,22 +467,22 @@ export function AdminUsuariosPage() {
   const { data: roles = [] } = useRoles();
   const { data: counts } = useUserCounts();
   const updateUser = useUpdateUser();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<UserListItem | null>(null);
-  const [query, setQuery] = useState("");
+  const [modalOpen, setModalOpen] = useDraftState("pages/admin/UsuariosPage:modalOpen", false);
+  const [editing, setEditing] = useDraftState<UserListItem | null>("pages/admin/UsuariosPage:editing", null);
+  const [query, setQuery] = useDraftState("pages/admin/UsuariosPage:query", "");
   const [debouncedQuery, setDebouncedQuery] = useState(query);
-  const [roleFilter, setRoleFilter] = useState("todos");
-  const [statusFilter, setStatusFilter] = useState<"todos" | "activo" | "inactivo">("todos");
-  const [permissionFilter, setPermissionFilter] = useState<PermissionFilter>("todos");
-  const [pagina, setPagina] = useState(1);
+  const [roleFilter, setRoleFilter] = useDraftState("pages/admin/UsuariosPage:roleFilter", "todos");
+  const [statusFilter, setStatusFilter] = useDraftState<"todos" | "activo" | "inactivo">("pages/admin/UsuariosPage:statusFilter", "todos");
+  const [permissionFilter, setPermissionFilter] = useDraftState<PermissionFilter>("pages/admin/UsuariosPage:permissionFilter", "todos");
+  const [pagina, setPagina] = useDraftState("pages/admin/UsuariosPage:pagina", 1);
 
   useEffect(() => {
     const t = setTimeout(() => {
       setDebouncedQuery(query);
-      setPagina(1);
+      if (query !== debouncedQuery) setPagina(1);
     }, 350);
     return () => clearTimeout(t);
-  }, [query]);
+  }, [query, debouncedQuery, setPagina]);
 
   const { data: pageData, isLoading, isError, isPlaceholderData, refetch } = useUsers({
     search: debouncedQuery.trim() || undefined,

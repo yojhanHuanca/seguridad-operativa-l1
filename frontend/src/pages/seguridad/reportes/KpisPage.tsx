@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { useMemo, useState } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, Printer } from "lucide-react";
 import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
@@ -60,9 +61,9 @@ interface DetailRow {
 }
 
 export function SoKpisPage() {
-  const [selectedYear, setSelectedYear] = useState<string>(ALL);
-  const [selectedMonth, setSelectedMonth] = useState<string>(ALL);
-  const [selection, setSelection] = useState<DashboardSelection | null>(null);
+  const [selectedYear, setSelectedYear] = useDraftState<string>("pages/seguridad/reportes/KpisPage:selectedYear", ALL);
+  const [selectedMonth, setSelectedMonth] = useDraftState<string>("pages/seguridad/reportes/KpisPage:selectedMonth", ALL);
+  const [selection, setSelection] = useDraftState<DashboardSelection | null>("pages/seguridad/reportes/KpisPage:selection", null);
   const { data: rawCases, isLoading } = useCases({});
   const { data: configuracion } = useConfiguracion();
   const systemName = nombreSistema(configuracion);

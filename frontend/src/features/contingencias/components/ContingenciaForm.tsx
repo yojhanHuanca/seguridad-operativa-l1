@@ -23,6 +23,7 @@ import { CONTINGENCIA_RULES, allowedOption } from "../rules";
 import type { ContingenciaCatalogo, CreateContingenciaDto } from "../types";
 import { useAuth } from "@/features/auth/auth";
 import { contingenciaStorageKeys } from "../draft";
+import { useClearDraft, useDraftState } from "@/features/drafts/useDraftState";
 
 interface Props {
   initialData?: Partial<CreateContingenciaDto>;
@@ -259,19 +260,20 @@ function draftValues(initialData: Partial<CreateContingenciaDto> | undefined, st
 export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting = false }: Props) {
   const { user } = useAuth();
   const keys = contingenciaStorageKeys(user?.id_usuario);
-  const draftKey = keys?.draft;
-  const flowKey = keys?.flow;
-  const [values, setValues] = useState(() => draftValues(initialData, keys?.draft));
+  const legacyDraftKey = keys?.draft;
+  const legacyFlowKey = keys?.flow;
+  const clearDraft = useClearDraft("contingencia:");
+  const [values, setValues] = useDraftState("contingencia:values", () => draftValues(initialData, keys?.draft));
   const [errors, setErrors] = useState<Partial<ContingenciaFormValues>>({});
   const invalidFieldToFocus = useRef<FieldName | null>(null);
   const [notice, setNotice] = useState("");
-  const [flow, setFlow] = useState<FlowId>(() => {
+  const [flow, setFlow] = useDraftState<FlowId>("contingencia:flow", () => {
     try {
       const saved = keys ? window.localStorage.getItem(keys.flow) : null;
       return FLOW_OPTIONS.some((option) => option.id === saved) ? saved as FlowId : "spaa";
     } catch { return "spaa"; }
   });
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+  const [openSections, setOpenSections] = useDraftState<Record<string, boolean>>("contingencia:sections", {
     firstAid: true,
     ambulance: true,
     attentionData: false,
@@ -287,14 +289,10 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
   const percent = Math.round((completed / progressFields.length) * 100);
 
   useEffect(() => {
-    if (!flowKey) return;
-    try { window.localStorage.setItem(flowKey, flow); } catch { /* Optional draft storage may be unavailable. */ }
-  }, [flow, flowKey]);
-
-  useEffect(() => {
-    if (initialData || !draftKey) return;
-    try { window.localStorage.setItem(draftKey, JSON.stringify(values)); } catch { /* Keep the form usable without draft storage. */ }
-  }, [initialData, values, draftKey]);
+    if (initialData || !legacyDraftKey || !legacyFlowKey) return;
+    // Los borradores antiguos se migran al almacenamiento de la pestaña.
+    try { localStorage.removeItem(legacyDraftKey); localStorage.removeItem(legacyFlowKey); } catch { /* La edición sigue disponible. */ }
+  }, [initialData, legacyDraftKey, legacyFlowKey]);
 
   useEffect(() => {
     const name = invalidFieldToFocus.current;
@@ -454,7 +452,7 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
           <p className="mt-1 text-sm text-ink-quiet">Formulario ordenado según la hoja Base de datos del Excel.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" type="button" onClick={onCancel} disabled={isSubmitting}>Cancelar</Button>
+          <Button variant="outline" type="button" onClick={() => { clearDraft(); onCancel(); }} disabled={isSubmitting}>Cancelar</Button>
           <Button type="button" onClick={submitValues} disabled={isSubmitting}><Save className="h-4 w-4" />{isSubmitting ? "Guardando..." : "Finalizar registro"}</Button>
         </div>
       </div>

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { clearPageDraft } from "@/lib/workspaceDrafts";
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { Check, X, Mail, Send, StickyNote, Inbox, FileSearch, Pencil, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/design-system/primitives/Button";
@@ -31,14 +32,14 @@ export function ReceptionStage({
 }) {
   const { user } = useAuth();
   const puedeRechazar = user?.rol === "Admin" || user?.puede_rechazar_reportes;
-  const [rejectOpen, setRejectOpen] = useState(false);
-  const [reason, setReason] = useState("");
-  const [infoOpen, setInfoOpen] = useState(false);
-  const [question, setQuestion] = useState("");
-  const [obsOpen, setObsOpen] = useState(false);
-  const [observation, setObservation] = useState("");
-  const [tipoOpen, setTipoOpen] = useState(false);
-  const [idTipo, setIdTipo] = useState<string>("");
+  const [rejectOpen, setRejectOpen] = useDraftState("pages/seguridad/case-detail/ReceptionStage:rejectOpen", false);
+  const [reason, setReason] = useDraftState("pages/seguridad/case-detail/ReceptionStage:reason", "");
+  const [infoOpen, setInfoOpen] = useDraftState("pages/seguridad/case-detail/ReceptionStage:infoOpen", false);
+  const [question, setQuestion] = useDraftState("pages/seguridad/case-detail/ReceptionStage:question", "");
+  const [obsOpen, setObsOpen] = useDraftState("pages/seguridad/case-detail/ReceptionStage:obsOpen", false);
+  const [observation, setObservation] = useDraftState("pages/seguridad/case-detail/ReceptionStage:observation", "");
+  const [tipoOpen, setTipoOpen] = useDraftState("pages/seguridad/case-detail/ReceptionStage:tipoOpen", false);
+  const [idTipo, setIdTipo] = useDraftState<string>("pages/seguridad/case-detail/ReceptionStage:idTipo", "");
 
   const approve = useApproveCase(caso.codigo_sop);
   const reject = useRejectCase(caso.codigo_sop);
@@ -144,7 +145,7 @@ export function ReceptionStage({
               disabled={approve.isPending}
               onClick={() =>
                 approve.mutate(undefined, {
-                  onSuccess: () => toast.success("Reporte aprobado, pasó a Evaluación"),
+                  onSuccess: () => { clearPageDraft("pages/seguridad/case-detail/ReceptionStage:"); return toast.success("Reporte aprobado, pasó a Evaluación"); },
                   onError: (e) => toast.error(apiErrorMessage(e, "No se pudo aprobar el reporte")),
                 })
               }
@@ -204,7 +205,7 @@ export function ReceptionStage({
                 reject.mutate(
                   { motivo: reason.trim() },
                   {
-                    onSuccess: () => {
+                    onSuccess: () => { clearPageDraft("pages/seguridad/case-detail/ReceptionStage:");
                       toast.success("Reporte rechazado");
                       setRejectOpen(false);
                     },
@@ -239,7 +240,7 @@ export function ReceptionStage({
                 requestInfo.mutate(
                   { mensaje: question.trim() },
                   {
-                    onSuccess: () => {
+                    onSuccess: () => { clearPageDraft("pages/seguridad/case-detail/ReceptionStage:");
                       toast.success("Solicitud enviada, el caso queda en pausa");
                       setInfoOpen(false);
                       setQuestion("");
@@ -285,7 +286,7 @@ export function ReceptionStage({
                 addObservation.mutate(
                   { texto: observation.trim() },
                   {
-                    onSuccess: () => {
+                    onSuccess: () => { clearPageDraft("pages/seguridad/case-detail/ReceptionStage:");
                       toast.success("Observación registrada");
                       setObsOpen(false);
                       setObservation("");
@@ -322,7 +323,7 @@ export function ReceptionStage({
                 updateTipo.mutate(
                   { id_tipo: Number(idTipo) },
                   {
-                    onSuccess: () => {
+                    onSuccess: () => { clearPageDraft("pages/seguridad/case-detail/ReceptionStage:");
                       toast.success("Tipo de reporte actualizado");
                       setTipoOpen(false);
                     },

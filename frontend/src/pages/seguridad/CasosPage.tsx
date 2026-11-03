@@ -1,5 +1,6 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { UserAvatar } from "@/components/ui/UserAvatar";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Search, FolderKanban, Plus, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ClipboardList, CalendarDays, CheckCircle2 } from "lucide-react";
 import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
@@ -48,16 +49,18 @@ function planMasVencido(caso: CaseRow) {
 export function SoCasosPage() {
   const [params, setParams] = useSearchParams();
   const filtro = resolveFilter(params.get("filtro"));
-  const [query, setQuery] = useState(params.get("q") ?? "");
+  const [query, setQuery] = useDraftState("pages/seguridad/CasosPage:query", params.get("q") ?? "");
   const [debouncedQuery, setDebouncedQuery] = useState(query);
-  const [areaFilter, setAreaFilter] = useState<string>("");
-  const [sort, setSort] = useState<"recent" | "priority">("recent");
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [nuevoOpen, setNuevoOpen] = useState(false);
+  const [areaFilter, setAreaFilter] = useDraftState<string>("pages/seguridad/CasosPage:area", "");
+  const [sort, setSort] = useDraftState<"recent" | "priority">("pages/seguridad/CasosPage:sort", "recent");
+  const [expandedId, setExpandedId] = useDraftState<string | null>("pages/seguridad/CasosPage:expanded", null);
+  const [currentPage, setCurrentPage] = useDraftState("pages/seguridad/CasosPage:currentPage", 1);
+  const [nuevoOpen, setNuevoOpen] = useDraftState("pages/seguridad/CasosPage:nuevoOpen", false);
 
   const { data: areas } = useAreas();
   const areaId = useMemo(() => areas?.find((a) => a.nombre_area === areaFilter)?.id_area, [areas, areaFilter]);
+  const filterSignature = JSON.stringify([filtro.id, areaFilter, debouncedQuery, sort]);
+  const previousFilters = useRef(filterSignature);
 
   // La búsqueda ya no es un filtro en memoria: cada tecleo dispararía un
   // pedido al servidor, así que se espera una pausa antes de mandarla.
@@ -67,12 +70,14 @@ export function SoCasosPage() {
   }, [query]);
 
   useEffect(() => {
+    if (previousFilters.current === filterSignature) return;
+    previousFilters.current = filterSignature;
     const timer = window.setTimeout(() => {
       setCurrentPage(1);
       setExpandedId(null);
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [filtro.id, areaFilter, debouncedQuery, sort]);
+  }, [filterSignature, setCurrentPage, setExpandedId]);
 
   const { data: counts } = useCaseCounts(areaId);
 

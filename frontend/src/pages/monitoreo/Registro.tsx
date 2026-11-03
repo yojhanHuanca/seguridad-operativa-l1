@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useDraftState } from "@/features/drafts/useDraftState";
+import { clearPageDraft } from "@/lib/workspaceDrafts";
 import { useNavigate } from "react-router-dom";
 import { Check, ClipboardList, Save, X } from "lucide-react";
 import { toast } from "sonner";
@@ -13,7 +14,7 @@ import { apiErrorMessage } from "@/lib/api";
 export function Registro() {
   const navigate = useNavigate();
   const createEvento = useCreateEvento();
-  const [success, setSuccess] = useState<string | null>(null);
+  const [success, setSuccess] = useDraftState<string | null>("event-result", null);
   const { form, set, errors, rangoLabel, validate, toInput, reset } = useEventoFormState();
 
   const onSubmit = (e: React.FormEvent) => {
@@ -22,6 +23,7 @@ export function Registro() {
 
     createEvento.mutate(toInput(), {
       onSuccess: () => {
+        clearPageDraft("features/eventos/hooks/useEventoFormState:");
         toast.success("Evento registrado");
         setSuccess("ok");
       },

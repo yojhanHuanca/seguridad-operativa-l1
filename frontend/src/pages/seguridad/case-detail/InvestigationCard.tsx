@@ -1,5 +1,6 @@
+import { clearPageDraft } from "@/lib/workspaceDrafts";
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { UserAvatar } from "@/components/ui/UserAvatar";
-import { useState } from "react";
 import { Microscope, Check, FileSearch, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/design-system/primitives/Button";
@@ -53,17 +54,17 @@ export function InvestigationCard({ caso }: { caso: CaseDetail }) {
   const riesgo = caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle;
   const catalogs = useCatalogs();
   const riesgoItems = catalogs.byName.get("Análisis de riesgo")?.catalogo_detalle ?? [];
-  const [idRiesgo, setIdRiesgo] = useState<number | null>(riesgo?.id_detalle ?? null);
+  const [idRiesgo, setIdRiesgo] = useDraftState<number | null>("pages/seguridad/case-detail/InvestigationCard:idRiesgo", riesgo?.id_detalle ?? null);
   const riesgoSeleccionado = riesgoItems.find((item) => item.id_detalle === idRiesgo) ?? riesgo;
   const risk = riesgoSeleccionado?.codigo as RiskLevel | undefined;
   const riesgoLabel = riesgo ? `${riesgo.codigo} — ${criterioAceptabilidad(riesgo.nombre, riesgo.codigo) ?? riesgo.nombre}` : "Sin evaluar";
   // Aviso en color cuando la investigación está lista pero aún no hay plan.
   const sinPlan = caso.planes_accion.length === 0;
-  const [editMode, setEditMode] = useState(!inv);
-  const [hallazgos, setHallazgos] = useState(inv?.hallazgos ?? "");
-  const [rootCause, setRootCause] = useState(inv?.causa_raiz ?? "");
-  const [conclusions, setConclusions] = useState(inv?.conclusiones ?? "");
-  const [observations, setObservations] = useState(inv?.observaciones ?? "");
+  const [editMode, setEditMode] = useDraftState("pages/seguridad/case-detail/InvestigationCard:editMode", !inv);
+  const [hallazgos, setHallazgos] = useDraftState("pages/seguridad/case-detail/InvestigationCard:hallazgos", inv?.hallazgos ?? "");
+  const [rootCause, setRootCause] = useDraftState("pages/seguridad/case-detail/InvestigationCard:rootCause", inv?.causa_raiz ?? "");
+  const [conclusions, setConclusions] = useDraftState("pages/seguridad/case-detail/InvestigationCard:conclusions", inv?.conclusiones ?? "");
+  const [observations, setObservations] = useDraftState("pages/seguridad/case-detail/InvestigationCard:observations", inv?.observaciones ?? "");
 
   const save = useSaveInvestigation(caso.codigo_sop);
   const canSave = idRiesgo != null && hallazgos.trim().length >= 5 && rootCause.trim().length >= 5 && conclusions.trim().length >= 5;
@@ -189,7 +190,7 @@ export function InvestigationCard({ caso }: { caso: CaseDetail }) {
                   observaciones: observations.trim() || undefined,
                 },
                 {
-                  onSuccess: () => {
+                  onSuccess: () => { clearPageDraft("pages/seguridad/case-detail/InvestigationCard:");
                     toast.success("Investigación guardada, el caso pasó a Plan de Acción");
                     setEditMode(false);
                   },

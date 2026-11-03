@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useClearDraft, useDraftState } from "@/features/drafts/useDraftState";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Modal } from "@/design-system/primitives/Modal";
@@ -14,8 +15,10 @@ interface PendingPlan {
 }
 
 export function UserReassignPlansModal({ user, onClose }: { user: { id_usuario: number; nombre: string }; onClose: () => void }) {
-  const [targets, setTargets] = useState<Record<number, string>>({});
-  const [reason, setReason] = useState("");
+  const scope = `user-handover:${user.id_usuario}:`;
+  const clearDraft = useClearDraft(scope);
+  const [targets, setTargets] = useDraftState<Record<number, string>>(scope + "targets", {});
+  const [reason, setReason] = useDraftState(scope + "reason", "");
   const [error, setError] = useState<string | null>(null);
   const client = useQueryClient();
   const pending = useQuery({
@@ -57,6 +60,7 @@ export function UserReassignPlansModal({ user, onClose }: { user: { id_usuario: 
       return response.data.data;
     },
     onSuccess: result => {
+      clearDraft();
       for (const key of ["user-pending-plans", "planes", "planes-caso", "planes-paginado", "case", "cases", "auditoria", "notifications", "notificaciones"]) void client.invalidateQueries({ queryKey: [key] });
       toast.success(`${result.planes} planes revisados y responsabilidades reasignadas. Ya puedes guardar el cambio del usuario.`);
       onClose();

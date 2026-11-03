@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
+import { clearPageDraft } from "@/lib/workspaceDrafts";
 import { ArrowLeft, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { MonitoristaShell } from "@/components/layout/MonitoristaShell";
@@ -52,6 +53,7 @@ function EditarFormulario({ evento }: { evento: EventoListItem }) {
       { id_evento: evento.id_evento, ...toInput() },
       {
         onSuccess: () => {
+          clearPageDraft("features/eventos/hooks/useEventoFormState:");
           toast.success("Evento actualizado");
           navigate(-1);
         },

@@ -1,4 +1,5 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useDraftState } from "@/features/drafts/useDraftState";
+import { useEffect, type ReactNode } from "react";
 import { Calendar, ClipboardList, Clock, Lock, MapPin, Train, Unlock, Wrench, type LucideIcon } from "lucide-react";
 import { Card } from "@/design-system/primitives/Card";
 import { Field, Input, Select, Textarea } from "@/design-system/primitives/Input";
@@ -134,7 +135,7 @@ export function EventoFormFields({
   // Año/Mes/Sem/Día/Rango horario quedan bloqueados por defecto (se llenan
   // solos con Fecha y Hora) — el botoncito los desbloquea para corregirlos
   // a mano cuando de verdad hace falta, así no se editan por accidente.
-  const [desbloqueado, setDesbloqueado] = useState(false);
+  const [desbloqueado, setDesbloqueado] = useDraftState("features/eventos/components/EventoFormFields:desbloqueado", false);
 
   // Apenas la hora da un rango horario válido, se preselecciona la opción
   // del catálogo que corresponde — el usuario después puede elegir otra

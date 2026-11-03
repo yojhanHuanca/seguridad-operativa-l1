@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { clearPageDraft } from "@/lib/workspaceDrafts";
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { Check, FileSearch } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/design-system/primitives/Button";
@@ -30,14 +31,14 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
   const tipoCausa = evento?.catalogo_detalle_eventos_operativos_tipo_causaTocatalogo_detalle?.nombre;
 
   const riesgoActual = caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle;
-  const [idRiesgo, setIdRiesgo] = useState<number | null>(riesgoActual?.id_detalle ?? null);
-  const [classification, setClassification] = useState(caso.clasificacion ?? "");
-  const [requiresInvestigation, setRequiresInvestigation] = useState(true);
-  const [observations, setObservations] = useState("");
-  const [descripcionEvento, setDescripcionEvento] = useState(evaluationDetails.descripcion);
-  const [posiblesCausas, setPosiblesCausas] = useState(evaluationDetails.posiblesCausas);
-  const [peligro, setPeligro] = useState(caso.peligro ?? "");
-  const [consecuencia, setConsecuencia] = useState(caso.consecuencia ?? "");
+  const [idRiesgo, setIdRiesgo] = useDraftState<number | null>("pages/seguridad/case-detail/EvaluationForm:idRiesgo", riesgoActual?.id_detalle ?? null);
+  const [classification, setClassification] = useDraftState("pages/seguridad/case-detail/EvaluationForm:classification", caso.clasificacion ?? "");
+  const [requiresInvestigation, setRequiresInvestigation] = useDraftState("pages/seguridad/case-detail/EvaluationForm:requiresInvestigation", true);
+  const [observations, setObservations] = useDraftState("pages/seguridad/case-detail/EvaluationForm:observations", "");
+  const [descripcionEvento, setDescripcionEvento] = useDraftState("pages/seguridad/case-detail/EvaluationForm:descripcionEvento", evaluationDetails.descripcion);
+  const [posiblesCausas, setPosiblesCausas] = useDraftState("pages/seguridad/case-detail/EvaluationForm:posiblesCausas", evaluationDetails.posiblesCausas);
+  const [peligro, setPeligro] = useDraftState("pages/seguridad/case-detail/EvaluationForm:peligro", caso.peligro ?? "");
+  const [consecuencia, setConsecuencia] = useDraftState("pages/seguridad/case-detail/EvaluationForm:consecuencia", caso.consecuencia ?? "");
 
   const cleanClassification = classification.startsWith("__otro__:")
     ? classification.slice(9).trim()
@@ -228,10 +229,12 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
                 id_responsable: analista.user?.id_usuario ?? null,
               },
               {
-                onSuccess: () =>
+                onSuccess: () => {
+                  clearPageDraft("pages/seguridad/case-detail/EvaluationForm:");
                   toast.success(
                     requiresInvestigation ? "Caso evaluado, pasó a Investigación" : "Caso evaluado, pasó a Plan de Acción"
-                  ),
+                  );
+                },
                 onError: (e) => toast.error(apiErrorMessage(e, "No se pudo evaluar el caso")),
               }
             )

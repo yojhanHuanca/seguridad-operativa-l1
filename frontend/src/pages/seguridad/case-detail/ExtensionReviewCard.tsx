@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { clearPageDraft } from "@/lib/workspaceDrafts";
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { Timer, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/design-system/primitives/Button";
@@ -20,7 +21,7 @@ import type { CaseDetail } from "@/features/cases/types";
  */
 export function ExtensionReviewCard({ caso }: { caso: CaseDetail }) {
   const plan = caso.planes_accion.find((p) => p.prorroga_estado === "pendiente") ?? caso.planes_accion[0];
-  const [nota, setNota] = useState("");
+  const [nota, setNota] = useDraftState("pages/seguridad/case-detail/ExtensionReviewCard:nota", "");
   const review = useReviewExtension(caso.codigo_sop);
 
   if (!plan) return null;
@@ -29,12 +30,14 @@ export function ExtensionReviewCard({ caso }: { caso: CaseDetail }) {
     review.mutate(
       { decision, nota: nota.trim() || undefined },
       {
-        onSuccess: () =>
+        onSuccess: () => {
+          clearPageDraft("pages/seguridad/case-detail/ExtensionReviewCard:");
           toast.success(
             decision === "aprobada"
               ? "Ampliación aprobada, la fecha del plan fue reprogramada"
               : "Ampliación rechazada, se mantiene la fecha original"
-          ),
+          );
+        },
         onError: (e) => toast.error(apiErrorMessage(e, "No se pudo resolver la ampliación")),
       }
     );

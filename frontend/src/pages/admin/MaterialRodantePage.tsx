@@ -1,3 +1,5 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
+import { clearPageDraft } from "@/lib/workspaceDrafts";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, TrainFront, Wrench } from "lucide-react";
@@ -24,12 +26,12 @@ export function AdminMaterialRodantePage() {
   const units = useCatalogGroupAdmin(id);
   const models = useCatalogGroupAdmin(modelId);
   const client = useQueryClient();
-  const [editing, setEditing] = useState<CatalogDetalleAdmin | null>(null);
-  const [search, setSearch] = useState("");
-  const [classification, setClassification] = useState("");
-  const [status, setStatus] = useState("");
+  const [editing, setEditing] = useDraftState<CatalogDetalleAdmin | null>("pages/admin/MaterialRodantePage:editing", null);
+  const [search, setSearch] = useDraftState("pages/admin/MaterialRodantePage:search", "");
+  const [classification, setClassification] = useDraftState("pages/admin/MaterialRodantePage:classification", "");
+  const [status, setStatus] = useDraftState("pages/admin/MaterialRodantePage:status", "");
   const [confirm, setConfirm] = useState(false);
-  const [typeModalOpen, setTypeModalOpen] = useState(false);
+  const [typeModalOpen, setTypeModalOpen] = useDraftState("pages/admin/MaterialRodantePage:typeModalOpen", false);
   const [error, setError] = useState<string | null>(null);
   const deactivate = useDeactivateCatalogItem(id);
   const restore = useRestoreCatalogItem(id);
@@ -40,6 +42,7 @@ export function AdminMaterialRodantePage() {
       else await api.patch(`/catalogs/detalle/${editing.id_detalle}`, data);
     },
     onSuccess: async () => {
+      clearPageDraft("unit-form:");
       await Promise.all([client.invalidateQueries({ queryKey: ["catalog-group-admin", id] }), client.invalidateQueries({ queryKey: ["catalogs"] })]);
       toast.success(editing?.id_detalle === 0 ? "Unidad registrada" : "Unidad actualizada");
       setEditing(null);
@@ -58,6 +61,7 @@ export function AdminMaterialRodantePage() {
         client.invalidateQueries({ queryKey: ["catalogs"] }),
       ]);
       toast.success("Tipo o marca de tren registrado");
+      clearPageDraft("catalog-name:");
       setTypeModalOpen(false);
     },
     onError: cause => toast.error(apiErrorMessage(cause, "No se pudo registrar el tipo de tren")),

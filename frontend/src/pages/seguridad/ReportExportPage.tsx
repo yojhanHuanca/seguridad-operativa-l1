@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   BarChart3,
@@ -60,12 +61,12 @@ interface ExportRow {
 }
 
 export function ReportExportPage() {
-  const [query, setQuery] = useState("");
-  const [filterId, setFilterId] = useState<CaseFilterId>("todos");
-  const [area, setArea] = useState("");
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
-  const [scope, setScope] = useState<ExportScope>("casos");
+  const [query, setQuery] = useDraftState("pages/seguridad/ReportExportPage:query", "");
+  const [filterId, setFilterId] = useDraftState<CaseFilterId>("pages/seguridad/ReportExportPage:filterId", "todos");
+  const [area, setArea] = useDraftState("pages/seguridad/ReportExportPage:area", "");
+  const [from, setFrom] = useDraftState("pages/seguridad/ReportExportPage:from", "");
+  const [to, setTo] = useDraftState("pages/seguridad/ReportExportPage:to", "");
+  const [scope, setScope] = useDraftState<ExportScope>("pages/seguridad/ReportExportPage:scope", "casos");
   const [printActive, setPrintActive] = useState(false);
   const [exportingExcel, setExportingExcel] = useState(false);
 
@@ -151,7 +152,7 @@ export function ReportExportPage() {
       });
     }
     return criteria;
-  }, [activeFilter, area, filterId, from, query, to]);
+  }, [activeFilter, area, filterId, from, query, to, setArea, setFilterId, setFrom, setQuery, setTo]);
 
   useEffect(() => {
     if (!printActive) return;

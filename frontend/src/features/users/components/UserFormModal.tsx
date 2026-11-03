@@ -12,6 +12,7 @@ import { newPasswordError } from "@/lib/password";
 import { cn } from "@/lib/utils";
 import type { UserListItem } from "../types";
 import { UserReassignPlansModal } from "./UserReassignPlansModal";
+import { useClearDraft, useDraftExists, useDraftState } from "@/features/drafts/useDraftState";
 
 const STEPS = ["datos", "acceso"] as const;
 type Step = (typeof STEPS)[number];
@@ -76,12 +77,15 @@ function fromUser(user: UserListItem): FormState {
  * Usuarios.
  */
 export function UserFormModal({ open, onClose, user }: { open: boolean; onClose: () => void; user?: UserListItem | null }) {
-  const [stepIndex, setStepIndex] = useState(0);
-  const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const draftScope = `user-form:${user?.id_usuario ?? "nuevo"}:`;
+  const clearDraft = useClearDraft(draftScope);
+  const hasFormDraft = useDraftExists(draftScope + "form");
+  const [stepIndex, setStepIndex] = useDraftState(draftScope + "step", 0);
+  const [form, setForm] = useDraftState<FormState>(draftScope + "form", () => user ? fromUser(user) : EMPTY_FORM);
   const [error, setError] = useState<string | null>(null);
   const [changePassword, setChangePassword] = useState(false);
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
-  const [handoverOpen, setHandoverOpen] = useState(false);
+  const [handoverOpen, setHandoverOpen] = useDraftState(draftScope + "handover", false);
   const isEdit = !!user;
 
   const areas = useAreas();
@@ -96,23 +100,29 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
   useEffect(() => {
     if (!open) return;
     const timer = window.setTimeout(() => {
-      setStepIndex(0);
+      if (!hasFormDraft) setForm(user ? fromUser(user) : EMPTY_FORM);
       setError(null);
       setChangePassword(false);
       setPasswordConfirmation("");
-      setHandoverOpen(false);
-      setForm(user ? fromUser(user) : EMPTY_FORM);
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [open, user]);
+  }, [open, user, hasFormDraft, setForm]);
+
+  const close = () => {
+    setHandoverOpen(false);
+    setStepIndex(0);
+    setForm(user ? fromUser(user) : EMPTY_FORM);
+    clearDraft();
+    onClose();
+  };
 
   useEffect(() => {
     if (!open || !form.id_rol || !roles.data) return;
     const rolActual = roles.data.find((rol) => String(rol.id_rol) === form.id_rol);
     if (!rolActual || !ROLES_OCULTOS_ADMIN.has(rolActual.nombre_rol)) return;
-    const timer = window.setTimeout(() => set("id_rol", ""), 0);
+    const timer = window.setTimeout(() => setForm(previous => ({ ...previous, id_rol: "" })), 0);
     return () => window.clearTimeout(timer);
-  }, [form.id_rol, open, roles.data]);
+  }, [form.id_rol, open, roles.data, setForm]);
 
   const rolSeleccionado = rolesDisponibles.find((r) => String(r.id_rol) === form.id_rol);
   const nombreRolSeleccionado = rolSeleccionado?.nombre_rol ?? (isEdit && String(user?.id_rol) === form.id_rol ? user?.roles?.nombre_rol : undefined);
@@ -137,7 +147,7 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
       });
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [esSeguridadOperativa, open]);
+  }, [esSeguridadOperativa, open, setForm]);
 
   const goNext = () => {
     if (!datosValidos) {
@@ -192,7 +202,7 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
         {
           onSuccess: () => {
             toast.success(changePassword ? "Contraseña temporal restablecida" : "Usuario actualizado");
-            onClose();
+            close();
           },
           onError: (e) => toast.error(apiErrorMessage(e, "No se pudo actualizar el usuario")),
         }
@@ -205,7 +215,7 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
       {
         onSuccess: () => {
           toast.success("Usuario creado");
-          onClose();
+          close();
         },
         onError: (e) => toast.error(apiErrorMessage(e, "No se pudo crear el usuario")),
       }
@@ -216,7 +226,7 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
     <>
     <Modal
       open={open && !handoverOpen}
-      onClose={() => { if (!pending) onClose(); }}
+      onClose={() => { if (!pending) close(); }}
       title={isEdit ? `Editar ${user!.nombre}` : "Nuevo usuario"}
       subtitle={isEdit ? "Actualiza sus datos, área o rol asignado." : "Asigna el rol y una contraseña temporal para el primer acceso."}
       footer={

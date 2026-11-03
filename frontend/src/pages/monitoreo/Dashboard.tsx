@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { useMemo, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AlertCircle, ClipboardList, FileSearch, Plus, Search, Trash2 } from "lucide-react";
@@ -58,10 +59,10 @@ export function Dashboard() {
   const puedeAsignar = Boolean(user && (user.rol.toLowerCase() === "admin" || (user.rol.toLowerCase() === "seguridad operativa" && user.es_responsable)));
   const { data: eventos, isLoading } = useEventos();
   const deleteEvento = useDeleteEvento();
-  const [query, setQuery] = useState("");
-  const [estado, setEstado] = useState<EstadoEvento | "">("");
+  const [query, setQuery] = useDraftState("pages/monitoreo/Dashboard:query", "");
+  const [estado, setEstado] = useDraftState<EstadoEvento | "">("pages/monitoreo/Dashboard:estado", "");
   const [borrando, setBorrando] = useState<EventoListItem | null>(null);
-  const [asignando, setAsignando] = useState<EventoListItem | null>(null);
+  const [asignando, setAsignando] = useDraftState<EventoListItem | null>("pages/monitoreo/Dashboard:asignando", null);
 
   const lista = useMemo(() => eventos ?? [], [eventos]);
   const conteo = contarEventosPorEstado(lista);

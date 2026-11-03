@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { useState, type FormEvent } from "react";
 import { useLocation } from "react-router-dom";
 import { Database, Pencil, RefreshCw, Save, Trash2, X } from "lucide-react";
@@ -91,11 +92,11 @@ function fechaInput(fecha: string) {
 
 export function DatosOperativos() {
   const location = useLocation();
-  const [desde, setDesde] = useState("");
-  const [hasta, setHasta] = useState("");
-  const [pagina, setPagina] = useState(1);
-  const [formulario, setFormulario] = useState<FormularioDatosOperativos>(formularioVacio);
-  const [editando, setEditando] = useState<DatoOperativo | null>(null);
+  const [desde, setDesde] = useDraftState("pages/monitoreo/DatosOperativos:desde", "");
+  const [hasta, setHasta] = useDraftState("pages/monitoreo/DatosOperativos:hasta", "");
+  const [pagina, setPagina] = useDraftState("pages/monitoreo/DatosOperativos:pagina", 1);
+  const [formulario, setFormulario] = useDraftState<FormularioDatosOperativos>("pages/monitoreo/DatosOperativos:formulario", formularioVacio);
+  const [editando, setEditando] = useDraftState<DatoOperativo | null>("pages/monitoreo/DatosOperativos:editando", null);
   const [eliminando, setEliminando] = useState<DatoOperativo | null>(null);
   const { byName: catalogosPorNombre, isSuccess: catalogosListos } = useCatalogs();
   const { data: configuracion } = useConfiguracion();

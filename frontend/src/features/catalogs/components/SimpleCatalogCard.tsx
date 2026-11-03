@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useDraftState } from "@/features/drafts/useDraftState";
+import { clearPageDraft } from "@/lib/workspaceDrafts";
 import { Pencil, Plus, RotateCcw, Trash2, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
@@ -60,8 +61,8 @@ export function SimpleCatalogCard({
   onRestore,
   onDelete,
 }: SimpleCatalogCardProps) {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<SimpleCatalogItem | null>(null);
+  const [modalOpen, setModalOpen] = useDraftState(`catalog:${title}:open`, false);
+  const [editing, setEditing] = useDraftState<SimpleCatalogItem | null>(`catalog:${title}:editing`, null);
 
   const abrirCrear = () => {
     setEditing(null);
@@ -83,6 +84,7 @@ export function SimpleCatalogCard({
         toast.success(`${itemLabel} creado`);
       }
       setModalOpen(false);
+      clearPageDraft("catalog-name:");
     } catch (error) {
       toast.error(apiErrorMessage(error, `No se pudo guardar el ${itemLabel.toLowerCase()}`));
     }

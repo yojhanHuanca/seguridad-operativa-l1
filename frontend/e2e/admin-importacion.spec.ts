@@ -213,6 +213,10 @@ test('Contingencias: muestra los datos completos y comunica una carga parcial', 
   expect(content).toContain('Guardado');
   expect(content).not.toContain('PERSONA PRIVADA');
   expect(content).not.toContain('12345678');
+  await page.reload();
+  await expect(page.getByText('Importación con errores:', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Descargar diagnóstico' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Importar contingencias', exact: true })).toBeDisabled();
 });
 
 for (const module of ['contingencias', 'monitoreo'] as const) {

@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useDraftState } from "@/features/drafts/useDraftState";
+import { useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Card } from "@/design-system/primitives/Card";
 import { Button } from "@/design-system/primitives/Button";
@@ -14,7 +15,7 @@ const POR_PAGINA = 20;
  * `EstadisticasSection` (SO) como por el dashboard de Jefe de Área.
  */
 export function DetalleTable() {
-  const [pagina, setPagina] = useState(1);
+  const [pagina, setPagina] = useDraftState("features/indicadores/components/DetalleTable:pagina", 1);
   const { data: pageData, isLoading } = useCasesPaginated({
     sort: "recientes",
     page: pagina,

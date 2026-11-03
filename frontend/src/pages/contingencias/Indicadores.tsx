@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useDraftState } from "@/features/drafts/useDraftState";
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Activity, CalendarDays, Clock3, Filter, Info, MapPin, PieChart, RefreshCcw, Timer, TrendingUp, X } from 'lucide-react';
@@ -43,12 +44,12 @@ async function loadOperations(desde: string, hasta: string) {
 }
 
 export function Indicadores() {
-  const [month, setMonth] = useState(() => monthKey(new Date()));
-  const [station, setStation] = useState('');
-  const [tipo, setTipo] = useState('');
-  const [view, setView] = useState<'eventos' | 'operacion'>('eventos');
-  const [metric, setMetric] = useState<OperationMetric>('afluencia');
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [month, setMonth] = useDraftState("pages/contingencias/Indicadores:month", () => monthKey(new Date()));
+  const [station, setStation] = useDraftState("pages/contingencias/Indicadores:station", '');
+  const [tipo, setTipo] = useDraftState("pages/contingencias/Indicadores:tipo", '');
+  const [view, setView] = useDraftState<'eventos' | 'operacion'>("pages/contingencias/Indicadores:view", 'eventos');
+  const [metric, setMetric] = useDraftState<OperationMetric>("pages/contingencias/Indicadores:metric", 'afluencia');
+  const [filtersOpen, setFiltersOpen] = useDraftState("pages/contingencias/Indicadores:filtersOpen", false);
   const reduce = useReducedMotion();
   const period = periodFor(month);
   const eventsQuery = useQuery({

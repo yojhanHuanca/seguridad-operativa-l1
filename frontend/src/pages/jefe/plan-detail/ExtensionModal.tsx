@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { Timer } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/design-system/primitives/Button";
@@ -28,10 +28,10 @@ export function ExtensionModal({ plan, open, onClose }: { plan: PlanItem; open: 
   const fechaMinima = addDays(plazoVigente, 1);
   const sugerida = fechaMinima;
   const draftKey = `${plan.id_plan}:${plazoVigente}`;
-  const [draftFecha, setDraftFecha] = useState<{ key: string; value: string }>(() => ({ key: draftKey, value: sugerida }));
+  const [draftFecha, setDraftFecha] = useDraftState<{ key: string; value: string }>("pages/jefe/plan-detail/ExtensionModal:draftFecha", () => ({ key: draftKey, value: sugerida }));
   const nuevaFecha = draftFecha.key === draftKey ? draftFecha.value : sugerida;
   const puedeSolicitar = planFlow(plan).puedeSolicitarProrroga;
-  const [justificacion, setJustificacion] = useState("");
+  const [justificacion, setJustificacion] = useDraftState("pages/jefe/plan-detail/ExtensionModal:justificacion", "");
 
   return (
     <Modal

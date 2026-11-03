@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/auth";
@@ -243,10 +244,10 @@ export function ProfileContent() {
   const [removeError, setRemoveError] = useState<string | null>(null);
   const changePassword = useChangePassword();
   const fileRef = useRef<HTMLInputElement>(null);
-  const [tab, setTab] = useState<"informacion" | "seguridad" | "actividad" | "notificaciones">("informacion");
+  const [tab, setTab] = useDraftState<"informacion" | "seguridad" | "actividad" | "notificaciones">("features/profile/components/ProfileContent:tab", "informacion");
 
-  const [telefono, setTelefono] = useState("");
-  const [editingPhone, setEditingPhone] = useState(false);
+  const [telefono, setTelefono] = useDraftState("features/profile/components/ProfileContent:telefono", "");
+  const [editingPhone, setEditingPhone] = useDraftState("features/profile/components/ProfileContent:editingPhone", false);
   const [pwActual, setPwActual] = useState("");
   const [pwNueva, setPwNueva] = useState("");
   const [pwConfirmar, setPwConfirmar] = useState("");

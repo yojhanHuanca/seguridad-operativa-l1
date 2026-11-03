@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { api, type ApiEnvelope } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 import { AuthContext, type AuthUser, type AuthValue } from "./auth";
+import { clearWorkspaceDrafts } from "@/lib/workspaceDrafts";
 
 interface LoginResult { token: string; usuario: AuthUser }
 const TOKEN_KEY = "sigma_auth_token";
@@ -33,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_KEY));
 
   const clearSession = useCallback((reason?: "password-changed") => {
+    clearWorkspaceDrafts();
     if (reason === "password-changed") sessionStorage.setItem("sigma_password_updated", "1");
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
