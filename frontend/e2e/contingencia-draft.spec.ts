@@ -37,3 +37,19 @@ test('el borrador persiste al recargar y queda separado de otra cuenta', async (
   await page.reload();
   await expect(page.locator('input[type="date"]').first()).toHaveValue('2026-10-07');
 });
+
+test('migra un borrador anterior aunque se recargue sin editar ningún campo', async ({ page }) => {
+  await mockApi(page);
+  await page.route('**/api/contingencias/catalogos', route => route.fulfill({ json: { success: true, data: [{ id_catalogo: 1, codigo: 'tipo_de_evento', nombre: 'Tipo de evento', items: [{ id_item: 1, valor: 'Accidente' }] }] } }));
+  await loginAs(page, 'Gestión de Planes de Contingencia');
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem('legacy-draft-seeded')) return;
+    localStorage.setItem('contingencia-draft:5', JSON.stringify({ fecha: '2026-10-06' }));
+    sessionStorage.setItem('legacy-draft-seeded', '1');
+  });
+  await page.goto('/contingencias/registro');
+  await expect(page.locator('input[type="date"]').first()).toHaveValue('2026-10-06');
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('contingencia-draft:5'))).toBeNull();
+  await page.reload();
+  await expect(page.locator('input[type="date"]').first()).toHaveValue('2026-10-06');
+});

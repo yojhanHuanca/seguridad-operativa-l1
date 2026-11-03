@@ -24,6 +24,9 @@ import type { ContingenciaCatalogo, CreateContingenciaDto } from "../types";
 import { useAuth } from "@/features/auth/auth";
 import { contingenciaStorageKeys } from "../draft";
 import { useClearDraft, useDraftState } from "@/features/drafts/useDraftState";
+import { useDraftOwner } from "@/features/drafts/context";
+import { writeWorkspaceDraft } from "@/lib/workspaceDrafts";
+import { useLocation } from "react-router-dom";
 
 interface Props {
   initialData?: Partial<CreateContingenciaDto>;
@@ -259,6 +262,8 @@ function draftValues(initialData: Partial<CreateContingenciaDto> | undefined, st
 
 export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting = false }: Props) {
   const { user } = useAuth();
+  const { owner, tab } = useDraftOwner();
+  const { pathname } = useLocation();
   const keys = contingenciaStorageKeys(user?.id_usuario);
   const legacyDraftKey = keys?.draft;
   const legacyFlowKey = keys?.flow;
@@ -290,9 +295,21 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
 
   useEffect(() => {
     if (initialData || !legacyDraftKey || !legacyFlowKey) return;
-    // Los borradores antiguos se migran al almacenamiento de la pestaña.
-    try { localStorage.removeItem(legacyDraftKey); localStorage.removeItem(legacyFlowKey); } catch { /* La edición sigue disponible. */ }
-  }, [initialData, legacyDraftKey, legacyFlowKey]);
+    let active = true;
+    // No borrar el formato anterior hasta confirmar que ambos valores quedaron
+    // guardados. También conserva borradores que se abren y recargan sin editar.
+    void (async () => {
+      try {
+        if (!localStorage.getItem(legacyDraftKey) && !localStorage.getItem(legacyFlowKey)) return;
+        const saved = await Promise.all([
+          writeWorkspaceDraft(owner, tab, pathname, "contingencia:values", values),
+          writeWorkspaceDraft(owner, tab, pathname, "contingencia:flow", flow),
+        ]);
+        if (active && saved.every(Boolean)) { localStorage.removeItem(legacyDraftKey); localStorage.removeItem(legacyFlowKey); }
+      } catch { /* Conservar el borrador anterior si no puede migrarse. */ }
+    })();
+    return () => { active = false; };
+  }, [initialData, legacyDraftKey, legacyFlowKey, owner, tab, pathname, values, flow]);
 
   useEffect(() => {
     const name = invalidFieldToFocus.current;

@@ -148,9 +148,9 @@ function ReportIntroHero({ onStart }: { onStart: () => void }) {
           style={{ y: backgroundY }}
           className="absolute -inset-y-10 inset-x-0 h-[calc(100%+80px)] w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/72 to-ink/20" />
-        <div className="absolute inset-0 bg-gradient-to-r from-brand-950/95 via-brand-950/50 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-ink to-transparent" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(10,14,13,0.72)_0%,rgba(10,14,13,0.30)_48%,rgba(10,14,13,0.08)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(10,14,13,0.58)_0%,rgba(10,14,13,0.24)_42%,transparent_78%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-44 bg-[linear-gradient(to_top,rgba(10,14,13,0.72),transparent)]" />
 
         <div className="pointer-events-none absolute inset-x-0 bottom-8 hidden h-24 overflow-hidden opacity-70 sm:block" aria-hidden>
           <div className="absolute bottom-9 left-0 right-0 h-px bg-white/18" />

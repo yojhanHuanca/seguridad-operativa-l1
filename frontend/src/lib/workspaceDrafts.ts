@@ -59,7 +59,8 @@ async function persist(action: (store: IDBObjectStore) => void) {
       tx.onerror = () => reject(tx.error);
       tx.onabort = () => reject(tx.error);
     });
-  } catch { failure = true; }
+    return true;
+  } catch { failure = true; return false; }
   finally { pending--; emit(); }
 }
 
@@ -86,12 +87,13 @@ export async function loadWorkspaceDrafts(owner: string, tab: string) {
 export const workspaceDraftId = (owner: string, tab: string, path: string, key: string) => JSON.stringify([owner, tab, path, key]);
 export const readWorkspaceDraft = (id: string) => cache.get(id)?.value;
 export function writeWorkspaceDraft(owner: string, tab: string, path: string, key: string, value: unknown) {
-  if (revokedOwners.has(owner)) return;
+  if (revokedOwners.has(owner)) return Promise.resolve(false);
   const record: DraftRecord = { id: workspaceDraftId(owner, tab, path, key), owner, tab, path, updatedAt: Date.now(), value };
   cache.set(record.id, record);
   const stored = { ...record, value: safeDraft(value) };
-  void persist(store => { store.put(stored); });
+  const saved = persist(store => { store.put(stored); });
   emit();
+  return saved;
 }
 
 export function clearWorkspaceDrafts(owner?: string, path?: string, prefix?: string) {
