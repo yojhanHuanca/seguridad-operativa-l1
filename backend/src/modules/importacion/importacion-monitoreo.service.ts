@@ -2,6 +2,7 @@ import { createImportRowReader } from "./import-row-reader.js";
 import { withImportLock } from "./import-lock.js";
 import prisma from "../../lib/prisma.js";
 import { EventoRepository } from "../eventos/evento.repository.js";
+import { diaSemana, rangoHorarioLabel, semanaDelAnio } from "../eventos/evento-derived-fields.js";
 import type { CreateEventoDto } from "../eventos/evento.types.js";
 import type { ImportacionIssue, ImportacionPreview, ImportacionRow, ImportacionResult } from "./importacion.types.js";
 import { ImportacionHistorialService } from "./importacion-historial.service.js";
@@ -265,6 +266,7 @@ async function loadCatalogos(): Promise<CatalogCache> {
       cache.catalogos[nombreCatalogo] = {};
     }
     cache.catalogos[nombreCatalogo][normalizeText(detalle.nombre)] = detalle.id_detalle;
+    if (detalle.codigo) cache.catalogos[nombreCatalogo][normalizeText(detalle.codigo)] = detalle.id_detalle;
     if (nombreCatalogo === "Nro. MR") cache.materialRodante![normalizeText(detalle.nombre)] = detalle.clasificacion_mr;
   }
 
@@ -407,6 +409,8 @@ export class ImportacionMonitoreoService {
 
 function resolvedDto(row: MonitoreoRow, catalogos: CatalogCache): CreateEventoDto {
   const dto = rowToDto(row);
+  const fecha = parseDate(dto.fecha);
+  if (!fecha) throw new Error("Fecha inválida");
 
   const tipoIncidenteValor = getFieldValue(row, "tipo_incidente");
   const ubicacionValor = getFieldValue(row, "ubicacion");
@@ -418,7 +422,7 @@ function resolvedDto(row: MonitoreoRow, catalogos: CatalogCache): CreateEventoDt
   const personalValor = getFieldValue(row, "personal_involucrado");
   const tipoCausaValor = getFieldValue(row, "tipo_causa");
   const posibleCausaValor = getFieldValue(row, "posible_causa");
-  const rangoHorarioValor = getFieldValue(row, "rango_horario");
+  const rangoHorarioValor = getFieldValue(row, "rango_horario") || rangoHorarioLabel(dto.hora);
 
   return {
     fecha: dto.fecha,
@@ -438,10 +442,10 @@ function resolvedDto(row: MonitoreoRow, catalogos: CatalogCache): CreateEventoDt
     informacion_adicional: dto.informacion_adicional,
     camara_monitoreada: dto.camara_monitoreada,
     demora: dto.demora,
-    anio: dto.anio,
-    mes: dto.mes,
-    semana: dto.semana,
-    dia: dto.dia,
+    anio: dto.anio ?? fecha.getUTCFullYear(),
+    mes: dto.mes ?? fecha.getUTCMonth() + 1,
+    semana: dto.semana ?? semanaDelAnio(fecha),
+    dia: dto.dia ?? diaSemana(fecha),
     id_rango_horario: catalogos.catalogos["Rango horario"]?.[normalizeText(rangoHorarioValor)] ?? undefined,
   };
 }

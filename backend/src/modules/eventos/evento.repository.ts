@@ -1,29 +1,9 @@
 import prisma from "../../lib/prisma.js";
 import type { CreateEventoDto, UpdateEventoDto } from "./evento.types.js";
 import { ConfiguracionService } from "../configuracion/configuracion.service.js";
+import { diaSemana, rangoHorarioLabel, semanaDelAnio } from "./evento-derived-fields.js";
 
-const DIAS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 export const ESTADOS_EVENTO = ["Registrado", "En investigación", "Cerrado"] as const;
-
-/** Día calendario 1-7 de la semana ISO-ish, más el nombre en español. */
-function diaSemana(fecha: Date) {
-  return DIAS[fecha.getUTCDay()] ?? "Domingo";
-}
-
-/** Semana del año (1-53), calculada igual que en el prototipo: días desde el 1 de enero / 7. */
-function semanaDelAnio(fecha: Date) {
-  const inicioAnio = Date.UTC(fecha.getUTCFullYear(), 0, 1);
-  const dias = Math.floor((fecha.getTime() - inicioAnio) / 86_400_000);
-  return Math.floor(dias / 7) + 1;
-}
-
-/** "08:00 - 09:59", el mismo formato con el que está sembrado el catálogo "Rango horario". */
-function rangoHorarioLabel(hora: string) {
-  const horaNum = Number(hora.split(":")[0]);
-  const inicio = Math.floor(horaNum / 2) * 2;
-  const fin = inicio + 1;
-  return `${String(inicio).padStart(2, "0")}:00 - ${String(fin).padStart(2, "0")}:59`;
-}
 
 const LIST_INCLUDE = {
   catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle: { select: { nombre: true } },

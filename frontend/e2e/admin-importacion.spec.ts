@@ -1,7 +1,36 @@
 import { expect, test } from '@playwright/test';
 import { posix } from 'node:path';
+import { join } from 'node:path';
 import { loginAs, mockApi } from './helpers';
+import { cellToImportText } from '../src/features/importacion/importacionExcel';
 import type { ImportacionPayload, ImportacionPreview } from '../src/features/importacion/types';
+
+const companyFixtures = process.env.COMPANY_IMPORT_FIXTURES_DIR;
+for (const [filename, module, sheet] of [
+  ['Base para proyecto plataforma SOP (2).xlsm', 'casos', 'BD'],
+  ['PLANTILLA PLANES DE CONTINGENCIA 2026 (2).xlsx', 'contingencias', 'Eventos 2026'],
+  ['BD_EVENTOS_OPERACIONALES.xlsx', 'monitoreo', 'LISTA DE EVENTOS'],
+] as const) {
+  test(`archivo real ${module}: detecta hoja y conserva filas`, async ({ page }) => {
+    test.skip(!companyFixtures, 'Requiere COMPANY_IMPORT_FIXTURES_DIR');
+    test.setTimeout(120_000);
+    await mockApi(page);
+    await loginAs(page, 'Admin');
+    let payload: ImportacionPayload | undefined;
+    await page.route(`**/api/importacion/${module}/validar`, route => {
+      payload = route.request().postDataJSON();
+      return route.fulfill({ json: { success: true, data: { filename, canImport: false, requiredColumns: [], optionalColumns: [], issues: [], cases: [], resumen: { totalFilas: 1, casosDetectados: 1, planesDetectados: 0, listos: 0, duplicados: 0, errores: 0, advertencias: 0 } } } });
+    });
+    await page.goto('/admin/importacion');
+    await page.locator('input[type=file]').setInputFiles(join(companyFixtures!, filename));
+    await expect(page.getByText(filename, { exact: true })).toBeVisible({ timeout: 90_000 });
+    await page.getByRole('button', { name: 'Validar', exact: true }).click();
+    await expect.poll(() => payload?.hoja).toBe(sheet);
+    if (module === 'monitoreo') expect(payload?.rows[0]).toMatchObject({ 'Año': '2025', Mes: 'Ene', 'Mes_1': '01', 'Día': 'vie', 'Rango horario': '12:00 - 13:59' });
+    if (module === 'contingencias') expect(payload?.rows[2]).toMatchObject({ 'TIPO DE EVENTO': 'Problemas de salud' });
+    if (module === 'casos') expect(payload?.rows[0]).toMatchObject({ 'Nuevo código': 'SOP 01-2024' });
+  });
+}
 import { usersPrefixedWorkbook } from './fixtures/users-prefixed-workbook';
 
 test('el mismo XLSX independiente también se puede leer en Importación Histórica', async ({ page }) => {
@@ -52,6 +81,78 @@ test('XLSX: una guía sin encabezados y una hoja vacía no bloquean la hoja Dato
   await page.getByRole('button', { name: 'Validar', exact: true }).click();
   await expect.poll(() => payload?.hoja).toBe('Datos');
   expect(payload?.rows).toEqual([{ Código: 'DEMO-001', Tipo: 'Hallazgo', Estado: 'Recepción', Fecha: '2026-10-12' }]);
+});
+
+test('Contingencias: reconoce encabezados en fila 3 e ignora hoja de catálogos', async ({ page }) => {
+  await mockApi(page);
+  await loginAs(page, 'Admin');
+  const ExcelJS = (await import('exceljs')).default;
+  const workbook = new ExcelJS.Workbook();
+  const aux = workbook.addWorksheet('Diagnosticos');
+  aux.addRow(['DIAGNOSTICO PRESUNTIVO', 'REPORTE CLIENTE']);
+  aux.addRow(['Ejemplo', 'Ejemplo']);
+  const data = workbook.addWorksheet('Eventos 2026');
+  data.getCell('A1').value = 'DATOS GENERALES DEL EVENTO';
+  data.getRow(3).values = ['ITEM', 'Fecha', 'Hora de Reporte ', 'TIPO DE EVENTO', 'LUGAR DEL EVENTO', 'LUGAR EXACTO DEL EVENTO', 'QUIEN REPORTA (PRIMER REPORTE)'];
+  data.getRow(4).values = [1, new Date('2026-01-04T00:00:00Z'), new Date('1899-12-30T07:14:00Z'), 'Accidente', 'Estacion BAY', 'Hall', 'AGENTE DE ESTACION'];
+  let payload: ImportacionPayload | undefined;
+  await page.route('**/api/importacion/contingencias/validar', route => {
+    payload = route.request().postDataJSON();
+    return route.fulfill({ json: { success: true, data: { filename: 'eventos.xlsx', canImport: true, requiredColumns: [], optionalColumns: [], issues: [], cases: [], resumen: { totalFilas: 1, casosDetectados: 1, planesDetectados: 0, listos: 1, duplicados: 0, errores: 0, advertencias: 0 } } } });
+  });
+  await page.goto('/admin/importacion');
+  await page.locator('input[type=file]').setInputFiles({ name: 'eventos.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: Buffer.from(await workbook.xlsx.writeBuffer()) });
+  await page.getByRole('button', { name: 'Validar', exact: true }).click();
+  await expect.poll(() => payload?.hoja).toBe('Eventos 2026');
+  expect(payload?.rows[2]).toMatchObject({ Fecha: '2026-01-04', 'Hora de Reporte': '07:14', 'TIPO DE EVENTO': 'Accidente' });
+});
+
+test('Monitoreo: conserva los resultados de texto de las fórmulas del Excel', async ({ page }) => {
+  expect(cellToImportText(new Date(Number.NaN))).toBe('');
+  await mockApi(page);
+  await loginAs(page, 'Admin');
+  await page.route('**/api/importacion/historial**', route => route.fulfill({ json: { success: true, data: { items: [], total: 0 } } }));
+  const ExcelJS = (await import('exceljs')).default;
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet('LISTA DE EVENTOS');
+  sheet.addRow([
+    'Fecha', 'Hora de evento', 'Año', 'Mes', 'Mes_1', 'Sem', 'Día', 'Rango horario',
+    'Tipo de incidente operativo', 'Descripción del evento', 'Ubicación', 'Lugar de Incidente',
+  ]);
+  sheet.addRow([
+    new Date('2025-01-03T00:00:00.000Z'), '12:49',
+    { formula: 'TEXT(A2,"yyyy")', result: '2025' },
+    { formula: 'TEXT(A2,"mmm")', result: 'Ene' },
+    { formula: 'TEXT(A2,"mm")', result: '01' },
+    { formula: 'WEEKNUM(A2)', result: 1 },
+    { formula: 'TEXT(A2,"ddd")', result: 'vie' },
+    { formula: 'INDEX(A:A,2)', result: '12:00 - 13:59' },
+    'Incidente', 'Prueba de importación', 'Estación', 'Andén',
+  ]);
+  for (const column of [3, 5, 7, 8]) sheet.getCell(2, column).numFmt = 'h:mm:ss AM/PM';
+  sheet.getCell('D2').numFmt = 'd" de "mmmm" de "yyyy';
+  let payload: ImportacionPayload | undefined;
+  await page.route('**/api/importacion/monitoreo/validar', route => {
+    payload = route.request().postDataJSON();
+    const preview: ImportacionPreview = {
+      filename: 'formulas.xlsx', canImport: true, requiredColumns: [], optionalColumns: [], issues: [],
+      resumen: { totalFilas: 1, casosDetectados: 1, planesDetectados: 0, listos: 1, duplicados: 0, errores: 0, advertencias: 0 },
+      cases: [{ row: 2, codigo: 'EVT-2025-2', titulo: 'Prueba de importación', tipo: 'Incidente', estado: 'Registrado', estacion: 'Estación', area: null, riesgo: null, fecha: '2025-01-03', planes: 0, status: 'valid' }],
+    };
+    return route.fulfill({ json: { success: true, data: preview } });
+  });
+  await page.goto('/admin/importacion');
+  await page.getByRole('tab', { name: 'Monitoreo' }).click();
+  await page.locator('input[type=file]').setInputFiles({
+    name: 'formulas.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    buffer: Buffer.from(await workbook.xlsx.writeBuffer()),
+  });
+  await expect(page.getByText('formulas.xlsx', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Validar', exact: true }).click();
+  await expect.poll(() => payload?.rows).toEqual([expect.objectContaining({
+    'Año': '2025', 'Mes': 'Ene', 'Mes_1': '01', Sem: '1', 'Día': 'vie', 'Rango horario': '12:00 - 13:59',
+    Fecha: '2025-01-03', 'Hora de evento': '12:49', 'Descripción del evento': 'Prueba de importación',
+  })]);
 });
 
 test('diseño empresarial visible antes de cargar un archivo', async ({ page }) => {

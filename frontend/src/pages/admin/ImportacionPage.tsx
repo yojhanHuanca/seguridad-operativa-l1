@@ -35,6 +35,7 @@ import {
   type ImportSheet,
   type ParsedImportFile,
 } from "@/features/importacion/importacionExcel";
+import { readFormulaCachedText } from "@/features/importacion/formulaCache";
 
 const ACCEPTED_EXTENSIONS = [".csv", ".xlsx", ".xlsm"] as const;
 
@@ -101,16 +102,37 @@ function matrixToSheet(name: string, matrix: string[][]): ImportSheet {
 }
 
 async function parseXlsx(file: File): Promise<ImportSheet[]> {
-  const workbook = await readExcelWorkbook(await file.arrayBuffer());
-  const sheets = workbook.worksheets.flatMap((worksheet) => {
-    const matrix: string[][] = [];
+  const source = await file.arrayBuffer();
+  const workbook = await readExcelWorkbook(source);
+  const candidates = workbook.worksheets.map(worksheet => {
+    const header = Array.from({ length: Math.min(worksheet.rowCount, 15) }, (_, index) => {
+      const row = worksheet.getRow(index + 1);
+      const names = Array.from({ length: worksheet.columnCount }, (_, column) => cellToImportText(row.getCell(column + 1).value));
+      return { number: index + 1, names, type: detectImportType([Object.fromEntries(names.map(name => [name, ""]))]) };
+    }).find(candidate => candidate.type !== null);
+    return { worksheet, header };
+  }).filter(candidate => candidate.header !== undefined);
+  const cachedText = await readFormulaCachedText(source, new Set(candidates.map(candidate => candidate.worksheet.name)));
+  const sheets = candidates.flatMap(({ worksheet, header }) => {
+    // Ignoramos resúmenes, catálogos, instrucciones y otras hojas auxiliares.
+    if (!header) return [];
+    const matrix: string[][] = [header.names];
+    const headers = header.names;
+    let lastDataIndex = 0;
     worksheet.eachRow({ includeEmpty: true }, (sheetRow) => {
+      if (sheetRow.number <= header.number) return;
       const rowValues: string[] = [];
       sheetRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-        rowValues[colNumber - 1] = cellToImportText(cell.value);
+        const columnHeader = headers[colNumber - 1] ?? "";
+        rowValues[colNumber - 1] = cachedText.get(worksheet.name)?.get(cell.address) ?? cellToImportText(cell.value, columnHeader);
       });
-      matrix.push(rowValues);
+      const isData = rowValues.some((value, index) => value && ["codigo", "nuevocodigo", "fechadelhallazgo", "fecha", "horadeevento", "horadereporte", "tipodeevento", "tipodeincidenteoperativo"].includes(normalizeImportHeader(headers[index] ?? "")));
+      // Los huecos mantienen el número real de fila para el diagnóstico.
+      while (matrix.length < sheetRow.number - 1) matrix.push([]);
+      matrix.push(isData ? rowValues : []);
+      if (isData) lastDataIndex = matrix.length - 1;
     });
+    matrix.length = lastDataIndex + 1;
     // Una hoja auxiliar (por ejemplo, Guía) puede empezar vacía. No debe
     // impedir importar otras hojas que sí tienen encabezados y registros.
     const hasHeaders = matrix[0]?.some(value => value.trim().length > 0);
@@ -141,7 +163,7 @@ function detectImportType(rows: ImportacionRow[]): ImportacionTipo | null {
   const headers = new Set(Object.keys(rows[0] ?? {}).map(normalizeImportHeader));
   if (headers.has("tipodeincidenteoperativo") && headers.has("horadeevento")) return "monitoreo";
   if (headers.has("tipodeevento") && headers.has("horadereporte") && headers.has("lugardelevento")) return "contingencias";
-  if (headers.has("codigo") && headers.has("tipo") && headers.has("estado")) return "casos";
+  if ((headers.has("codigo") || headers.has("nuevocodigo")) && headers.has("tipo") && (headers.has("estado") || headers.has("estadohallazgo")) && (headers.has("fecha") || headers.has("fechadelhallazgo"))) return "casos";
   return null;
 }
 
@@ -325,9 +347,9 @@ export function AdminImportacionPage() {
 
     try {
       const next = await parseFile(file);
-      const firstDataSheet = next.sheets.findIndex(sheet => detectImportType(sheet.rows) !== null);
+      const firstDataSheet = next.sheets.findIndex(sheet => detectImportType([Object.fromEntries(sheet.headers.map(header => [header, ""]))]) !== null);
       const nextSheetIndex = firstDataSheet >= 0 ? firstDataSheet : 0;
-      const detectedType = detectImportType(next.sheets[nextSheetIndex]?.rows ?? []) ?? tipoImportacion;
+      const detectedType = detectImportType([Object.fromEntries((next.sheets[nextSheetIndex]?.headers ?? []).map(header => [header, ""]))]) ?? tipoImportacion;
       setTipoImportacion(detectedType);
       setParsed(next);
       setSheetIndex(nextSheetIndex);
@@ -358,7 +380,7 @@ export function AdminImportacionPage() {
     setConfirming(false);
     validar.reset();
     importar.reset();
-    const nextType = detectImportType(parsed?.sheets[index]?.rows ?? []);
+    const nextType = detectImportType([Object.fromEntries((parsed?.sheets[index]?.headers ?? []).map(header => [header, ""]))]);
     if (nextType) setTipoImportacion(nextType);
   }
 

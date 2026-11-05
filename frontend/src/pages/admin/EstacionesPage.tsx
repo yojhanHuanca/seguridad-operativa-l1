@@ -50,7 +50,7 @@ export function AdminEstacionesPage() {
         />
 
         <SimpleCatalogCard
-          title="Talleres"
+          title="Patios"
           itemLabel="Taller"
           icon={Wrench}
           items={talleres.map((d) => ({ id: d.id_detalle, nombre: d.nombre, activo: d.estado }))}
