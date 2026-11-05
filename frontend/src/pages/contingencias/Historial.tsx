@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowDownWideNarrow, ChevronLeft, ChevronRight, Download, RotateCcw, Search } from "lucide-react";
@@ -17,18 +18,18 @@ import { sufijoFecha } from "@/lib/download";
 const PAGE_SIZE = 20;
 export function Historial() {
   const navigate = useNavigate();
-  const [query, setQuery] = useState("");
-  const [search, setSearch] = useState("");
-  const [desde, setDesde] = useState("");
-  const [hasta, setHasta] = useState("");
-  const [sortBy, setSortBy] = useState<ContingenciaFiltros["sortBy"]>("fecha");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [page, setPage] = useState(1);
+  const [query, setQuery] = useDraftState("pages/contingencias/Historial:query", "");
+  const [search, setSearch] = useDraftState("pages/contingencias/Historial:search", "");
+  const [desde, setDesde] = useDraftState("pages/contingencias/Historial:desde", "");
+  const [hasta, setHasta] = useDraftState("pages/contingencias/Historial:hasta", "");
+  const [sortBy, setSortBy] = useDraftState<ContingenciaFiltros["sortBy"]>("pages/contingencias/Historial:sortBy", "fecha");
+  const [sortDir, setSortDir] = useDraftState<"asc" | "desc">("pages/contingencias/Historial:sortDir", "desc");
+  const [page, setPage] = useDraftState("pages/contingencias/Historial:page", 1);
   const [isExporting, setIsExporting] = useState(false);
   useEffect(() => {
-    const timer = setTimeout(() => { setSearch(query); setPage(1); }, 350);
+    const timer = setTimeout(() => { setSearch(query); if (query !== search) setPage(1); }, 350);
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, search, setSearch, setPage]);
   const { data, isPending, error, refetch } = useContingencias({ search, desde, hasta, page, limit: PAGE_SIZE, sortBy, sortDir });
   const deleteContingencia = useDeleteContingencia();
   const total = data?.total ?? 0;

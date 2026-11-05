@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useDraftState } from "@/features/drafts/useDraftState";
+import { useMemo } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, AlertCircle, AlertTriangle, Check, ClipboardList, Save, Timer } from "lucide-react";
 import { toast } from "sonner";
@@ -96,16 +97,10 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
   const completeExec = useCompleteExecutionByPlan();
 
   const finalDescriptionDraftKey = useMemo(() => `sigma-l1-plan-${plan.id_plan}-descripcion-cierre`, [plan.id_plan]);
-  const [finalDescription, setFinalDescription] = useState("");
-  const [updateOpen, setUpdateOpen] = useState(false);
-  const [extOpen, setExtOpen] = useState(false);
+  const [finalDescription, setFinalDescription] = useDraftState("pages/jefe/PlanDetail:finalDescription", "");
+  const [updateOpen, setUpdateOpen] = useDraftState("pages/jefe/PlanDetail:updateOpen", false);
+  const [extOpen, setExtOpen] = useDraftState("pages/jefe/PlanDetail:extOpen", false);
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setFinalDescription(window.localStorage.getItem(finalDescriptionDraftKey) ?? "");
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, [finalDescriptionDraftKey]);
 
   const hasSaveableChanges = flow.puedeTrabajar && finalDescription.trim().length > 0;
 
@@ -124,7 +119,6 @@ function PlanDetailContent({ plan }: { plan: PlanItem }) {
 
     const descripcion = finalDescription.trim();
     if (descripcion) {
-      window.localStorage.setItem(finalDescriptionDraftKey, descripcion);
       toast.success("Descripción final guardada como borrador");
       saved = true;
     }

@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, RotateCcw, Search } from "lucide-react";
@@ -22,20 +23,20 @@ const POR_PAGINA = 20;
  */
 export function SoEventosPage() {
   const navigate = useNavigate();
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useDraftState("pages/seguridad/EventosOperativosPage:query", "");
   const [debouncedQuery, setDebouncedQuery] = useState(query);
-  const [desde, setDesde] = useState("");
-  const [hasta, setHasta] = useState("");
-  const [estado, setEstado] = useState<EstadoEvento | "">("");
-  const [pagina, setPagina] = useState(1);
+  const [desde, setDesde] = useDraftState("pages/seguridad/EventosOperativosPage:desde", "");
+  const [hasta, setHasta] = useDraftState("pages/seguridad/EventosOperativosPage:hasta", "");
+  const [estado, setEstado] = useDraftState<EstadoEvento | "">("pages/seguridad/EventosOperativosPage:estado", "");
+  const [pagina, setPagina] = useDraftState("pages/seguridad/EventosOperativosPage:pagina", 1);
 
   useEffect(() => {
     const t = setTimeout(() => {
       setDebouncedQuery(query);
-      setPagina(1);
+      if (query !== debouncedQuery) setPagina(1);
     }, 350);
     return () => clearTimeout(t);
-  }, [query]);
+  }, [query, debouncedQuery, setPagina]);
 
   const { data: counts } = useEventoCounts();
   const { data: pageData, isLoading } = useEventosPaginated({

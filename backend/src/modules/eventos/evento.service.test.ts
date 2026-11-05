@@ -4,13 +4,14 @@ vi.mock("../../lib/prisma.js", () => ({ default: {} }));
 
 const findByAsignadoMock = vi.fn().mockResolvedValue([]);
 vi.mock("./evento.repository.js", () => ({
-  EventoRepository: { findByAsignado: findByAsignadoMock },
+  EventoRepository: { findByAsignado: findByAsignadoMock, findAllAsignados: vi.fn().mockResolvedValue([]) },
 }));
 vi.mock("../users/users.repository.js", () => ({ UserRepository: {} }));
 vi.mock("../notifications/notification.repository.js", () => ({ NotificationRepository: {} }));
 vi.mock("../auditoria/auditoria.service.js", () => ({ AuditoriaService: { registrar: vi.fn() } }));
 
 const { EventoService } = await import("./evento.service.js");
+const { EventoRepository } = await import("./evento.repository.js");
 
 import type { Actor } from "../../utils/actor.js";
 
@@ -36,6 +37,13 @@ describe("EventoService.getAsignados", () => {
     findByAsignadoMock.mockClear();
     await EventoService.getAsignados(999, ADMIN);
     expect(findByAsignadoMock).toHaveBeenCalledWith(999);
+  });
+
+  it("la bandeja global consulta todos los eventos asignados", async () => {
+    const findAllAsignadosMock = vi.mocked(EventoRepository.findAllAsignados);
+    findAllAsignadosMock.mockClear();
+    await EventoService.getTodosAsignados();
+    expect(findAllAsignadosMock).toHaveBeenCalledOnce();
   });
 
   it("sin actor autenticado, usa el id de la ruta (no hay sesión de la que respaldarse)", async () => {

@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { useRef, useState } from "react";
 import { Plus, Save, Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -54,7 +55,7 @@ export function ClosureCard({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [subiendo, setSubiendo] = useState(false);
   const [fileAccept, setFileAccept] = useState(ACCEPT);
-  const [comentarioCierre, setComentarioCierre] = useState("");
+  const [comentarioCierre, setComentarioCierre] = useDraftState("pages/jefe/plan-detail/ClosureCard:comentarioCierre", "");
 
   const quitarEvidencia = (anexo: AnexoPlanCaso) => {
     removeEvidence.mutate(

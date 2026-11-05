@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
@@ -11,16 +10,19 @@ import { apiErrorMessage } from "@/lib/api";
 import type { CreateContingenciaDto } from "@/features/contingencias/types";
 import { useAuth } from "@/features/auth/auth";
 import { contingenciaStorageKeys } from "@/features/contingencias/draft";
+import { useDraftState } from "@/features/drafts/useDraftState";
+import { clearPageDraft } from "@/lib/workspaceDrafts";
 
 export function Registro() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const createContingencia = useCreateContingencia();
-  const [success, setSuccess] = useState<string | null>(null);
+  const [success, setSuccess] = useDraftState<string | null>("contingencia-result", null);
 
   const handleSubmit = (data: CreateContingenciaDto) => {
     createContingencia.mutate(data, {
       onSuccess: () => {
+        clearPageDraft("contingencia:");
         const keys = contingenciaStorageKeys(user?.id_usuario);
         if (keys) {
           try { window.localStorage.removeItem(keys.draft); } catch { /* Saving the event does not require browser draft storage. */ }

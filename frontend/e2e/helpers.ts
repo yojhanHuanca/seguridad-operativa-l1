@@ -1,4 +1,6 @@
-import type { Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
+
+const runtimeErrors = new WeakMap<Page, string[]>();
 
 type TestRole = 'Admin' | 'Seguridad Operativa' | 'Jefe de Área' | 'Monitorista' | 'Gestión de Planes de Contingencia';
 
@@ -9,6 +11,7 @@ const roles = [
   { id_rol: 2, nombre_rol: 'Seguridad Operativa' },
   { id_rol: 3, nombre_rol: 'Jefe de Área' },
   { id_rol: 5, nombre_rol: 'Monitorista' },
+  { id_rol: 6, nombre_rol: 'Gestión de Planes de Contingencia' },
 ];
 
 const areas = [
@@ -80,7 +83,7 @@ const configuracion = {
 const indicadores = {
   totalReportes: 0,
   reportesPorTipo: [],
-  reportesCerradoVsProceso: [],
+  reportesPorEstado: [],
   planes: { total: 0, abiertos: 0, donut: [] },
   tendenciaMensual: [],
   analisisRiesgo: [],
@@ -120,6 +123,9 @@ function envelope(data: unknown, meta?: unknown) {
 }
 
 export async function mockApi(page: Page) {
+  const errors: string[] = [];
+  runtimeErrors.set(page, errors);
+  page.on('pageerror', error => errors.push(error.message));
   await page.route('**/api/**', async (route) => {
     const url = new URL(route.request().url());
     const path = url.pathname.replace(/^\/api/, '');
@@ -136,6 +142,8 @@ export async function mockApi(page: Page) {
     }
 
     if (path === '/configuracion/publica') return json({ nombre: 'SMS L1', version: '1.0.0' });
+    if (path === '/importacion/historial') return json({ items: [], total: 0 });
+    if (path === '/datos-operativos') return json({ items: [], total: 0, page: 1, limit: 20 });
     if (path === '/configuracion') return json(configuracion);
     if (path === '/roles') return json(roles);
     if (path === '/areas') return json(areas);
@@ -243,6 +251,9 @@ export async function loginAs(page: Page, role: TestRole, overrides: { es_respon
 
 export async function expectNoRuntimeCrash(page: Page) {
   await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(150);
-  await page.locator('body').waitFor({ state: 'visible' });
+  await expect(page.locator('#root')).not.toBeEmpty();
+  await expect(page.getByTestId('app-recovery')).toHaveCount(0);
+  await expect(page.getByText('Cargando...', { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Página no encontrada', exact: true })).toHaveCount(0);
+  expect(runtimeErrors.get(page) ?? [], 'Errores JavaScript durante la navegación').toEqual([]);
 }

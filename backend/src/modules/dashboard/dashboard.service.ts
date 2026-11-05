@@ -112,9 +112,10 @@ export class DashboardService {
 
     // ── Reportes por tipo ────────────────────────────────────────────
     const porTipoMap = new Map<string, number>();
-    // ── Cerrado vs En Proceso ────────────────────────────────────────
+    // ── Reportes por estado, incluidos los rechazados ───────────────
     let cerrado = 0;
     let enProceso = 0;
+    let rechazado = 0;
     // ── Tendencia mensual (últimos 12 meses) ─────────────────────────
     const tendenciaMap = new Map<string, number>();
     // ── Análisis de riesgo (solo casos abiertos) ─────────────────────
@@ -152,6 +153,7 @@ export class DashboardService {
 
       if (estadoStatus === "cerrado") cerrado++;
       else if (estadoStatus === "abierto") enProceso++;
+      else rechazado++;
 
       if (caso.fecha_hallazgo >= inicioVentana) {
         const d = new Date(caso.fecha_hallazgo);
@@ -213,9 +215,10 @@ export class DashboardService {
       reportesPorTipo: Array.from(porTipoMap.entries())
         .map(([name, value]) => ({ name, value }))
         .sort((a, b) => b.value - a.value),
-      reportesCerradoVsProceso: [
+      reportesPorEstado: [
         { name: "Cerrado", value: cerrado, color: COLOR.brand },
         { name: "En Proceso", value: enProceso, color: COLOR.warning },
+        { name: "Rechazado", value: rechazado, color: COLOR.critical },
       ],
       planes: {
         total: planCerrado + planEnValidacion + planEnProceso,

@@ -47,6 +47,8 @@ test('revisa y guarda cambios entre pestañas conservando parámetros ocultos', 
   expect(writes[0].numeracion.secuenciaPlanes).toBe(28);
   expect(writes[0].operacion.kmPorCarrera).toBe(34.5);
   await page.reload();
+  await expect(page.getByRole('tab', { name: 'Operación' })).toHaveAttribute('aria-selected', 'true');
+  await page.getByRole('tab', { name: 'General' }).click();
   await expect(page.getByLabel('Nombre del sistema', { exact: false })).toHaveValue('SMS Corporativo');
 });
 

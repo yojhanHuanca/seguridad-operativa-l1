@@ -1,6 +1,10 @@
 import prisma from "../../lib/prisma.js";
 
 export class AreaRepository {
+  static async findById(id_area: number) {
+    return prisma.areas.findUnique({ where: { id_area } });
+  }
+
   static async findAll() {
     return prisma.areas.findMany({
       orderBy: { nombre_area: "asc" },

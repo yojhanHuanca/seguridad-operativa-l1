@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useClearDraft, useDraftState } from "@/features/drafts/useDraftState";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -29,9 +30,11 @@ function formatFecha(iso: string | null) {
  * defecto para no abrumar a alguien que solo vino a ver el estado.
  */
 function ResponderSolicitudForm({ codigo, idSolicitud }: { codigo: string; idSolicitud: number }) {
-  const [abierto, setAbierto] = useState(false);
-  const [respuesta, setRespuesta] = useState("");
-  const [files, setFiles] = useState<File[]>([]);
+  const scope = `public-response:${codigo}:${idSolicitud}:`;
+  const clearDraft = useClearDraft(scope);
+  const [abierto, setAbierto] = useDraftState(scope + "open", false);
+  const [respuesta, setRespuesta] = useDraftState(scope + "text", "");
+  const [files, setFiles] = useDraftState<File[]>(scope + "files", []);
   const responder = useResponderInfoPublico(codigo);
 
   if (!abierto) {
@@ -62,7 +65,7 @@ function ResponderSolicitudForm({ codigo, idSolicitud }: { codigo: string; idSol
             responder.mutate(
               { id_solicitud: idSolicitud, respuesta: respuesta.trim(), files },
               {
-                onSuccess: () => toast.success("Tu respuesta fue enviada a Seguridad Operativa"),
+                onSuccess: () => { clearDraft(); toast.success("Tu respuesta fue enviada a Seguridad Operativa"); },
                 onError: (e) => toast.error(apiErrorMessage(e, "No se pudo enviar tu respuesta")),
               }
             )
@@ -84,8 +87,8 @@ function ResponderSolicitudForm({ codigo, idSolicitud }: { codigo: string; idSol
  */
 export function ConsultarReportePage() {
   const [params] = useSearchParams();
-  const [input, setInput] = useState(params.get("codigo") ?? "");
-  const [buscado, setBuscado] = useState<string | null>(params.get("codigo"));
+  const [input, setInput] = useDraftState(`public-search:${params.get("codigo") ?? ""}:input`, params.get("codigo") ?? "");
+  const [buscado, setBuscado] = useDraftState<string | null>(`public-search:${params.get("codigo") ?? ""}:code`, params.get("codigo"));
   const [guardados] = useState(() => leerReportesLocales());
   const reducedMotion = useReducedMotion();
 
@@ -199,7 +202,12 @@ export function ConsultarReportePage() {
           <Card className="mt-4 overflow-hidden p-5 shadow-[var(--shadow-plate)]">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="font-mono text-[13px] font-semibold text-brand-700">{reporte.codigo_sop}</p>
+                {reporte.codigo_sop !== (reporte.codigo_consulta ?? reporte.codigo_sop) && (
+                  <p className="font-mono text-[13px] font-semibold text-brand-700">SOP: {reporte.codigo_sop}</p>
+                )}
+                <p className="font-mono text-[11px] text-ink-quiet">
+                  Código de consulta: {reporte.codigo_consulta ?? reporte.codigo_sop}
+                </p>
                 <h2 className="mt-1 text-[16px] font-semibold text-ink">
                   {reporte.titulo?.trim() || tipoReporte || reporte.catalogo_detalle_casos_sop_tipoTocatalogo_detalle?.nombre || "Reporte"}
                 </h2>
@@ -238,7 +246,7 @@ export function ConsultarReportePage() {
                           <p className="flex items-center gap-1.5 text-[11.5px] font-medium text-warning-ink">
                             <Mail className="h-3.5 w-3.5" /> Pendiente de tu respuesta
                           </p>
-                          <ResponderSolicitudForm codigo={reporte.codigo_sop} idSolicitud={solicitud.id_solicitud} />
+                          <ResponderSolicitudForm codigo={reporte.codigo_consulta ?? reporte.codigo_sop} idSolicitud={solicitud.id_solicitud} />
                         </div>
                       )}
                     </div>

@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, RotateCcw, Search, Trash2 } from "lucide-react";
@@ -24,15 +25,15 @@ const POR_PAGINA = 20;
 export function Historial() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const puedeAsignar = Boolean(user && user.rol.toLowerCase() === "seguridad operativa" && user.es_responsable);
-  const [query, setQuery] = useState("");
+  const puedeAsignar = Boolean(user && (user.rol.toLowerCase() === "admin" || (user.rol.toLowerCase() === "seguridad operativa" && user.es_responsable)));
+  const [query, setQuery] = useDraftState("pages/monitoreo/Historial:query", "");
   const [debouncedQuery, setDebouncedQuery] = useState(query);
-  const [desde, setDesde] = useState("");
-  const [hasta, setHasta] = useState("");
-  const [estado, setEstado] = useState<EstadoEvento | "">("");
-  const [pagina, setPagina] = useState(1);
+  const [desde, setDesde] = useDraftState("pages/monitoreo/Historial:desde", "");
+  const [hasta, setHasta] = useDraftState("pages/monitoreo/Historial:hasta", "");
+  const [estado, setEstado] = useDraftState<EstadoEvento | "">("pages/monitoreo/Historial:estado", "");
+  const [pagina, setPagina] = useDraftState("pages/monitoreo/Historial:pagina", 1);
   const [borrando, setBorrando] = useState<EventoListItem | null>(null);
-  const [asignando, setAsignando] = useState<EventoListItem | null>(null);
+  const [asignando, setAsignando] = useDraftState<EventoListItem | null>("pages/monitoreo/Historial:asignando", null);
   const deleteEvento = useDeleteEvento();
 
   // La búsqueda ya no filtra en memoria: cada tecleo dispararía un pedido al
@@ -43,10 +44,10 @@ export function Historial() {
   useEffect(() => {
     const t = setTimeout(() => {
       setDebouncedQuery(query);
-      setPagina(1);
+      if (query !== debouncedQuery) setPagina(1);
     }, 350);
     return () => clearTimeout(t);
-  }, [query]);
+  }, [query, debouncedQuery, setPagina]);
 
   const { data: counts } = useEventoCounts();
   const { data: pageData, isLoading } = useEventosPaginated({

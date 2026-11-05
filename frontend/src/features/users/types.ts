@@ -18,6 +18,8 @@ export interface UserBasic {
 
 /** Padrón completo de `/users` — solo Admin. */
 export interface UserListItem extends UserBasic {
+  unidad_organizativa?: string | null;
+  jefe_inmediato?: string | null;
   correo: string;
   telefono: string | null;
   ultimo_acceso: string | null;

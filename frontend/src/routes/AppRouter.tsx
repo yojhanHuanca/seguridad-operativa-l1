@@ -25,7 +25,6 @@ const SoPlanesAccionPage = lazyNamed(() => import("@/pages/seguridad/PlanesAccio
 const SoPerfilPage = lazyNamed(() => import("@/pages/seguridad/PerfilPage"), "SoPerfilPage");
 const JefeHome = lazyNamed(() => import("@/pages/jefe/JefeHome"), "JefeHome");
 const PlanDetail = lazyNamed(() => import("@/pages/jefe/PlanDetail"), "PlanDetail");
-const JefeIndicadoresPage = lazyNamed(() => import("@/pages/jefe/IndicadoresPage"), "JefeIndicadoresPage");
 const JefeNotificacionesPage = lazyNamed(() => import("@/pages/jefe/NotificacionesPage"), "JefeNotificacionesPage");
 const JefePerfilPage = lazyNamed(() => import("@/pages/jefe/PerfilPage"), "JefePerfilPage");
 const MonitoreoDashboardPage = lazyNamed(() => import("@/pages/monitoreo/Dashboard"), "Dashboard");
@@ -45,6 +44,7 @@ const ContingenciaEditarPage = lazyNamed(() => import("@/pages/contingencias/Edi
 const ContingenciaPerfilPage = lazyNamed(() => import("@/pages/contingencias/Perfil"), "Perfil");
 const ContingenciaIndicadoresPage = lazyNamed(() => import("@/pages/contingencias/Indicadores"), "Indicadores");
 const AdminUsuariosPage = lazyNamed(() => import("@/pages/admin/UsuariosPage"), "AdminUsuariosPage");
+const AdminImportarUsuariosPage = lazyNamed(() => import("@/pages/admin/ImportarUsuariosPage"), "AdminImportarUsuariosPage");
 const AdminAreasPage = lazyNamed(() => import("@/pages/admin/AreasPage"), "AdminAreasPage");
 const AdminEstacionesPage = lazyNamed(() => import("@/pages/admin/EstacionesPage"), "AdminEstacionesPage");
 const AdminMaterialRodantePage = lazyNamed(() => import("@/pages/admin/MaterialRodantePage"), "AdminMaterialRodantePage");
@@ -100,7 +100,7 @@ export function AppRouter() {
           {/* Portal Jefe de Área — sin login todavía; el área se elige a mano */}
           <Route path="/jefe" element={<ProtectedRoute roles={["Jefe de Área"]}><JefeHome /></ProtectedRoute>} />
           <Route path="/jefe/planes/:codigo" element={<ProtectedRoute roles={["Jefe de Área"]}><PlanDetail /></ProtectedRoute>} />
-          <Route path="/jefe/indicadores" element={<ProtectedRoute roles={["Jefe de Área"]}><JefeIndicadoresPage /></ProtectedRoute>} />
+          <Route path="/jefe/indicadores" element={<ProtectedRoute roles={["Jefe de Área"]}><Navigate to="/jefe" replace /></ProtectedRoute>} />
           <Route path="/jefe/notificaciones" element={<ProtectedRoute roles={["Jefe de Área"]}><JefeNotificacionesPage /></ProtectedRoute>} />
           <Route path="/jefe/perfil" element={<ProtectedRoute roles={["Jefe de Área"]}><JefePerfilPage /></ProtectedRoute>} />
 
@@ -128,6 +128,7 @@ export function AppRouter() {
           {/* Panel de Administrador — sin login todavía */}
           <Route path="/admin" element={<ProtectedRoute roles={["Admin"]}><AdminUsuariosPage /></ProtectedRoute>} />
           <Route path="/admin/usuarios" element={<ProtectedRoute roles={["Admin"]}><AdminUsuariosPage /></ProtectedRoute>} />
+          <Route path="/admin/usuarios/importar" element={<ProtectedRoute roles={["Admin"]}><AdminImportarUsuariosPage /></ProtectedRoute>} />
           <Route path="/admin/roles" element={<ProtectedRoute roles={["Admin"]}><AdminUsuariosPage /></ProtectedRoute>} />
           <Route path="/admin/catalogos" element={<ProtectedRoute roles={["Admin"]}><AdminAreasPage /></ProtectedRoute>} />
           <Route path="/admin/estaciones" element={<ProtectedRoute roles={["Admin"]}><AdminEstacionesPage /></ProtectedRoute>} />

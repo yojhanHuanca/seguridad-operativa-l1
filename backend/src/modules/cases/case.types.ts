@@ -3,11 +3,12 @@
 // Evaluación -> Investigación -> Plan de Acción -> Ejecución -> Verificación -> Cierre.
 
 export interface EvaluateCaseDto {
-  id_riesgo: number; // catálogo "Análisis de riesgo" -> casos_sop.analisis_riesgo
+  id_riesgo?: number | undefined; // obligatorio cuando pasa directo a Plan; si investiga se registra en Investigación
   id_area?: number | null | undefined; // areas.id_area -> casos_sop.area_responsable
   id_responsable?: number | null | undefined; // usuarios.id_usuario -> casos_sop.responsable_hallazgo
   clasificacion: string; // texto libre del selector de Evaluación -> casos_sop.clasificacion
-  descripcion_evento: string; // casos_sop.descripcion_evento -> se copia como hallazgos al guardar la investigación
+  descripcion_evento: string; // casos_sop.descripcion_evento
+  posibles_causas?: string | null | undefined; // casos_sop.posibles_causas
   peligro?: string | null | undefined;
   consecuencia?: string | null | undefined;
   observaciones?: string | null | undefined;
@@ -31,6 +32,8 @@ export interface RespondInfoDto {
 }
 
 export interface SaveInvestigationDto {
+  id_riesgo: number; // catálogo "Análisis de riesgo" -> casos_sop.analisis_riesgo
+  hallazgos: string;
   causa_raiz: string;
   conclusiones: string;
   observaciones?: string | null | undefined;

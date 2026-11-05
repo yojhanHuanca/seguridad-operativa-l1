@@ -1,5 +1,5 @@
 import { UserAvatar } from "@/components/ui/UserAvatar";
-import { useState } from "react";
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { Modal } from "@/design-system/primitives/Modal";
@@ -17,7 +17,7 @@ import type { EventoListItem } from "../types";
  * arme el hallazgo desde su propio panel.
  */
 export function AsignarEventoModal({ evento, onClose }: { evento: EventoListItem | null; onClose: () => void }) {
-  const [idUsuario, setIdUsuario] = useState("");
+  const [idUsuario, setIdUsuario] = useDraftState(`assign-event:${evento?.id_evento ?? "nuevo"}`, "");
   const { data: usuarios } = useUsersBasicos();
   const asignar = useAsignarEvento();
 

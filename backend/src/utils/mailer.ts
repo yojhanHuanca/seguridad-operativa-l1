@@ -250,3 +250,13 @@ export async function enviarCorreoPlanAsignado(datos: PlanAsignadoCorreo) {
     `,
   });
 }
+
+export async function enviarCorreoRecordatorioPlan(datos: { destino: string; nombre: string; codigoPlan: string; codigoCaso: string; descripcion: string; fechaLimite: Date; diasRestantes: number; url: string }) {
+  const systemName = await getSystemName();
+  const plazo = datos.diasRestantes === 1 ? "mañana" : `en ${datos.diasRestantes} días`;
+  await enviarCorreo({
+    to: datos.destino,
+    subject: `Recordatorio: ${datos.codigoPlan} vence ${plazo} — ${systemName}`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#12352A"><p style="font-size:12px;font-weight:700;text-transform:uppercase;color:#0F7A3D">${escapeHtml(systemName)} · Seguridad Operativa</p><h1 style="font-size:20px">Tu plan de acción vence ${escapeHtml(plazo)}</h1><p>Hola ${escapeHtml(datos.nombre)}, te recordamos que el plan <strong>${escapeHtml(datos.codigoPlan)}</strong> del caso <strong>${escapeHtml(datos.codigoCaso)}</strong> tiene fecha límite el <strong>${escapeHtml(formatearFecha(datos.fechaLimite))}</strong>.</p><div style="margin:20px 0;padding:16px;background:#F3F7F4;border-radius:10px;border:1px solid #E3E8E5"><p style="margin:0;font-size:14px">${escapeHtml(datos.descripcion)}</p></div><p style="margin:24px 0"><a href="${escapeHtml(datos.url)}" style="background:#0F7A3D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block">Revisar plan</a></p><p style="font-size:12px;color:#5F6F68">Este recordatorio se envía una sola vez para cada hito de vencimiento.</p></div>`,
+  });
+}

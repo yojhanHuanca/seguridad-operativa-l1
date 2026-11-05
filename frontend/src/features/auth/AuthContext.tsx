@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { api, type ApiEnvelope } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 import { AuthContext, type AuthUser, type AuthValue } from "./auth";
+import { clearWorkspaceDrafts } from "@/lib/workspaceDrafts";
 
 interface LoginResult { token: string; usuario: AuthUser }
 const TOKEN_KEY = "sigma_auth_token";
@@ -11,9 +12,19 @@ const USER_KEY = "sigma_auth_user";
 function readUser(): AuthUser | null {
   try {
     const value = localStorage.getItem(USER_KEY);
-    return value ? JSON.parse(value) as AuthUser : null;
+    if (!value) return null;
+    const parsed: unknown = JSON.parse(value);
+    if (!parsed || typeof parsed !== "object" ||
+      !("id_usuario" in parsed) || !Number.isInteger(parsed.id_usuario) || Number(parsed.id_usuario) <= 0 ||
+      !("rol" in parsed) || typeof parsed.rol !== "string" || !parsed.rol.trim() ||
+      !("nombre" in parsed) || typeof parsed.nombre !== "string" ||
+      !("correo" in parsed) || typeof parsed.correo !== "string") {
+      throw new Error("Sesión guardada no válida");
+    }
+    return parsed as AuthUser;
   } catch {
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(TOKEN_KEY);
     return null;
   }
 }
@@ -23,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_KEY));
 
   const clearSession = useCallback((reason?: "password-changed") => {
+    clearWorkspaceDrafts();
     if (reason === "password-changed") sessionStorage.setItem("sigma_password_updated", "1");
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);

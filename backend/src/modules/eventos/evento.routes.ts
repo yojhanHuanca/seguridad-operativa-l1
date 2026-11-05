@@ -19,6 +19,7 @@ router.get("/", MONITOREO, EventoController.getAll);
 router.get("/counts", MONITOREO, EventoController.getCounts);
 router.get("/indicadores", INDICADORES_LECTURA, EventoController.getIndicadores);
 router.put("/indicadores/datos-mes", MONITOREO, EventoController.guardarDatosIndicadores);
+router.get("/asignados", requireRoles("Admin"), EventoController.getTodosAsignados);
 router.get("/asignados/:id_usuario", SO_ASIGNADOS, EventoController.getAsignados);
 router.get("/:id", MONITOREO, EventoController.getById);
 router.post("/", MONITOREO, EventoController.create);

@@ -111,7 +111,8 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
   const unreadNotifications = notifications?.no_leidas ?? 0;
   const currentSoUser = useCurrentSoUser();
   const { nombre: userName, cargo: userRole, user: soUser } = currentSoUser;
-  const { data: eventosAsignados } = useEventosAsignados(soUser?.id_usuario);
+  const esAdmin = user?.rol.toLowerCase() === "admin";
+  const { data: eventosAsignados } = useEventosAsignados(soUser?.id_usuario, esAdmin);
   const eventosAsignadosPendientes = (eventosAsignados ?? []).filter((e) => !e.id_caso_creado).length;
 
   const groups: NavGroup[] = [
@@ -131,7 +132,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
           badgeTone: "danger",
           match: (p) => p === "/seguridad/eventos-asignados",
         },
-        // Solo para el RSO (flag es_responsable) — mismo permiso con el que ya entra a Monitoreo.
+        // Solo el RSO ve los eventos de Monitoreo dentro de su panel SO.
         ...(soUser?.es_responsable
           ? [{ to: "/seguridad/eventos", label: "Eventos Operativos", icon: Activity, match: (p: string) => p === "/seguridad/eventos" }]
           : []),

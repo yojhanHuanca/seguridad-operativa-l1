@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -42,6 +43,7 @@ import { ReceptionStage } from "./case-detail/ReceptionStage";
 import { TimelinePanel } from "./case-detail/TimelinePanel";
 import { PendingInfoCard } from "./case-detail/PendingInfoCard";
 import { InvestigationCard } from "./case-detail/InvestigationCard";
+import { getEvaluationDetails } from "./case-detail/evaluationDetails";
 import { PlanCard } from "./case-detail/PlanCard";
 import { ExecutionSummaryCard } from "./case-detail/ExecutionSummaryCard";
 import { EvidencePanel } from "./case-detail/EvidencePanel";
@@ -91,8 +93,8 @@ export function CaseDetailPage() {
 function CaseFileContent({ caso }: { caso: CaseDetail }) {
   const { data: configuracion } = useConfiguracion();
   const systemName = nombreSistema(configuracion);
-  const [showEvidence, setShowEvidence] = useState(false);
-  const [showTimeline, setShowTimeline] = useState(false);
+  const [showEvidence, setShowEvidence] = useDraftState("pages/seguridad/CaseDetailPage:showEvidence", false);
+  const [showTimeline, setShowTimeline] = useDraftState("pages/seguridad/CaseDetailPage:showTimeline", false);
   const [exportPlanActive, setExportPlanActive] = useState(false);
   const [exportFullActive, setExportFullActive] = useState(false);
 
@@ -498,6 +500,7 @@ function PlanActionPrintDocument({ caso, systemName }: { caso: CaseDetail; syste
  */
 function ExpedienteCompletoPrintDocument({ caso, systemName }: { caso: CaseDetail; systemName: string }) {
   const evento = caso.evento_caso[0]?.eventos_operativos;
+    const evaluationDetails = getEvaluationDetails(caso);
   const riesgo = caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle;
   const estado = caso.catalogo_detalle_casos_sop_estado_hallazgoTocatalogo_detalle.nombre;
   const rows = buildPlanRows(caso);
@@ -534,7 +537,9 @@ function ExpedienteCompletoPrintDocument({ caso, systemName }: { caso: CaseDetai
           <PrintField label="Fecha de creación" value={formatDateTime(caso.created_at)} />
         </div>
         <div className="mt-3">
-          <PrintField label="Descripción" value={caso.descripcion} />
+          <PrintField label="Descripción del reporte" value={caso.descripcion} />
+          <PrintField label="Descripción del evento (Seguridad Operativa)" value={evaluationDetails.descripcion || "No registrada"} />
+          <PrintField label="Posibles causas" value={evaluationDetails.posiblesCausas || "No registradas"} />
         </div>
         <div className="mt-5 grid grid-cols-3 gap-x-10 gap-y-5">
           <PrintField label="Peligro" value={caso.peligro?.trim() || "No registrado"} />
@@ -545,6 +550,18 @@ function ExpedienteCompletoPrintDocument({ caso, systemName }: { caso: CaseDetai
           <PrintField label="Consecuencia" value={caso.consecuencia?.trim() || "No registrada"} />
         </div>
       </section>
+
+      {caso.investigacion_caso && (
+        <section className="mt-6">
+          <h2 className="border-b border-line pb-2 text-[18px] font-bold text-brand-800">Investigación</h2>
+          <div className="mt-4 grid grid-cols-2 gap-x-10 gap-y-5">
+            <PrintField label="Hallazgos de la investigación" value={caso.investigacion_caso.hallazgos} />
+            <PrintField label="Causa raíz" value={caso.investigacion_caso.causa_raiz} />
+            <PrintField label="Conclusiones" value={caso.investigacion_caso.conclusiones} />
+            <PrintField label="Observaciones" value={caso.investigacion_caso.observaciones?.trim() || "No registradas"} />
+          </div>
+        </section>
+      )}
 
       {rows.length > 0 && (
         <section className="mt-6">

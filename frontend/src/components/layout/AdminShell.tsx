@@ -49,6 +49,7 @@ const NAV_GROUPS = [
 
 const TITLES: Record<string, string> = {
   "/admin/usuarios": "Gestión de usuarios",
+  "/admin/usuarios/importar": "Importación de usuarios",
   "/admin/roles": "Roles y accesos",
   "/admin/catalogos": "Gestión de áreas",
   "/admin/estaciones": "Gestión de estaciones",
@@ -89,7 +90,7 @@ function SidebarContent({ collapsed, onNavigate, systemName }: { collapsed: bool
             {!collapsed && <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-ink-soft">{group.label}</p>}
             <div className="space-y-1">
               {group.items.map((item) => {
-                const active = location.pathname === item.to;
+                const active = location.pathname === item.to || location.pathname.startsWith(`${item.to}/`);
                 return <Link key={item.to} to={item.to} onClick={onNavigate} title={collapsed ? item.label : undefined} aria-label={collapsed ? item.label : undefined} aria-current={active ? "page" : undefined}
                   className={cn("flex min-h-10 items-center gap-3 rounded-lg px-3 text-[12.5px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-brand-700", collapsed && "justify-center px-0", active ? "bg-brand-50 font-semibold text-brand-900 ring-1 ring-inset ring-brand-200" : "text-ink-soft hover:bg-surface hover:text-ink")}>
                   <item.icon className={cn("h-4 w-4 shrink-0", active ? "text-brand-700" : "text-ink-quiet")} />

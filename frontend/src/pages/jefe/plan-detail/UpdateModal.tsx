@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { useRef, useState } from "react";
 import { Save, Upload } from "lucide-react";
 import { Button } from "@/design-system/primitives/Button";
@@ -15,8 +16,8 @@ export function UpdateModal({ plan, open, onClose }: { plan: PlanItem; open: boo
   const addUpdate = useAddPlanUpdate();
   const adicionales = planUpdates(plan).filter((a) => a.etiqueta !== "Actualización original").length;
 
-  const [updateDescription, setUpdateDescription] = useState("");
-  const [updateFiles, setUpdateFiles] = useState<File[]>([]);
+  const [updateDescription, setUpdateDescription] = useDraftState("pages/jefe/plan-detail/UpdateModal:updateDescription", "");
+  const [updateFiles, setUpdateFiles] = useDraftState<File[]>("pages/jefe/plan-detail/UpdateModal:updateFiles", []);
   const [updateAccept, setUpdateAccept] = useState(ACCEPT);
   const updateFileRef = useRef<HTMLInputElement>(null);
 

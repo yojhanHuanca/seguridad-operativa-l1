@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-const mock = vi.hoisted(() => ({ names: vi.fn(), duplicate: vi.fn(), group: vi.fn(), create: vi.fn(), update: vi.fn(), detail: vi.fn(), references: vi.fn(), eventDetail: vi.fn() }));
-vi.mock("./catalog.repository.js", () => ({ CatalogRepository: { countUnitReferences: mock.references, findGroup: mock.group, findDetalleByNombre: mock.duplicate, listNames: mock.names, createDetalle: mock.create, updateDetalle: mock.update, findDetalleById: mock.detail } }));
+const mock = vi.hoisted(() => ({ names: vi.fn(), duplicate: vi.fn(), group: vi.fn(), create: vi.fn(), update: vi.fn(), detail: vi.fn(), references: vi.fn(), eventDetail: vi.fn(), activeModel: vi.fn() }));
+vi.mock("./catalog.repository.js", () => ({ CatalogRepository: { countUnitReferences: mock.references, findGroup: mock.group, findDetalleByNombre: mock.duplicate, listNames: mock.names, createDetalle: mock.create, updateDetalle: mock.update, findDetalleById: mock.detail, findActiveModelByName: mock.activeModel } }));
 vi.mock("../../lib/prisma.js", () => ({ default: {} }));
 vi.mock("../eventos/evento.repository.js", () => ({ EventoRepository: { findCatalogoDetalleById: mock.eventDetail } }));
 import { CatalogService } from "./catalog.service.js";
 import { validarMaterialRodante } from "../eventos/evento.service.js";
 describe("Material rodante", () => {
-  beforeEach(() => { vi.clearAllMocks(); mock.group.mockResolvedValue({ codigo: "NUMERO_MR" }); mock.names.mockResolvedValue([]); mock.duplicate.mockResolvedValue(null); });
+  beforeEach(() => { vi.clearAllMocks(); mock.group.mockResolvedValue({ codigo: "NUMERO_MR" }); mock.names.mockResolvedValue([]); mock.duplicate.mockResolvedValue(null); mock.activeModel.mockResolvedValue({ id_detalle: 10 }); });
   it.each(["ALSTOM", "ANSALDO", "AUXILIAR"])("persiste la clasificación explícita %s", async classification => {
     await CatalogService.createItem(1, "t045", classification);
     expect(mock.create).toHaveBeenCalledWith(1, "T45", classification);
@@ -18,6 +18,16 @@ describe("Material rodante", () => {
   it("rechaza códigos equivalentes aunque la unidad esté inactiva", async () => {
     mock.names.mockResolvedValue([{ id_detalle: 2, nombre: "T1" }]);
     await expect(CatalogService.createItem(1, "t001", "ALSTOM")).rejects.toThrow("Ya existe");
+  });
+  it("acepta un tipo de tren nuevo previamente agregado al catálogo", async () => {
+    await CatalogService.createItem(1, "t045", "CAF");
+    expect(mock.activeModel).toHaveBeenCalledWith("CAF");
+    expect(mock.create).toHaveBeenCalledWith(1, "T45", "CAF");
+  });
+  it("no permite clasificar una unidad con un tipo que no esté activo", async () => {
+    mock.activeModel.mockResolvedValue(null);
+    await expect(CatalogService.createItem(1, "T45", "MARCA DESCONOCIDA")).rejects.toThrow("tipo o marca de tren activo");
+    expect(mock.create).not.toHaveBeenCalled();
   });
   it("permite editar conservando el identificador", async () => {
     mock.detail.mockResolvedValue({ id_catalogo: 1 }); mock.names.mockResolvedValue([{ id_detalle: 2, nombre: "T1" }]);

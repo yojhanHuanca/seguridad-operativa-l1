@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
@@ -6,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Crown,
+  FileSpreadsheet,
   KeyRound,
   Pencil,
   Radar,
@@ -14,7 +16,7 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { AdminShell } from "@/components/layout/AdminShell";
 import { Button } from "@/design-system/primitives/Button";
@@ -42,7 +44,7 @@ const PERMISOS: { key: PermisoKey; label: string; shortLabel: string; hint: stri
   { key: "puede_rechazar_reportes", label: "Rechazar reportes", shortLabel: "Rechazar", hint: "Rechazo de reportes antes del flujo de gestión." },
 ];
 
-const ROLE_ORDER = ["Admin", "Seguridad Operativa", "Jefe de Área", "Monitorista"];
+const ROLE_ORDER = ["Admin", "Seguridad Operativa", "Jefe de Área", "Monitorista", "Gestión de Planes de Contingencia"];
 const ROLES_OCULTOS_ADMIN = new Set(["Reportante"]);
 
 const ROL_STYLE: Record<string, { icon: typeof ShieldCheck; badge: string; dot: string; active: string }> = {
@@ -72,6 +74,7 @@ const MATRIZ_PERMISOS: { modulo: string; accesos: Record<string, string> }[] = [
       "Seguridad Operativa": "Ver indicadores SO",
       "Jefe de Área": "Ver planes asignados",
       Monitorista: "Ver operación",
+      "Gestión de Planes de Contingencia": "Registrar y consultar contingencias",
     },
   },
   {
@@ -95,7 +98,7 @@ const MATRIZ_PERMISOS: { modulo: string; accesos: Record<string, string> }[] = [
   {
     modulo: "Auditoría",
     accesos: {
-      Admin: "Ver y exportar",
+      Admin: "Consultar",
       "Seguridad Operativa": "Sin acceso",
       "Jefe de Área": "Sin acceso",
       Monitorista: "Sin acceso",
@@ -104,7 +107,7 @@ const MATRIZ_PERMISOS: { modulo: string; accesos: Record<string, string> }[] = [
   {
     modulo: "Importación",
     accesos: {
-      Admin: "Importar histórico",
+      Admin: "Importar histórico y usuarios",
       "Seguridad Operativa": "Sin acceso",
       "Jefe de Área": "Sin acceso",
       Monitorista: "Sin acceso",
@@ -124,8 +127,23 @@ const MATRIZ_PERMISOS: { modulo: string; accesos: Record<string, string> }[] = [
     accesos: {
       Admin: "Ver y exportar",
       "Seguridad Operativa": "Ver y exportar",
-      "Jefe de Área": "Ver área",
+      "Jefe de Área": "Sin acceso",
       Monitorista: "Ver operación",
+      "Gestión de Planes de Contingencia": "Indicadores de contingencias",
+    },
+  },
+  {
+    modulo: "Contingencias",
+    accesos: {
+      Admin: "Gestionar",
+      "Gestión de Planes de Contingencia": "Registrar y consultar",
+    },
+  },
+  {
+    modulo: "Datos operativos",
+    accesos: {
+      Admin: "Gestionar", "Seguridad Operativa": "Gestionar",
+      Monitorista: "Gestionar", "Gestión de Planes de Contingencia": "Gestionar",
     },
   },
   {
@@ -165,13 +183,22 @@ function userIsSO(user: UserListItem) {
   return user.roles?.nombre_rol === "Seguridad Operativa";
 }
 
+function userIsAdmin(user: UserListItem) {
+  return user.roles?.nombre_rol === "Admin";
+}
+
 function userHasSpecialPermission(user: UserListItem) {
-  return userIsSO(user) && PERMISOS.some((permiso) => Boolean(user[permiso.key]));
+  return userIsAdmin(user) || (userIsSO(user) && PERMISOS.some((permiso) => Boolean(user[permiso.key])));
 }
 
 function permissionLabels(user: UserListItem) {
+  if (userIsAdmin(user)) return [{ key: "admin-total", shortLabel: "Acceso total" }];
   if (!userIsSO(user)) return [];
   return PERMISOS.filter((permiso) => Boolean(user[permiso.key]));
+}
+
+function hasPermission(user: UserListItem, permission: PermisoKey) {
+  return userIsAdmin(user) || (userIsSO(user) && Boolean(user[permission]));
 }
 
 function Toggle({ checked, onChange, label, disabled }: { checked: boolean; onChange: (checked: boolean) => void; label: string; disabled?: boolean }) {
@@ -360,10 +387,10 @@ function AccessUsersTable({
                       <td key={permiso.key} className="px-4 py-3">
                         <div className="flex justify-center">
                           <Toggle
-                            checked={Boolean(user[permiso.key])}
+                            checked={hasPermission(user, permiso.key)}
                             onChange={(checked) => onToggle(user, permiso.key, checked)}
                             label={`${permiso.label} — ${user.nombre}`}
-                            disabled={!isSO || updatePending}
+                            disabled={!isSO || userIsAdmin(user) || updatePending}
                           />
                         </div>
                       </td>
@@ -440,22 +467,22 @@ export function AdminUsuariosPage() {
   const { data: roles = [] } = useRoles();
   const { data: counts } = useUserCounts();
   const updateUser = useUpdateUser();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<UserListItem | null>(null);
-  const [query, setQuery] = useState("");
+  const [modalOpen, setModalOpen] = useDraftState("pages/admin/UsuariosPage:modalOpen", false);
+  const [editing, setEditing] = useDraftState<UserListItem | null>("pages/admin/UsuariosPage:editing", null);
+  const [query, setQuery] = useDraftState("pages/admin/UsuariosPage:query", "");
   const [debouncedQuery, setDebouncedQuery] = useState(query);
-  const [roleFilter, setRoleFilter] = useState("todos");
-  const [statusFilter, setStatusFilter] = useState<"todos" | "activo" | "inactivo">("todos");
-  const [permissionFilter, setPermissionFilter] = useState<PermissionFilter>("todos");
-  const [pagina, setPagina] = useState(1);
+  const [roleFilter, setRoleFilter] = useDraftState("pages/admin/UsuariosPage:roleFilter", "todos");
+  const [statusFilter, setStatusFilter] = useDraftState<"todos" | "activo" | "inactivo">("pages/admin/UsuariosPage:statusFilter", "todos");
+  const [permissionFilter, setPermissionFilter] = useDraftState<PermissionFilter>("pages/admin/UsuariosPage:permissionFilter", "todos");
+  const [pagina, setPagina] = useDraftState("pages/admin/UsuariosPage:pagina", 1);
 
   useEffect(() => {
     const t = setTimeout(() => {
       setDebouncedQuery(query);
-      setPagina(1);
+      if (query !== debouncedQuery) setPagina(1);
     }, 350);
     return () => clearTimeout(t);
-  }, [query]);
+  }, [query, debouncedQuery, setPagina]);
 
   const { data: pageData, isLoading, isError, isPlaceholderData, refetch } = useUsers({
     search: debouncedQuery.trim() || undefined,
@@ -503,6 +530,10 @@ export function AdminUsuariosPage() {
   };
 
   const togglePermiso = (user: UserListItem, permiso: PermisoKey, checked: boolean) => {
+    if (userIsAdmin(user)) {
+      toast.info("El Administrador ya cuenta con acceso total por su rol.");
+      return;
+    }
     if (!userIsSO(user)) {
       toast.warning("Los permisos especiales solo aplican a Seguridad Operativa");
       return;
@@ -594,9 +625,12 @@ export function AdminUsuariosPage() {
         <>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <p className="text-[12.5px] text-ink-quiet">{counts?.total ?? 0} usuarios registrados · {counts?.activos ?? 0} activos</p>
-            <Button size="sm" onClick={abrirCrear}>
-              <UserPlus className="h-4 w-4" /> Nuevo usuario
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Link to="/admin/usuarios/importar" className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-line-strong bg-white px-3 text-[12.5px] font-medium text-ink hover:bg-surface-2"><FileSpreadsheet className="h-4 w-4" /> Importar desde Excel</Link>
+              <Button size="sm" onClick={abrirCrear}>
+                <UserPlus className="h-4 w-4" /> Nuevo usuario
+              </Button>
+            </div>
           </div>
 
           <div className="mt-5 grid gap-3 rounded-2xl border border-line bg-white p-4 sm:grid-cols-[minmax(260px,1fr)_minmax(190px,1fr)_minmax(170px,1fr)]">

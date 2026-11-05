@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { useMemo, useState, type ReactNode } from "react";
 import {
   CheckCircle2,
@@ -115,10 +116,10 @@ function StatCard({ icon, label, value, tone, detail }: { icon: ReactNode; label
 export function Reportes() {
   const { data: eventos, isLoading } = useEventos();
   const catalogs = useCatalogs();
-  const [desde, setDesde] = useState("");
-  const [hasta, setHasta] = useState("");
-  const [tipoFiltro, setTipoFiltro] = useState("");
-  const [estadoFiltro, setEstadoFiltro] = useState("");
+  const [desde, setDesde] = useDraftState("pages/monitoreo/Reportes:desde", "");
+  const [hasta, setHasta] = useDraftState("pages/monitoreo/Reportes:hasta", "");
+  const [tipoFiltro, setTipoFiltro] = useDraftState("pages/monitoreo/Reportes:tipoFiltro", "");
+  const [estadoFiltro, setEstadoFiltro] = useDraftState("pages/monitoreo/Reportes:estadoFiltro", "");
   const [generando, setGenerando] = useState<string | null>(null);
 
   const lista = useMemo(() => eventos ?? [], [eventos]);

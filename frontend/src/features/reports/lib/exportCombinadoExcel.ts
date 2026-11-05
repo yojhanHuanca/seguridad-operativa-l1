@@ -7,7 +7,7 @@ import type { CaseListItem, PlanAccion } from "@/features/cases/types";
 
 /**
  * Exportación "Casos + Planes" con el diseño de la plantilla BD del cliente:
- * una fila por plan de acción, con las columnas del caso (A-O) combinadas
+ * una fila por plan de acción, con las columnas del caso (A-Q) combinadas
  * verticalmente cuando un caso tiene varios planes — en vez de repetirlas en
  * cada fila, como hace el resto de exportaciones de la app.
  */
@@ -20,7 +20,9 @@ const COLUMNS = [
   "Días abierto",
   "Procedencia",
   "Tipo",
-  "Descripción",
+  "Descripción del reporte",
+  "Descripción del evento (Seguridad Operativa)",
+  "Posibles causas",
   "Responsable de Hallazgo/ Investigación/ RSO",
   "Tipo SOP",
   "Subtipo SOP",
@@ -39,16 +41,16 @@ const COLUMNS = [
   "Anexos",
 ] as const;
 
-const COLUMN_WIDTHS = [18, 14, 14, 13, 10, 16, 15, 60, 22, 15, 20, 22, 22, 20, 30, 20, 40, 16, 20, 16, 12, 14, 14, 12];
+const COLUMN_WIDTHS = [18, 14, 14, 13, 10, 16, 15, 60, 60, 45, 22, 15, 20, 22, 22, 20, 30, 20, 40, 16, 20, 16, 12, 14, 14, 12];
 
 // Índices de columna (1-based).
 const COL_CASO_FIRST = 1; // A
-const COL_CASO_LAST = 15; // O
-const COL_RIESGO = 14; // N
-const COL_PLAN_FIRST = 16; // P
-const COL_FECHA_PLAN = 21; // U
-const COL_FECHA_REPROGRAMADA = 22; // V
-const COL_DIAS_ABIERTO_PLAN = 23; // W
+const COL_CASO_LAST = 17; // Q
+const COL_RIESGO = 16; // P
+const COL_PLAN_FIRST = 18; // R
+const COL_FECHA_PLAN = 23; // W
+const COL_FECHA_REPROGRAMADA = 24; // X
+const COL_DIAS_ABIERTO_PLAN = 25; // Y
 
 const AMARILLO = "FFFFFF00";
 const NARANJA = "FFF4B183";
@@ -67,11 +69,11 @@ const DATE_FMT = "dd/mm/yyyy";
 const THIN = { style: "thin" as const, color: { argb: "FF9AA5A0" } };
 const BORDER_ALL = { top: THIN, left: THIN, bottom: THIN, right: THIN };
 
-/** Color del bloque de encabezado según la columna: A-K amarillo, L-O naranja, P-T verde, U-W blanco, X azul. */
+/** Color del bloque de encabezado según la columna: A-K amarillo, L-Q naranja, R-V verde, W-Y blanco, Z azul. */
 function headerFillByColumn(col: number): string {
   if (col <= 11) return AMARILLO;
   if (col <= COL_CASO_LAST) return NARANJA;
-  if (col <= 20) return VERDE;
+  if (col <= 21) return VERDE;
   if (col <= COL_DIAS_ABIERTO_PLAN) return BLANCO;
   return AZUL;
 }
@@ -98,6 +100,8 @@ function casoValores(caso: CaseListItem): (string | number | Date)[] {
     caso.catalogo_detalle_casos_sop_procedenciaTocatalogo_detalle?.nombre ?? "-",
     caso.catalogo_detalle_casos_sop_tipoTocatalogo_detalle?.nombre ?? "-",
     caso.descripcion,
+    caso.descripcion_evento?.trim() || "-",
+    caso.posibles_causas?.trim() || "-",
     caso.usuarios_casos_sop_responsable_hallazgoTousuarios?.nombre ?? "-",
     caso.catalogo_detalle_casos_sop_tipo_sopTocatalogo_detalle?.nombre ?? "-",
     caso.catalogo_detalle_casos_sop_subtipo_sopTocatalogo_detalle?.nombre ?? "-",

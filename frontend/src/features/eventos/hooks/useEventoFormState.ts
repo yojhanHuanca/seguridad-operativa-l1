@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { useMemo, useState } from "react";
 import type { CreateEventoInput, EventoListItem } from "../types";
 
@@ -168,7 +169,7 @@ function completarDerivados(form: EventoFormState): EventoFormState {
 }
 
 export function useEventoFormState(eventoInicial?: EventoListItem) {
-  const [form, setForm] = useState<EventoFormState>(() => completarDerivados(eventoInicial ? estadoDesdeEvento(eventoInicial) : estadoVacio()));
+  const [form, setForm] = useDraftState<EventoFormState>("features/eventos/hooks/useEventoFormState:form", () => completarDerivados(eventoInicial ? estadoDesdeEvento(eventoInicial) : estadoVacio()));
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const set = <K extends keyof EventoFormState>(key: K, value: EventoFormState[K]) =>

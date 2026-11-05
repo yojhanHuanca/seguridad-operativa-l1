@@ -1,4 +1,5 @@
 import prisma from "../../lib/prisma.js";
+import { randomUUID } from "node:crypto";
 import { NotificationRepository } from "../notifications/notification.repository.js";
 import { ConfiguracionService } from "../configuracion/configuracion.service.js";
 import type { CreateReportDto, UploadedFile } from "./report.types.js";
@@ -67,6 +68,7 @@ const LIST_INCLUDE = {
 const PUBLIC_REPORT_SELECT = {
   id_caso: true,
   codigo_sop: true,
+  codigo_consulta: true,
   titulo: true,
   descripcion: true,
   fecha_hallazgo: true,
@@ -170,6 +172,7 @@ export class ReportRepository {
       const q = opts.search;
       where.OR = [
         { codigo_sop: { contains: q, mode: "insensitive" } },
+        { codigo_consulta: { contains: q, mode: "insensitive" } },
         { titulo: { contains: q, mode: "insensitive" } },
         { descripcion: { contains: q, mode: "insensitive" } },
       ];
@@ -197,16 +200,16 @@ export class ReportRepository {
   }
 
   static async findByCodigo(codigo_sop: string) {
-    return prisma.casos_sop.findUnique({
-      where: { codigo_sop },
+    return prisma.casos_sop.findFirst({
+      where: { OR: [{ codigo_sop }, { codigo_consulta: codigo_sop }] },
       include: LIST_INCLUDE,
       omit: CONTACTO_REPORTANTE_OCULTO,
     });
   }
 
   static async findPublicByCodigo(codigo_sop: string) {
-    return prisma.casos_sop.findUnique({
-      where: { codigo_sop },
+    return prisma.casos_sop.findFirst({
+      where: { OR: [{ codigo_consulta: codigo_sop }, { codigo_sop }] },
       select: PUBLIC_REPORT_SELECT,
     });
   }
@@ -284,14 +287,21 @@ export class ReportRepository {
       if (!tipoReporte) throw new Error("El tipo de reporte seleccionado no existe");
       if (!lugar) throw new Error("El lugar seleccionado no existe");
 
-      const codigo_sop = await ConfiguracionService.nextCodigoExpediente(tx, fecha);
-
       const esIdentificado = dto.modalidad === "identificado";
       // Registrado por el analista desde el panel de SO: el caso nace con
       // su firma en la bitácora en vez de la del reportante de campo, y
       // se salta Recepción (esa etapa es para filtrar reportes que llegan
       // de afuera; un caso que ya crea SO no necesita ese filtro).
       const esRegistroSO = dto.origen === "seguridad_operativa";
+      // Los reportes recibidos desde fuera aún no son SOP: usan un código
+      // estable de consulta hasta que SO los acepte. Así un rechazo conserva
+      // trazabilidad sin consumir un correlativo SOP.
+      const codigo_consulta = esRegistroSO
+        ? null
+        : `REP-${randomUUID().replaceAll("-", "").slice(0, 24).toUpperCase()}`;
+      const codigo_sop = esRegistroSO
+        ? await ConfiguracionService.nextCodigoExpediente(tx, fecha)
+        : codigo_consulta!;
       const estadoInicial = esRegistroSO ? estadoEvaluacion : estadoRecepcion;
       const nombreReportante = dto.nombre_reportante?.trim() || null;
       const ubicacionTitulo = [lugar.nombre, lugarEspecifico?.nombre].filter(Boolean).join(" · ");
@@ -300,6 +310,8 @@ export class ReportRepository {
       const caso = await tx.casos_sop.create({
         data: {
           codigo_sop,
+          codigo_consulta,
+          sop_asignado: esRegistroSO,
           titulo,
           fecha_hallazgo: ahora,
           fecha_evento: ahora,

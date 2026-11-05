@@ -90,6 +90,8 @@ model bitacora {
 model casos_sop {
   id_caso                                                      Int                       @id @default(autoincrement())
   codigo_sop                                                   String                    @unique @db.VarChar(30)
+  codigo_consulta                                               String?                   @unique @db.VarChar(30)
+  sop_asignado                                                  Boolean                   @default(true)
   fecha_hallazgo                                               DateTime                  @db.Date
   fecha_evento                                                 DateTime?                 @db.Timestamp(6)
   estado_hallazgo                                              Int
@@ -111,6 +113,7 @@ model casos_sop {
   fecha_reprogramada                                           DateTime?                 @db.Date
   dias_abierto_plan                                            Int?                      @default(0)
   observaciones                                                String?
+  posibles_causas                                              String?
   created_by                                                   Int?
   created_at                                                   DateTime?                 @default(now()) @db.Timestamp(6)
   updated_at                                                   DateTime?                 @default(now()) @db.Timestamp(6)
@@ -768,11 +771,27 @@ model planes_accion {
   casos_sop          casos_sop          @relation(fields: [id_caso], references: [id_caso], onDelete: Cascade, onUpdate: NoAction, map: "fk_plan_caso")
   catalogo_detalle   catalogo_detalle   @relation(fields: [estado], references: [id_detalle], onDelete: NoAction, onUpdate: NoAction, map: "fk_plan_estado")
   usuarios           usuarios           @relation(fields: [responsable], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_plan_usuario")
+  recordatorios      plan_recordatorios[]
 
   @@index([id_area], map: "idx_plan_area")
   @@index([id_caso], map: "idx_plan_caso")
   @@index([estado], map: "idx_plan_estado")
   @@index([responsable], map: "idx_plan_responsable")
+}
+
+model plan_recordatorios {
+  id_recordatorio Int       @id @default(autoincrement())
+  id_plan         Int
+  dias_antes      Int       @db.SmallInt
+  fecha_limite    DateTime  @db.Date
+  estado          String    @default("pendiente") @db.VarChar(20)
+  created_at      DateTime  @default(now()) @db.Timestamp(6)
+  claimed_at      DateTime? @db.Timestamp(6)
+  sent_at         DateTime? @db.Timestamp(6)
+  plan            planes_accion @relation(fields: [id_plan], references: [id_plan], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([id_plan, dias_antes, fecha_limite], map: "uq_plan_recordatorio_hito")
+  @@index([estado, created_at], map: "idx_plan_recordatorio_pendiente")
 }
 
 /// Sin uso: fila de detalle de `reporte_estadistico` (ver la nota ahí).
@@ -867,6 +886,8 @@ model usuarios {
   cargo                                                          String?               @db.VarChar(100)
   correo                                                         String                @unique @db.VarChar(150)
   telefono                                                       String?               @db.VarChar(20)
+  unidad_organizativa                                            String?               @db.VarChar(150)
+  jefe_inmediato                                                 String?               @db.VarChar(150)
   estado                                                         String?               @default("Activo") @db.VarChar(20)
   fecha_ingreso                                                  DateTime?             @db.Date
   id_area                                                        Int?

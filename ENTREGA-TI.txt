@@ -64,6 +64,14 @@ Para crear el primer administrador, desde backend/ en PowerShell:
 El primer acceso exige cambiar la contraseña. El comando rechaza cuentas
 existentes y no funciona si ya hay un administrador; no sirve para restablecerlo.
 El administrador crea los demás usuarios mediante la gestión normal de la web.
+No puede desactivarse ni retirarse su propio rol; otro administrador debe tramitar
+ese cambio. Mantener una cuenta administrativa de respaldo bajo custodia de TI.
+Para la baja o cambio de rol/área de un jefe con pendientes, primero abrir Editar
+usuario > Reasignar planes pendientes. Elegir un jefe activo del área de cada
+plan y registrar un motivo. La transferencia conserva estados, avances, plazos,
+evidencias y actividades terminadas, notifica a los reemplazos y deja auditoría.
+Después guardar la desactivación o el cambio del usuario. Si cambia la lista de
+planes durante la revisión, actualizarla antes de confirmar; no reenviar a ciegas.
 
 PRIMERA INSTALACIÓN CON DOCKER (BASE VACÍA)
 Desde la raíz, completar primero .env.production:
@@ -84,9 +92,15 @@ BASES EXISTENTES Y ACTUALIZACIONES
 No ejecutar migrate reset, db push, seeds antiguos ni eliminar volúmenes.
 Antes de migrar una base existente, revisar su historial con prisma migrate status
 y comparar su esquema. Si fue creada fuera de migraciones, TI debe reconciliar
-la línea base antes de migrate deploy. La entrega contiene las siete migraciones,
-incluyendo importacion_locks, necesaria para confirmar las importaciones.
+la línea base antes de migrate deploy. Aplicar todas las migraciones versionadas
+en backend/prisma/migrations, incluyendo importacion_locks y user_import_profile.
+No depender de un número fijo de migraciones: cambia con cada versión.
 Respaldar base y adjuntos antes de actualizar, y probar la restauración.
+En Render u otro alojamiento, aplicar las migraciones antes de activar el nuevo
+backend: desde backend/, con las variables privadas de ese entorno, ejecutar
+npx prisma migrate deploy y comprobar npx prisma migrate status. El Dockerfile
+solo inicia el servidor; no aplica migraciones automáticamente. Esta versión
+requiere 20261022120000_user_import_profile incluso para listar usuarios.
 prisma/sql/auditoria_inmutable.sql es una opción de retención que TI debe evaluar
 con su política: impide modificar o borrar auditorías existentes.
 
@@ -102,6 +116,26 @@ según la política de TI. Estos comandos no borran ni restauran datos:
 La restauración debe ensayarse en otro entorno, sin reemplazar la base activa.
 
 IMPORTACIONES E INDICADORES
+Usuarios: Admin > Gestión de Usuarios > Importar desde Excel. Se leen únicamente
+las seis columnas autorizadas; puesto y unidad organizativa no otorgan permisos.
+Elegir roles primero. Solo Jefe de Área requiere área, también en alta manual
+y edición. Seguridad Operativa, Monitorista, Contingencias y Admin no tienen área.
+Revisar el lote antes de confirmar: validar no crea cuentas. Las cuentas existentes
+no se modifican. Descargar los accesos temporales al terminar y entregar cada
+credencial solo a su titular; no se envían correos de alta automáticamente.
+Cada persona debe cambiar su contraseña al primer ingreso. Probar este circuito
+con cuentas de ensayo antes de importar personal real.
+Los formularios, pasos, filtros y adjuntos seleccionados conservan borradores
+en el navegador de la misma pestaña y cuenta durante un máximo de 24 horas.
+Recargar recupera el avance; no equivale a guardar en el servidor ni reenvía
+operaciones. Cerrar sesión limpia los borradores de esa pestaña. Borrar datos
+del navegador o trabajar en otro dispositivo no permite recuperar ese avance.
+Las contraseñas y los accesos temporales descargables no se guardan como
+borradores. Descargar los accesos del lote antes de salir de su pantalla.
+Después de recargar una importación, validar otra vez antes de confirmar. Si
+se inició una carga, revisar usuarios o historial: recargar no cancela al servidor.
+Si el navegador impide guardar borradores, la web muestra una advertencia y pide
+guardar antes de recargar. Los borradores no reemplazan el respaldo de la base.
 Monitoreo y Contingencias aceptan registros sin identificador externo: cada fila
 válida se guarda por separado, aunque coincida con otra. Reimportar crea registros
 adicionales. SOP mantiene sus controles por códigos y estados.
@@ -132,12 +166,29 @@ Frontend, desde frontend/:
   npm run build
   npx playwright install chromium
   npm run test:e2e:chromium
+  npm run test:e2e:production
+El último comando prueba la compilación estática, además del servidor de desarrollo.
 Los XLSX de las pruebas se generan en memoria, sin depender de archivos locales.
+La regresión del lector también incluye una muestra sintética fija, sin datos reales.
 Comprobar /api/health, acceso por roles, una carga controlada con sus indicadores,
 Google, correo recibido y push en el dominio definitivo antes de habilitarlo.
 TI debe verificar imágenes, HTTPS, capacidad, restauración y políticas de acceso
 en su infraestructura. Las imágenes Docker no se ejecutaron en esta revisión
 porque el motor Docker local no estaba disponible; se verificó la sintaxis compose.
+
+ACEPTACIÓN ANTES DE HABILITAR PERSONAL
+Probar con un representante de cada perfil: Admin, Seguridad Operativa, Jefe de
+Área, Monitorista y Gestión de Planes de Contingencia. Confirmar qué tareas y
+datos ve cada uno, y que no accede a paneles ajenos pegando sus direcciones.
+Hacer un ciclo de reporte, evaluación/investigación, plan, ejecución y cierre con
+datos de ensayo. Confirmar correcciones, pedidos de información, avisos, plazos,
+riesgo y auditoría con el responsable funcional, no solo con el desarrollador.
+Probar restauración de base y adjuntos, y asignar un responsable de respaldos y
+supervisión de disponibilidad. No basta con que /api/health responda una vez.
+Un fallo de carga ofrece recargar o volver al inicio. Si hubo un guardado en curso,
+verificar primero el resultado antes de repetirlo. Escalar con pantalla y hora.
+El soporte de TI debe conservar accesos a infraestructura y gestión de cuentas;
+la operación no puede depender exclusivamente de la cuenta del desarrollador.
 
 REPOSITORIO Y TRANSFERENCIA
 El repositorio de la empresa lo crea TI; configurar ese remoto cuando proporcionen

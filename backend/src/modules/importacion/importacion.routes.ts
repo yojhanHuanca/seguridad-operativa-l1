@@ -1,12 +1,16 @@
 import express, { Router } from "express";
 import { requireRoles } from "../../middlewares/auth.middleware.js";
 import { ImportacionController } from "./importacion.controller.js";
+import { UsersImportController } from "../users/users-import.controller.js";
 
 const router = Router();
 
 // Solo estas rutas aceptan cuerpos grandes (ver app.ts): el histórico completo
 // llega como JSON desde el navegador y pesa varios MB.
 const jsonImportacion = express.json({ limit: "64mb" });
+
+router.post("/usuarios/validar", requireRoles("Admin"), express.json({ limit: "2mb" }), UsersImportController.validar);
+router.post("/usuarios/importar", requireRoles("Admin"), express.json({ limit: "2mb" }), UsersImportController.importar);
 
 router.get("/historial", requireRoles("Admin"), ImportacionController.historial);
 router.post("/historial/:id/revertir", express.json({ limit: "16kb" }), requireRoles("Admin"), ImportacionController.revertir);

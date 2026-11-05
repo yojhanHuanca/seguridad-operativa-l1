@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { clearPageDraft } from "@/lib/workspaceDrafts";
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { AlertTriangle, CornerUpLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/design-system/primitives/Button";
@@ -17,8 +18,8 @@ interface StageRollbackButtonProps {
 
 export function StageRollbackButton({ codigo, destino, label, title, description }: StageRollbackButtonProps) {
   const rollback = useRollbackCase(codigo);
-  const [open, setOpen] = useState(false);
-  const [motivo, setMotivo] = useState("");
+  const [open, setOpen] = useDraftState("pages/seguridad/case-detail/StageRollbackButton:open", false);
+  const [motivo, setMotivo] = useDraftState("pages/seguridad/case-detail/StageRollbackButton:motivo", "");
   const motivoLimpio = motivo.trim();
 
   return (
@@ -45,7 +46,7 @@ export function StageRollbackButton({ codigo, destino, label, title, description
                 rollback.mutate(
                   { destino, motivo: motivoLimpio },
                   {
-                    onSuccess: () => {
+                    onSuccess: () => { clearPageDraft("pages/seguridad/case-detail/StageRollbackButton:");
                       toast.success(`Caso devuelto a ${destino}`);
                       setOpen(false);
                       setMotivo("");

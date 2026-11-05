@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AlertCircle, ArrowRight, CheckCircle2, Clock3, Hash, History, Info, Loader2, LockKeyhole, RotateCcw, Save, Settings2, ShieldCheck, TramFront, X } from "lucide-react";
 import { toast } from "sonner";
@@ -51,8 +52,8 @@ export function AdminConfiguracionPage() {
 
 function ConfigurationEditor({ saved }: { saved: ConfiguracionGeneral }) {
   const update = useUpdateConfiguracion();
-  const [tab, setTab] = useState<Tab>("general");
-  const [draft, setDraft] = useState<{ base: ConfiguracionGeneral; value: ConfiguracionGeneral } | null>(null);
+  const [tab, setTab] = useDraftState<Tab>("pages/admin/ConfiguracionPage:tab", "general");
+  const [draft, setDraft] = useDraftState<{ base: ConfiguracionGeneral; value: ConfiguracionGeneral } | null>("pages/admin/ConfiguracionPage:draft", null);
   const [sequenceUnlocked, setSequenceUnlocked] = useState(false);
   const [review, setReview] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);

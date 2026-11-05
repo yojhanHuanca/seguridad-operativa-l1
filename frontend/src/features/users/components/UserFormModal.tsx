@@ -11,6 +11,8 @@ import { apiErrorMessage } from "@/lib/api";
 import { newPasswordError } from "@/lib/password";
 import { cn } from "@/lib/utils";
 import type { UserListItem } from "../types";
+import { UserReassignPlansModal } from "./UserReassignPlansModal";
+import { useClearDraft, useDraftExists, useDraftState } from "@/features/drafts/useDraftState";
 
 const STEPS = ["datos", "acceso"] as const;
 type Step = (typeof STEPS)[number];
@@ -75,11 +77,15 @@ function fromUser(user: UserListItem): FormState {
  * Usuarios.
  */
 export function UserFormModal({ open, onClose, user }: { open: boolean; onClose: () => void; user?: UserListItem | null }) {
-  const [stepIndex, setStepIndex] = useState(0);
-  const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const draftScope = `user-form:${user?.id_usuario ?? "nuevo"}:`;
+  const clearDraft = useClearDraft(draftScope);
+  const hasFormDraft = useDraftExists(draftScope + "form");
+  const [stepIndex, setStepIndex] = useDraftState(draftScope + "step", 0);
+  const [form, setForm] = useDraftState<FormState>(draftScope + "form", () => user ? fromUser(user) : EMPTY_FORM);
   const [error, setError] = useState<string | null>(null);
   const [changePassword, setChangePassword] = useState(false);
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
+  const [handoverOpen, setHandoverOpen] = useDraftState(draftScope + "handover", false);
   const isEdit = !!user;
 
   const areas = useAreas();
@@ -94,22 +100,29 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
   useEffect(() => {
     if (!open) return;
     const timer = window.setTimeout(() => {
-      setStepIndex(0);
+      if (!hasFormDraft) setForm(user ? fromUser(user) : EMPTY_FORM);
       setError(null);
       setChangePassword(false);
       setPasswordConfirmation("");
-      setForm(user ? fromUser(user) : EMPTY_FORM);
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [open, user]);
+  }, [open, user, hasFormDraft, setForm]);
+
+  const close = () => {
+    setHandoverOpen(false);
+    setStepIndex(0);
+    setForm(user ? fromUser(user) : EMPTY_FORM);
+    clearDraft();
+    onClose();
+  };
 
   useEffect(() => {
     if (!open || !form.id_rol || !roles.data) return;
     const rolActual = roles.data.find((rol) => String(rol.id_rol) === form.id_rol);
     if (!rolActual || !ROLES_OCULTOS_ADMIN.has(rolActual.nombre_rol)) return;
-    const timer = window.setTimeout(() => set("id_rol", ""), 0);
+    const timer = window.setTimeout(() => setForm(previous => ({ ...previous, id_rol: "" })), 0);
     return () => window.clearTimeout(timer);
-  }, [form.id_rol, open, roles.data]);
+  }, [form.id_rol, open, roles.data, setForm]);
 
   const rolSeleccionado = rolesDisponibles.find((r) => String(r.id_rol) === form.id_rol);
   const nombreRolSeleccionado = rolSeleccionado?.nombre_rol ?? (isEdit && String(user?.id_rol) === form.id_rol ? user?.roles?.nombre_rol : undefined);
@@ -117,7 +130,8 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
   const esJefeArea = nombreRolSeleccionado === ROL_JEFE_AREA;
   const datosValidos = form.nombres.trim() && form.apellidos.trim() && form.correo.trim();
   const needsPassword = !isEdit || changePassword;
-  const accesoValido = form.id_rol && (!esJefeArea || form.id_area) && (!needsPassword || form.password.length >= 6);
+  const catalogosValidos = !roles.isPending && !roles.isError && (!esJefeArea || (!areas.isPending && !areas.isError));
+  const accesoValido = catalogosValidos && rolSeleccionado && (!esJefeArea || form.id_area) && (!needsPassword || form.password.length >= 6);
 
   useEffect(() => {
     if (!open || esSeguridadOperativa) return;
@@ -133,13 +147,7 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
       });
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [esSeguridadOperativa, open]);
-
-  useEffect(() => {
-    if (!open || esJefeArea || !form.id_area) return;
-    const timer = window.setTimeout(() => set("id_area", ""), 0);
-    return () => window.clearTimeout(timer);
-  }, [esJefeArea, form.id_area, open]);
+  }, [esSeguridadOperativa, open, setForm]);
 
   const goNext = () => {
     if (!datosValidos) {
@@ -153,6 +161,10 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
   const goBack = () => setStepIndex(0);
 
   const onSubmit = () => {
+    if (!catalogosValidos) {
+      setError("Espera a que se carguen los roles y las áreas, o pulsa Reintentar si hubo un error.");
+      return;
+    }
     if (!accesoValido) {
       if (!form.id_rol) {
         setError(isEdit ? "Selecciona un rol." : "Selecciona un rol y define una contraseña de al menos 6 caracteres.");
@@ -177,7 +189,7 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
       correo: form.correo.trim(),
       cargo: form.cargo.trim() || undefined,
       telefono: form.telefono.trim() || undefined,
-      id_area: esJefeArea ? Number(form.id_area) : null,
+      id_area: esJefeArea && form.id_area ? Number(form.id_area) : null,
       id_rol: Number(form.id_rol),
       es_responsable: esSeguridadOperativa ? form.es_responsable : false,
       puede_reabrir_casos: esSeguridadOperativa ? form.puede_reabrir_casos : false,
@@ -190,7 +202,7 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
         {
           onSuccess: () => {
             toast.success(changePassword ? "Contraseña temporal restablecida" : "Usuario actualizado");
-            onClose();
+            close();
           },
           onError: (e) => toast.error(apiErrorMessage(e, "No se pudo actualizar el usuario")),
         }
@@ -203,7 +215,7 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
       {
         onSuccess: () => {
           toast.success("Usuario creado");
-          onClose();
+          close();
         },
         onError: (e) => toast.error(apiErrorMessage(e, "No se pudo crear el usuario")),
       }
@@ -211,9 +223,10 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
   };
 
   return (
+    <>
     <Modal
-      open={open}
-      onClose={() => { if (!pending) onClose(); }}
+      open={open && !handoverOpen}
+      onClose={() => { if (!pending) close(); }}
       title={isEdit ? `Editar ${user!.nombre}` : "Nuevo usuario"}
       subtitle={isEdit ? "Actualiza sus datos, área o rol asignado." : "Asigna el rol y una contraseña temporal para el primer acceso."}
       footer={
@@ -285,6 +298,10 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
             <Field label="Correo electrónico" required>
               <Input type="email" value={form.correo} onChange={(e) => set("correo", e.target.value)} placeholder="correo@lineauno.pe" />
             </Field>
+            {(user?.unidad_organizativa || user?.jefe_inmediato) && <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Unidad organizativa" hint="Del archivo importado"><Input value={user.unidad_organizativa ?? ""} readOnly /></Field>
+              <Field label="Jefe inmediato" hint="Dato informativo del archivo"><Input value={user.jefe_inmediato ?? ""} readOnly /></Field>
+            </div>}
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Cargo" hint="Opcional">
                 <Input value={form.cargo} onChange={(e) => set("cargo", e.target.value)} placeholder="Ej. Analista SO" />
@@ -297,24 +314,24 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
         ) : (
           <>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field
+              {esJefeArea && <Field
                 label="Área"
                 required={esJefeArea}
-                hint={esJefeArea ? "Obligatoria solo para Jefe de Área." : "No aplica para este rol."}
+                hint="Obligatoria para Jefe de Área."
               >
                 <Select
-                  value={esJefeArea ? form.id_area : ""}
+                  value={form.id_area}
                   onChange={(e) => set("id_area", e.target.value)}
-                  disabled={areas.isLoading || !esJefeArea}
+                  disabled={areas.isLoading}
                 >
-                  <option value="">{esJefeArea ? "Selecciona un área…" : "No aplica"}</option>
+                  <option value="">{esJefeArea ? "Selecciona un área…" : "Sin área asignada"}</option>
                   {areas.data?.map((a) => (
                     <option key={a.id_area} value={a.id_area}>{a.nombre_area}</option>
                   ))}
                 </Select>
-              </Field>
+              </Field>}
               <Field label="Rol" required>
-                <Select value={form.id_rol} onChange={(e) => set("id_rol", e.target.value)} disabled={roles.isLoading}>
+                <Select value={form.id_rol} onChange={(e) => { const id_rol = e.target.value; setForm(previous => ({ ...previous, id_rol, id_area: "" })); }} disabled={roles.isLoading}>
                   <option value="">Selecciona un rol…</option>
                   {rolesDisponibles.map((r) => (
                     <option key={r.id_rol} value={r.id_rol}>{r.nombre_rol}</option>
@@ -322,6 +339,9 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
                 </Select>
               </Field>
             </div>
+            {!esJefeArea && <p className="text-xs text-ink-quiet">Solo los Jefes de Área tienen un área asignada. Los demás roles se guardan sin área.</p>}
+            {isEdit && user.roles?.nombre_rol === ROL_JEFE_AREA && <div className="rounded-lg border border-line bg-surface p-3"><p className="text-xs leading-relaxed text-ink-soft">Antes de desactivar a un jefe, cambiar su rol o su área, reasigna sus planes y actividades pendientes. El servidor impedirá el cambio mientras tenga responsabilidades abiertas.</p><Button variant="outline" className="mt-3" onClick={() => setHandoverOpen(true)} disabled={pending}>Reasignar planes pendientes</Button></div>}
+            {(roles.isError || (esJefeArea && areas.isError)) && <div role="alert" className="rounded-lg border border-critical/25 p-3 text-sm text-critical">No se pudieron cargar los roles o las áreas. No se guardarán cambios hasta recuperarlos.<Button variant="outline" className="mt-2" onClick={() => { void roles.refetch(); void areas.refetch(); }}>Reintentar</Button></div>}
             {isEdit && (
               <Field label="Estado">
                 <Select value={form.estado} onChange={(e) => set("estado", e.target.value)}>
@@ -414,5 +434,7 @@ export function UserFormModal({ open, onClose, user }: { open: boolean; onClose:
         {error && <p role="alert" className="text-[12.5px] text-critical">{error}</p>}
       </fieldset>
     </Modal>
+    {open && handoverOpen && user && <UserReassignPlansModal user={user} onClose={() => setHandoverOpen(false)} />}
+    </>
   );
 }

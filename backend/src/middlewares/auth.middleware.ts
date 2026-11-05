@@ -107,13 +107,14 @@ export const requireRoles = (...roles: string[]) => (
     next();
 };
 
-/** Permite una acción sensible solo a responsables de los roles indicados. */
+/** Permite una acción sensible a los responsables indicados y al Admin. */
 export const requireResponsableRoles = (...roles: string[]) => (
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction,
 ) => {
     const rolNombre = req.user?.rol_nombre?.toLowerCase();
+    if (rolNombre === "admin") return next();
     if (req.user?.es_responsable && rolNombre && roles.some((role) => role.toLowerCase() === rolNombre)) {
         return next();
     }

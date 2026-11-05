@@ -1,4 +1,5 @@
 import { eventoToDto } from "@/features/contingencias/fields";
+import { clearPageDraft } from "@/lib/workspaceDrafts";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -43,6 +44,7 @@ export function Editar() {
       { id: id!, dto: data },
       {
         onSuccess: () => {
+          clearPageDraft("contingencia:");
           toast.success("Evento actualizado correctamente");
           navigate(`/contingencias/evento/${id}`);
         },

@@ -34,6 +34,13 @@ const EXAMPLES: Record<Exclude<ImportacionTipo, "casos">, Record<string, string 
 
 export const normalizeImportHeader = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "");
 
+const DERIVED_MONITORING_HEADERS = new Set(["ano", "mes", "mes1", "sem", "dia", "rangohorario"]);
+
+export function isDerivedMonitoringFormula(header: string, value: CellValue): boolean {
+  const isFormula = value !== null && typeof value === "object" && ("formula" in value || "sharedFormula" in value);
+  return isFormula && DERIVED_MONITORING_HEADERS.has(normalizeImportHeader(header));
+}
+
 function splitColumns(value: string) {
   return value.split(",").map(item => item.trim()).filter(Boolean);
 }
@@ -109,11 +116,25 @@ export async function downloadErrorWorkbook(parsed: ParsedImportFile, sheetIndex
   save(await workbook.xlsx.writeBuffer() as ArrayBuffer, `errores-${parsed.filename.replace(/\.[^.]+$/, "")}.xlsx`);
 }
 
-export function cellToImportText(value: CellValue): string {
+export function cellToImportText(value: CellValue, header = ""): string {
   if (value == null) return "";
-  if (value instanceof Date) return value.getUTCFullYear() <= 1900 ? value.toISOString().slice(11, 16) : value.toISOString().slice(0, 10);
+  if (value instanceof Date) {
+    // ExcelJS puede representar como Invalid Date los resultados vacíos de
+    // fórmulas con formato de fecha/hora. Esas celdas opcionales no deben
+    // impedir que se lea el resto del libro.
+    if (!Number.isFinite(value.getTime())) return "";
+    const normalizedHeader = normalizeImportHeader(header);
+    const excelSerial = Math.round((value.getTime() - Date.UTC(1899, 11, 30)) / 86_400_000);
+    if (normalizedHeader === "ano") {
+      return String(value.getUTCFullYear() <= 1905 && excelSerial > 0 ? excelSerial : value.getUTCFullYear());
+    }
+    if (normalizedHeader === "mes1" && value.getUTCFullYear() <= 1900 && excelSerial >= 1 && excelSerial <= 12) {
+      return String(excelSerial).padStart(2, "0");
+    }
+    return value.getUTCFullYear() <= 1900 ? value.toISOString().slice(11, 16) : value.toISOString().slice(0, 10);
+  }
   if (typeof value !== "object") return String(value).trim();
-  if ("result" in value) return cellToImportText(value.result as CellValue);
+  if ("result" in value) return cellToImportText(value.result as CellValue, header);
   if ("richText" in value) return value.richText.map(part => part.text).join("").trim();
   if ("text" in value) return value.text.trim();
   return "";

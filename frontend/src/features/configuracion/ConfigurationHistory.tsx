@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { AlertCircle, ArrowRight, ChevronLeft, ChevronRight, History, Loader2 } from "lucide-react";
 import { Button } from "@/design-system/primitives/Button";
 import { useAuditoria } from "@/features/auditoria/hooks/useAuditoria";
@@ -29,7 +29,7 @@ export function ConfigurationDiff({ changes }: { changes: ConfigChange[] }) {
 }
 
 export function ConfigurationHistory() {
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useDraftState("features/configuracion/ConfigurationHistory:page", 1);
   const { data, isPending, isError, isFetching, refetch } = useAuditoria({ tabla: "configuracion", page, limit: 5 });
   if (isPending) return <p role="status" className="flex items-center gap-2 py-8 text-sm text-ink-soft"><Loader2 className="h-4 w-4 animate-spin" />Cargando historial…</p>;
   if (isError) return (

@@ -1,10 +1,11 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { useState } from "react";
 import type { DecisionSop, ImportacionPreview } from "./types";
 import { FileCheck2, ListChecks, LockKeyhole, UsersRound } from "lucide-react";
 
 export function SopImportActions({ preview, decisions, disabled, needsValidation, onChange }: { preview: ImportacionPreview | null; decisions: DecisionSop[]; disabled: boolean; needsValidation: boolean; onChange: (value: DecisionSop[]) => void }) {
-  const [selected, setSelected] = useState<string[]>([]);
-  const [reason, setReason] = useState("");
+  const [selected, setSelected] = useDraftState<string[]>("features/importacion/SopImportActions:selected", []);
+  const [reason, setReason] = useDraftState("features/importacion/SopImportActions:reason", "");
   const [action, setAction] = useState<"asignar" | "cerrar" | null>(null);
   const eligible = preview?.cases.filter(item => item.editable) ?? [];
   const eligibleCodes = new Set(eligible.map(item => item.codigo));

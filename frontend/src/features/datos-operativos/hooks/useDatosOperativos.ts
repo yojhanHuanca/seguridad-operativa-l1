@@ -40,7 +40,9 @@ export interface DatosOperativosFiltros {
 
 async function fetchDatosOperativos(filtros: DatosOperativosFiltros): Promise<DatosOperativosResponse> {
   const { data } = await api.get<ApiEnvelope<DatosOperativosResponse>>("/datos-operativos", { params: filtros });
-  if (!data.data) throw new Error(data.message);
+  if (!data.data || !Array.isArray(data.data.items) || typeof data.data.total !== "number") {
+    throw new Error("La respuesta de datos operativos no es válida. Recarga la página; si continúa, avisa al administrador.");
+  }
   return data.data;
 }
 

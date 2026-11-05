@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { useState,  type ReactNode } from "react";
 import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Gauge, Printer, ShieldAlert, TrainFront, TriangleAlert } from "lucide-react";
 import { MonitoristaShell } from "@/components/layout/MonitoristaShell";
@@ -25,8 +26,8 @@ const DETALLE_EXTERNOS = ["Caída en estación", "Impacto físico", "Atasco en p
 export function Indicadores({ panel = "monitoreo" }: { panel?: "monitoreo" | "seguridad" }) {
   const Shell = panel === "seguridad" ? SeguridadOperativaShell : MonitoristaShell;
   const hoy = new Date();
-  const [anio, setAnio] = useState(hoy.getFullYear());
-  const [mes, setMes] = useState(hoy.getMonth() + 1);
+  const [anio, setAnio] = useDraftState("pages/monitoreo/Indicadores:anio", hoy.getFullYear());
+  const [mes, setMes] = useDraftState("pages/monitoreo/Indicadores:mes", hoy.getMonth() + 1);
   const { data, isLoading } = useIndicadoresEventos(anio, mes);
   const { printActive, printReport } = useIndicadoresPrint(`Indicadores de Eventos Operacionales ${MESES[mes - 1]} ${anio}`);
 

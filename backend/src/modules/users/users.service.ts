@@ -1,5 +1,6 @@
 import { UserRepository } from "./users.repository.js";
 import { RoleRepository } from "../roles/role.repository.js";
+import { AreaRepository } from "../areas/area.repository.js";
 import { BcryptHelper } from "../../utils/bcrypt.js";
 import { createUserSchema, idParamSchema, updateUserSchema } from "./users.schema.js";
 import { AuditoriaService, diffCampos } from "../auditoria/auditoria.service.js";
@@ -38,11 +39,16 @@ type PermisosEspeciales = {
 };
 
 
-function areaSoloParaJefeArea<T extends { id_area?: number | null | undefined }>(data: T, nombreRol?: string | null, areaActual?: number | null): T {
-  if (nombreRol !== ROL_JEFE_AREA) return { ...data, id_area: null };
+async function validarArea<T extends { id_area?: number | null | undefined }>(data: T, nombreRol?: string | null, areaActual?: number | null): Promise<T> {
+  // Misma regla en alta manual, edición e importación: solo Jefe de Área.
+  if (nombreRol !== ROL_JEFE_AREA) {
+    return data.id_area !== undefined || areaActual != null || "id_rol" in data
+      ? { ...data, id_area: null } : data;
+  }
 
-  const idArea = data.id_area ?? areaActual ?? null;
+  const idArea = data.id_area === undefined ? areaActual : data.id_area;
   if (!idArea) throw new Error("El rol Jefe de Área requiere un área asignada");
+  if (!await AreaRepository.findById(idArea)) throw new Error("El área seleccionada ya no existe. Actualiza las áreas y selecciona una válida.");
 
   return { ...data, id_area: idArea };
 }
@@ -103,12 +109,12 @@ export class UsersService {
             throw new Error("El correo electrónico ya está registrado");
         }
 
-        // Hash de la contraseña
-        const password_hash = await BcryptHelper.hash(data.password);
         const rol = await RoleRepository.findById(data.id_rol);
+        if (!rol) throw new Error("Selecciona un rol existente de la plataforma.");
 
 
-        const dataNormalizada = areaSoloParaJefeArea(data, rol?.nombre_rol);
+        const dataNormalizada = await validarArea(data, rol.nombre_rol);
+        const password_hash = await BcryptHelper.hash(data.password);
 
         // Crear el usuario
         const creado = await UserRepository.createWithGeneratedCode(sinIndefinidos(permisosSoloParaSO({
@@ -152,13 +158,21 @@ export class UsersService {
         const { password, ...rest } = data;
         const password_hash = password ? await BcryptHelper.hash(password) : undefined;
         const rolDestino = rest.id_rol ? await RoleRepository.findById(rest.id_rol) : usuario.roles;
+        if (rest.id_rol && !rolDestino) throw new Error("Selecciona un rol existente de la plataforma.");
+        if (actor?.id_usuario === id && usuario.roles?.nombre_rol === "Admin" &&
+          ((rest.id_rol !== undefined && rolDestino?.nombre_rol !== "Admin") ||
+            (rest.estado !== undefined && rest.estado !== "Activo"))) {
+          throw new Error("No puedes desactivar tu propia cuenta ni quitarte el rol de administrador. Solicita el cambio a otro administrador.");
+        }
 
-        const dataNormalizada = areaSoloParaJefeArea(rest, rolDestino?.nombre_rol, usuario.id_area);
+        const dataNormalizada = await validarArea(rest, rolDestino?.nombre_rol, usuario.id_area);
+        // Fail before revoking sessions, and recheck inside the write transaction.
+        await UserRepository.assertAccessChangeAllowed(id, usuario, sinIndefinidos(dataNormalizada));
 
         const cambioDeAcceso = password_hash !== undefined
             || (data.estado !== undefined && data.estado !== usuario.estado)
             || (data.id_rol !== undefined && data.id_rol !== usuario.id_rol)
-            || (data.id_area !== undefined && data.id_area !== usuario.id_area)
+            || (dataNormalizada.id_area !== undefined && dataNormalizada.id_area !== usuario.id_area)
             || PERMISOS_ESPECIALES.some((key) => data[key] !== undefined && data[key] !== usuario[key]);
         // Revocar antes de guardar cambios sensibles: si la revocación falla,
         // el cambio de credencial/permisos tampoco se aplica parcialmente.

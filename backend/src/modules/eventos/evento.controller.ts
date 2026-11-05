@@ -89,6 +89,15 @@ export class EventoController {
     }
   }
 
+  static async getTodosAsignados(_req: Request, res: Response) {
+    try {
+      const eventos = await EventoService.getTodosAsignados();
+      return res.json(ApiResponse.success("Todos los eventos asignados obtenidos correctamente", eventos));
+    } catch (error) {
+      return res.status(500).json(ApiResponse.error("Error al obtener los eventos asignados", error));
+    }
+  }
+
   static async asignar(req: Request, res: Response) {
     try {
       const resultado = await EventoService.asignarEvento(Number(req.params.id), req.body);

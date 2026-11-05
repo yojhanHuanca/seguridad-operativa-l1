@@ -1,3 +1,5 @@
+import { clearPageDraft } from "@/lib/workspaceDrafts";
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useState, type ReactNode } from "react";
 import {
@@ -321,13 +323,13 @@ function PlanExecutionBoard({
   const reviewExtension = useReviewPlanExtension(caso.codigo_sop);
   const addPlanComment = useAddPlanComment(caso.codigo_sop);
   const { nombre: usuarioSoNombre } = useCurrentSoUser();
-  const [extensionReview, setExtensionReview] = useState<{ plan: PlanAccion; decision: "aprobada" | "rechazada" } | null>(null);
-  const [extensionNote, setExtensionNote] = useState("");
+  const [extensionReview, setExtensionReview] = useDraftState<{ plan: PlanAccion; decision: "aprobada" | "rechazada" } | null>("pages/seguridad/case-detail/ExecutionSummaryCard:extensionReview", null);
+  const [extensionNote, setExtensionNote] = useDraftState("pages/seguridad/case-detail/ExecutionSummaryCard:extensionNote", "");
   /** Plazo que SO va a otorgar; arranca en el que pidió el área y es editable. */
-  const [extensionDate, setExtensionDate] = useState("");
-  const [activeCommentPlan, setActiveCommentPlan] = useState<number | null>(null);
-  const [planComment, setPlanComment] = useState("");
-  const [expandedPlans, setExpandedPlans] = useState<Set<number>>(() => new Set());
+  const [extensionDate, setExtensionDate] = useDraftState("pages/seguridad/case-detail/ExecutionSummaryCard:extensionDate", "");
+  const [activeCommentPlan, setActiveCommentPlan] = useDraftState<number | null>("pages/seguridad/case-detail/ExecutionSummaryCard:activeCommentPlan", null);
+  const [planComment, setPlanComment] = useDraftState("pages/seguridad/case-detail/ExecutionSummaryCard:planComment", "");
+  const [expandedPlans, setExpandedPlans] = useDraftState<Set<number>>("pages/seguridad/case-detail/ExecutionSummaryCard:expandedPlans", () => new Set());
 
   const progresoGeneral = avanceCaso(caso);
 
@@ -343,7 +345,7 @@ function PlanExecutionBoard({
     addPlanComment.mutate(
       { id_plan: plan.id_plan, texto, actor: usuarioSoNombre },
       {
-        onSuccess: () => {
+        onSuccess: () => { clearPageDraft("pages/seguridad/case-detail/ExecutionSummaryCard:");
           toast.success("Comentario agregado al plan");
           setActiveCommentPlan(null);
           setPlanComment("");
@@ -718,7 +720,7 @@ function PlanExecutionBoard({
                     fecha_aprobada: aprobando ? extensionDate : undefined,
                   },
                   {
-                    onSuccess: () => {
+                    onSuccess: () => { clearPageDraft("pages/seguridad/case-detail/ExecutionSummaryCard:");
                       toast.success(
                         !aprobando
                           ? "Prórroga rechazada"
@@ -1071,16 +1073,16 @@ export function ExecutionSummaryCard({
   const reviewFinalPlan = useReviewFinalPlan(caso.codigo_sop);
   const sendToVerification = useSendToVerification(caso.codigo_sop);
 
-  const [closeOpen, setCloseOpen] = useState(false);
-  const [closeNote, setCloseNote] = useState("");
-  const [verificationResult, setVerificationResult] = useState<VerificationResult>("Conforme");
-  const [pendingOpen, setPendingOpen] = useState(false);
-  const [pendingNote, setPendingNote] = useState("");
-  const [reopenCaseOpen, setReopenCaseOpen] = useState(false);
-  const [reopenCasePlanId, setReopenCasePlanId] = useState("");
-  const [reopenCaseNote, setReopenCaseNote] = useState("");
-  const [planReview, setPlanReview] = useState<{ plan: PlanAccion; decision: "aprobada" | "rechazada" } | null>(null);
-  const [planReviewNote, setPlanReviewNote] = useState("");
+  const [closeOpen, setCloseOpen] = useDraftState("pages/seguridad/case-detail/ExecutionSummaryCard:closeOpen", false);
+  const [closeNote, setCloseNote] = useDraftState("pages/seguridad/case-detail/ExecutionSummaryCard:closeNote", "");
+  const [verificationResult, setVerificationResult] = useDraftState<VerificationResult>("pages/seguridad/case-detail/ExecutionSummaryCard:verificationResult", "Conforme");
+  const [pendingOpen, setPendingOpen] = useDraftState("pages/seguridad/case-detail/ExecutionSummaryCard:pendingOpen", false);
+  const [pendingNote, setPendingNote] = useDraftState("pages/seguridad/case-detail/ExecutionSummaryCard:pendingNote", "");
+  const [reopenCaseOpen, setReopenCaseOpen] = useDraftState("pages/seguridad/case-detail/ExecutionSummaryCard:reopenCaseOpen", false);
+  const [reopenCasePlanId, setReopenCasePlanId] = useDraftState("pages/seguridad/case-detail/ExecutionSummaryCard:reopenCasePlanId", "");
+  const [reopenCaseNote, setReopenCaseNote] = useDraftState("pages/seguridad/case-detail/ExecutionSummaryCard:reopenCaseNote", "");
+  const [planReview, setPlanReview] = useDraftState<{ plan: PlanAccion; decision: "aprobada" | "rechazada" } | null>("pages/seguridad/case-detail/ExecutionSummaryCard:planReview", null);
+  const [planReviewNote, setPlanReviewNote] = useDraftState("pages/seguridad/case-detail/ExecutionSummaryCard:planReviewNote", "");
   const reopenablePlans = caso.planes_accion.filter((plan) => planRevisablePorSo(plan) || planCerrado(plan));
   const selectedReopenPlan =
     reopenablePlans.find((plan) => String(plan.id_plan) === reopenCasePlanId) ?? reopenablePlans[0] ?? null;
@@ -1154,7 +1156,7 @@ export function ExecutionSummaryCard({
           isPending={sendToVerification.isPending}
           onSend={() =>
             sendToVerification.mutate(undefined, {
-              onSuccess: () => toast.success("Expediente enviado a Verificación"),
+              onSuccess: () => { clearPageDraft("pages/seguridad/case-detail/ExecutionSummaryCard:"); return toast.success("Expediente enviado a Verificación"); },
               onError: (e) => toast.error(apiErrorMessage(e, "No se pudo pasar a Verificación")),
             })
           }
@@ -1203,7 +1205,7 @@ export function ExecutionSummaryCard({
                     nota: planReviewNote.trim() || undefined,
                   },
                   {
-                    onSuccess: () => {
+                    onSuccess: () => { clearPageDraft("pages/seguridad/case-detail/ExecutionSummaryCard:");
                       toast.success(
                         planReview.decision === "aprobada"
                           ? "Plan cerrado por SO"
@@ -1278,7 +1280,7 @@ export function ExecutionSummaryCard({
                 closeCase.mutate(
                   { nota },
                   {
-                    onSuccess: () => {
+                    onSuccess: () => { clearPageDraft("pages/seguridad/case-detail/ExecutionSummaryCard:");
                       toast.success("Caso cerrado correctamente");
                       setCloseOpen(false);
                       setCloseNote("");
@@ -1325,7 +1327,7 @@ export function ExecutionSummaryCard({
                 keepPending.mutate(
                   { nota: pendingNote.trim() || undefined },
                   {
-                    onSuccess: () => {
+                    onSuccess: () => { clearPageDraft("pages/seguridad/case-detail/ExecutionSummaryCard:");
                       toast.success("Caso mantenido pendiente en Verificación");
                       setPendingOpen(false);
                       setPendingNote("");
@@ -1376,7 +1378,7 @@ export function ExecutionSummaryCard({
                     nota: reopenCaseNote.trim(),
                   },
                   {
-                    onSuccess: () => {
+                    onSuccess: () => { clearPageDraft("pages/seguridad/case-detail/ExecutionSummaryCard:");
                       toast.success("Caso reabierto para corrección");
                       setReopenCaseOpen(false);
                       setReopenCasePlanId("");
@@ -1424,9 +1426,9 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
   const { user } = useAuth();
   const puedeReabrir = user?.rol === "Admin" || user?.puede_reabrir_casos;
   const reopen = useReopenCase(caso.codigo_sop);
-  const [reopenOpen, setReopenOpen] = useState(false);
-  const [reopenNote, setReopenNote] = useState("");
-  const [reopenTarget, setReopenTarget] = useState<ReopenTarget>("Verificación");
+  const [reopenOpen, setReopenOpen] = useDraftState("pages/seguridad/case-detail/ExecutionSummaryCard:reopenOpen", false);
+  const [reopenNote, setReopenNote] = useDraftState("pages/seguridad/case-detail/ExecutionSummaryCard:reopenNote", "");
+  const [reopenTarget, setReopenTarget] = useDraftState<ReopenTarget>("pages/seguridad/case-detail/ExecutionSummaryCard:reopenTarget", "Verificación");
 
   const creado = new Date(caso.created_at);
   const cierre = caso.timeline_caso.find((t) => t.kind === "cierre");
@@ -1587,7 +1589,7 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
                 reopen.mutate(
                   { nota: reopenNote.trim(), destino: reopenTarget },
                   {
-                    onSuccess: () => {
+                    onSuccess: () => { clearPageDraft("pages/seguridad/case-detail/ExecutionSummaryCard:");
                       toast.success(`Caso reabierto a ${reopenTarget}`);
                       setReopenOpen(false);
                       setReopenNote("");

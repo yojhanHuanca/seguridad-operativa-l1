@@ -6,7 +6,7 @@ import { useIndicadores } from "@/features/indicadores/hooks/useIndicadores";
 import { TotalPlanesCard } from "./TotalPlanesCard";
 
 /**
- * Total de reportes por tipo, Cerrado/En Proceso, Total de planes y
+ * Total de reportes por tipo y estado, Total de planes y
  * tendencia mensual. Sin envoltorio de panel a propósito — lo usan tanto
  * `SoKpisPage` (dentro de `SeguridadOperativaShell`) como la pantalla de
  * Indicadores del Jefe de Área (dentro de `JefeShell`): mismo dashboard,
@@ -16,7 +16,7 @@ export function KpisSection() {
   const { data, isLoading } = useIndicadores();
 
   const porTipo = data?.reportesPorTipo ?? [];
-  const cerradoVsProceso = data?.reportesCerradoVsProceso ?? [];
+  const reportesPorEstado = data?.reportesPorEstado ?? [];
   const tendencia = data?.tendenciaMensual ?? [];
   const totalReportes = data?.totalReportes ?? 0;
 
@@ -29,7 +29,7 @@ export function KpisSection() {
               <FileBarChart2 className="h-4.5 w-4.5" />
             </span>
             <div>
-              <h2 className="text-[15px] font-semibold text-ink leading-tight">Total de Reportes SOP</h2>
+              <h2 className="text-[15px] font-semibold text-ink leading-tight">Total de reportes</h2>
               <p className="mt-0.5 text-[12.5px] text-ink-quiet">Todos los reportes registrados en el sistema</p>
             </div>
           </div>
@@ -56,7 +56,7 @@ export function KpisSection() {
               <SkeletonChart height={140} />
             ) : (
               <TrendBarChart
-                data={cerradoVsProceso.map((d) => ({ label: d.name, value: d.value, color: d.color }))}
+                data={reportesPorEstado.map((d) => ({ label: d.name, value: d.value, color: d.color }))}
                 height={140}
                 barSize={64}
               />
@@ -76,7 +76,7 @@ export function KpisSection() {
           </span>
           <div>
             <h2 className="text-[15px] font-semibold text-ink leading-tight">Reportes por Mes</h2>
-            <p className="mt-0.5 text-[12.5px] text-ink-quiet">Cantidad de reportes SOP registrados, últimos 12 meses</p>
+            <p className="mt-0.5 text-[12.5px] text-ink-quiet">Cantidad de reportes registrados, últimos 12 meses</p>
           </div>
         </div>
         {isLoading ? <SkeletonChart height={300} /> : <TrendBarChart data={tendencia} height={300} />}

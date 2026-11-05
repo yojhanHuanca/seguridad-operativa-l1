@@ -83,7 +83,7 @@ const ESTADOS: Record<string, EstadoSpec> = {
   Investigación: {
     panel: "investigacion",
     acciones: ["registrar_investigacion", "retroceder", "solicitar_info", ...BITACORA],
-    siguiente: "Al guardar la investigación, el caso pasa a Plan de Acción.",
+    siguiente: "Al registrar el análisis de riesgo y completar la investigación, el caso pasa a Plan de Acción.",
   },
   "Plan de Acción": {
     panel: "plan",

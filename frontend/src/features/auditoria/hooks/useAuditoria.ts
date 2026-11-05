@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api, type ApiEnvelope } from "@/lib/api";
+import { exportarTablaExcel } from "@/lib/excelBranded";
 import type { AuditoriaItem } from "../types";
 
 export interface AuditoriaParams {
@@ -52,14 +53,58 @@ export function useAuditoriaActores() {
 }
 
 export async function exportarAuditoria(params: Omit<AuditoriaParams, "page" | "limit">) {
-  // Text preserves JSON error envelopes while avoiding a second, unauthenticated download.
+  // El servidor aplica los filtros y el límite antes de entregar el archivo.
   const { data } = await api.get<string>("/auditoria/export", { params, responseType: "text" });
-  const url = URL.createObjectURL(new Blob([data], { type: "text/csv;charset=utf-8" }));
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `auditoria_${new Date().toISOString().slice(0, 10)}.csv`;
-  link.click();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  const filas = parseCsv(data);
+  const [columnas = [], ...datos] = filas;
+  if (columnas.length === 0) throw new Error("La exportación no contiene encabezados.");
+
+  await exportarTablaExcel({
+    sheetName: "Auditorías",
+    columnas,
+    filas: datos.map(fila => Object.fromEntries(columnas.map((columna, index) => [columna, fila[index] ?? ""]))),
+    title: "Registro de Auditorías",
+    subtitle: "Trazabilidad de acciones registradas en SMS L1",
+    totalLabel: `${datos.length} registros exportados`,
+    fileName: `auditorias_${new Date().toISOString().slice(0, 10)}.xlsx`,
+  });
+}
+
+/** Lee CSV con comillas, comas y saltos de línea dentro de los campos. */
+function parseCsv(csv: string): string[][] {
+  const texto = csv.replace(/^\uFEFF/, "");
+  const filas: string[][] = [];
+  let fila: string[] = [];
+  let campo = "";
+  let entreComillas = false;
+
+  for (let i = 0; i < texto.length; i++) {
+    const caracter = texto[i];
+    if (entreComillas) {
+      if (caracter === '"' && texto[i + 1] === '"') {
+        campo += '"';
+        i++;
+      } else if (caracter === '"') entreComillas = false;
+      else campo += caracter;
+      continue;
+    }
+    if (caracter === '"') entreComillas = true;
+    else if (caracter === ",") {
+      fila.push(campo);
+      campo = "";
+    } else if (caracter === "\n") {
+      fila.push(campo.replace(/\r$/, ""));
+      filas.push(fila);
+      fila = [];
+      campo = "";
+    } else campo += caracter;
+  }
+
+  if (campo.length > 0 || fila.length > 0) {
+    fila.push(campo.replace(/\r$/, ""));
+    filas.push(fila);
+  }
+  return filas;
 }
 
 async function fetchTablas(): Promise<string[]> {

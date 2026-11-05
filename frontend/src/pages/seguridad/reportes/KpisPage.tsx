@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { useMemo, useState } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, Printer } from "lucide-react";
 import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
@@ -26,7 +27,7 @@ import {
   estadoReporteIndicador,
   planesAbiertosPorArea,
   reprogramacionPlanAbiertoBucket,
-  reportesCerradoVsProceso,
+  reportesPorEstado,
   reportesPorTipo,
   reprogramacionPlanesAbiertos,
   riesgoActivoIndicador,
@@ -60,9 +61,9 @@ interface DetailRow {
 }
 
 export function SoKpisPage() {
-  const [selectedYear, setSelectedYear] = useState<string>(ALL);
-  const [selectedMonth, setSelectedMonth] = useState<string>(ALL);
-  const [selection, setSelection] = useState<DashboardSelection | null>(null);
+  const [selectedYear, setSelectedYear] = useDraftState<string>("pages/seguridad/reportes/KpisPage:selectedYear", ALL);
+  const [selectedMonth, setSelectedMonth] = useDraftState<string>("pages/seguridad/reportes/KpisPage:selectedMonth", ALL);
+  const [selection, setSelection] = useDraftState<DashboardSelection | null>("pages/seguridad/reportes/KpisPage:selection", null);
   const { data: rawCases, isLoading } = useCases({});
   const { data: configuracion } = useConfiguracion();
   const systemName = nombreSistema(configuracion);
@@ -75,7 +76,7 @@ export function SoKpisPage() {
   );
 
   const porTipo = useMemo(() => reportesPorTipo(filteredCases), [filteredCases]);
-  const cerradoVsProceso = useMemo(() => reportesCerradoVsProceso(filteredCases), [filteredCases]);
+  const estadosReporte = useMemo(() => reportesPorEstado(filteredCases), [filteredCases]);
   const planes = useMemo(() => totalPlanes(filteredCases), [filteredCases]);
   const tendencia = useMemo(() => monthlyTrend(filteredCases, selectedYear, selectedMonth), [filteredCases, selectedMonth, selectedYear]);
   const totalReportes = filteredCases.length;
@@ -98,7 +99,7 @@ export function SoKpisPage() {
       ? `Reportes registrados en ${periodLabel}`
       : selectedYear !== ALL
         ? `Cantidad mensual de reportes en ${selectedYear}`
-        : "Cantidad de reportes SOP registrados, últimos 12 meses";
+        : "Cantidad de reportes registrados, últimos 12 meses";
   const riesgoSubtitle =
     selectedMonth !== ALL || selectedYear !== ALL ? `SOP abiertos de ${periodLabel}` : "Matriz de evaluación de los SOP abiertos";
   const planesAreaSubtitle =
@@ -145,7 +146,7 @@ export function SoKpisPage() {
             totalReportes={totalReportes}
             reportesSubtitle={reportesSubtitle}
             porTipo={porTipo}
-            cerradoVsProceso={cerradoVsProceso}
+            reportesPorEstado={estadosReporte}
             planesSubtitle={planesSubtitle}
             planes={planes}
             tendencia={tendencia}
@@ -182,7 +183,7 @@ export function SoKpisPage() {
           subtitle={reportesSubtitle}
           totalReportes={totalReportes}
           porTipo={porTipo}
-          cerradoVsProceso={cerradoVsProceso}
+          reportesPorEstado={estadosReporte}
           isLoading={isLoading}
           activeReportType={selection?.kind === "reportType" ? selection.value : null}
           activeReportStatus={activeFor("reportStatus")}

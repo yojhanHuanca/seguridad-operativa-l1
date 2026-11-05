@@ -2,6 +2,7 @@ import { createImportRowReader } from "./import-row-reader.js";
 import { withImportLock } from "./import-lock.js";
 import prisma from "../../lib/prisma.js";
 import { EventoRepository } from "../eventos/evento.repository.js";
+import { diaSemana, rangoHorarioLabel, semanaDelAnio } from "../eventos/evento-derived-fields.js";
 import type { CreateEventoDto } from "../eventos/evento.types.js";
 import type { ImportacionIssue, ImportacionPreview, ImportacionRow, ImportacionResult } from "./importacion.types.js";
 import { ImportacionHistorialService } from "./importacion-historial.service.js";
@@ -66,6 +67,20 @@ function parseDecimal(value: string): number | null {
   if (!raw) return null;
   const num = Number(raw);
   return Number.isNaN(num) ? null : num;
+}
+
+function parseMonth(value: string): number | null {
+  const raw = normalizeText(value);
+  const numeric = Number(raw);
+  if (Number.isInteger(numeric) && numeric >= 1 && numeric <= 12) return numeric;
+  const months: Record<string, number> = {
+    ene: 1, enero: 1, feb: 2, febrero: 2, mar: 3, marzo: 3,
+    abr: 4, abril: 4, may: 5, mayo: 5, jun: 6, junio: 6,
+    jul: 7, julio: 7, ago: 8, agosto: 8, sep: 9, sept: 9,
+    septiembre: 9, set: 9, setiembre: 9, oct: 10, octubre: 10,
+    nov: 11, noviembre: 11, dic: 12, diciembre: 12,
+  };
+  return months[raw] ?? null;
 }
 
 const ALIASES: Record<string, readonly string[]> = {
@@ -138,7 +153,7 @@ function rowToDto(row: MonitoreoRow): CreateEventoDto {
     camara_monitoreada: getFieldValue(row, "camara_monitoreada") || undefined,
     demora: parseDecimal(getFieldValue(row, "demora")) ?? undefined,
     anio: getFieldValue(row, "anio") ? Number(getFieldValue(row, "anio")) : undefined,
-    mes: getFieldValue(row, "mes") ? Number(getFieldValue(row, "mes")) : undefined,
+    mes: parseMonth(getFieldValue(row, "mes")) ?? undefined,
     semana: getFieldValue(row, "semana") ? Number(getFieldValue(row, "semana")) : undefined,
     dia: getFieldValue(row, "dia") || undefined,
     id_rango_horario: 0,
@@ -186,12 +201,17 @@ function validateField(row: MonitoreoRow, rowNumber: number, issues: Importacion
     }
   }
 
-  for (const [field, min, max] of [["anio", 1, 32767], ["mes", 1, 12], ["semana", 1, 53]] as const) {
+  for (const [field, min, max] of [["anio", 1, 32767], ["semana", 1, 53]] as const) {
     const value = getFieldValue(row, field);
     if (value && (!Number.isInteger(Number(value)) || Number(value) < min || Number(value) > max)) {
       valid = false;
       addIssue(issues, { row: rowNumber, field: ALIASES[field]?.[0] ?? field, severity: "error", value, message: `Se requiere un entero entre ${min} y ${max}.` });
     }
+  }
+  const mes = getFieldValue(row, "mes");
+  if (mes && parseMonth(mes) === null) {
+    valid = false;
+    addIssue(issues, { row: rowNumber, field: "Mes", severity: "error", value: mes, message: "Indica un mes válido del 1 al 12 o su nombre en español." });
   }
   const demoraValue = getFieldValue(row, "demora");
   if (demoraValue && (!Number.isFinite(Number(demoraValue)) || Math.abs(Number(demoraValue)) >= 100000000)) {
@@ -265,6 +285,7 @@ async function loadCatalogos(): Promise<CatalogCache> {
       cache.catalogos[nombreCatalogo] = {};
     }
     cache.catalogos[nombreCatalogo][normalizeText(detalle.nombre)] = detalle.id_detalle;
+    if (detalle.codigo) cache.catalogos[nombreCatalogo][normalizeText(detalle.codigo)] = detalle.id_detalle;
     if (nombreCatalogo === "Nro. MR") cache.materialRodante![normalizeText(detalle.nombre)] = detalle.clasificacion_mr;
   }
 
@@ -407,6 +428,8 @@ export class ImportacionMonitoreoService {
 
 function resolvedDto(row: MonitoreoRow, catalogos: CatalogCache): CreateEventoDto {
   const dto = rowToDto(row);
+  const fecha = parseDate(dto.fecha);
+  if (!fecha) throw new Error("Fecha inválida");
 
   const tipoIncidenteValor = getFieldValue(row, "tipo_incidente");
   const ubicacionValor = getFieldValue(row, "ubicacion");
@@ -418,7 +441,7 @@ function resolvedDto(row: MonitoreoRow, catalogos: CatalogCache): CreateEventoDt
   const personalValor = getFieldValue(row, "personal_involucrado");
   const tipoCausaValor = getFieldValue(row, "tipo_causa");
   const posibleCausaValor = getFieldValue(row, "posible_causa");
-  const rangoHorarioValor = getFieldValue(row, "rango_horario");
+  const rangoHorarioValor = getFieldValue(row, "rango_horario") || rangoHorarioLabel(dto.hora);
 
   return {
     fecha: dto.fecha,
@@ -438,10 +461,10 @@ function resolvedDto(row: MonitoreoRow, catalogos: CatalogCache): CreateEventoDt
     informacion_adicional: dto.informacion_adicional,
     camara_monitoreada: dto.camara_monitoreada,
     demora: dto.demora,
-    anio: dto.anio,
-    mes: dto.mes,
-    semana: dto.semana,
-    dia: dto.dia,
+    anio: dto.anio ?? fecha.getUTCFullYear(),
+    mes: dto.mes ?? fecha.getUTCMonth() + 1,
+    semana: dto.semana ?? semanaDelAnio(fecha),
+    dia: dto.dia ?? diaSemana(fecha),
     id_rango_horario: catalogos.catalogos["Rango horario"]?.[normalizeText(rangoHorarioValor)] ?? undefined,
   };
 }

@@ -1,3 +1,4 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { useState, type FormEvent } from "react";
 import { useLocation } from "react-router-dom";
 import { Database, Pencil, RefreshCw, Save, Trash2, X } from "lucide-react";
@@ -91,11 +92,11 @@ function fechaInput(fecha: string) {
 
 export function DatosOperativos() {
   const location = useLocation();
-  const [desde, setDesde] = useState("");
-  const [hasta, setHasta] = useState("");
-  const [pagina, setPagina] = useState(1);
-  const [formulario, setFormulario] = useState<FormularioDatosOperativos>(formularioVacio);
-  const [editando, setEditando] = useState<DatoOperativo | null>(null);
+  const [desde, setDesde] = useDraftState("pages/monitoreo/DatosOperativos:desde", "");
+  const [hasta, setHasta] = useDraftState("pages/monitoreo/DatosOperativos:hasta", "");
+  const [pagina, setPagina] = useDraftState("pages/monitoreo/DatosOperativos:pagina", 1);
+  const [formulario, setFormulario] = useDraftState<FormularioDatosOperativos>("pages/monitoreo/DatosOperativos:formulario", formularioVacio);
+  const [editando, setEditando] = useDraftState<DatoOperativo | null>("pages/monitoreo/DatosOperativos:editando", null);
   const [eliminando, setEliminando] = useState<DatoOperativo | null>(null);
   const { byName: catalogosPorNombre, isSuccess: catalogosListos } = useCatalogs();
   const { data: configuracion } = useConfiguracion();
@@ -107,7 +108,7 @@ export function DatosOperativos() {
   const kmPorCarrera = configuracion?.operacion?.kmPorCarrera ?? KM_POR_CARRERA_FALLBACK;
 
   const filtros = { desde: desde || undefined, hasta: hasta || undefined, page: pagina, limit: POR_PAGINA };
-  const { data, isLoading, isFetching, refetch } = useDatosOperativos(filtros);
+  const { data, isLoading, isError, error, isFetching, refetch } = useDatosOperativos(filtros);
   const crear = useCrearDatoOperativo();
   const actualizar = useActualizarDatoOperativo();
   const eliminar = useEliminarDatoOperativo();
@@ -335,7 +336,7 @@ export function DatosOperativos() {
           <div className="flex flex-wrap items-end justify-between gap-3 border-b border-line-soft px-5 py-4">
             <div>
               <h2 className="text-[15px] font-semibold text-ink">Historial de datos operativos</h2>
-              <p className="mt-0.5 text-[12.5px] text-ink-quiet">{data?.total ?? 0} registros guardados</p>
+              <p className="mt-0.5 text-[12.5px] text-ink-quiet">{isError ? "Historial no disponible" : isLoading ? "Cargando registros…" : `${data?.total ?? 0} registros guardados`}</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <Field label="Desde">
@@ -363,8 +364,9 @@ export function DatosOperativos() {
               </thead>
               <tbody className="divide-y divide-line-soft">
                 {isLoading && <tr><td colSpan={8} className="px-5 py-10 text-center text-ink-quiet">Cargando datos...</td></tr>}
-                {!isLoading && data?.items.length === 0 && <tr><td colSpan={8} className="px-5 py-10 text-center text-ink-quiet">No hay datos operativos para mostrar.</td></tr>}
-                {!isLoading && data?.items.map((dato) => (
+                {isError && <tr><td colSpan={8} className="px-5 py-8 text-center"><p role="alert" className="text-critical">{apiErrorMessage(error, "No se pudieron cargar los datos operativos. Revisa la conexión e inténtalo nuevamente.")}</p><Button className="mt-3" variant="outline" onClick={() => void refetch()}>Reintentar historial de datos</Button></td></tr>}
+                {!isLoading && !isError && data?.items.length === 0 && <tr><td colSpan={8} className="px-5 py-10 text-center text-ink-quiet">No hay datos operativos para mostrar.</td></tr>}
+                {!isLoading && !isError && data?.items.map((dato) => (
                   <tr key={dato.id_dato_operativo} className="text-ink-soft hover:bg-surface/60">
                     <td className="px-5 py-3 font-medium text-ink">{formatDate(dato.fecha)}</td>
                     <td className="px-4 py-3 text-right">{numero(dato.qty_carreras)}</td>

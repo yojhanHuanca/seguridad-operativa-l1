@@ -34,7 +34,7 @@ export function IndicadoresPrintDocument({
   totalReportes,
   reportesSubtitle,
   porTipo,
-  cerradoVsProceso,
+  reportesPorEstado,
   planesSubtitle,
   planes,
   tendencia,
@@ -58,7 +58,7 @@ export function IndicadoresPrintDocument({
   totalReportes: number;
   reportesSubtitle: string;
   porTipo: { name: string; value: number }[];
-  cerradoVsProceso: { name: string; value: number; color: string }[];
+  reportesPorEstado: { name: string; value: number; color: string }[];
   planesSubtitle: string;
   planes: { total: number; abiertos: number; donut: { name: string; value: number; color: string }[] };
   tendencia: MonthTrendItem[];
@@ -98,7 +98,7 @@ export function IndicadoresPrintDocument({
           subtitle={reportesSubtitle}
           totalReportes={totalReportes}
           porTipo={porTipo}
-          cerradoVsProceso={cerradoVsProceso}
+          reportesPorEstado={reportesPorEstado}
           isLoading={false}
           activeReportType={null}
           activeReportStatus={null}
@@ -132,7 +132,7 @@ export function ReportesSopCard({
   subtitle,
   totalReportes,
   porTipo,
-  cerradoVsProceso,
+  reportesPorEstado,
   isLoading,
   activeReportType,
   activeReportStatus,
@@ -143,7 +143,7 @@ export function ReportesSopCard({
   subtitle: string;
   totalReportes: number;
   porTipo: { name: string; value: number }[];
-  cerradoVsProceso: { name: string; value: number; color: string }[];
+  reportesPorEstado: { name: string; value: number; color: string }[];
   isLoading: boolean;
   activeReportType: string | null;
   activeReportStatus: string | null;
@@ -159,7 +159,7 @@ export function ReportesSopCard({
           <FileBarChart2 className={dense ? "h-3.5 w-3.5" : "h-4.5 w-4.5"} />
         </span>
         <div className="min-w-0">
-          <h2 className={cn("font-semibold leading-tight text-ink truncate", dense ? "text-[10.5px]" : "text-[15px]")}>Total de Reportes SOP</h2>
+        <h2 className={cn("font-semibold leading-tight text-ink truncate", dense ? "text-[10.5px]" : "text-[15px]")}>Total de reportes</h2>
           {!dense && <p className="mt-0.5 text-[12.5px] text-ink-quiet">{subtitle}</p>}
         </div>
       </div>
@@ -205,7 +205,7 @@ export function ReportesSopCard({
           <SkeletonChart height={dense ? 165 : 140} />
         ) : (
           <TrendBarChart
-            data={cerradoVsProceso.map((d) => ({ label: d.name, value: d.value, color: d.color }))}
+            data={reportesPorEstado.map((d) => ({ label: d.name, value: d.value, color: d.color }))}
             height={dense ? 165 : 140}
             barSize={dense ? 44 : 64}
             activeName={activeReportStatus}

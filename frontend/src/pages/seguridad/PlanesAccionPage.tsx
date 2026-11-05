@@ -1,5 +1,5 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
 import { UserAvatar } from "@/components/ui/UserAvatar";
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, ClipboardList, CalendarDays } from "lucide-react";
 import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
@@ -48,9 +48,9 @@ function progresoDelPlan(p: PlanItem): number {
 }
 
 export function SoPlanesAccionPage() {
-  const [areaFilter, setAreaFilter] = useState<string>("");
-  const [soloVencidos, setSoloVencidos] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [areaFilter, setAreaFilter] = useDraftState<string>("pages/seguridad/PlanesAccionPage:areaFilter", "");
+  const [soloVencidos, setSoloVencidos] = useDraftState("pages/seguridad/PlanesAccionPage:soloVencidos", false);
+  const [currentPage, setCurrentPage] = useDraftState("pages/seguridad/PlanesAccionPage:currentPage", 1);
 
   const { data: areas } = useAreas();
   const areaId = areas?.find((a) => a.nombre_area === areaFilter)?.id_area;

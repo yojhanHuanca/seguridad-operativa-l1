@@ -86,7 +86,8 @@ export class ReportController {
 
       const actor = (req as AuthenticatedRequest).user;
       const result = await ReportService.createReport(req.body, files, actor);
-      if (!actor) res.setHeader("Set-Cookie", cookieAccesoReporte(crearAccesoReporte(result.caso.codigo_sop), result.caso.codigo_sop));
+      const codigoConsulta = result.caso.codigo_consulta ?? result.caso.codigo_sop;
+      if (!actor) res.setHeader("Set-Cookie", cookieAccesoReporte(crearAccesoReporte(codigoConsulta), codigoConsulta));
       const { modalidad, origen } = textoOrigenReporte(req.body);
       const fuente =
         origen === "seguridad_operativa"
@@ -105,6 +106,7 @@ export class ReportController {
         descripcion: `Reporte ${result.caso.codigo_sop} creado desde ${fuente} (${modalidad === "anonimo" ? "anónimo" : "identificado"}).`,
         despues: {
           codigo_sop: result.caso.codigo_sop,
+          codigo_consulta: codigoConsulta,
           origen,
           modalidad,
           evidencias: files.length,
@@ -114,6 +116,7 @@ export class ReportController {
       return res.status(201).json(
         ApiResponse.success("Reporte registrado correctamente", {
           codigo_sop: result.caso.codigo_sop,
+          codigo_consulta: codigoConsulta,
           id_caso: result.caso.id_caso,
           id_evento: result.evento.id_evento,
         })

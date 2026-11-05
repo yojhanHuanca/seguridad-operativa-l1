@@ -1,3 +1,6 @@
+import { useDraftState } from "@/features/drafts/useDraftState";
+import { useClearDraft } from "@/features/drafts/useDraftState";
+import { useDraftForm } from "@/features/drafts/useDraftForm";
 import { useEffect, useRef, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -145,9 +148,9 @@ function ReportIntroHero({ onStart }: { onStart: () => void }) {
           style={{ y: backgroundY }}
           className="absolute -inset-y-10 inset-x-0 h-[calc(100%+80px)] w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/72 to-ink/20" />
-        <div className="absolute inset-0 bg-gradient-to-r from-brand-950/95 via-brand-950/50 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-ink to-transparent" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(10,14,13,0.72)_0%,rgba(10,14,13,0.30)_48%,rgba(10,14,13,0.08)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(10,14,13,0.58)_0%,rgba(10,14,13,0.24)_42%,transparent_78%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-44 bg-[linear-gradient(to_top,rgba(10,14,13,0.72),transparent)]" />
 
         <div className="pointer-events-none absolute inset-x-0 bottom-8 hidden h-24 overflow-hidden opacity-70 sm:block" aria-hidden>
           <div className="absolute bottom-9 left-0 right-0 h-px bg-white/18" />
@@ -302,11 +305,12 @@ function ReportStepper({ stepIndex }: { stepIndex: number }) {
 }
 
 export function NewReportPage() {
+  const clearDraft = useClearDraft("pages/reports/NewReportPage:");
   const navigate = useNavigate();
-  const [introVisible, setIntroVisible] = useState(true);
-  const [stepIndex, setStepIndex] = useState(0);
+  const [introVisible, setIntroVisible] = useDraftState("pages/reports/NewReportPage:introVisible", true);
+  const [stepIndex, setStepIndex] = useDraftState("pages/reports/NewReportPage:stepIndex", 0);
   const [direction, setDirection] = useState<Direction>("forward");
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useDraftState<File[]>("pages/reports/NewReportPage:files", []);
   const step = REPORT_STEPS[stepIndex];
 
   const catalogs = useCatalogs();
@@ -319,6 +323,8 @@ export function NewReportPage() {
       modalidad: "anonimo",
     },
   });
+
+  useDraftForm("pages/reports/NewReportPage:values", form);
 
   const goNext = async () => {
     const fields = STEP_FIELDS[step];
@@ -338,9 +344,10 @@ export function NewReportPage() {
       { values, files },
       {
         onSuccess: (result) => {
-          toast.success(`Reporte ${result.codigo_sop} registrado correctamente`);
-          guardarReporteLocal(result.codigo_sop);
-          navigate("/reportes/consulta?codigo=" + encodeURIComponent(result.codigo_sop));
+          clearDraft();
+          toast.success(`Reporte recibido. Código de consulta: ${result.codigo_consulta}`);
+          guardarReporteLocal(result.codigo_consulta);
+          navigate("/reportes/consulta?codigo=" + encodeURIComponent(result.codigo_consulta));
         },
         onError: (error) => {
           toast.error(apiErrorMessage(error, "No se pudo registrar el reporte"));

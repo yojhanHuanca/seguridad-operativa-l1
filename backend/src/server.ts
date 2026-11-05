@@ -2,6 +2,7 @@ import "dotenv/config";
 import app from "./app.js";
 import logger from "./utils/logger.js";
 import { ConfiguracionService } from "./modules/configuracion/configuracion.service.js";
+import { iniciarRecordatoriosPlanes } from "./modules/cases/plan-reminder.scheduler.js";
 
 const PORT = process.env.PORT || 3000;
 
@@ -12,4 +13,5 @@ await ConfiguracionService.bootstrapSequences();
 
 app.listen(PORT, () => {
   logger.info(`🚀 Servidor ejecutándose en http://localhost:${PORT}`);
+  iniciarRecordatoriosPlanes();
 });

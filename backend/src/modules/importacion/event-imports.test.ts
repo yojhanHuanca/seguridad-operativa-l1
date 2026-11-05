@@ -26,6 +26,8 @@ beforeEach(() => {
     { id_detalle: 1, nombre: 'Incidente', catalogos: { nombre: 'Tipo de incidente operativo' } },
     { id_detalle: 2, nombre: 'Estación', catalogos: { nombre: 'Ubicación' } },
     { id_detalle: 3, nombre: 'Andén', catalogos: { nombre: 'Lugar de Incidente' } },
+    { id_detalle: 4, nombre: '10:00 - 11:59', catalogos: { nombre: 'Rango horario' } },
+    { id_detalle: 5, nombre: '08:00 - 09:59', catalogos: { nombre: 'Rango horario' } },
   ]);
   mocks.db.eventos_monitoreo.findMany.mockResolvedValue([]);
   mocks.db.contingencia_eventos.findMany.mockResolvedValue([]);
@@ -77,10 +79,16 @@ describe('Importación de eventos', () => {
     expect(mocks.db.importacion_locks.deleteMany).toHaveBeenCalledOnce();
   });
   it('envía los campos de monitoreo a sus destinos sin sustituir los valores importados', async () => {
-    await Monitor.importarMonitoreo('datos.xlsx', [{ ...monitoring, 'Información adicional': 'Detalle completo', 'Cámara monitoreada': 'CAM-01', 'Nro. Carrera': '001', DEMORA: '2.5', Año: '2026', Mes: '9', Sem: '36', Día: 'martes' }], 7);
+    await Monitor.importarMonitoreo('datos.xlsx', [{ ...monitoring, 'Información adicional': 'Detalle completo', 'Cámara monitoreada': 'CAM-01', 'Nro. Carrera': '001', DEMORA: '2.5', Año: '2026', Mes: '9', Sem: '36', Día: 'martes', 'Rango horario': '08:00 - 09:59' }], 7);
     expect(mocks.monitor).toHaveBeenCalledWith(expect.objectContaining({
       fecha: '2026-09-01', hora: '10:00', id_tipo_incidente: 1, id_ubicacion: 2, id_lugar_incidente: 3,
-      descripcion: 'Prueba', informacion_adicional: 'Detalle completo', camara_monitoreada: 'CAM-01', numero_carrera: '001', demora: 2.5, anio: 2026, mes: 9, semana: 36, dia: 'martes',
+      descripcion: 'Prueba', informacion_adicional: 'Detalle completo', camara_monitoreada: 'CAM-01', numero_carrera: '001', demora: 2.5, anio: 2026, mes: 9, semana: 36, dia: 'martes', id_rango_horario: 5,
+    }), 7, { preserveImportedValues: true, idImportacion: 3 });
+  });
+  it('completa los campos derivados de monitoreo ausentes desde la fecha y hora', async () => {
+    await Monitor.importarMonitoreo('derivados.xlsx', [{ ...monitoring, Fecha: '2025-01-03', 'Hora de evento': '10:30' }], 7);
+    expect(mocks.monitor).toHaveBeenCalledWith(expect.objectContaining({
+      anio: 2025, mes: 1, semana: 1, dia: 'Viernes', id_rango_horario: 4,
     }), 7, { preserveImportedValues: true, idImportacion: 3 });
   });
   it('rechaza modelo y unidad incompatibles en la vista previa del Excel', async () => {

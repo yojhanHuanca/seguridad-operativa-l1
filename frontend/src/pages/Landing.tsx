@@ -285,7 +285,7 @@ function HeroBackground() {
           src={photo.src}
           alt={photo.alt}
           initial={false}
-          animate={i === index ? { opacity: 1, scale: 1.12 } : { opacity: 0, scale: 1.04 }}
+          animate={i === index ? { opacity: 1, scale: 1.04 } : { opacity: 0, scale: 1.01 }}
           transition={i === index ? { opacity: { duration: 1.4 }, scale: { duration: 6.5, ease: "linear" } } : { opacity: { duration: 1.4 } }}
           className="absolute inset-0 h-full w-full object-cover"
         />
@@ -312,8 +312,8 @@ function Hero({ systemName }: { systemName: string }) {
       <motion.div style={{ y: bgY }} className="absolute inset-0">
         <HeroBackground />
       </motion.div>
-      <motion.div style={{ y: midY }} className="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/25" />
-      <motion.div style={{ y: midY }} className="absolute inset-0 bg-gradient-to-r from-brand-950/85 via-brand-950/25 to-transparent" />
+      <motion.div style={{ y: midY }} className="absolute inset-0 bg-[linear-gradient(to_top,rgba(10,14,13,0.78)_0%,rgba(10,14,13,0.34)_42%,rgba(10,14,13,0.08)_100%)]" />
+      <motion.div style={{ y: midY }} className="absolute inset-0 bg-[linear-gradient(to_right,rgba(10,14,13,0.58)_0%,rgba(10,14,13,0.24)_42%,transparent_78%)]" />
 
       <motion.div
         initial="hidden"
@@ -569,10 +569,10 @@ function ImpactSection({ systemName }: { systemName: string }) {
         >
           <motion.p variants={riseItem} className="text-[13px] font-semibold uppercase tracking-[0.14em] text-brand-400">Por qué existe {systemName}</motion.p>
           <motion.p variants={riseItem} className="mt-4 max-w-lg text-balance font-display text-[26px] font-semibold leading-snug text-white sm:text-[30px]">
-            Cada tren que llega a la estación lleva miles de pasajeros. La seguridad operativa no puede depender de la memoria de una sola persona.
+            La seguridad operativa requiere información clara y seguimiento oportuno.
           </motion.p>
           <motion.p variants={riseItem} className="mt-5 max-w-md text-[14px] leading-relaxed text-white/60">
-            {systemName} reemplaza los reportes sueltos y las hojas de cálculo por un expediente único: quién reportó, quién evaluó, qué se hizo y cuándo se cerró.
+            {systemName} centraliza los reportes y permite dar seguimiento a cada caso: desde su evaluación hasta las acciones realizadas y su cierre.
           </motion.p>
         </motion.div>
       </div>
