@@ -12,6 +12,7 @@ frontend/node_modules/
 .env.production
 backend/.env
 frontend/.env
+/ENTREGA-TI.txt
 
 # Código compilado: se genera con `npm run build`, no se versiona.
 backend/dist/
