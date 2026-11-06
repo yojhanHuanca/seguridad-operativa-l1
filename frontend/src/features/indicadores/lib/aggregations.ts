@@ -171,7 +171,7 @@ const RISK_CATEGORY_CHART_COLOR: Record<RiskCategory, string> = {
   inaceptable: CHART_COLORS.critical,
   no_deseable: CHART_COLORS.warning,
   aceptable_revision: CHART_COLORS.info,
-  aceptable_sin_revision: CHART_COLORS.brand,
+  aceptable_sin_revision: "#94A3B8",
 };
 
 /** Matriz de riesgo de los SOP abiertos (cerrados no cuentan: ya no hay riesgo activo que gestionar). */

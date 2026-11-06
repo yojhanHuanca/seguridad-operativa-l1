@@ -1,6 +1,6 @@
 import type { Worksheet } from "exceljs";
 import { crearWorkbook, descargarWorkbook } from "@/lib/excelBranded";
-import { isRiskLevel, riskCategory, type RiskCategory } from "@/features/cases/domain";
+import { isRiskLevel, riskCategory, RISK_LEVEL_STYLE_OVERRIDES, type RiskCategory } from "@/features/cases/domain";
 import { isPlanActivo, planDeadline } from "@/features/plans/lib/planDeadline";
 import { daysUntil } from "@/lib/format";
 import type { CaseListItem, PlanAccion } from "@/features/cases/types";
@@ -62,7 +62,7 @@ const RIESGO_FILL: Record<RiskCategory, string> = {
   inaceptable: "FFFDE2E1",
   no_deseable: "FFFCEEDC",
   aceptable_revision: "FFE4F0FC",
-  aceptable_sin_revision: "FFE3F3E9",
+  aceptable_sin_revision: "FFF8FAFC",
 };
 
 const DATE_FMT = "dd/mm/yyyy";
@@ -87,7 +87,7 @@ function riesgoTexto(caso: CaseListItem): string {
 function riesgoFill(caso: CaseListItem): string | null {
   const codigo = caso.catalogo_detalle_casos_sop_analisis_riesgoTocatalogo_detalle?.codigo;
   if (!isRiskLevel(codigo)) return null;
-  return RIESGO_FILL[riskCategory(codigo)];
+  return RISK_LEVEL_STYLE_OVERRIDES[codigo]?.excelFill ?? RIESGO_FILL[riskCategory(codigo)];
 }
 
 function casoValores(caso: CaseListItem): (string | number | Date)[] {

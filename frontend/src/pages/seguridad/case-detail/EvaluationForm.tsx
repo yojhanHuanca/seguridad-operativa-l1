@@ -110,7 +110,7 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
         <Textarea value={peligro} onChange={(e) => setPeligro(e.target.value)} placeholder="Identifique el peligro o fuente de riesgo…" rows={2} />
       </Field>
 
-      <Field label="Consecuencia">
+      <Field label="Posible consecuencia">
         <Textarea value={consecuencia} onChange={(e) => setConsecuencia(e.target.value)} placeholder="Describa la posible consecuencia del peligro…" rows={2} />
       </Field>
 
@@ -154,7 +154,7 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
         )}
       </Field>
 
-      <Field label="¿Requiere investigación?">
+      <Field label="¿Requiere investigación exhaustiva?">
         <div className="flex gap-2">
           <button
             type="button"
@@ -164,7 +164,7 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
               requiresInvestigation ? "border-brand-600 bg-brand-50 text-brand-800" : "border-line bg-white text-ink-soft hover:bg-surface/50"
             )}
           >
-            Sí, pasa a Investigación
+            Sí, investigación exhaustiva
           </button>
           <button
             type="button"
@@ -174,7 +174,7 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
               !requiresInvestigation ? "border-brand-600 bg-brand-50 text-brand-800" : "border-line bg-white text-ink-soft hover:bg-surface/50"
             )}
           >
-            No, pasa directo a Plan
+            No, investigación regular
           </button>
         </div>
       </Field>

@@ -11,6 +11,7 @@ import { SPRING_SNAPPY } from "@/design-system/motion/variants";
 import type { ReportFormValues } from "@/features/reports/schema";
 import type { CatalogGroup } from "@/features/reports/types";
 import { patiosDelCatalogo } from "@/features/reports/lib/patios";
+import { esTaller } from "@/lib/stations";
 
 export function LocationStep({
   form,
@@ -25,7 +26,7 @@ export function LocationStep({
   const hasLocationError = Boolean(errors.tipo_ubicacion || errors.id_lugar);
 
   const lugares = useMemo(() => catalogs.get("Lugar de Incidente")?.catalogo_detalle ?? [], [catalogs]);
-  const estaciones = useMemo(() => lugares.filter((l) => !!l.codigo), [lugares]);
+  const estaciones = useMemo(() => lugares.filter((l) => !esTaller(l.nombre, l.codigo) && l.nombre.trim().toLowerCase() !== "exteriores"), [lugares]);
   const patios = useMemo(() => patiosDelCatalogo(lugares), [lugares]);
   const lugaresEspecificos = catalogs.get("Lugar Específico")?.catalogo_detalle ?? [];
 

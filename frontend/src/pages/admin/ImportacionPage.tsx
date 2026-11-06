@@ -222,6 +222,7 @@ function ResultBanner({ result }: { result: ImportacionResult | null }) {
 
 function CellPreview({ sheet, preview }: { sheet: ImportSheet; preview: ImportacionPreview }) {
   const [page, setPage] = useDraftState("pages/admin/ImportacionPage:page", 0);
+  const [expandedCell, setExpandedCell] = useState<{ row: number; header: string; value: string } | null>(null);
   const pageCount = Math.max(1, Math.ceil(sheet.rows.length / 100));
   const currentPage = Math.min(page, pageCount - 1);
   const startRow = currentPage * 100;
@@ -249,8 +250,11 @@ function CellPreview({ sheet, preview }: { sheet: ImportSheet; preview: Importac
               const error = issues.find(issue => issue.severity === "error");
               const warning = issues.find(issue => issue.severity === "warning");
               const title = (error ?? warning)?.message;
+              const isLong = value.length > 140 || value.includes("\n");
               return <td key={header} title={title} className={cn("max-w-[260px] px-3 py-2 align-top", error ? "bg-red-50 text-red-800 ring-1 ring-inset ring-red-200" : warning ? "bg-amber-50 text-amber-800" : value ? "bg-emerald-50/45 text-ink" : "bg-slate-50 text-ink-faint")}>
-                <span className="block w-[240px] whitespace-pre-wrap break-words">{value || "Vacío"}</span>{title && <span className="mt-1 block max-w-[240px] text-[10.5px] font-medium">{title}</span>}
+                <span className={cn("block w-[240px] whitespace-pre-wrap break-words", isLong && "max-h-[4.5em] overflow-hidden")}>{value || "Vacío"}</span>
+                {isLong && <button type="button" className="mt-1 text-[11px] font-semibold text-emerald-800 underline underline-offset-2 hover:text-emerald-950" onClick={() => setExpandedCell({ row: startRow + rowIndex + 2, header, value })}>Ver texto completo</button>}
+                {title && <span className="mt-1 block max-w-[240px] text-[10.5px] font-medium">{title}</span>}
               </td>;
             })}
           </tr>)}</tbody>
@@ -263,6 +267,12 @@ function CellPreview({ sheet, preview }: { sheet: ImportSheet; preview: Importac
           {Array.from({ length: pageCount }, (_, index) => <option key={index} value={index}>Filas {index * 100 + 1}–{Math.min((index + 1) * 100, sheet.rows.length)}</option>)}
         </select>
         <Button type="button" variant="outline" disabled={currentPage + 1 >= pageCount} onClick={() => setPage(currentPage + 1)}>Filas siguientes</Button>
+      </div>}
+      {expandedCell && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setExpandedCell(null)}>
+        <div role="dialog" aria-modal="true" aria-label={`Contenido de ${expandedCell.header}, fila ${expandedCell.row}`} className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-5 shadow-xl" onClick={event => event.stopPropagation()}>
+          <div className="flex items-start justify-between gap-4"><div><p className="text-sm font-semibold text-ink">{expandedCell.header}</p><p className="text-xs text-ink-quiet">Fila {expandedCell.row}</p></div><button type="button" className="text-sm font-semibold text-ink-quiet hover:text-ink" onClick={() => setExpandedCell(null)}>Cerrar</button></div>
+          <p className="mt-4 whitespace-pre-wrap break-words text-sm leading-relaxed text-ink">{expandedCell.value}</p>
+        </div>
       </div>}
     </Card>
   );

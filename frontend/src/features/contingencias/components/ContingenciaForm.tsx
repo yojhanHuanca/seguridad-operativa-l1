@@ -270,6 +270,7 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
   const clearDraft = useClearDraft("contingencia:");
   const [values, setValues] = useDraftState("contingencia:values", () => draftValues(initialData, keys?.draft));
   const [errors, setErrors] = useState<Partial<ContingenciaFormValues>>({});
+  const [nameMenuOpen, setNameMenuOpen] = useState(false);
   const invalidFieldToFocus = useRef<FieldName | null>(null);
   const [notice, setNotice] = useState("");
   const [flow, setFlow] = useDraftState<FlowId>("contingencia:flow", () => {
@@ -334,6 +335,18 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
   }
 
   function update(name: FieldName, value: string) {
+    if (name === "nombre_persona") {
+      const unknown = value.trim().toUpperCase() === "N/N";
+      const wasUnknown = values.nombre_persona.trim().toUpperCase() === "N/N";
+      if (unknown) {
+        updateMany({ nombre_persona: "N/N", dni: "N/N", sexo: "N/N", edad: "", tarjeta_cliente: "N/N" });
+        return;
+      }
+      if (wasUnknown) {
+        updateMany({ nombre_persona: value, dni: "", sexo: "", edad: "", tarjeta_cliente: "" });
+        return;
+      }
+    }
     const next = { ...values, [name]: value };
     const nextErrors = { ...errors, [name]: undefined };
     applyRules(next, nextErrors);
@@ -425,10 +438,12 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
 
   function renderField(item: ContingenciaField, compact = false) {
     const value = values[item.name];
+    const personaDesconocida = values.nombre_persona.trim().toUpperCase() === "N/N";
     const inputProps = {
       id: "cont-" + item.name,
       name: item.name,
       value,
+      disabled: personaDesconocida && ["dni", "sexo", "edad", "tarjeta_cliente"].includes(item.name),
       required: item.required,
       "aria-invalid": Boolean(errors[item.name]),
       "aria-describedby": errors[item.name] ? "error-" + item.name : undefined,
@@ -438,7 +453,26 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
     return (
       <div key={item.name} className={cn(item.type === "textarea" ? "min-w-0 sm:col-span-2 xl:col-span-3" : "min-w-0")}>
         <Field label={item.label} required={item.required}>
-          {item.catalog ? (
+          {item.name === "nombre_persona" ? (
+            <div className="relative" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setNameMenuOpen(false); }}>
+              <UserRound aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+              <Input {...inputProps} maxLength={item.max} placeholder="Escribe el nombre" className="pl-9 pr-12" onKeyDown={event => {
+                if (event.key === "ArrowDown") { event.preventDefault(); setNameMenuOpen(true); }
+                if (event.key === "Escape") setNameMenuOpen(false);
+              }} />
+              <button type="button" aria-label="Mostrar opción de nombre desconocido" aria-expanded={nameMenuOpen} aria-haspopup="listbox"
+                className="absolute inset-y-px right-px flex w-10 items-center justify-center rounded-r-[7px] border-l border-line text-ink-soft transition-colors hover:bg-surface-2 hover:text-ink focus-visible:outline-2 focus-visible:outline-brand-600"
+                onClick={() => setNameMenuOpen(open => !open)}><ChevronDown className={cn("h-4 w-4 transition-transform", nameMenuOpen && "rotate-180")} /></button>
+              {nameMenuOpen && <div role="listbox" aria-label="Opciones de nombre" className="absolute z-20 mt-1.5 w-full rounded-lg border border-line-strong bg-white p-1.5 shadow-lg">
+                <button type="button" role="option" aria-selected={personaDesconocida} className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-none"
+                  onClick={() => { update("nombre_persona", "N/N"); setNameMenuOpen(false); }}>
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-brand-50 text-xs font-semibold text-brand-800">N/N</span>
+                  <span className="min-w-0"><span className="block text-[13px] font-medium text-ink">Persona no identificada</span><span className="block text-[11px] text-ink-quiet">Completar datos como N/N</span></span>
+                  {personaDesconocida && <CheckCircle2 aria-hidden="true" className="ml-auto h-4 w-4 text-brand-700" />}
+                </button>
+              </div>}
+            </div>
+          ) : item.catalog ? (
             <Select {...inputProps}>
               <option value="">Seleccionar...</option>
               {items.filter((catalogItem) => allowedOption(item.name, catalogItem.valor, values)).map((catalogItem) => (
@@ -448,7 +482,7 @@ export function ContingenciaForm({ initialData, onSubmit, onCancel, isSubmitting
           ) : item.type === "textarea" ? (
             <Textarea {...inputProps} maxLength={item.max} className={compact ? "min-h-[76px]" : undefined} />
           ) : (
-            <Input {...inputProps} type={item.type ?? "text"} maxLength={item.max} min={item.type === "number" ? 0 : undefined} step={item.type === "number" ? 1 : undefined} />
+            <Input {...inputProps} type={item.type ?? "text"} maxLength={item.max} min={item.type === "number" ? 0 : undefined} step={item.type === "number" ? 1 : undefined} placeholder={item.name === "edad" && personaDesconocida ? "Edad no registrada" : undefined} />
           )}
         </Field>
         {activeRules.filter((rule) => rule.target === item.name).map((rule) => <p key={rule.code} className="mt-2 text-xs text-brand-800">{rule.message}</p>)}

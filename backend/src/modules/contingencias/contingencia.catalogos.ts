@@ -295,7 +295,7 @@ export const CONTINGENCIA_CATALOGOS_INICIALES: ContingenciaCatalogoInicial[] = [
     nombre: "SEXO",
     hoja_excel: "Base de datos",
     columna_excel: "AI",
-    items: ["M", "F"],
+    items: ["M", "F", "N/N"],
   },
   {
     codigo: "reporte_del_pco",

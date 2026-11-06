@@ -63,3 +63,24 @@ describe("Material rodante", () => {
   });
 });
 
+describe("Patios del catálogo de lugares", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mock.group.mockResolvedValue({ codigo: "LUGAR_INCIDENTE" });
+    mock.duplicate.mockResolvedValue(null);
+  });
+
+  it("guarda el nombre exacto y marca el patio aunque exista una estación homónima", async () => {
+    await CatalogService.createItem(1, "Bayovar", undefined, "PATIO");
+    expect(mock.duplicate).toHaveBeenCalledWith(1, "Bayovar", "PATIO");
+    expect(mock.create).toHaveBeenCalledWith(1, "Bayovar", undefined, "PATIO");
+  });
+
+  it("al renombrar mantiene el tipo patio sin añadir un prefijo", async () => {
+    mock.detail.mockResolvedValue({ id_detalle: 3, id_catalogo: 1, codigo: "PATIO", nombre: "Bayovar" });
+    await CatalogService.updateItem(3, "Nuevo patio");
+    expect(mock.duplicate).toHaveBeenCalledWith(1, "Nuevo patio", "PATIO");
+    expect(mock.update).toHaveBeenCalledWith(3, "Nuevo patio", undefined);
+  });
+});
+

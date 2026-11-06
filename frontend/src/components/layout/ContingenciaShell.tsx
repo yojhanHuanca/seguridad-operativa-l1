@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ChevronsLeft, ChevronsRight, ClipboardList, Database, History, Menu, TrendingUp, type LucideIcon } from "lucide-react";
+import { ChevronsLeft, ChevronsRight, ClipboardList, History, Menu, TrendingUp, type LucideIcon } from "lucide-react";
 import { SidebarAccount } from "./SidebarAccount";
 import { AdminViewingBanner } from "@/features/auth/AdminViewingBanner";
 import { AdminPanelSwitcher } from "@/features/auth/AdminPanelSwitcher";
@@ -21,7 +21,6 @@ const NAV: NavItem[] = [
   { to: "/contingencias/registro", label: "Registro", icon: ClipboardList },
   { to: "/contingencias/historial", label: "Historial", icon: History },
   { to: "/contingencias/indicadores", label: "Indicadores", icon: TrendingUp},
-  { to: "/contingencias/datos-operativos", label: "Datos Operativos", icon: Database },
 
 ];
 

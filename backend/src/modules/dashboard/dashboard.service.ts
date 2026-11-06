@@ -56,7 +56,7 @@ const RISK_COLOR: Record<(typeof RISK_ORDER)[number], string> = {
   inaceptable: COLOR.critical,
   no_deseable: COLOR.warning,
   aceptable_revision: COLOR.info,
-  aceptable_sin_revision: COLOR.brand,
+  aceptable_sin_revision: "#94A3B8",
 };
 
 /** "cerrado" | "enValidacion" | "enProceso" — mismo criterio que `planBucket()` de `aggregations.ts`. */

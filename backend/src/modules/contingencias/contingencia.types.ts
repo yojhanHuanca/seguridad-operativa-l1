@@ -65,11 +65,11 @@ const campos = {
   sintomas_presentados: texto(3000),
   zona_lesion: texto(120),
   nombre_personal_salud: texto(180),
-  tipo_declaracion_jurada: texto(20),
+  tipo_declaracion_jurada: texto(50),
   nro_declaracion_jurada: texto(80),
 
   breve_descripcion_hecho: texto(5000),
-  reserva_camaras: texto(120),
+  reserva_camaras: z.preprocess(emptyToUndefined, z.string().optional()),
   observacion: texto(5000),
   registro: texto(120),
   revision: texto(120),

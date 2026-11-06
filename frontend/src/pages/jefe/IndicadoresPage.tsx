@@ -553,7 +553,7 @@ function riskChart(reports: PlanReport[]) {
     inaceptable: CHART_COLORS.critical,
     no_deseable: CHART_COLORS.warning,
     aceptable_revision: CHART_COLORS.info,
-    aceptable_sin_revision: CHART_COLORS.brand,
+    aceptable_sin_revision: "#94A3B8",
   };
   return order.map((key) => ({ name: RISK_CATEGORY_LABELS[key], value: counts[key], color: colors[key] }));
 }

@@ -34,6 +34,36 @@ beforeEach(() => {
   mocks.start.mockResolvedValue({ id_importacion: 3 });
 });
 describe('Importación de eventos', () => {
+  it('acepta el tipo de declaración jurada más largo del Excel', async () => {
+    const row = { ...contingency, 'TIPO DE DECLARACIÓN JURADA': 'NO SE UBICA A PASAJERO' };
+    const preview = await Cont.validarContingencias('eventos.xlsx', [row]);
+    expect(preview.issues).not.toContainEqual(expect.objectContaining({ field: 'tipo_declaracion_jurada', severity: 'error' }));
+    await Cont.importarContingencias('eventos.xlsx', [row], 1);
+    expect(mocks.contingency).toHaveBeenCalledWith(expect.objectContaining({ tipo_declaracion_jurada: 'NO SE UBICA A PASAJERO' }), 1, expect.anything());
+  });
+  it('acepta reservas de cámaras largas sin recortar el texto', async () => {
+    const reserva = 'AXIS_PRE_P4/ 20:18 - 20:21 Hrs.\n'.repeat(5);
+    const row = { ...contingency, 'RESERVA DE CAMARAS': reserva };
+    const preview = await Cont.validarContingencias('eventos.xlsx', [row]);
+    expect(preview.issues).not.toContainEqual(expect.objectContaining({ field: 'reserva_camaras', severity: 'error' }));
+    await Cont.importarContingencias('eventos.xlsx', [row], 1);
+    expect(mocks.contingency).toHaveBeenCalledWith(expect.objectContaining({ reserva_camaras: reserva.trim() }), 1, expect.anything());
+  });
+  it('distingue el término por agente de estación del término de atención SPAA', async () => {
+    const row = { ...contingency,
+      'HORA DE TERMINO POR AE': '',
+      'Hora de Inicio del SPAA ': '19:31',
+      'Hora de termino de Atención / Inicio de Traslado': '19:55',
+    };
+    const preview = await Cont.validarContingencias('eventos.xlsx', [row]);
+    expect(preview.issues).not.toContainEqual(expect.objectContaining({ message: expect.stringContaining('Intervalo incompleto') }));
+    await Cont.importarContingencias('eventos.xlsx', [row], 1);
+    expect(mocks.contingency).toHaveBeenCalledWith(expect.objectContaining({
+      hora_termino_ae: undefined,
+      hora_inicio_spaa: '19:31',
+      hora_termino_atencion_inicio_traslado: '19:55',
+    }), 1, expect.anything());
+  });
   it('reconoce los encabezados cortos que publica la plantilla de contingencias', async () => {
     await Cont.importarContingencias('plantilla.xlsx', [{ ...contingency,
       'Medio de comunicación': 'Radio', 'Estado del usuario': 'Consciente',

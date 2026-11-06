@@ -75,7 +75,8 @@ export function computeMapSize(
 }
 
 /** No son estaciones de la línea, aunque vivan en el mismo catálogo "Lugar de Incidente". */
-export function esTaller(nombre: string) {
+export function esTaller(nombre: string, codigo?: string | null) {
+  if (codigo === "PATIO") return true;
   const valor = nombre.trim().toLowerCase();
   return valor.startsWith("taller") || valor.startsWith("patio taller") ||
     valor.startsWith("patio de maniobras") || valor === "maniobras bayovar";
@@ -93,12 +94,12 @@ const NO_ES_ESTACION = new Set(["exteriores"]);
  * tenga que dibujar coordenadas a mano.
  */
 /** Solo los nombres (sin coordenadas) — para widgets que no dibujan el mapa, como el conteo por estación del dashboard. */
-export function stationNamesFromCatalog(catalogItems: { nombre: string }[]): string[] {
-  return catalogItems.map((i) => i.nombre.trim()).filter((n) => n && !esTaller(n) && !NO_ES_ESTACION.has(n.toLowerCase()));
+export function stationNamesFromCatalog(catalogItems: { nombre: string; codigo?: string | null }[]): string[] {
+  return catalogItems.filter((i) => !esTaller(i.nombre, i.codigo)).map((i) => i.nombre.trim()).filter((n) => n && !NO_ES_ESTACION.has(n.toLowerCase()));
 }
 
-export function resolveStationCoords(catalogItems: { nombre: string }[]): { name: string; x: number; y: number; km: number }[] {
-  const nombresCatalogo = catalogItems.map((i) => i.nombre.trim()).filter((n) => n && !esTaller(n) && !NO_ES_ESTACION.has(n.toLowerCase()));
+export function resolveStationCoords(catalogItems: { nombre: string; codigo?: string | null }[]): { name: string; x: number; y: number; km: number }[] {
+  const nombresCatalogo = catalogItems.filter((i) => !esTaller(i.nombre, i.codigo)).map((i) => i.nombre.trim()).filter((n) => n && !NO_ES_ESTACION.has(n.toLowerCase()));
 
   const conocidas = new Map(STATION_COORDS.map((s) => [s.name.toLowerCase(), s]));
   const resultado: { name: string; x: number; y: number; km: number }[] = [];
@@ -131,10 +132,10 @@ export function resolveStationCoords(catalogItems: { nombre: string }[]): { name
  * taller al costado de la vía, no una parada más.
  */
 export function resolveTalleresCoords(
-  catalogItems: { nombre: string }[],
+  catalogItems: { nombre: string; codigo?: string | null }[],
   stationCoords: { x: number; y: number; km: number }[]
 ): { name: string; x: number; y: number; km: number; tipo: string; capacidad: string }[] {
-  const nombresTalleres = catalogItems.map((i) => i.nombre.trim()).filter(esTaller);
+  const nombresTalleres = catalogItems.filter((i) => esTaller(i.nombre, i.codigo)).map((i) => i.nombre.trim());
 
   const conocidos = new Map(TALLERES.map((t) => [t.name.toLowerCase(), t]));
   const resultado: { name: string; x: number; y: number; km: number; tipo: string; capacidad: string }[] = [];

@@ -25,7 +25,7 @@ export class CatalogController {
   static async createItem(req: Request, res: Response) {
     try {
       const id_catalogo = Number(req.params.id);
-      const item = await CatalogService.createItem(id_catalogo, req.body?.nombre ?? "", req.body?.clasificacion_mr);
+      const item = await CatalogService.createItem(id_catalogo, req.body?.nombre ?? "", req.body?.clasificacion_mr, req.body?.tipo_lugar);
       return res.status(201).json(ApiResponse.success("Valor creado correctamente", item));
     } catch (error) {
       return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "Error al crear el valor")));

@@ -84,14 +84,32 @@ describe("autorización de planes por idPlan", () => {
 });
 
 describe("visibilidad de planes", () => {
-  it("filtra al Jefe por su área y deja el listado global al Admin", async () => {
+  it("incluye el área del Jefe y los planes asignados directamente de otras áreas", async () => {
     const listar = vi.spyOn(CaseRepository, "findPlansByArea").mockResolvedValue({ data: [], total: undefined });
 
     await CaseService.listPlans({}, jefe);
-    expect(listar).toHaveBeenLastCalledWith({ id_area: 100 });
+    expect(listar).toHaveBeenLastCalledWith({ id_area: 100, id_responsable: 10 });
 
     await CaseService.listPlans({}, admin);
     expect(listar).toHaveBeenLastCalledWith({});
+  });
+
+  it("permite al Jefe operar un plan de otra área si es el responsable asignado", async () => {
+    const plan = { ...planAjeno("Plan de Acción"), responsable: jefe.id_usuario };
+    vi.spyOn(CaseRepository, "findPlanContexto").mockResolvedValue(plan);
+    const aceptar = vi.spyOn(CaseRepository, "acceptPlanById").mockResolvedValue(plan as never);
+
+    await expect(CaseService.acceptPlanById("77", {}, jefe)).resolves.toBe(plan);
+    expect(aceptar).toHaveBeenCalled();
+  });
+
+  it("permite actualizar una actividad propia de un plan de otra área", async () => {
+    const plan = { ...planAjeno("Ejecución"), responsable_actividad: jefe.id_usuario };
+    vi.spyOn(CaseRepository, "findActividadContexto").mockResolvedValue(plan);
+    const actualizar = vi.spyOn(CaseRepository, "updateActivity").mockResolvedValue(plan as never);
+
+    await expect(CaseService.updateActivity("12", { estado: "En progreso" }, jefe)).resolves.toBe(plan);
+    expect(actualizar).toHaveBeenCalled();
   });
 });
 

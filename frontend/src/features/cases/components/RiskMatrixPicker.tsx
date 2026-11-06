@@ -3,6 +3,7 @@ import {
   RISK_CATEGORY_LABELS,
   RISK_CATEGORY_SHORT_LABELS,
   RISK_CATEGORY_STYLES,
+  RISK_LEVEL_STYLE_OVERRIDES,
   isRiskLevel,
   riskCategory,
   type RiskCategory,
@@ -34,7 +35,7 @@ function riskMeta(codigo: string) {
     category,
     shortLabel: RISK_CATEGORY_SHORT_LABELS[category],
     criterio: RISK_CATEGORY_LABELS[category],
-    className: RISK_CATEGORY_STYLES[category],
+    className: RISK_LEVEL_STYLE_OVERRIDES[codigo as RiskLevel]?.className ?? RISK_CATEGORY_STYLES[category],
   };
 }
 

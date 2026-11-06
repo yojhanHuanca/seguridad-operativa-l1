@@ -23,8 +23,8 @@ export function AdminEstacionesPage() {
   const isLoading = loadingGroups || loadingItems;
 
   const detalle = group?.catalogo_detalle ?? [];
-  const estaciones = detalle.filter((d) => !esTaller(d.nombre) && d.nombre.trim().toLowerCase() !== "exteriores");
-  const talleres = detalle.filter((d) => esTaller(d.nombre));
+  const estaciones = detalle.filter((d) => d.codigo !== "PATIO" && !esTaller(d.nombre) && d.nombre.trim().toLowerCase() !== "exteriores");
+  const talleres = detalle.filter((d) => d.codigo === "PATIO" || esTaller(d.nombre));
 
   return (
     <AdminShell>
@@ -43,7 +43,7 @@ export function AdminEstacionesPage() {
           isLoading={isLoading}
           creating={createItem.isPending}
           updating={renameItem.isPending}
-          onCreate={(nombre) => createItem.mutateAsync(nombre)}
+          onCreate={(nombre) => createItem.mutateAsync({ nombre })}
           onRename={(id_detalle, nombre) => renameItem.mutateAsync({ id_detalle, nombre })}
           onDeactivate={(id_detalle) => deactivateItem.mutateAsync(id_detalle)}
           onRestore={(id_detalle) => restoreItem.mutateAsync(id_detalle)}
@@ -57,9 +57,8 @@ export function AdminEstacionesPage() {
           isLoading={isLoading}
           creating={createItem.isPending}
           updating={renameItem.isPending}
-          // El nombre tiene que empezar con "Taller" para que el mapa lo reconozca como tal y no como una parada más.
-          onCreate={(nombre) => createItem.mutateAsync(nombre.trim().toLowerCase().startsWith("taller") ? nombre.trim() : `Taller ${nombre.trim()}`)}
-          onRename={(id_detalle, nombre) => renameItem.mutateAsync({ id_detalle, nombre: nombre.trim().toLowerCase().startsWith("taller") ? nombre.trim() : `Taller ${nombre.trim()}` })}
+          onCreate={(nombre) => createItem.mutateAsync({ nombre, tipo_lugar: "PATIO" })}
+          onRename={(id_detalle, nombre) => renameItem.mutateAsync({ id_detalle, nombre })}
           onDeactivate={(id_detalle) => deactivateItem.mutateAsync(id_detalle)}
           onRestore={(id_detalle) => restoreItem.mutateAsync(id_detalle)}
         />

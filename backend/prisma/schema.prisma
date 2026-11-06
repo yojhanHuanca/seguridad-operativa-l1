@@ -596,7 +596,7 @@ model contingencia_diagnosticos {
   sintomas_presentados    String?
   zona_lesion             String?              @db.VarChar(120)
   nombre_personal_salud   String?              @db.VarChar(180)
-  tipo_declaracion_jurada String?              @db.VarChar(20)
+  tipo_declaracion_jurada String?              @db.VarChar(50)
   nro_declaracion_jurada  String?              @db.VarChar(80)
   evento                  contingencia_eventos @relation(fields: [id_evento], references: [id_evento], onDelete: Cascade, onUpdate: NoAction, map: "fk_cont_diagnostico_evento")
 }
@@ -605,7 +605,7 @@ model contingencia_cierres {
   id_cierre                  Int                  @id @default(autoincrement())
   id_evento                  Int                  @unique
   breve_descripcion_hecho    String?
-  reserva_camaras            String?              @db.VarChar(120)
+  reserva_camaras            String?              @db.Text
   observacion                String?
   registro                   String?              @db.VarChar(120)
   revision                   String?              @db.VarChar(120)

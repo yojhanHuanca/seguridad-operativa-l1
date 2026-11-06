@@ -1,4 +1,5 @@
 import type { CatalogItem } from "../types";
+import { esTaller } from "@/lib/stations";
 
 const normalizar = (texto: string) =>
   texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
@@ -20,19 +21,17 @@ export function nombrePatioCanonico(nombre: string): string | null {
   return null;
 }
 
-/** Devuelve exactamente dos patios, sin duplicar filas si conviven nombres antiguos y nuevos. */
+/** Separa patios por su categoría explícita y conserva la compatibilidad con nombres históricos. */
 export function patiosDelCatalogo(lugares: CatalogItem[]): CatalogItem[] {
   const porNombre = new Map<string, CatalogItem>();
   for (const lugar of lugares) {
-    const nombre = nombrePatioCanonico(lugar.nombre);
-    if (!nombre) continue;
+    if (!esTaller(lugar.nombre, lugar.codigo)) continue;
+    const nombre = lugar.codigo === "PATIO" ? lugar.nombre : nombrePatioCanonico(lugar.nombre) ?? lugar.nombre;
     const actual = porNombre.get(nombre);
     // Si ya existe el registro con el nombre oficial, preferir su ID al alias antiguo.
     if (!actual || normalizar(lugar.nombre) === normalizar(nombre)) {
       porNombre.set(nombre, { ...lugar, nombre });
     }
   }
-  return ["Patio taller Villa El Salvador", "Patio de maniobras Bayovar"]
-    .map((nombre) => porNombre.get(nombre))
-    .filter((lugar): lugar is CatalogItem => Boolean(lugar));
+  return [...porNombre.values()];
 }

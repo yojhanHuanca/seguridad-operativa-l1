@@ -1,7 +1,8 @@
 import { useAuth } from "@/features/auth/auth";
 
 /**
- * Un Jefe de Área solo debe ver los planes de su propia área. El Admin
+ * Un Jefe de Área ve los planes de su área y los que tiene asignados
+ * directamente, incluso si corresponden a otra área. El Admin
  * (incluso "viendo como" Jefe de Área vía el switcher) ve todos, sin filtrar,
  * porque su id_area no representa una área operativa real.
  */

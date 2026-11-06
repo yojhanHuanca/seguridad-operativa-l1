@@ -251,6 +251,35 @@ export async function enviarCorreoPlanAsignado(datos: PlanAsignadoCorreo) {
   });
 }
 
+/** Aviso posterior a una reasignación confirmada; no altera el estado del plan. */
+export async function enviarCorreoPlanReasignado(datos: {
+  destino: string;
+  nombreJefe: string;
+  codigoPlan: string;
+  codigoCaso: string;
+  areaNombre: string;
+  anterior: string;
+  url: string;
+}) {
+  const systemName = await getSystemName();
+  await enviarCorreo({
+    to: datos.destino,
+    subject: `Plan de acción reasignado: ${datos.codigoPlan} — ${systemName}`,
+    html: `
+      <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#12352A;">
+        <p style="font-size:12px;font-weight:700;color:#0F7A3D;">${escapeHtml(systemName)} · Seguridad Operativa</p>
+        <h1 style="font-size:20px;">Se te reasignó un plan de acción</h1>
+        <p>Hola ${escapeHtml(datos.nombreJefe)},</p>
+        <p>Ahora eres responsable de las tareas pendientes del plan <strong>${escapeHtml(datos.codigoPlan)}</strong>,
+          del caso <strong>${escapeHtml(datos.codigoCaso)}</strong>. El área original del plan es
+          <strong>${escapeHtml(datos.areaNombre)}</strong>.</p>
+        <p>El responsable anterior fue ${escapeHtml(datos.anterior)}. Los avances, archivos y comentarios ya registrados
+          siguen disponibles en el historial del caso.</p>
+        <p style="margin:24px 0;"><a href="${escapeHtml(datos.url)}" style="background:#0F7A3D;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;">Revisar el plan</a></p>
+      </div>`,
+  });
+}
+
 export async function enviarCorreoRecordatorioPlan(datos: { destino: string; nombre: string; codigoPlan: string; codigoCaso: string; descripcion: string; fechaLimite: Date; diasRestantes: number; url: string }) {
   const systemName = await getSystemName();
   const plazo = datos.diasRestantes === 1 ? "mañana" : `en ${datos.diasRestantes} días`;

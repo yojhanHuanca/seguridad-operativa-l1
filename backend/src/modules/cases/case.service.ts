@@ -191,8 +191,9 @@ async function validarResponsablesJefeDeArea(planes: CreatePlanDto[]) {
 
 /**
  * Área por la que se filtra un listado. Para un Jefe de Área siempre manda la
- * suya, ignorando lo que venga por query: el filtro dejó de ser una comodidad
- * del cliente y pasó a ser el límite de lo que puede ver. Los demás roles
+ * suya, ignorando lo que venga por query. En la lista de planes también se
+ * incluyen las responsabilidades asignadas directamente desde otras áreas.
+ * Los demás roles
  * (SO, Admin) sí eligen libremente.
  */
 async function areaEfectiva(areaQuery: string | undefined, actor?: Actor): Promise<number | undefined> {
@@ -234,9 +235,8 @@ async function getPlanBasico(idPlan: string | number, accion?: AccionCaso, actor
 }
 
 /**
- * Un Jefe de Área solo opera los planes de su área. Antes el guard de ruta
- * solo miraba el rol, así que el jefe de cualquier área podía aceptar, ejecutar
- * o cerrar el plan de otra.
+ * Un Jefe de Área opera los planes de su área o los que tiene asignados
+ * directamente, incluso si provienen de otra área.
  *
  * Seguridad Operativa y Admin pasan sin restricción: son quienes supervisan
  * todos los planes.
@@ -286,6 +286,7 @@ export class CaseService {
     const pagination = parseOptionalPagination(query.page, query.limit);
     return CaseRepository.findPlansByArea({
       ...(area != null ? { id_area: area } : {}),
+      ...(esJefeDeArea(actor) ? { id_responsable: actor!.id_usuario } : {}),
       ...(query.codigo ? { codigo_sop: query.codigo } : {}),
       ...(query.vencidos === "1" ? { vencidos: true } : {}),
       ...(pagination ?? {}),
@@ -478,7 +479,7 @@ export class CaseService {
     // La actividad se toca desde el plan, así que hereda su dueño.
     const plan = await CaseRepository.findActividadContexto(id);
     if (!plan) throw new Error(`La actividad ${idActividad} no existe`);
-    if (actor) await assertPlanPropio(plan, actor);
+    if (actor && (!esJefeDeArea(actor) || plan.responsable_actividad !== actor.id_usuario)) await assertPlanPropio(plan, actor);
 
     return CaseRepository.updateActivity(id, dto.estado, dto.comentario ?? null, await nombreDelActor(actor));
   }

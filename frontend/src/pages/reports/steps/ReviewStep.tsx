@@ -15,7 +15,7 @@ function findLabel(catalogs: Map<string, CatalogGroup>, groupName: string, id?: 
   if (!id) return "—";
   const item = catalogs.get(groupName)?.catalogo_detalle.find((d) => d.id_detalle === id);
   if (!item) return "—";
-  return groupName === "Lugar de Incidente" ? nombrePatioCanonico(item.nombre) ?? item.nombre : item.nombre;
+  return groupName === "Lugar de Incidente" && item.codigo !== "PATIO" ? nombrePatioCanonico(item.nombre) ?? item.nombre : item.nombre;
 }
 
 function SummaryRow({ label, value }: { label: string; value: string }) {

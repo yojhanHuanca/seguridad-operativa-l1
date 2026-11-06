@@ -11,12 +11,15 @@ export class CatalogService {
     return group;
   }
 
-  static async createItem(id_catalogo: number, nombre_raw: string, clasificacion_mr?: string) {
+  static async createItem(id_catalogo: number, nombre_raw: string, clasificacion_mr?: string, tipo_lugar?: string) {
     let nombre = typeof nombre_raw === "string" ? nombre_raw.trim() : "";
     if (!nombre) throw new Error("El nombre es obligatorio");
 
     const group = await CatalogRepository.findGroup(id_catalogo);
     if (!group) throw new Error("Catálogo no encontrado");
+    if (tipo_lugar !== undefined && (group.codigo !== "LUGAR_INCIDENTE" || tipo_lugar !== "PATIO")) {
+      throw new Error("El tipo de lugar no es válido para este catálogo");
+    }
     if (group.codigo === "MODELO_MR") {
       nombre = nombre.toUpperCase();
       if (nombre.length > 30) throw new Error("El tipo o marca admite hasta 30 caracteres");
@@ -27,9 +30,12 @@ export class CatalogService {
     else if (clasificacion_mr !== undefined) throw new Error("La clasificación solo corresponde a material rodante");
     if (nombre.length > 200) throw new Error("El nombre admite hasta 200 caracteres");
 
-    const existing = await CatalogRepository.findDetalleByNombre(id_catalogo, nombre);
+    const tipoDuplicado = group.codigo === "LUGAR_INCIDENTE" ? (tipo_lugar === "PATIO" ? "PATIO" : "ESTACION") : undefined;
+    const existing = await CatalogRepository.findDetalleByNombre(id_catalogo, nombre, tipoDuplicado);
     if (existing) throw new Error("Ya existe un valor con ese nombre en este catálogo");
-    return CatalogRepository.createDetalle(id_catalogo, nombre, clasificacion_mr);
+    return tipo_lugar === "PATIO"
+      ? CatalogRepository.createDetalle(id_catalogo, nombre, clasificacion_mr, "PATIO")
+      : CatalogRepository.createDetalle(id_catalogo, nombre, clasificacion_mr);
   }
 
   static async updateItem(id_detalle: number, nombre_raw: string, clasificacion_mr?: string) {
@@ -39,12 +45,12 @@ export class CatalogService {
     const detalle = await CatalogRepository.findDetalleById(id_detalle);
     if (!detalle) throw new Error("Valor de catálogo no encontrado");
 
-    const duplicate = await CatalogRepository.findDetalleByNombre(detalle.id_catalogo, nombre);
+    const group = await CatalogRepository.findGroup(detalle.id_catalogo);
+    const tipoDuplicado = group?.codigo === "LUGAR_INCIDENTE" ? (detalle.codigo === "PATIO" || /^(taller|patio)\b|^maniobras bayovar$/i.test(detalle.nombre) ? "PATIO" : "ESTACION") : undefined;
+    const duplicate = await CatalogRepository.findDetalleByNombre(detalle.id_catalogo, nombre, tipoDuplicado);
     if (duplicate && duplicate.id_detalle !== id_detalle) {
       throw new Error("Ya existe un valor con ese nombre en este catálogo");
     }
-
-    const group = await CatalogRepository.findGroup(detalle.id_catalogo);
     if (group?.codigo === "NUMERO_MR" && detalle.clasificacion_mr && clasificacion_mr !== detalle.clasificacion_mr && await CatalogRepository.countUnitReferences(id_detalle) > 0) {
       throw new Error("Esta unidad tiene eventos registrados. No se puede cambiar su clasificación porque afectaría la coherencia del historial");
     }

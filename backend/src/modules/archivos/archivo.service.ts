@@ -53,7 +53,7 @@ export async function rutaDeArchivoPermitido(
     where: { ruta_archivo: `/uploads/${carpeta}/${archivo}` },
     select: { casos_sop: { select: {
       created_by: true, area_responsable: true,
-      planes_accion: { select: { responsable: true, id_area: true } },
+      planes_accion: { select: { responsable: true, id_area: true, actividades_plan: { select: { responsable: true } } } },
     } } },
   });
   if (!anexo) throw new ArchivoNoEncontradoError("Archivo no encontrado");

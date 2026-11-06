@@ -4,6 +4,8 @@ vi.mock("./contingencia.repository.js", () => ({ ContingenciaRepository: { findA
 vi.mock("../auditoria/auditoria.service.js", () => ({ AuditoriaService: { registrar: vi.fn() } }));
 import { ContingenciaService as service } from "./contingencia.service.js";
 import { ContingenciaRepository as repo } from "./contingencia.repository.js";
+import { createContingenciaSchema } from "./contingencia.types.js";
+import { CONTINGENCIA_CATALOGOS_INICIALES } from "./contingencia.catalogos.js";
 const now = new Date("2026-10-05T09:30:00Z");
 const row = { id_evento: 5, fecha: now, hora_reporte: now, hora_termino_ae: null, created_at: now, updated_at: now, atencion: null, traslado: null, persona: null };
 beforeEach(() => {
@@ -42,5 +44,12 @@ describe("contingencias: filtros, datos y tiempos", () => {
   it.each([{ fecha: "2026-02-30" }, { hora_reporte: "25:60" }, { edad: -1 }])("rechaza registros inválidos %j", async invalid => {
     await expect(service.create({ fecha: "2026-10-05", hora_reporte: "09:30", tipo_evento: "Evento", lugar_evento: "VES", lugar_exacto_evento: "Exteriores", quien_reporta: "PCO", ...invalid })).rejects.toThrow();
     expect(repo.create).not.toHaveBeenCalled();
+  });
+  it("acepta persona no identificada con N/N y edad sin registrar", () => {
+    const parsed = createContingenciaSchema.parse({ fecha: "2026-10-05", hora_reporte: "09:30", tipo_evento: "Evento", lugar_evento: "VES",
+      lugar_exacto_evento: "Exteriores", quien_reporta: "PCO", nombre_persona: "N/N", dni: "N/N", sexo: "N/N", tarjeta_cliente: "N/N" });
+    expect(parsed).toMatchObject({ nombre_persona: "N/N", dni: "N/N", sexo: "N/N", tarjeta_cliente: "N/N" });
+    expect(parsed.edad).toBeUndefined();
+    expect(CONTINGENCIA_CATALOGOS_INICIALES.find(catalogo => catalogo.codigo === "sexo")?.items).toContain("N/N");
   });
 });

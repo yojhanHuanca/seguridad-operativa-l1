@@ -3,6 +3,7 @@ import { api, type ApiEnvelope } from "@/lib/api";
 
 export interface CatalogDetalleAdmin {
   id_detalle: number;
+  codigo?: string | null;
   nombre: string;
   clasificacion_mr?: string | null;
   estado: boolean;
@@ -42,8 +43,8 @@ function useCatalogGroupMutation<TInput>(id_catalogo: number | undefined, fn: (i
 }
 
 export function useCreateCatalogItem(id_catalogo: number | undefined) {
-  return useCatalogGroupMutation<string>(id_catalogo, async (nombre) => {
-    const { data } = await api.post(`/catalogs/${id_catalogo}/detalle`, { nombre });
+  return useCatalogGroupMutation<{ nombre: string; tipo_lugar?: "PATIO" }>(id_catalogo, async ({ nombre, tipo_lugar }) => {
+    const { data } = await api.post(`/catalogs/${id_catalogo}/detalle`, { nombre, ...(tipo_lugar ? { tipo_lugar } : {}) });
     return data;
   });
 }

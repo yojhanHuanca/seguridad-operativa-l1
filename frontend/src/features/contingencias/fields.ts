@@ -67,7 +67,7 @@ export const CONTINGENCIA_FIELDS: ContingenciaField[] = [
   { column: "AX", name: "estacion_destino_usuario", label: "Estación de destino del usuario", step: 3, section: "Datos de la atención", catalog: "estacion_de_destino_del_usuario" },
   { column: "AY", name: "acompanante", label: "Acompañante", step: 3, section: "Datos de la atención", catalog: "acompanante" },
   { column: "AZ", name: "numero_dni_acompanante", label: "Número de DNI del acompañante", step: 3, section: "Datos de la atención", max: 20 },
-  { column: "BA", name: "reserva_camaras", label: "Reserva de cámaras", step: 5, section: "Datos de la atención", max: 120 },
+  { column: "BA", name: "reserva_camaras", label: "Reserva de cámaras", step: 5, section: "Datos de la atención", type: "textarea" },
   { column: "BB", name: "observacion", label: "Observación", step: 5, section: "Datos de la atención", type: "textarea", max: 5000 },
   { column: "BC", name: "registro", label: "Registro", step: 5, section: "Gestor de atención", max: 120 },
   { column: "BD", name: "revision", label: "Revisión", step: 5, section: "Gestor de atención", max: 120 },

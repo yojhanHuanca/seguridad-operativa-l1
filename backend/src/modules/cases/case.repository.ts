@@ -436,9 +436,11 @@ export class CaseRepository {
    * `planDeadline`/`planVencido` del frontend— así que se resuelve en dos
    * pasos en vez de un solo `where`.
    */
-  private static async vencidoPlanIds(area?: number): Promise<number[]> {
+  private static async vencidoPlanIds(area?: number, responsable?: number): Promise<number[]> {
     const where: Record<string, unknown> = {};
-    if (area) where.id_area = area;
+    if (area && responsable) where.OR = [{ id_area: area }, { responsable }, { actividades_plan: { some: { responsable } } }];
+    else if (area) where.id_area = area;
+    else if (responsable) where.OR = [{ responsable }, { actividades_plan: { some: { responsable } } }];
 
     const planes = await prisma.planes_accion.findMany({
       where,
@@ -457,15 +459,18 @@ export class CaseRepository {
 
   static async findPlansByArea(opts?: {
     id_area?: number;
+    id_responsable?: number;
     codigo_sop?: string;
     vencidos?: boolean;
     page?: number;
     limit?: number;
   }) {
     const where: Record<string, unknown> = {};
-    if (opts?.id_area) where.id_area = opts.id_area;
+    if (opts?.id_area && opts.id_responsable) where.OR = [{ id_area: opts.id_area }, { responsable: opts.id_responsable }, { actividades_plan: { some: { responsable: opts.id_responsable } } }];
+    else if (opts?.id_area) where.id_area = opts.id_area;
+    else if (opts?.id_responsable) where.OR = [{ responsable: opts.id_responsable }, { actividades_plan: { some: { responsable: opts.id_responsable } } }];
     if (opts?.codigo_sop) where.casos_sop = { codigo_sop: opts.codigo_sop };
-    if (opts?.vencidos) where.id_plan = { in: await CaseRepository.vencidoPlanIds(opts.id_area) };
+    if (opts?.vencidos) where.id_plan = { in: await CaseRepository.vencidoPlanIds(opts.id_area, opts.id_responsable) };
     const orderBy = { created_at: "desc" as const };
     const include = {
       areas: { select: { id_area: true, nombre_area: true } },
@@ -586,10 +591,11 @@ export class CaseRepository {
   static async findActividadContexto(id_actividad: number) {
     const actividad = await prisma.actividades_plan.findUnique({
       where: { id_actividad },
-      select: { id_plan: true },
+      select: { id_plan: true, responsable: true },
     });
     if (!actividad?.id_plan) return null;
-    return CaseRepository.findPlanContexto(actividad.id_plan);
+    const plan = await CaseRepository.findPlanContexto(actividad.id_plan);
+    return plan ? { ...plan, responsable_actividad: actividad.responsable } : null;
   }
 
   static async findEstado(nombre: string) {

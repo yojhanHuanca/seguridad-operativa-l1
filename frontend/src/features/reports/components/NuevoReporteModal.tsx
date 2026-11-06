@@ -25,6 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Field } from "@/features/reports/components/Field";
 import { CatalogSelect } from "@/features/reports/components/CatalogSelect";
 import { nombrePatioCanonico, patiosDelCatalogo } from "@/features/reports/lib/patios";
+import { esTaller } from "@/lib/stations";
 import { SelectedCheck } from "@/features/reports/components/SelectedCheck";
 import { EvidencePicker } from "@/features/reports/components/EvidencePicker";
 import { iconoTipoReporte } from "@/features/reports/lib/tipoIcons";
@@ -95,9 +96,9 @@ export function NuevoReporteModal({
   useDraftForm(draftScope + "values", form);
   const valores = useWatch({ control: form.control }) as Partial<SoReportFormValues>;
   const tipos = catalogs.byName.get("Tipo de Reporte")?.catalogo_detalle ?? [];
-  // Las estaciones llevan código; las dos ubicaciones de patio se eligen por nombre.
+  // La categoría de patio se guarda por separado; los nombres históricos siguen siendo compatibles.
   const lugares = catalogs.byName.get("Lugar de Incidente")?.catalogo_detalle ?? [];
-  const estaciones = lugares.filter((l) => !!l.codigo);
+  const estaciones = lugares.filter((l) => !esTaller(l.nombre, l.codigo) && l.nombre.trim().toLowerCase() !== "exteriores");
   const patios = patiosDelCatalogo(lugares);
   const lugaresEspecificos = catalogs.byName.get("Lugar Específico")?.catalogo_detalle ?? [];
   const descripcion = valores.descripcion ?? "";
@@ -446,9 +447,9 @@ export function NuevoReporteModal({
 
 function nombreCatalogo(catalogs: Map<string, CatalogGroup>, grupo: string, id?: number): string {
   if (!id) return "—";
-  const nombre = catalogs.get(grupo)?.catalogo_detalle.find((d) => d.id_detalle === id)?.nombre;
-  if (!nombre) return "—";
-  return grupo === "Lugar de Incidente" ? nombrePatioCanonico(nombre) ?? nombre : nombre;
+  const item = catalogs.get(grupo)?.catalogo_detalle.find((d) => d.id_detalle === id);
+  if (!item) return "—";
+  return grupo === "Lugar de Incidente" && item.codigo !== "PATIO" ? nombrePatioCanonico(item.nombre) ?? item.nombre : item.nombre;
 }
 
 /**
@@ -501,7 +502,7 @@ function ReporteCreado({ codigo }: { codigo: string }) {
         />
         <CampoCreado
           label="Estación / Patio"
-          value={nombreLugar ? nombrePatioCanonico(nombreLugar) ?? nombreLugar : "—"}
+          value={nombreLugar || "—"}
         />
         {/* Un reporte de patio taller no lleva lugar específico: no se muestra
             la fila vacía. */}
