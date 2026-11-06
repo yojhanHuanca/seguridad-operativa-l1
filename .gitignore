@@ -37,7 +37,7 @@ outputs/
 tmp/
 docs/
 tmp_manual_render*/
-artifacts/*.inspect.ndjson
+artifacts/
 
 # Resultados y cachés regenerables de pruebas.
 coverage/
