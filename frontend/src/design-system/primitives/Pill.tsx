@@ -7,6 +7,7 @@ import {
   RISK_CATEGORY_LABELS,
   RISK_CATEGORY_DOT_STYLES,
   RISK_CATEGORY_STYLES,
+  RISK_LEVEL_STYLE_OVERRIDES,
   riskCategory,
   type Stage,
   type RiskLevel,
@@ -60,9 +61,9 @@ export function RiskPill({ risk, showCategory = false, className }: { risk: Risk
   return (
     <Pill
       tone={tone}
-      className={cn(RISK_CATEGORY_STYLES[cat], className)}
+      className={cn(RISK_CATEGORY_STYLES[cat], RISK_LEVEL_STYLE_OVERRIDES[risk]?.className, className)}
     >
-      <span className={cn("-ml-0.5 h-1.5 w-1.5 rounded-full", RISK_CATEGORY_DOT_STYLES[cat])} />
+      <span className={cn("-ml-0.5 h-1.5 w-1.5 rounded-full", RISK_LEVEL_STYLE_OVERRIDES[risk]?.dotClassName ?? RISK_CATEGORY_DOT_STYLES[cat])} />
       {label}
     </Pill>
   );
