@@ -232,7 +232,7 @@ export function DatosOperativos() {
         <Card>
           <CardHeader
             title={editando ? "Editar dato operativo" : "Registrar dato operativo"}
-            subtitle="Un registro diario por fecha. La afluencia capturada aquí alimenta el indicador de contingencias."
+            subtitle="Puedes registrar varios datos para una misma fecha. Los valores se acumulan en los indicadores operativos y de contingencias."
             icon={<Database className="h-4 w-4" />}
             action={
               <div className="flex items-center gap-2">
@@ -320,7 +320,7 @@ export function DatosOperativos() {
                 required
               />
             </Field>
-            <Field label="Afluencia diaria" hint="Afluencia del día seleccionado. Alimenta el indicador de contingencias." required>
+            <Field label="Afluencia diaria" hint="Afluencia correspondiente a este registro; se suma con los demás registros del día." required>
               <Input type="text" inputMode="numeric" placeholder="Ej. 534200" value={formulario.afluencia} onChange={(event) => actualizarNumero("afluencia", event.target.value)} required />
             </Field>
             </div>
@@ -402,7 +402,7 @@ export function DatosOperativos() {
         {eliminando && (
           <Card className="border-critical/30 bg-critical-soft">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-[13px] text-critical-ink">¿Eliminar el registro del {formatDate(eliminando.fecha)}?</p>
+              <p className="text-[13px] text-critical-ink">¿Eliminar el registro N.º {eliminando.id_dato_operativo} del {formatDate(eliminando.fecha)}?</p>
               <div className="flex gap-2">
                 <Button variant="ghost" size="sm" onClick={() => setEliminando(null)}>Cancelar</Button>
                 <Button variant="danger" size="sm" onClick={confirmarEliminacion} disabled={eliminar.isPending}><Trash2 className="h-4 w-4" /> Eliminar</Button>

@@ -311,12 +311,18 @@ export class ContingenciaService {
       const diasEsperados = fin < `${mes}-01` ? 0 : Math.round((Date.parse(fin) - date.getTime()) / 86_400_000) + 1;
       const rows = inputs.eventos.filter(row => dateToIso(row.fecha).startsWith(mes));
       const operations = inputs.operacion.filter(row => row.afluencia != null && dateToIso(row.fecha).startsWith(mes));
+      const afluenciaPorDia = new Map<string, number>();
+      for (const row of operations) {
+        const dia = dateToIso(row.fecha);
+        afluenciaPorDia.set(dia, (afluenciaPorDia.get(dia) ?? 0) + Number(row.afluencia));
+      }
       const accidentes = rows.filter(row => normalizarTexto(row.tipo_evento) === "accidente").reduce((n, row) => n + row._count._all, 0);
       const noAccidentes = rows.filter(row => normalizarTexto(row.tipo_evento) === "problemas de salud").reduce((n, row) => n + row._count._all, 0);
       const sinClasificar = rows.reduce((n, row) => n + row._count._all, 0) - accidentes - noAccidentes;
-      const afluencia = operations.reduce((n, row) => n + Number(row.afluencia), 0);
-      const completo = diasEsperados > 0 && operations.length === diasEsperados;
-      return { mes, accidentes, noAccidentes, sinClasificar, total: accidentes + noAccidentes, afluencia, diasRegistrados: operations.length, diasEsperados,
+      const afluencia = Array.from(afluenciaPorDia.values()).reduce((n, valor) => n + valor, 0);
+      const diasRegistrados = afluenciaPorDia.size;
+      const completo = diasEsperados > 0 && diasRegistrados === diasEsperados;
+      return { mes, accidentes, noAccidentes, sinClasificar, total: accidentes + noAccidentes, afluencia, diasRegistrados, diasEsperados,
         tasa: completo && afluencia > 0 && sinClasificar === 0 ? (accidentes + noAccidentes) / afluencia * 1_000_000 : null };
     });
     return { desde: dateToIso(start), hasta, items };
@@ -332,7 +338,7 @@ export class ContingenciaService {
     const registros = operacion.filter(row => row.afluencia != null);
     const afluencia = registros.reduce((total, row) => total + Number(row.afluencia), 0);
     const diasEsperados = Math.floor((Date.parse(`${hasta}T00:00:00.000Z`) - Date.parse(`${desde}T00:00:00.000Z`)) / 86_400_000) + 1;
-    const diasRegistrados = registros.length;
+    const diasRegistrados = new Set(registros.map(row => dateToIso(row.fecha))).size;
     return {
       desde,
       hasta,

@@ -13,5 +13,4 @@ CREATE TABLE IF NOT EXISTS "datos_operativos" (
   "updated_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS "datos_operativos_fecha_key"
-  ON "datos_operativos" ("fecha");
+DROP INDEX IF EXISTS "datos_operativos_fecha_key";

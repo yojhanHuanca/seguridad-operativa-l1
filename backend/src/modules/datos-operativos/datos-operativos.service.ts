@@ -94,8 +94,6 @@ export class DatosOperativosService {
     const parsed = datosSchema.parse(input);
     const fecha = fechaUtc(parsed.fecha);
     validarFechaNoFutura(fecha);
-    const existente = await DatosOperativosRepository.findByFecha(fecha);
-    if (existente) throw new Error("Ya existe un registro para esa fecha");
     return serializar(await DatosOperativosRepository.create({ ...parsed, fecha }));
   }
 
@@ -104,8 +102,6 @@ export class DatosOperativosService {
     const idDato = parseId(id);
     const fecha = fechaUtc(parsed.fecha);
     validarFechaNoFutura(fecha);
-    const existente = await DatosOperativosRepository.findByFecha(fecha);
-    if (existente && existente.id_dato_operativo !== idDato) throw new Error("Ya existe otro registro para esa fecha");
     return serializar(await DatosOperativosRepository.update(idDato, { ...parsed, fecha }));
   }
 

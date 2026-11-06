@@ -23,17 +23,13 @@ export class DatosOperativosRepository {
     const [items, total] = await prisma.$transaction([
       prisma.datos_operativos.findMany({
         where,
-        orderBy: { fecha: "desc" },
+        orderBy: [{ fecha: "desc" }, { id_dato_operativo: "desc" }],
         skip: (filtros.page - 1) * filtros.limit,
         take: filtros.limit,
       }),
       prisma.datos_operativos.count({ where }),
     ]);
     return { items, total };
-  }
-
-  static findByFecha(fecha: Date) {
-    return prisma.datos_operativos.findUnique({ where: { fecha } });
   }
 
   static create(data: {

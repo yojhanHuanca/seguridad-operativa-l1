@@ -48,7 +48,7 @@ COPY --from=deps-prod /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
 COPY package.json ./
-COPY scripts/seed-contingencias.mjs scripts/setup-catalogs.mjs scripts/setup-admin.mjs ./scripts/
+COPY scripts/seed-contingencias.mjs scripts/setup-catalogs.mjs scripts/setup-admin.mjs scripts/migrate-operational-multiple-dates.mjs ./scripts/
 
 # Evidencias de casos y avatares: el código los escribe acá si no existe.
 # Se monta como volumen en docker-compose para que sobrevivan a un rebuild.
@@ -61,4 +61,4 @@ USER node
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:3000/api/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
-CMD ["node", "dist/server.js"]
+CMD ["sh", "-c", "node scripts/migrate-operational-multiple-dates.mjs && node dist/server.js"]

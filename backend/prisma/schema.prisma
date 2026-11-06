@@ -417,13 +417,13 @@ model historial_indicadores {
   indicadores  indicadores? @relation(fields: [id_indicador], references: [id_indicador], onDelete: NoAction, onUpdate: NoAction, map: "fk_historial_indicador")
 }
 
-/// Valores diarios de operación que alimentan los indicadores y conservan el
-/// mismo nivel de detalle de la base histórica del cliente.
+/// Registros de operación por fecha. Puede haber varias filas en un día; sus
+/// valores se acumulan para calcular los indicadores diarios y mensuales.
 model datos_operativos {
   id_dato_operativo Int      @id @default(autoincrement())
   id_importacion    Int?
   importacion       importaciones? @relation(fields: [id_importacion], references: [id_importacion], onUpdate: NoAction)
-  fecha             DateTime @unique @db.Date
+  fecha             DateTime @db.Date
   qty_carreras      Decimal  @db.Decimal(15, 2)
   qty_pasajeros     Decimal  @db.Decimal(15, 2)
   afluencia         Decimal? @db.Decimal(15, 0)
