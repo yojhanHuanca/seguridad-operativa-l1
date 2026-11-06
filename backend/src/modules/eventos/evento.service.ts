@@ -40,6 +40,8 @@ export class EventoService {
     search?: string;
     desde?: string;
     hasta?: string;
+    sortBy?: string;
+    sortDir?: string;
     page?: string;
     limit?: string;
   }) {
@@ -53,6 +55,8 @@ export class EventoService {
       ...(query?.search ? { search: query.search } : {}),
       ...(query?.desde ? { desde: query.desde } : {}),
       ...(query?.hasta ? { hasta: query.hasta } : {}),
+      ...(query?.sortBy === "id_evento" ? { sortBy: "id_evento" as const } : { sortBy: "fecha" as const }),
+      ...(query?.sortDir === "asc" ? { sortDir: "asc" as const } : { sortDir: "desc" as const }),
       ...(pagination ?? {}),
     });
   }

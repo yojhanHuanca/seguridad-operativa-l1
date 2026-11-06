@@ -3,6 +3,11 @@ import { api, type ApiEnvelope } from "@/lib/api";
 import type { ImportacionHistorialItem, ImportacionPayload, ImportacionPreview, ImportacionResult, ImportacionTipo } from "../types";
 
 const ENDPOINTS: Record<ImportacionTipo, { validar: string; importar: string; queryKeys: string[] }> = {
+  datos_operativos: {
+    validar: "/importacion/datos-operativos/validar",
+    importar: "/importacion/datos-operativos/importar",
+    queryKeys: ["datos-operativos", "contingencias", "dashboard", "importaciones-historial", "auditoria"],
+  },
   casos: {
     validar: "/importacion/casos/validar",
     importar: "/importacion/casos/importar",
@@ -76,7 +81,7 @@ export function useRevertirImportacion() {
       return data.data;
     },
     onSuccess: async () => {
-      await Promise.all(["planes", "planes-caso", "planes-paginado", "dashboard", "reports", "eventos-paginado", "evento-counts", "importaciones-historial", "cases", "eventos", "contingencias", "auditoria"].map(key => client.invalidateQueries({ queryKey: [key] })));
+      await Promise.all(["planes", "planes-caso", "planes-paginado", "dashboard", "reports", "eventos-paginado", "evento-counts", "importaciones-historial", "cases", "eventos", "datos-operativos", "contingencias", "auditoria"].map(key => client.invalidateQueries({ queryKey: [key] })));
     },
   });
 }

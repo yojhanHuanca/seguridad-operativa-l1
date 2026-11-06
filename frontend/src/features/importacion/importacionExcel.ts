@@ -13,7 +13,7 @@ export interface ParsedImportFile {
   sheets: ImportSheet[];
 }
 
-const EXAMPLES: Record<Exclude<ImportacionTipo, "casos">, Record<string, string | number | Date>> = {
+const EXAMPLES: Record<Exclude<ImportacionTipo, "casos" | "datos_operativos">, Record<string, string | number | Date>> = {
   monitoreo: {
     Fecha: new Date("2026-09-01T00:00:00Z"),
     "Hora de evento": "08:30",
@@ -68,7 +68,14 @@ function styleDataSheet(sheet: Worksheet, requiredCount: number) {
   sheet.getColumn(1).width = 15;
 }
 
-export async function downloadOfficialTemplate(tipo: "monitoreo" | "contingencias") {
+export async function downloadOfficialTemplate(tipo: Exclude<ImportacionTipo, "casos">) {
+  if (tipo === "datos_operativos") {
+    const anchor = document.createElement("a");
+    anchor.href = "/plantilla-datos-operativos.xlsx";
+    anchor.download = "Plantilla_Datos_Operativos_Mensuales.xlsx";
+    anchor.click();
+    return;
+  }
   const ExcelJS = await import("exceljs");
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "SIGMA L1";
@@ -97,9 +104,9 @@ export async function downloadOfficialTemplate(tipo: "monitoreo" | "contingencia
   data.addRow([...required, ...optional]);
   const example = EXAMPLES[tipo];
   data.addRow([...required, ...optional].map(header => example[header] ?? ""));
+  data.getRow(2).font = { italic: true, color: { argb: "FF64748B" } };
   styleDataSheet(data, required.length);
   data.getColumn(required.findIndex(header => normalizeImportHeader(header) === "fecha") + 1).numFmt = "yyyy-mm-dd";
-  data.getRow(2).font = { italic: true, color: { argb: "FF64748B" } };
   save(await workbook.xlsx.writeBuffer() as ArrayBuffer, `plantilla-${tipo}.xlsx`);
 }
 

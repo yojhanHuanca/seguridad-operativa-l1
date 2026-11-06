@@ -35,10 +35,12 @@ import {
 import { apiErrorMessage } from "@/lib/api";
 import { formatDateTime, relativeTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/features/auth/auth";
 
 const ESTILO_POR_TIPO: Record<string, { icono: typeof Bell; tone: "brand" | "warning" | "critical" | "info" | "neutral" }> = {
   reporte_nuevo: { icono: Inbox, tone: "info" },
   plan_asignado: { icono: ClipboardList, tone: "brand" },
+  plan_por_vencer: { icono: Timer, tone: "warning" },
   plan_aceptado: { icono: CheckCircle2, tone: "brand" },
   prorroga_solicitada: { icono: Timer, tone: "warning" },
   prorroga_resuelta: { icono: Timer, tone: "brand" },
@@ -52,6 +54,7 @@ const ESTILO_POR_TIPO: Record<string, { icono: typeof Bell; tone: "brand" | "war
 const ETIQUETA_POR_TIPO: Record<string, string> = {
   reporte_nuevo: "reportes nuevos",
   plan_asignado: "planes asignados",
+  plan_por_vencer: "planes próximos a vencer",
   plan_aceptado: "planes aceptados",
   prorroga_solicitada: "solicitudes de prórroga",
   prorroga_resuelta: "prórrogas resueltas",
@@ -87,6 +90,7 @@ function agruparConsecutivas(items: Notificacion[]): (Notificacion | Grupo)[] {
 }
 
 export function NotificationsInbox({ description }: { description: string }) {
+  const { user } = useAuth();
   const { data, isLoading, isError, refetch, cargarMas, puedeCargarMas, isFetching } = useNotifications();
   const marcarLeida = useMarkNotificationRead();
   const marcarTodas = useMarkAllNotificationsRead();
@@ -144,7 +148,9 @@ export function NotificationsInbox({ description }: { description: string }) {
           <EmptyState
             icon={<Bell className="h-6 w-6" />}
             title="Sin notificaciones"
-            description="Aquí aparecerán los avisos cuando haya novedades en tus casos o planes de acción."
+            description={user?.rol === "Admin"
+              ? "Esta es la bandeja de tu cuenta administradora. Los avisos de Seguridad Operativa y de los jefes de área se muestran al iniciar sesión con la cuenta destinataria."
+              : "Aquí aparecerán los avisos cuando haya novedades en tus casos o planes de acción."}
           />
         ) : (
           <>

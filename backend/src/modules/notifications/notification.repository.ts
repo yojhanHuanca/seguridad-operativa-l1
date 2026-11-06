@@ -10,6 +10,7 @@ import { PushService } from "./push.service.js";
 export type TipoNotificacion =
   | "reporte_nuevo"
   | "plan_asignado"
+  | "plan_por_vencer"
   | "plan_aceptado"
   | "prorroga_solicitada"
   | "prorroga_resuelta"

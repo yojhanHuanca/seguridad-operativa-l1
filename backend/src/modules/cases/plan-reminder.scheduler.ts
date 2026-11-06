@@ -3,6 +3,7 @@ import prisma from "../../lib/prisma.js";
 import { enviarCorreoRecordatorioPlan } from "../../utils/mailer.js";
 import logger from "../../utils/logger.js";
 import { env } from "../../config/env.js";
+import { PushService } from "../notifications/push.service.js";
 
 const HITO_DIAS = [5, 3, 1] as const;
 const INTERVALO_MS = 6 * 60 * 60 * 1000;
@@ -61,7 +62,7 @@ export async function procesarRecordatoriosPlanes() {
       where: { OR: [{ estado: "pendiente" }, { estado: "enviando", claimed_at: { lte: staleBefore() } }] },
       take: 200,
       orderBy: { created_at: "asc" },
-      include: { plan: { select: { id_plan: true, codigo_plan: true, descripcion: true, fecha_plan: true, fecha_reprogramada: true, actividades_plan: { select: { fecha_fin: true } }, catalogo_detalle: { select: { nombre: true } }, usuarios: { select: { correo: true, nombre: true } }, casos_sop: { select: { codigo_sop: true } } } } },
+      include: { plan: { select: { id_plan: true, codigo_plan: true, descripcion: true, fecha_plan: true, fecha_reprogramada: true, actividades_plan: { select: { fecha_fin: true } }, catalogo_detalle: { select: { nombre: true } }, usuarios: { select: { id_usuario: true, correo: true, nombre: true } }, casos_sop: { select: { codigo_sop: true } } } } },
     });
 
     for (const recordatorio of pendientes) {
@@ -76,6 +77,21 @@ export async function procesarRecordatoriosPlanes() {
         continue;
       }
       try {
+        const titulo = `Tu plan ${plan.codigo_plan} vence en ${recordatorio.dias_antes} ${recordatorio.dias_antes === 1 ? "día" : "días"}`;
+        const mensaje = `El plazo del plan ${plan.codigo_plan} vence el ${fechaISO(recordatorio.fecha_limite)}. Revisa y registra el avance pendiente.`;
+        // El aviso en la plataforma no depende del proveedor de correo. El
+        // marcador evita duplicados si el correo falla y el hito se reintenta.
+        let avisarDispositivo = false;
+        await prisma.$transaction(async tx => {
+          const result = await tx.plan_recordatorios.updateMany({
+            where: { id_recordatorio: recordatorio.id_recordatorio, notificado_at: null },
+            data: { notificado_at: new Date() },
+          });
+          if (!result.count) return;
+          await tx.notificaciones.create({ data: { usuario: plan.usuarios.id_usuario, tipo: "plan_por_vencer", titulo, mensaje } });
+          avisarDispositivo = true;
+        });
+        if (avisarDispositivo) void PushService.enviarAUsuarios([plan.usuarios.id_usuario], { title: titulo, body: mensaje });
         await enviarCorreoRecordatorioPlan({
           destino: plan.usuarios.correo,
           nombre: plan.usuarios.nombre,

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { ContingenciaShell } from "@/components/layout/ContingenciaShell";
 import { Button } from "@/design-system/primitives/Button";
 import { Card } from "@/design-system/primitives/Card";
-import { Field, Input, Select } from "@/design-system/primitives/Input";
+import { Field, Input } from "@/design-system/primitives/Input";
 import { contingenciasApi } from "@/features/contingencias/api";
 import { ContingenciasTable } from "@/features/contingencias/components/ContingenciasTable";
 import { exportarContingenciasExcel } from "@/features/contingencias/lib/exportExcel";
@@ -22,7 +22,7 @@ export function Historial() {
   const [search, setSearch] = useDraftState("pages/contingencias/Historial:search", "");
   const [desde, setDesde] = useDraftState("pages/contingencias/Historial:desde", "");
   const [hasta, setHasta] = useDraftState("pages/contingencias/Historial:hasta", "");
-  const [sortBy, setSortBy] = useDraftState<ContingenciaFiltros["sortBy"]>("pages/contingencias/Historial:sortBy", "fecha");
+  const [sortBy, setSortBy] = useDraftState<ContingenciaFiltros["sortBy"]>("pages/contingencias/Historial:sortBy:v3", "fecha");
   const [sortDir, setSortDir] = useDraftState<"asc" | "desc">("pages/contingencias/Historial:sortDir", "desc");
   const [page, setPage] = useDraftState("pages/contingencias/Historial:page", 1);
   const [isExporting, setIsExporting] = useState(false);
@@ -48,7 +48,7 @@ export function Historial() {
   };
 
   const exportExcel = async () => {
-    if (isExporting) return;
+    if (isExporting || query !== search) return;
     setIsExporting(true);
     try {
       const firstPage = await contingenciasApi.list({ search, desde, hasta, page: 1, limit: 100, sortBy, sortDir });
@@ -73,14 +73,14 @@ export function Historial() {
         <p className="text-[13px] text-ink-quiet">{total} registros{hasFilters ? " con estos filtros" : ""}</p>
         <div className="flex flex-wrap items-center gap-2">
           {hasFilters && <Button variant="ghost" size="sm" onClick={reset}><RotateCcw className="h-4 w-4" /> Limpiar</Button>}
-          <Button type="button" size="sm" onClick={exportExcel} disabled={isExporting || isPending || Boolean(error) || total === 0} title="Descargar en Excel los registros con los filtros actuales">
+          <Button type="button" size="sm" onClick={exportExcel} disabled={isExporting || isPending || Boolean(error) || total === 0 || query !== search} title="Descargar en Excel los registros con los filtros actuales">
             <Download className="h-4 w-4" />{isExporting ? "Generando..." : "Descargar Excel"}
           </Button>
         </div>
       </div>
 
       <Card className="p-3">
-        <div className="grid gap-3 lg:grid-cols-[1.4fr_0.7fr_0.7fr_0.8fr]">
+        <div className="grid gap-3 lg:grid-cols-[1.4fr_0.7fr_0.7fr]">
           <Field label="Buscar evento">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
@@ -89,9 +89,14 @@ export function Historial() {
           </Field>
           <Field label="Desde"><Input type="date" value={desde} max={hasta || undefined} onChange={(e) => { setDesde(e.target.value); setPage(1); }} /></Field>
           <Field label="Hasta"><Input type="date" value={hasta} min={desde || undefined} onChange={(e) => { setHasta(e.target.value); setPage(1); }} /></Field>
-          <Field label="Ordenar por"><Select value={sortBy} onChange={(e) => { setSortBy(e.target.value as ContingenciaFiltros["sortBy"]); setPage(1); }}><option value="fecha">Fecha</option><option value="tipo_evento">Tipo de evento</option></Select></Field>
         </div>
-        <div className="mt-3 flex justify-end">
+        <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
+          <Field label="Ordenar por">
+            <div role="group" aria-label="Criterio de orden" className="flex flex-wrap gap-2">
+              <Button type="button" size="sm" variant={sortBy === "fecha" ? "secondary" : "outline"} aria-pressed={sortBy === "fecha"} onClick={() => { setSortBy("fecha"); setPage(1); }}>Fecha</Button>
+              <Button type="button" size="sm" variant={sortBy === "id_evento" ? "secondary" : "outline"} aria-pressed={sortBy === "id_evento"} onClick={() => { setSortBy("id_evento"); setPage(1); }}>N° de registro</Button>
+            </div>
+          </Field>
           <Button variant="outline" size="sm" onClick={() => { setSortDir(sortDir === "asc" ? "desc" : "asc"); setPage(1); }}><ArrowDownWideNarrow className="h-4 w-4" />{sortDir === "asc" ? "Ascendente" : "Descendente"}</Button>
         </div>
       </Card>

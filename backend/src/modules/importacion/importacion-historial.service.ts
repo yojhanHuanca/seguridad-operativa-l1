@@ -3,7 +3,7 @@ import prisma from "../../lib/prisma.js";
 import { AuditoriaRepository } from "../auditoria/auditoria.repository.js";
 import { parseOptionalPagination } from "../../utils/pagination.js";
 
-export type ModuloImportacion = "casos" | "monitoreo" | "contingencias";
+export type ModuloImportacion = "casos" | "monitoreo" | "contingencias" | "datos_operativos";
 
 export class ImportacionHistorialService {
   static iniciar(modulo: ModuloImportacion, archivo: string, usuario: number, filas: number, hoja?: string | null) {
@@ -47,7 +47,7 @@ export class ImportacionHistorialService {
 
       if (!carga.completed_at) throw new Error("La carga aún no finaliza.");
       const changed = { id_importacion: id, updated_at: { gt: carga.completed_at } };
-      const editados = carga.modulo === "casos"
+      const editados = carga.modulo === "datos_operativos" ? await tx.datos_operativos.count({ where: changed }) : carga.modulo === "casos"
         ? await tx.casos_sop.count({ where: { id_importacion: id, OR: [
           { updated_at: { gt: carga.completed_at } },
           { anexos_caso: { some: {} } },
@@ -56,7 +56,7 @@ export class ImportacionHistorialService {
         ] } })
         : carga.modulo === "monitoreo" ? await tx.eventos_monitoreo.count({ where: changed }) : await tx.contingencia_eventos.count({ where: changed });
       if (editados) throw new Error("No se puede revertir: hay registros modificados, planes habilitados para gestión o actividad vinculada.");
-      const eliminados = carga.modulo === "casos"
+      const eliminados = carga.modulo === "datos_operativos" ? (await tx.datos_operativos.deleteMany({ where: { id_importacion: id } })).count : carga.modulo === "casos"
         ? (await tx.casos_sop.deleteMany({ where: { id_importacion: id } })).count
         : carga.modulo === "monitoreo"
           ? (await tx.eventos_monitoreo.deleteMany({ where: { id_importacion: id } })).count

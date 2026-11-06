@@ -30,7 +30,6 @@ import type { DecisionSop, ImportacionPayload, ImportacionPreview, ImportacionRe
 import {
   cellToImportText,
   downloadErrorWorkbook,
-  downloadOfficialTemplate,
   normalizeImportHeader,
   type ImportSheet,
   type ParsedImportFile,
@@ -161,6 +160,7 @@ function payloadFromParsed(parsed: ParsedImportFile | null, sheetIndex: number):
 
 function detectImportType(rows: ImportacionRow[]): ImportacionTipo | null {
   const headers = new Set(Object.keys(rows[0] ?? {}).map(normalizeImportHeader));
+  if (headers.has("fecha") && headers.has("qtycarreras") && headers.has("qtypasajeros")) return "datos_operativos";
   if (headers.has("tipodeincidenteoperativo") && headers.has("horadeevento")) return "monitoreo";
   if (headers.has("tipodeevento") && headers.has("horadereporte") && headers.has("lugardelevento")) return "contingencias";
   if ((headers.has("codigo") || headers.has("nuevocodigo")) && headers.has("tipo") && (headers.has("estado") || headers.has("estadohallazgo")) && (headers.has("fecha") || headers.has("fechadelhallazgo"))) return "casos";
@@ -312,7 +312,7 @@ export function AdminImportacionPage() {
   const revertir = useRevertirImportacion();
 
   const selectedSheet = parsed?.sheets[sheetIndex] ?? null;
-  const payload = useMemo(() => { const source = payloadFromParsed(parsed, sheetIndex); return source ? { ...source, decisionesSop: tipoImportacion === "casos" ? decisions : undefined } : null; }, [parsed, sheetIndex, decisions, tipoImportacion]);
+  const payload = useMemo(() => { const source = payloadFromParsed(parsed, sheetIndex); return source ? { ...source, decisionesSop: tipoImportacion === "casos" ? decisions : undefined, kmPorCarreraValidado: tipoImportacion === "datos_operativos" && validatedHere ? savedPreview?.kmPorCarrera : undefined, estacionesValidadas: tipoImportacion === "datos_operativos" && validatedHere ? savedPreview?.estaciones : undefined } : null; }, [parsed, sheetIndex, decisions, tipoImportacion, validatedHere, savedPreview?.kmPorCarrera, savedPreview?.estaciones]);
   const pending = parsing || validar.isPending || importar.isPending;
   const serverError = validar.error
     ? apiErrorMessage(validar.error, "No se pudo validar el archivo")
@@ -375,7 +375,7 @@ export function AdminImportacionPage() {
     validar.reset();
     importar.reset();
     setValidatedHere(false);
-    try { const validation = await validar.mutateAsync(payload); setPreview(validation); setDirty(false); setValidatedHere(true); } catch { /* Mutation error is rendered above. */ }
+    try { const validation = await validar.mutateAsync({ ...payload, kmPorCarreraValidado: undefined }); setPreview(validation); setDirty(false); setValidatedHere(true); } catch { /* Mutation error is rendered above. */ }
   }
 
   function handleSheetChange(index: number) {
@@ -414,9 +414,9 @@ export function AdminImportacionPage() {
     } catch { setConfirming(false); setValidatedHere(false); }
   }
 
-  const importBlockedReason = dirty || (savedPreview && !validatedHere) ? "Hay decisiones pendientes: pulsa Validar antes de importar." : !preview
+  const importBlockedReason = dirty || (savedPreview && !validatedHere) ? "Valida la hoja antes de importar." : !preview
     ? "Primero valida la hoja seleccionada."
-    : preview.resumen.errores > 0
+    : preview.resumen.errores > 0 && tipoImportacion !== "datos_operativos"
       ? `Corrige ${preview.resumen.errores} error${preview.resumen.errores === 1 ? "" : "es"} antes de importar.`
       : preview.resumen.listos === 0
         ? "No hay filas nuevas listas para importar. Revisa si todas están duplicadas."
@@ -430,6 +430,24 @@ export function AdminImportacionPage() {
       {confirmationStarted && <div role="alert" className="mb-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">Se inició una carga anteriormente. Revisa el historial antes de volver a importar para evitar registros adicionales. No se reenvían cargas al recargar.<Button variant="outline" className="ml-3" onClick={() => setConfirmationStarted(false)}>Ya revisé el historial</Button></div>}
       <div className="import-module-tabs" role="tablist" aria-label="Módulo de importación">{(Object.keys(IMPORTACION_MODULOS) as ImportacionTipo[]).map(tipo => <button key={tipo} role="tab" aria-selected={tipoImportacion === tipo} disabled={pending} onClick={() => cambiarTipoImportacion(tipo)}>{tipo === "monitoreo" ? "Monitoreo" : IMPORTACION_MODULOS[tipo].label}</button>)}</div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-ink-quiet">{modulo.description}</p>{!result && !dirty && <ValidationBadge preview={preview} />}</div>
+
+      {tipoImportacion === "datos_operativos" && <section aria-label="Plantilla de datos operativos" className="mb-5 rounded-xl border border-brand-100 bg-brand-50/60 p-4 sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex min-w-0 items-start gap-3">
+            <span className="rounded-lg border border-brand-100 bg-white p-2.5 text-brand-700"><FileSpreadsheet className="h-5 w-5" /></span>
+            <div>
+              <p className="text-sm font-semibold text-ink">Plantilla de {modulo.label}</p>
+              <p className="mt-1 text-xs text-ink-quiet">El Excel mensual de datos operativos, con las hojas Datos Operativos e Instrucciones.</p>
+            </div>
+          </div>
+          <a href="/plantilla-datos-operativos.xlsx" download="Plantilla_Datos_Operativos_Mensuales.xlsx" className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-line-strong bg-white px-4 text-[13.5px] font-medium text-ink transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-brand-700"><Download className="h-4 w-4" /> Descargar plantilla</a>
+        </div>
+        <div className="mt-4 overflow-hidden rounded-lg border border-line bg-white">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-2.5 text-xs"><span className="font-semibold text-ink">Vista de la hoja · Datos Operativos</span><span className="text-ink-quiet">Una fila por día · carga mensual</span></div>
+          <div className="overflow-x-auto"><table className="min-w-[1050px] w-full text-left text-xs"><thead className="bg-brand-800 text-white"><tr>{["Fecha", "QTY carreras", "QTY pasajeros", "Km comercial", "Km no comercial", "Paradas en estación", "Afluencia diaria"].map((header, index) => <th key={header} scope="col" className="border-r border-white/20 px-3 py-3 font-semibold last:border-r-0">{header}<span className="mt-0.5 block text-[10px] font-normal text-white/80">{index === 3 || index === 5 ? "Opcional" : "Obligatorio"}</span></th>)}</tr></thead><tbody><tr className="text-ink-quiet">{Array.from({ length: 7 }, (_, index) => <td key={index} className={cn("border-r border-line-soft px-3 py-3 last:border-r-0", index === 3 || index === 5 ? "bg-brand-50/60" : "bg-white")}>—</td>)}</tr></tbody></table></div>
+          <p className="border-t border-line px-4 py-2.5 text-xs text-ink-soft">Si Km comercial o Paradas en estación quedan vacíos, el sistema mostrará sus estimaciones al validar el archivo. Los valores que ingreses se conservarán.</p>
+        </div>
+      </section>}
 
       <div className="import-desk">
       <aside className="import-source">
@@ -501,18 +519,6 @@ export function AdminImportacionPage() {
         </div>
       </Card>
 
-      {(tipoImportacion === "monitoreo" || tipoImportacion === "contingencias") && (
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-brand-100 bg-brand-50/60 px-4 py-3">
-          <div>
-            <p className="text-[13px] font-semibold text-ink">Plantilla oficial de {modulo.label}</p>
-            <p className="mt-0.5 text-[12px] text-ink-quiet">Incluye instrucciones, encabezados reconocidos y una fila de ejemplo.</p>
-          </div>
-          <Button type="button" variant="outline" onClick={() => void downloadOfficialTemplate(tipoImportacion)}>
-            <Download className="h-4 w-4" /> Descargar plantilla
-          </Button>
-        </div>
-      )}
-
       </aside>
       <section className="import-review">
         <div className="import-review-heading"><div><span className="import-kicker">REVISIÓN DE LA CARGA</span><h2>{preview ? "Resultados y decisiones" : "Prepara tus registros"}</h2></div><span className="import-status-dot">{result ? "Finalizada" : dirty ? "Cambios por validar" : preview ? "Validado" : "Pendiente"}</span></div>
@@ -535,13 +541,14 @@ export function AdminImportacionPage() {
               <p><span className="block text-xs text-ink-quiet">Hoja</span><strong className="text-ink">{selectedSheet.name}</strong></p>
               <p><span className="block text-xs text-ink-quiet">Filas encontradas</span><strong className="text-ink">{preview.resumen.totalFilas}</strong></p>
               <p><span className="block text-xs text-ink-quiet">Registros nuevos</span><strong className="text-emerald-700">{preview.resumen.listos}</strong></p>
-              {tipoImportacion === "casos" && <p><span className="block text-xs text-ink-quiet">Duplicados omitidos</span><strong className="text-amber-700">{preview.resumen.duplicados}</strong></p>}
-              <p><span className="block text-xs text-ink-quiet">Errores</span><strong className="text-ink">{preview.resumen.errores}</strong></p>
+              {(tipoImportacion === "casos" || tipoImportacion === "datos_operativos") && <p><span className="block text-xs text-ink-quiet">Duplicados omitidos</span><strong className="text-amber-700">{preview.resumen.duplicados}</strong></p>}
+              {tipoImportacion === "datos_operativos" && <p><span className="block text-xs text-ink-quiet">Km por carrera aplicado</span><strong className="text-ink">{preview.kmPorCarrera} km</strong></p>}
+              <p><span className="block text-xs text-ink-quiet">Errores detectados</span><strong className="text-ink">{preview.resumen.errores}</strong></p>
             </div>
             <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-[12.5px] text-emerald-900">
               Se crearán {preview.resumen.listos} registros nuevos. {tipoImportacion === "casos"
                 ? `Se aplicarán las decisiones validadas a ${decisions.length} SOP. Los códigos y registros existentes se conservarán.`
-                : "Cada fila se guardará como un registro independiente. Si vuelves a cargar este archivo, se crearán registros adicionales, aunque tengan los mismos datos."}
+                : tipoImportacion === "datos_operativos" ? "Se crearán solo las filas válidas con fechas nuevas. Los duplicados y las filas con errores se omitirán. El sistema usará el kilometraje por carrera mostrado y conservará los valores opcionales que hayas indicado." : "Cada fila se guardará como un registro independiente. Si vuelves a cargar este archivo, se crearán registros adicionales, aunque tengan los mismos datos."}
             </div>
             <div className="mt-5 flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setConfirming(false)}>Cancelar</Button>
@@ -555,10 +562,10 @@ export function AdminImportacionPage() {
         <>
           <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
             <StatTile label="Filas" value={preview.resumen.totalFilas} />
-            <StatTile label={tipoImportacion === "casos" ? "Casos" : "Eventos"} value={preview.resumen.casosDetectados} />
+            <StatTile label={tipoImportacion === "casos" ? "Casos" : tipoImportacion === "datos_operativos" ? "Días detectados" : "Eventos"} value={preview.resumen.casosDetectados} />
             <StatTile label="Listos" value={preview.resumen.listos} tone="good" />
-            {tipoImportacion === "casos" && <StatTile label="Duplicados" value={preview.resumen.duplicados} tone={preview.resumen.duplicados > 0 ? "warn" : "neutral"} />}
-            <StatTile label="Planes" value={preview.resumen.planesDetectados} />
+            {(tipoImportacion === "casos" || tipoImportacion === "datos_operativos") && <StatTile label="Duplicados" value={preview.resumen.duplicados} tone={preview.resumen.duplicados > 0 ? "warn" : "neutral"} />}
+            {tipoImportacion !== "datos_operativos" && <StatTile label="Planes" value={preview.resumen.planesDetectados} />}
             <StatTile label="Advertencias" value={preview.resumen.advertencias} tone="warn" />
             <StatTile label="Errores" value={preview.resumen.errores} tone={preview.resumen.errores > 0 ? "bad" : "neutral"} />
           </div>
@@ -568,7 +575,7 @@ export function AdminImportacionPage() {
           {preview.issues.length > 0 && (
             <Card className="mt-5 overflow-hidden rounded-lg border border-line bg-white p-0">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-surface px-4 py-3">
-                <div><p className="text-[13px] font-semibold text-ink">Validación</p><p className="mt-0.5 text-[11.5px] text-ink-quiet">Corrige los errores antes de confirmar la carga.</p></div>
+                <div><p className="text-[13px] font-semibold text-ink">Validación</p><p className="mt-0.5 text-[11.5px] text-ink-quiet">{tipoImportacion === "datos_operativos" ? "Las filas con errores se omitirán; puedes corregirlas y volver a cargarlas." : "Corrige los errores antes de confirmar la carga."}</p></div>
                 {parsed && <Button type="button" variant="outline" onClick={() => void downloadErrorWorkbook(parsed, sheetIndex, preview.issues)}><Download className="h-4 w-4" /> Descargar diagnóstico</Button>}
               </div>
               <div className="overflow-x-auto">
@@ -608,7 +615,9 @@ export function AdminImportacionPage() {
             </Card>
           )}
 
-          <Card className="mt-5 overflow-hidden rounded-lg border border-line bg-white p-0">
+          {tipoImportacion === "datos_operativos" && preview.operativos && <Card className="mt-5 overflow-hidden rounded-lg border border-line bg-white p-0"><div className="border-b border-line bg-surface px-4 py-3"><p className="text-[13px] font-semibold text-ink">Resultado diario · {preview.kmPorCarrera} km por carrera</p><p className="text-xs text-ink-quiet">Los valores estimados se indican en verde. Los duplicados se omitirán.</p></div><div className="overflow-x-auto"><table className="w-full min-w-[940px] text-right text-[12.5px]"><thead className="bg-surface text-[11px] uppercase text-ink-faint"><tr>{["Estado", "Fecha", "Carreras", "Pasajeros", "Km comercial", "Km no comercial", "Paradas", "Afluencia"].map(h => <th key={h} className="px-3 py-3 font-semibold">{h}</th>)}</tr></thead><tbody>{preview.operativos.slice(currentResultPage * 100, (currentResultPage + 1) * 100).map(item => <tr key={item.row} className="border-t border-line-soft"><td className="px-3 py-2">{item.status === "valid" ? "Listo" : item.status === "skipped" ? "Duplicado" : "Revisar"}</td><td className="px-3 py-2">{item.fecha || `Fila ${item.row}`}</td><td className="px-3 py-2">{item.carreras ?? "—"}</td><td className="px-3 py-2">{item.pasajeros ?? "—"}</td><td className="px-3 py-2">{item.kmComercial ?? "—"}{item.kmCalculado && <span className="ml-1 text-brand-700">estimado</span>}</td><td className="px-3 py-2">{item.kmNoComercial ?? "—"}</td><td className="px-3 py-2">{item.paradas ?? "—"}{item.paradasCalculadas && <span className="ml-1 text-brand-700">estimado</span>}</td><td className="px-3 py-2">{item.afluencia ?? "—"}</td></tr>)}</tbody></table></div></Card>}
+
+          {tipoImportacion !== "datos_operativos" && <Card className="mt-5 overflow-hidden rounded-lg border border-line bg-white p-0">
             <div className="border-b border-line bg-surface px-4 py-3">
               <p className="text-[13px] font-semibold text-ink">{modulo.detectedTitle}</p>
             </div>
@@ -664,7 +673,7 @@ export function AdminImportacionPage() {
                 {Array.from({ length: resultPageCount }, (_, index) => <option key={index} value={index}>Registros {index * 100 + 1}–{Math.min((index + 1) * 100, preview.cases.length)}</option>)}
               </select>
             </div>}
-          </Card>
+          </Card>}
         </>
       )}
 

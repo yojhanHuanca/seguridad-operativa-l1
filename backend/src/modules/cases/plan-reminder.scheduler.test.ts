@@ -6,11 +6,16 @@ const mocks = vi.hoisted(() => ({
   reminderFindMany: vi.fn(),
   reminderUpdateMany: vi.fn(),
   reminderUpdate: vi.fn(),
+  transaction: vi.fn(),
+  notificationCreate: vi.fn(),
+  push: vi.fn(),
   sendEmail: vi.fn(),
 }));
 
 vi.mock("../../lib/prisma.js", () => ({
   default: {
+    $transaction: mocks.transaction,
+    notificaciones: { create: mocks.notificationCreate },
     planes_accion: { findMany: mocks.planFindMany },
     plan_recordatorios: {
       createMany: mocks.reminderCreateMany,
@@ -21,6 +26,7 @@ vi.mock("../../lib/prisma.js", () => ({
   },
 }));
 vi.mock("../../utils/mailer.js", () => ({ enviarCorreoRecordatorioPlan: mocks.sendEmail }));
+vi.mock("../notifications/push.service.js", () => ({ PushService: { enviarAUsuarios: mocks.push } }));
 vi.mock("../../utils/logger.js", () => ({ default: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } }));
 vi.mock("../../config/env.js", () => ({ env: { FRONTEND_URL: "https://sigma.example" } }));
 
@@ -35,7 +41,7 @@ const plan = (id: number, dueDay: number, estado = "En ejecución") => ({
   fecha_reprogramada: null,
   actividades_plan: [],
   catalogo_detalle: { nombre: estado },
-  usuarios: { correo: `responsable${id}@example.test`, nombre: `Responsable ${id}` },
+  usuarios: { id_usuario: id, correo: `responsable${id}@example.test`, nombre: `Responsable ${id}` },
   casos_sop: { codigo_sop: `SOP-${id}` },
 });
 
@@ -48,6 +54,12 @@ describe("recordatorios de vencimiento de planes", () => {
     mocks.reminderFindMany.mockReset().mockResolvedValue([]);
     mocks.reminderUpdateMany.mockReset();
     mocks.reminderUpdate.mockReset();
+    mocks.transaction.mockReset().mockImplementation(async callback => callback({
+      plan_recordatorios: { updateMany: mocks.reminderUpdateMany },
+      notificaciones: { create: mocks.notificationCreate },
+    }));
+    mocks.notificationCreate.mockReset().mockResolvedValue({});
+    mocks.push.mockReset().mockResolvedValue(undefined);
     mocks.sendEmail.mockReset().mockResolvedValue(undefined);
   });
 
@@ -94,6 +106,8 @@ describe("recordatorios de vencimiento de planes", () => {
       fechaLimite: fecha(9),
       url: "https://sigma.example/jefe/planes/SOP-12?plan=12",
     }));
+    expect(mocks.notificationCreate).toHaveBeenCalledWith({ data: expect.objectContaining({ usuario: 12, tipo: "plan_por_vencer" }) });
+    expect(mocks.push).toHaveBeenCalledWith([12], expect.objectContaining({ title: expect.stringContaining("PLAN-12") }));
     expect(mocks.reminderUpdate).toHaveBeenCalledWith(expect.objectContaining({
       where: { id_recordatorio: 51 },
       data: expect.objectContaining({ estado: "enviado", sent_at: expect.any(Date) }),
@@ -114,9 +128,32 @@ describe("recordatorios de vencimiento de planes", () => {
 
     await procesarRecordatoriosPlanes();
 
+    expect(mocks.notificationCreate).toHaveBeenCalledTimes(1);
+    expect(mocks.push).toHaveBeenCalledTimes(1);
     expect(mocks.reminderUpdate).toHaveBeenCalledWith({
       where: { id_recordatorio: 77 },
       data: { estado: "pendiente", claimed_at: null },
     });
+  });
+
+  it("no duplica el aviso al reintentar un correo fallido", async () => {
+    mocks.planFindMany.mockResolvedValue([]);
+    mocks.reminderFindMany.mockResolvedValue([{
+      id_recordatorio: 77,
+      dias_antes: 3,
+      fecha_limite: fecha(7),
+      plan: plan(7, 7),
+    }]);
+    mocks.reminderUpdateMany.mockResolvedValueOnce({ count: 1 }).mockResolvedValueOnce({ count: 1 })
+      .mockResolvedValueOnce({ count: 1 }).mockResolvedValueOnce({ count: 0 });
+    mocks.sendEmail.mockRejectedValueOnce(new Error("Proveedor no disponible"));
+    mocks.reminderUpdate.mockResolvedValue({});
+
+    await procesarRecordatoriosPlanes();
+    await procesarRecordatoriosPlanes();
+
+    expect(mocks.notificationCreate).toHaveBeenCalledTimes(1);
+    expect(mocks.push).toHaveBeenCalledTimes(1);
+    expect(mocks.sendEmail).toHaveBeenCalledTimes(2);
   });
 });

@@ -36,6 +36,8 @@ backend/coverage/
 outputs/
 tmp/
 docs/
+tmp_manual_render*/
+artifacts/*.inspect.ndjson
 
 # Resultados y cachés regenerables de pruebas.
 coverage/

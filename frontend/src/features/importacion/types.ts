@@ -1,4 +1,4 @@
-export type ImportacionTipo = "casos" | "monitoreo" | "contingencias";
+export type ImportacionTipo = "casos" | "monitoreo" | "contingencias" | "datos_operativos";
 
 export type ImportacionRowValue = string | number | boolean | null | undefined;
 
@@ -9,6 +9,8 @@ export interface ImportacionPayload {
   rows: ImportacionRow[];
   hoja?: string;
   decisionesSop?: DecisionSop[];
+  kmPorCarreraValidado?: number;
+  estacionesValidadas?: number;
 }
 
 export interface ImportacionIssue {
@@ -55,6 +57,9 @@ export interface ImportacionPreview {
   canImport: boolean;
   requiredColumns: string[];
   optionalColumns: string[];
+  kmPorCarrera?: number;
+  estaciones?: number;
+  operativos?: { row: number; fecha: string; carreras: number | null; pasajeros: number | null; kmComercial: number | null; kmNoComercial: number | null; paradas: number | null; afluencia: number | null; kmCalculado: boolean; paradasCalculadas: boolean; status: "valid" | "error" | "skipped" }[];
 }
 
 export interface ImportacionResult extends ImportacionPreview {

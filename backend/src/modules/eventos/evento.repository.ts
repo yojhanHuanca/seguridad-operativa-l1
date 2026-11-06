@@ -1,4 +1,5 @@
 import prisma from "../../lib/prisma.js";
+import type { Prisma } from "../../generated/prisma/client.js";
 import type { CreateEventoDto, UpdateEventoDto } from "./evento.types.js";
 import { ConfiguracionService } from "../configuracion/configuracion.service.js";
 import { diaSemana, rangoHorarioLabel, semanaDelAnio } from "./evento-derived-fields.js";
@@ -68,6 +69,8 @@ export class EventoRepository {
     search?: string;
     desde?: string;
     hasta?: string;
+    sortBy?: "fecha" | "id_evento";
+    sortDir?: "asc" | "desc";
     page?: number;
     limit?: number;
   }) {
@@ -88,10 +91,15 @@ export class EventoRepository {
         { catalogo_detalle_eventos_monitoreo_tipo_incidenteTocatalogo_detalle: { nombre: { contains: q, mode: "insensitive" } } },
         { catalogo_detalle_eventos_monitoreo_lugar_incidenteTocatalogo_detalle: { nombre: { contains: q, mode: "insensitive" } } },
         { catalogo_detalle_eventos_monitoreo_ubicacionTocatalogo_detalle: { nombre: { contains: q, mode: "insensitive" } } },
+        ...(Number.isSafeInteger(Number(q)) && q.trim() !== "" ? [{ id_evento: Number(q) }] : []),
       ];
     }
 
-    const orderBy = [{ fecha: "desc" as const }, { id_evento: "desc" as const }];
+    const sortBy = opts?.sortBy === "id_evento" ? "id_evento" : "fecha";
+    const sortDir: Prisma.SortOrder = opts?.sortDir === "asc" ? "asc" : "desc";
+    const orderBy: Prisma.eventos_monitoreoOrderByWithRelationInput[] = sortBy === "id_evento"
+      ? [{ id_evento: sortDir }]
+      : [{ fecha: sortDir }, { id_evento: "desc" }];
 
     if (!opts?.page || !opts?.limit) {
       const data = await prisma.eventos_monitoreo.findMany({ where, include: LIST_INCLUDE, orderBy });

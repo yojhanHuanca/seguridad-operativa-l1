@@ -145,7 +145,9 @@ Completar `GOOGLE_CLIENT_ID` y `VITE_GOOGLE_CLIENT_ID` con el Client ID de la ap
 
 ### Notificaciones push
 
-Configurar un par VAPID en `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` y `VITE_VAPID_PUBLIC_KEY` (la clave pública debe coincidir en backend y frontend). Web Push necesita HTTPS en el nombre definitivo del sistema; HTTP en una red local no habilita esta función de forma general.
+Configurar un par VAPID persistente en `VAPID_PUBLIC_KEY` y `VAPID_PRIVATE_KEY` del **backend**, y un correo de contacto en `VAPID_SUBJECT` (formato `mailto:correo@dominio`). El frontend obtiene la clave pública desde `/api/push/config` tras iniciar sesión. En Render, estas variables deben estar en el servicio de la API y hay que reiniciarlo después de guardarlas. No cambiar el par sin planificar la renovación de las suscripciones existentes. Web Push necesita HTTPS fuera de localhost. Cada persona debe activar los avisos y aceptar el permiso en cada dispositivo.
+
+La bandeja interna es independiente del permiso push y muestra solo los avisos de la cuenta conectada. Los recordatorios de planes necesitan la migración `plan_deadline_reminders` y la posterior `plan_reminder_inbox`; verificar las migraciones pendientes antes de iniciar la API.
 
 <a id="datos-archivos-y-respaldos"></a>
 ## Datos, archivos y respaldos
@@ -182,7 +184,7 @@ Si el cambio incluye modificaciones de esquema, revisar el cambio y ejecutar el 
 - **No se puede iniciar sesión con Google:** revisar ambos Client ID y el origen HTTPS autorizado.
 - **No llegan correos:** revisar `RESEND_API_KEY`, `EMAIL_FROM`, la verificación del dominio y los registros del backend. En local, abrir Mailpit.
 - **No aparecen evidencias tras reiniciar:** verificar que el volumen `uploaded_files` siga montado y restaurar desde respaldo si el volumen original se perdió.
-- **Web Push no está disponible:** comprobar HTTPS y que las tres variables VAPID estén completas y correspondan al mismo par.
+- **Web Push no está disponible:** comprobar HTTPS, las dos claves VAPID del backend y el permiso del navegador. Si la bandeja está vacía, comprobar el rol y la cuenta conectada: el modo Admin no abre la bandeja personal de otro usuario.
 
 ## Archivos de configuración
 

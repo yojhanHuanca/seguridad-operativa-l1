@@ -23,5 +23,7 @@ router.post("/contingencias/importar", jsonImportacion, requireRoles("Admin"), I
 
 router.post("/monitoreo/validar", jsonImportacion, requireRoles("Admin"), ImportacionController.validarMonitoreo);
 router.post("/monitoreo/importar", jsonImportacion, requireRoles("Admin"), ImportacionController.importarMonitoreo);
+router.post("/datos-operativos/validar", jsonImportacion, requireRoles("Admin"), ImportacionController.validarDatosOperativos);
+router.post("/datos-operativos/importar", jsonImportacion, requireRoles("Admin"), ImportacionController.importarDatosOperativos);
 
 export default router;

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, type ApiEnvelope } from "@/lib/api";
+import { useAuth } from "@/features/auth/auth";
 
 /** Debe coincidir con TipoNotificacion del backend: decide icono y color. */
 export type TipoNotificacion =
@@ -13,7 +14,8 @@ export type TipoNotificacion =
   | "plan_revisado"
   | "caso_devuelto"
   | "info_respondida"
-  | "evento_asignado";
+  | "evento_asignado"
+  | "plan_por_vencer";
 
 export interface Notificacion {
   id_notificacion: number;
@@ -49,6 +51,7 @@ const PAGE_SIZE = 20;
  * tener que fusionar páginas a mano contra el polling de 60s.
  */
 export function useNotifications() {
+  const { user } = useAuth();
   const [limit, setLimit] = useState(PAGE_SIZE);
   const queryClient = useQueryClient();
   useEffect(() => {
@@ -60,8 +63,9 @@ export function useNotifications() {
     return () => navigator.serviceWorker.removeEventListener("message", receive);
   }, [queryClient]);
   const query = useQuery({
-    queryKey: ["notifications", limit],
+    queryKey: ["notifications", user?.id_usuario, limit],
     queryFn: () => fetchNotifications(limit),
+    enabled: Boolean(user?.id_usuario),
     // Las notificaciones nacen de acciones de otras personas, así que no
     // llegan por invalidación local: hay que ir a buscarlas cada tanto.
     refetchInterval: 60_000,

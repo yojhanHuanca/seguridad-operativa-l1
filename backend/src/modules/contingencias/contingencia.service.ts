@@ -41,7 +41,7 @@ function parseFechaQuery(value: unknown, label: string) {
 }
 
 function parseSortBy(value: unknown) {
-  return value === "tipo_evento" || value === "estado" || value === "fecha" ? value : "fecha";
+  return value === "tipo_evento" || value === "estado" || value === "id_evento" || value === "fecha" ? value : "fecha";
 }
 
 function parseSortDir(value: unknown) {

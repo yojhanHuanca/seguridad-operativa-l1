@@ -6,6 +6,7 @@ import { ImportacionService } from "./importacion.service.js";
 import { ImportacionContingenciasService } from "./importacion-contingencias.service.js";
 import { ImportacionMonitoreoService } from "./importacion-monitoreo.service.js";
 import { ImportacionHistorialService } from "./importacion-historial.service.js";
+import { ImportacionDatosOperativosService } from "./importacion-datos-operativos.service.js";
 
 const cellSchema = z.union([z.string(), z.number(), z.boolean(), z.null(), z.undefined()]);
 const payloadSchema = z.object({
@@ -18,6 +19,8 @@ const payloadSchema = z.object({
     motivo: z.string().trim().min(10).max(500),
     planes: z.array(z.object({ row: z.number().int().min(2), estado: z.enum(["Enviado", "En Ejecución", "Cerrado"]) })).max(100000).optional(),
   })).max(100000).optional(),
+  kmPorCarreraValidado: z.number().positive().optional(),
+  estacionesValidadas: z.number().int().nonnegative().optional(),
 });
 
 function parsePayload(body: unknown) {
@@ -27,6 +30,8 @@ function parsePayload(body: unknown) {
     rows: parsed.rows,
     hoja: parsed.hoja,
     decisionesSop: parsed.decisionesSop,
+    kmPorCarreraValidado: parsed.kmPorCarreraValidado,
+    estacionesValidadas: parsed.estacionesValidadas,
   };
 }
 
@@ -35,6 +40,25 @@ function isZodError(error: unknown): error is ZodError {
 }
 
 export class ImportacionController {
+  static async validarDatosOperativos(req: AuthenticatedRequest, res: Response) {
+    try {
+      const payload = parsePayload(req.body);
+      return res.json(ApiResponse.success("Archivo validado", await ImportacionDatosOperativosService.validar(payload)));
+    } catch (error) {
+      return res.status(400).json(ApiResponse.error(safeErrorMessage(error, "No se pudo validar el archivo"), error));
+    }
+  }
+  static async importarDatosOperativos(req: AuthenticatedRequest, res: Response) {
+    try {
+      if (!req.user?.id_usuario) return res.status(401).json(ApiResponse.error("Token inválido"));
+      const payload = parsePayload(req.body);
+      if (!payload.kmPorCarreraValidado || payload.estacionesValidadas == null) return res.status(400).json(ApiResponse.error("Valida el archivo antes de importar."));
+      const result = await ImportacionDatosOperativosService.importar(payload, req.user.id_usuario, payload.kmPorCarreraValidado, payload.estacionesValidadas);
+      return res.status(201).json(ApiResponse.success("Importación completada", result));
+    } catch (error) {
+      return res.status(409).json(ApiResponse.error(safeErrorMessage(error, "No se pudo importar el archivo"), error));
+    }
+  }
   static async historial(req: Request, res: Response) {
     try {
       const page = Number(req.query.page ?? 1);

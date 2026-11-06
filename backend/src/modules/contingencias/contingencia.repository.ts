@@ -21,7 +21,7 @@ export interface ContingenciaFiltros {
   estado?: string;
   desde?: string;
   hasta?: string;
-  sortBy?: "fecha" | "tipo_evento" | "estado";
+  sortBy?: "fecha" | "tipo_evento" | "estado" | "id_evento";
   sortDir?: "asc" | "desc";
   page: number;
   limit: number;
@@ -260,9 +260,10 @@ export class ContingenciaRepository {
 
   static async findAll(filtros: ContingenciaFiltros) {
     const where = whereFor(filtros);
+    const primarySort = filtros.sortBy ?? "fecha";
     const orderBy: Prisma.contingencia_eventosOrderByWithRelationInput[] = [
-      { [filtros.sortBy ?? "fecha"]: filtros.sortDir ?? "desc" },
-      { id_evento: "desc" },
+      { [primarySort]: filtros.sortDir ?? "desc" },
+      ...(primarySort === "id_evento" ? [] : [{ id_evento: "desc" as const }]),
     ];
     const [eventos, total] = await prisma.$transaction([
       prisma.contingencia_eventos.findMany({

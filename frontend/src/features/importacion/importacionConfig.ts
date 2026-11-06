@@ -11,6 +11,14 @@ export const IMPORTACION_MODULOS: Record<
     detectedTitle: string;
   }
 > = {
+  datos_operativos: {
+    label: "Datos operativos",
+    description: "Carga diaria de carreras, pasajeros, kilometraje y afluencia desde una plantilla mensual.",
+    importButton: "Importar datos operativos",
+    requiredFallback: "Fecha, QTY carreras, QTY pasajeros, Km no comercial, Afluencia diaria",
+    optionalFallback: "Km comercial, Paradas en estación",
+    detectedTitle: "Registros diarios detectados",
+  },
   casos: {
     label: "Casos SOP",
     description: "Carga controlada de casos SOP desde CSV, XLSX o XLSM.",

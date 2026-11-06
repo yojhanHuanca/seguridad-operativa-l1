@@ -421,6 +421,8 @@ model historial_indicadores {
 /// mismo nivel de detalle de la base histórica del cliente.
 model datos_operativos {
   id_dato_operativo Int      @id @default(autoincrement())
+  id_importacion    Int?
+  importacion       importaciones? @relation(fields: [id_importacion], references: [id_importacion], onUpdate: NoAction)
   fecha             DateTime @unique @db.Date
   qty_carreras      Decimal  @db.Decimal(15, 2)
   qty_pasajeros     Decimal  @db.Decimal(15, 2)
@@ -430,6 +432,8 @@ model datos_operativos {
   paradas_estacion  Decimal  @db.Decimal(15, 2)
   created_at        DateTime @default(now()) @db.Timestamp(6)
   updated_at        DateTime @updatedAt @db.Timestamp(6)
+
+  @@index([id_importacion], map: "idx_datos_operativos_importacion")
 }
 
 /// Catálogos propios del módulo de Planes de Contingencia. Nacen del Excel
@@ -523,6 +527,7 @@ model importaciones {
   casos            casos_sop[]
   contingencias    contingencia_eventos[]
   monitoreo        eventos_monitoreo[]
+  datos_operativos datos_operativos[]
   reversor         usuarios?              @relation("importaciones_reversor", fields: [reverted_by], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
   creador          usuarios               @relation("importaciones_creador", fields: [usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
 
@@ -787,6 +792,7 @@ model plan_recordatorios {
   estado          String    @default("pendiente") @db.VarChar(20)
   created_at      DateTime  @default(now()) @db.Timestamp(6)
   claimed_at      DateTime? @db.Timestamp(6)
+  notificado_at   DateTime? @db.Timestamp(6)
   sent_at         DateTime? @db.Timestamp(6)
   plan            planes_accion @relation(fields: [id_plan], references: [id_plan], onDelete: Cascade, onUpdate: NoAction)
 

@@ -190,7 +190,7 @@ export interface ContingenciaFiltros {
   hasta?: string;
   page?: number;
   limit?: number;
-  sortBy?: "fecha" | "tipo_evento" | "estado";
+  sortBy?: "fecha" | "tipo_evento" | "estado" | "id_evento";
   sortDir?: "asc" | "desc";
 }
 

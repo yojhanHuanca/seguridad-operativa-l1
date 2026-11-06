@@ -1,7 +1,7 @@
 import { useDraftState } from "@/features/drafts/useDraftState";
 import { useMemo, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AlertCircle, ClipboardList, FileSearch, Plus, Search, Trash2 } from "lucide-react";
+import { AlertCircle, ArrowDownWideNarrow, ClipboardList, FileSearch, Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { MonitoristaShell } from "@/components/layout/MonitoristaShell";
 import { Card } from "@/design-system/primitives/Card";
@@ -61,6 +61,8 @@ export function Dashboard() {
   const deleteEvento = useDeleteEvento();
   const [query, setQuery] = useDraftState("pages/monitoreo/Dashboard:query", "");
   const [estado, setEstado] = useDraftState<EstadoEvento | "">("pages/monitoreo/Dashboard:estado", "");
+  const [sortBy, setSortBy] = useDraftState<"fecha" | "id_evento">("pages/monitoreo/Dashboard:sortBy", "fecha");
+  const [sortDir, setSortDir] = useDraftState<"asc" | "desc">("pages/monitoreo/Dashboard:sortDir", "desc");
   const [borrando, setBorrando] = useState<EventoListItem | null>(null);
   const [asignando, setAsignando] = useDraftState<EventoListItem | null>("pages/monitoreo/Dashboard:asignando", null);
 
@@ -74,7 +76,14 @@ export function Dashboard() {
     });
   }, [lista, query, estado]);
 
-  const recientes = filtrados.slice(0, RECIENTES);
+  const recientes = useMemo(() => {
+    const direction = sortDir === "asc" ? 1 : -1;
+    return [...filtrados].sort((a, b) => {
+      if (sortBy === "id_evento") return (a.id_evento - b.id_evento) * direction;
+      const byDate = a.fecha.localeCompare(b.fecha) * direction;
+      return byDate || b.id_evento - a.id_evento;
+    }).slice(0, RECIENTES);
+  }, [filtrados, sortBy, sortDir]);
   const tipoPrincipal = contarPorTipo(lista);
   const lugarPrincipal = contarPorLugar(lista);
   const demorados = lista.filter((e) => Number(e.demora ?? 0) > 0).length;
@@ -142,6 +151,17 @@ export function Dashboard() {
                 </button>
               ))}
             </div>
+          </div>
+          <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
+            <Field label="Ordenar por">
+              <div role="group" aria-label="Criterio de orden" className="flex flex-wrap gap-2">
+                <Button type="button" size="sm" variant={sortBy === "fecha" ? "secondary" : "outline"} aria-pressed={sortBy === "fecha"} onClick={() => setSortBy("fecha")}>Fecha</Button>
+                <Button type="button" size="sm" variant={sortBy === "id_evento" ? "secondary" : "outline"} aria-pressed={sortBy === "id_evento"} onClick={() => setSortBy("id_evento")}>N° de registro</Button>
+              </div>
+            </Field>
+            <Button type="button" variant="outline" size="sm" onClick={() => setSortDir(sortDir === "asc" ? "desc" : "asc")}>
+              <ArrowDownWideNarrow className="h-4 w-4" />{sortDir === "asc" ? "Ascendente" : "Descendente"}
+            </Button>
           </div>
         </Card>
 

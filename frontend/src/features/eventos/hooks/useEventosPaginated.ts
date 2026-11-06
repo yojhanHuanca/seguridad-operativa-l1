@@ -13,6 +13,8 @@ export interface EventosPaginatedParams {
   search?: string;
   desde?: string;
   hasta?: string;
+  sortBy?: "fecha" | "id_evento";
+  sortDir?: "asc" | "desc";
   page: number;
   limit: number;
 }
@@ -29,6 +31,8 @@ async function fetchEventosPaginated(params: EventosPaginatedParams): Promise<Ev
       search: params.search || undefined,
       desde: params.desde || undefined,
       hasta: params.hasta || undefined,
+      sortBy: params.sortBy ?? "fecha",
+      sortDir: params.sortDir ?? "desc",
       page: params.page,
       limit: params.limit,
     },

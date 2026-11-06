@@ -1,7 +1,7 @@
 import { useDraftState } from "@/features/drafts/useDraftState";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, RotateCcw, Search, Trash2 } from "lucide-react";
+import { ArrowDownWideNarrow, ChevronLeft, ChevronRight, Download, RotateCcw, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { MonitoristaShell } from "@/components/layout/MonitoristaShell";
 import { Card } from "@/design-system/primitives/Card";
@@ -15,10 +15,12 @@ import { useEventoCounts } from "@/features/eventos/hooks/useEventoCounts";
 import { useDeleteEvento } from "@/features/eventos/hooks/useEventoActions";
 import { type EstadoEvento } from "@/features/eventos/types";
 import { COLUMNAS_EVENTO } from "@/features/eventos/lib/tabla";
-import { apiErrorMessage } from "@/lib/api";
+import { api, apiErrorMessage, type ApiEnvelope } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { EventoListItem } from "@/features/eventos/types";
 import { useAuth } from "@/features/auth/auth";
+import { exportarEventosExcel } from "@/features/eventos/lib/exportExcel";
+import { sufijoFecha } from "@/lib/download";
 
 const POR_PAGINA = 20;
 
@@ -31,8 +33,11 @@ export function Historial() {
   const [desde, setDesde] = useDraftState("pages/monitoreo/Historial:desde", "");
   const [hasta, setHasta] = useDraftState("pages/monitoreo/Historial:hasta", "");
   const [estado, setEstado] = useDraftState<EstadoEvento | "">("pages/monitoreo/Historial:estado", "");
+  const [sortBy, setSortBy] = useDraftState<"fecha" | "id_evento">("pages/monitoreo/Historial:sortBy", "id_evento");
+  const [sortDir, setSortDir] = useDraftState<"asc" | "desc">("pages/monitoreo/Historial:sortDir", "desc");
   const [pagina, setPagina] = useDraftState("pages/monitoreo/Historial:pagina", 1);
   const [borrando, setBorrando] = useState<EventoListItem | null>(null);
+  const [exportando, setExportando] = useState(false);
   const [asignando, setAsignando] = useDraftState<EventoListItem | null>("pages/monitoreo/Historial:asignando", null);
   const deleteEvento = useDeleteEvento();
 
@@ -50,11 +55,13 @@ export function Historial() {
   }, [query, debouncedQuery, setPagina]);
 
   const { data: counts } = useEventoCounts();
-  const { data: pageData, isLoading } = useEventosPaginated({
+  const { data: pageData, isLoading, isFetching } = useEventosPaginated({
     estado: estado || undefined,
     search: debouncedQuery.trim() || undefined,
     desde: desde || undefined,
     hasta: hasta || undefined,
+    sortBy,
+    sortDir,
     page: pagina,
     limit: POR_PAGINA,
   });
@@ -94,6 +101,40 @@ export function Historial() {
     setPagina(1);
   };
 
+  const descargarFiltrados = async () => {
+    if (exportando || query !== debouncedQuery || isFetching) return;
+    setExportando(true);
+    try {
+      const filtros = {
+        estado: estado || undefined,
+        search: debouncedQuery.trim() || undefined,
+        desde: desde || undefined,
+        hasta: hasta || undefined,
+        sortBy,
+        sortDir,
+        limit: 100,
+      };
+      const primera = await api.get<ApiEnvelope<EventoListItem[]>>("/eventos", { params: { ...filtros, page: 1 } });
+      const eventos = [...(primera.data.data ?? [])];
+      const totalFiltrado = primera.data.meta?.total ?? eventos.length;
+      const totalPaginasExport = Math.ceil(totalFiltrado / filtros.limit);
+      for (let page = 2; page <= totalPaginasExport; page += 1) {
+        const response = await api.get<ApiEnvelope<EventoListItem[]>>("/eventos", { params: { ...filtros, page } });
+        eventos.push(...(response.data.data ?? []));
+      }
+      if (!eventos.length) {
+        toast.error("No hay eventos que coincidan con estos filtros");
+        return;
+      }
+      await exportarEventosExcel(eventos, `historial_eventos_${sufijoFecha()}.xlsx`);
+      toast.success(`Excel descargado con ${eventos.length} evento${eventos.length === 1 ? "" : "s"}`);
+    } catch (error) {
+      toast.error(apiErrorMessage(error, "No se pudo descargar el historial filtrado"));
+    } finally {
+      setExportando(false);
+    }
+  };
+
   return (
     <MonitoristaShell>
       <div className="space-y-4">
@@ -105,6 +146,9 @@ export function Historial() {
                 <RotateCcw className="h-4 w-4" /> Limpiar
               </Button>
             )}
+            <Button variant="outline" size="sm" onClick={() => void descargarFiltrados()} disabled={exportando || isLoading || isFetching || query !== debouncedQuery || total === 0}>
+              <Download className="h-4 w-4" /> {exportando ? "Generando Excel..." : "Descargar Excel"}
+            </Button>
           </div>
         </div>
 
@@ -141,6 +185,17 @@ export function Historial() {
                 type="date"
               />
             </Field>
+          </div>
+          <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
+            <Field label="Ordenar por">
+              <div role="group" aria-label="Criterio de orden" className="flex flex-wrap gap-2">
+                <Button type="button" size="sm" variant={sortBy === "fecha" ? "secondary" : "outline"} aria-pressed={sortBy === "fecha"} onClick={() => { setSortBy("fecha"); setPagina(1); }}>Fecha</Button>
+                <Button type="button" size="sm" variant={sortBy === "id_evento" ? "secondary" : "outline"} aria-pressed={sortBy === "id_evento"} onClick={() => { setSortBy("id_evento"); setPagina(1); }}>N° de registro</Button>
+              </div>
+            </Field>
+            <Button variant="outline" size="sm" onClick={() => { setSortDir(sortDir === "asc" ? "desc" : "asc"); setPagina(1); }}>
+              <ArrowDownWideNarrow className="h-4 w-4" />{sortDir === "asc" ? "Ascendente" : "Descendente"}
+            </Button>
           </div>
           <div className="mt-3 flex min-w-0 flex-wrap gap-1 rounded-xl border border-line bg-white p-1">
             {estadoOpciones.map((option) => (
