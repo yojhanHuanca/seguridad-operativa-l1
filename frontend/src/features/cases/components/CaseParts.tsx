@@ -10,7 +10,7 @@ import type { Stage } from "../domain";
 export const STAGE_STEP: { stage: Stage; label: string; icon: typeof FileSearch }[] = [
   { stage: "recepcion", label: "Recepción", icon: Inbox },
   { stage: "evaluacion", label: "Evaluación", icon: FileSearch },
-  { stage: "investigacion", label: "Investigación", icon: Microscope },
+  { stage: "investigacion", label: "Investigación\nExhaustiva", icon: Microscope },
   { stage: "plan_accion", label: "Plan de Acción", icon: ClipboardList },
   { stage: "ejecucion", label: "Ejecución", icon: Rocket },
   { stage: "verificacion", label: "Verificación", icon: Activity },
@@ -79,7 +79,7 @@ export function WorkflowStepper({
                 <div className="hidden md:block">
                   <p
                     className={cn(
-                      "text-[12.5px] font-medium leading-tight",
+                      "whitespace-pre-line text-[12.5px] font-medium leading-tight",
                       active && !pendingInfo ? "text-info-ink" : pendingInfo || skippedInvestigation ? "text-warning-ink" : done ? "text-ink" : "text-ink-quiet"
                     )}
                   >

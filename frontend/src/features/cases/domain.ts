@@ -79,7 +79,7 @@ export const RISK_CATEGORY_LABELS: Record<RiskCategory, string> = {
   aceptable_sin_revision: "Aceptable sin revisión",
 };
 
-export const RISK_CATEGORY_TONE: Record<RiskCategory, "critical" | "warning" | "info" | "brand" | "success"> = {
+export const RISK_CATEGORY_TONE: Record<RiskCategory, "critical" | "warning" | "info" | "success"> = {
   inaceptable: "critical",
   no_deseable: "warning",
   aceptable_revision: "info",
@@ -101,15 +101,31 @@ export const RISK_CATEGORY_SHORT_LABELS: Record<RiskCategory, string> = {
 export const RISK_CATEGORY_STYLES: Record<RiskCategory, string> = {
   inaceptable: "bg-red-600 text-white border-red-700",
   no_deseable: "bg-yellow-500 text-white border-yellow-600",
-  aceptable_revision: "bg-white text-gray-800 border-gray-300",
+  aceptable_revision: "bg-amber-50 text-gray-800 border-amber-100",
   aceptable_sin_revision: "bg-green-200 text-green-900 border-green-300",
 };
 
 export const RISK_CATEGORY_DOT_STYLES: Record<RiskCategory, string> = {
   inaceptable: "bg-red-800",
   no_deseable: "bg-yellow-700",
-  aceptable_revision: "bg-gray-400",
+  aceptable_revision: "bg-amber-400",
   aceptable_sin_revision: "bg-green-600",
+};
+
+// Tonos por casilla de la matriz, compartidos por la matriz, las etiquetas
+// de riesgo individual y la exportación Excel.
+export const RISK_LEVEL_STYLE_OVERRIDES: Partial<Record<RiskLevel, { className: string; dotClassName: string; excelFill: string }>> = {
+  "4C": { className: "bg-green-200 text-green-900 border-green-300", dotClassName: "bg-green-600", excelFill: "FFBBF7D0" },
+  "4D": { className: "bg-green-200 text-green-900 border-green-300", dotClassName: "bg-green-600", excelFill: "FFBBF7D0" },
+  "4E": { className: "bg-green-200 text-green-900 border-green-300", dotClassName: "bg-green-600", excelFill: "FFBBF7D0" },
+  "1E": { className: "bg-amber-50 text-gray-800 border-amber-100", dotClassName: "bg-amber-400", excelFill: "FFFFFBEB" },
+  "2E": { className: "bg-amber-50 text-gray-800 border-amber-100", dotClassName: "bg-amber-400", excelFill: "FFFFFBEB" },
+  "3E": { className: "bg-amber-50 text-gray-800 border-amber-100", dotClassName: "bg-amber-400", excelFill: "FFFFFBEB" },
+  "2D": { className: "bg-amber-50 text-gray-800 border-amber-100", dotClassName: "bg-amber-400", excelFill: "FFFFFBEB" },
+  "3D": { className: "bg-amber-50 text-gray-800 border-amber-100", dotClassName: "bg-amber-400", excelFill: "FFFFFBEB" },
+  "3C": { className: "bg-amber-50 text-gray-800 border-amber-100", dotClassName: "bg-amber-400", excelFill: "FFFFFBEB" },
+  "4B": { className: "bg-amber-50 text-gray-800 border-amber-100", dotClassName: "bg-amber-400", excelFill: "FFFFFBEB" },
+  "4A": { className: "bg-amber-50 text-gray-800 border-amber-100", dotClassName: "bg-amber-400", excelFill: "FFFFFBEB" },
 };
 
 // Las 20 celdas de la matriz (severidad 1-4 × probabilidad A-E), mapeadas
