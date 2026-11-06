@@ -65,6 +65,7 @@ $securePassword = Read-Host "Contraseña (mínimo 12 caracteres)" -AsSecureStrin
 $env:BOOTSTRAP_ADMIN_PASSWORD = [System.Net.NetworkCredential]::new("", $securePassword).Password
 
 docker compose --env-file .env.docker exec `
+  -e "ADMIN_BOOTSTRAP_ENABLED=true" `
   -e "BOOTSTRAP_ADMIN_EMAIL=$env:BOOTSTRAP_ADMIN_EMAIL" `
   -e "BOOTSTRAP_ADMIN_NAME=$env:BOOTSTRAP_ADMIN_NAME" `
   -e "BOOTSTRAP_ADMIN_PASSWORD=$env:BOOTSTRAP_ADMIN_PASSWORD" `
@@ -98,13 +99,19 @@ docker compose --env-file .env.docker down
 1. Clonar el repositorio en el servidor que TI haya elegido.
 2. Copiar `.env.production.example` como `.env.production` y completar los secretos y las integraciones.
 3. Revisar en `.env.production` que `FRONTEND_URL` sea el nombre HTTPS definitivo y que `FRONTEND_PORT` coincida con la configuración de red.
+   Antes de ejecutar migraciones, comprobar que Compose pueda leer la configuración:
+
+   ```sh
+   docker compose --env-file .env.production -f docker-compose.production.yml --profile setup config --quiet
+   ```
+
 4. **Solo para una instalación nueva con una base vacía**, aplicar las migraciones versionadas:
 
    ```sh
-   docker compose --env-file .env.production -f docker-compose.production.yml --profile setup run --rm schema
+   docker compose --env-file .env.production -f docker-compose.production.yml --profile setup run --build --rm schema
    ```
 
-   La secuencia incluye la línea base del esquema anterior, el historial de importaciones y el lock compartido para importaciones. `migrate deploy` registra las migraciones y no se ejecuta dentro de las peticiones de la web.
+   Este comando construye la imagen del backend si hace falta, inicia PostgreSQL y aplica todas las migraciones versionadas pendientes. El servicio `backend` de Compose productivo no ejecuta migraciones al arrancar.
 
    **Instalación ya existente:** no ejecutes este paso directamente contra su base. Primero TI debe respaldarla y comparar el esquema con la línea base y las migraciones. Si la base ya contiene cambios aplicados anteriormente con `db push`, el responsable de base de datos debe verificar uno por uno los objetos de cada migración antes de marcarlos como aplicados con `prisma migrate resolve --applied <nombre>`. Después se ejecuta `migrate deploy` para aplicar solo las migraciones que faltan. Si el esquema no coincide, preparar y probar una migración de ajuste en una copia restaurada antes de tocar la base real.
 
@@ -135,7 +142,7 @@ El contenedor `schema` ejecuta `prisma migrate deploy` solo cuando TI lo solicit
 
 ### Correo
 
-La aplicación usa **Resend API** para los correos de asignación de planes de acción y otros avisos. TI debe proporcionar `RESEND_API_KEY` y un `EMAIL_FROM` cuyo dominio esté autorizado en la cuenta del proveedor. Sin una clave válida, el correo no se enviará aunque la operación de la aplicación pueda continuar.
+El backend usa SMTP cuando `SMTP_HOST` está definido; si no, utiliza **Resend API** cuando `RESEND_API_KEY` tiene un valor. TI debe configurar el proveedor elegido y un `EMAIL_FROM` autorizado. Sin un proveedor válido, el correo no se enviará, aunque la operación principal de la aplicación pueda continuar.
 
 El envío por Gmail API no está implementado. `GOOGLE_CLIENT_ID` es para iniciar sesión con Google; no habilita el envío de correos. En el entorno local, Mailpit recibe los correos y permite revisarlos desde su interfaz web.
 
@@ -154,9 +161,9 @@ La bandeja interna es independiente del permiso push y muestra solo los avisos d
 
 Clonar el repositorio solo copia el código. No copia la base con los casos, las cuentas de usuario, las evidencias ni los avatares. Antes de trasladar el sistema actual, TI debe planificar la exportación e importación de la base de datos y copiar el contenido del almacenamiento de archivos, preservando las rutas registradas. El mecanismo y la ventana de migración dependen del entorno de origen.
 
-La configuración productiva conserva datos en los volúmenes `postgres_data` y `uploaded_files`. Los volúmenes de Docker no son un respaldo por sí solos y residen en el servidor donde se crearon. TI debe respaldar ambos, cifrar las copias, limitar su acceso y ensayar la restauración. Un respaldo de PostgreSQL puede generarse así:
+La configuración productiva conserva datos en los volúmenes `postgres_data` y `uploaded_files`. Los volúmenes de Docker no son un respaldo por sí solos y residen en el servidor donde se crearon. TI debe respaldar ambos, cifrar las copias, limitar su acceso y ensayar la restauración.
 
-Las cargas de evidencias aceptan hasta 10 archivos de 30 MB cada uno, con un máximo agregado de 150 MB por petición. TI debe dimensionar `uploaded_files` y su política de retención para ese uso.
+Un respaldo de PostgreSQL puede generarse así:
 
 ```sh
 docker compose --env-file .env.production -f docker-compose.production.yml exec -T postgres \
@@ -164,6 +171,8 @@ docker compose --env-file .env.production -f docker-compose.production.yml exec 
 ```
 
 Las evidencias y avatares también deben incluirse en el respaldo desde el volumen `uploaded_files`. Al mover la instalación a otro servidor, se deben transferir y restaurar tanto la base como los archivos antes de abrir el acceso.
+
+Las cargas aceptan hasta 10 archivos de 30 MB cada uno, con un máximo agregado de 150 MB por petición. Dimensione el volumen `uploaded_files` y su política de retención para ese uso.
 
 La aplicación no crea automáticamente cuentas empresariales al iniciar. TI o el administrador designado debe provisionar las cuentas y roles iniciales mediante el procedimiento aprobado para la instalación.
 

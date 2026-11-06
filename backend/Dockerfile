@@ -48,7 +48,7 @@ COPY --from=deps-prod /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
 COPY package.json ./
-COPY scripts/seed-contingencias.mjs scripts/setup-catalogs.mjs scripts/setup-admin.mjs scripts/migrate-operational-multiple-dates.mjs ./scripts/
+COPY scripts/seed-contingencias.mjs scripts/setup-catalogs.mjs scripts/setup-admin.mjs scripts/bootstrap-admin.mjs scripts/migrate-operational-multiple-dates.mjs ./scripts/
 
 # Evidencias de casos y avatares: el código los escribe acá si no existe.
 # Se monta como volumen en docker-compose para que sobrevivan a un rebuild.

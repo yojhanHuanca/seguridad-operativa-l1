@@ -60,6 +60,9 @@ services:
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
       VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:soporte@lineauno.pe}
+    # Las migraciones versionadas se ejecutan explícitamente mediante el
+    # servicio `schema`; no modificar el esquema al reiniciar la API.
+    command: ["node", "dist/server.js"]
     volumes:
       - uploaded_files:/app/uploads
     security_opt:
