@@ -19,9 +19,12 @@ import {
   XCircle,
 } from "lucide-react";
 import { AdminShell } from "@/components/layout/AdminShell";
+import { ContingenciaShell } from "@/components/layout/ContingenciaShell";
+import { MonitoristaShell } from "@/components/layout/MonitoristaShell";
+import { SeguridadOperativaShell } from "@/components/layout/SeguridadOperativaShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/design-system/primitives/Button";
-import { IMPORTACION_MODULOS } from "@/features/importacion/importacionConfig";
+import { IMPORTACION_MODULOS, IMPORTACION_TIPOS_POR_PANEL, type ImportacionPanel } from "@/features/importacion/importacionConfig";
 import { apiErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { readExcelWorkbook } from "@/lib/readExcelWorkbook";
@@ -279,6 +282,25 @@ function CellPreview({ sheet, preview }: { sheet: ImportSheet; preview: Importac
 }
 
 export function AdminImportacionPage() {
+  return <ImportacionPage panel="admin" />;
+}
+
+export function SeguridadOperativaImportacionPage() {
+  return <ImportacionPage panel="seguridad" />;
+}
+
+export function MonitoreoImportacionPage() {
+  return <ImportacionPage panel="monitoreo" />;
+}
+
+export function ContingenciasImportacionPage() {
+  return <ImportacionPage panel="contingencias" />;
+}
+
+function ImportacionPage({ panel }: { panel: ImportacionPanel }) {
+  const allowedTypes = IMPORTACION_TIPOS_POR_PANEL[panel];
+  const isAdmin = panel === "admin";
+  const Shell = panel === "admin" ? AdminShell : panel === "seguridad" ? SeguridadOperativaShell : panel === "monitoreo" ? MonitoristaShell : ContingenciaShell;
   const inputRef = useRef<HTMLInputElement | null>(null);
   const clearImportDraft = useClearDraft("history-import:");
   const clearDecisionsDraft = () => {
@@ -303,12 +325,13 @@ export function AdminImportacionPage() {
   const [revertReason, setRevertReason] = useDraftState("pages/admin/ImportacionPage:revertReason", "");
   const [parseError, setParseError] = useState<string | null>(null);
   const [parsing, setParsing] = useState(false);
-  const [tipoImportacion, setTipoImportacion] = useDraftState<ImportacionTipo>("history-import-type", "casos");
+  const [savedTipoImportacion, setTipoImportacion] = useDraftState<ImportacionTipo>("history-import-type", isAdmin ? "casos" : allowedTypes[0]);
+  const tipoImportacion = allowedTypes.includes(savedTipoImportacion) ? savedTipoImportacion : allowedTypes[0];
   const [confirmationStarted, setConfirmationStarted] = useDraftState("history-import:started", false);
   const modulo = IMPORTACION_MODULOS[tipoImportacion];
   const validar = useValidarImportacion(tipoImportacion);
   const importar = useImportarRegistros(tipoImportacion);
-  const historial = useHistorialImportaciones(historyPage);
+  const historial = useHistorialImportaciones(historyPage, isAdmin);
   const revertir = useRevertirImportacion();
 
   const selectedSheet = parsed?.sheets[sheetIndex] ?? null;
@@ -318,12 +341,14 @@ export function AdminImportacionPage() {
     ? apiErrorMessage(validar.error, "No se pudo validar el archivo")
     : importar.error
       ? isAxiosError(importar.error) && (!importar.error.response || importar.error.response.status >= 500)
-        ? "No se pudo confirmar el resultado de la carga. Puede seguir procesándose: consulta el historial antes de volver a importar para evitar registros adicionales."
+        ? isAdmin
+          ? "No se pudo confirmar el resultado de la carga. Puede seguir procesándose: consulta el historial antes de volver a importar para evitar registros adicionales."
+          : "No se pudo confirmar el resultado de la carga. Puede seguir procesándose: comunícate con Administración antes de volver a importar para evitar registros adicionales."
         : apiErrorMessage(importar.error, "No se pudo importar el archivo")
       : null;
 
   function cambiarTipoImportacion(tipo: ImportacionTipo) {
-    if (tipo === tipoImportacion) return;
+    if (!allowedTypes.includes(tipo) || tipo === tipoImportacion) return;
     clearDraft();
     setValidatedHere(false);
     setTipoImportacion(tipo);
@@ -356,13 +381,29 @@ export function AdminImportacionPage() {
     importar.reset();
 
     try {
-      const next = await parseFile(file);
-      const firstDataSheet = next.sheets.findIndex(sheet => detectImportType([Object.fromEntries(sheet.headers.map(header => [header, ""]))]) !== null);
+      const parsedFile = await parseFile(file);
+      const compatibleSheets = parsedFile.sheets.filter(sheet => {
+        const type = detectImportType([Object.fromEntries(sheet.headers.map(header => [header, ""]))]);
+        return !type || allowedTypes.includes(type);
+      });
+      if (compatibleSheets.length === 0) {
+        const detected = parsedFile.sheets.map(sheet => detectImportType([Object.fromEntries(sheet.headers.map(header => [header, ""]))])).find(Boolean);
+        throw new Error(detected
+          ? `El archivo corresponde a ${IMPORTACION_MODULOS[detected].label}, una carga que no está habilitada en este perfil.`
+          : "El archivo no contiene una hoja compatible con los tipos de carga habilitados para este perfil.");
+      }
+      const excludedSheets = parsedFile.sheets.length - compatibleSheets.length;
+      const next = { ...parsedFile, sheets: compatibleSheets };
+      const firstDataSheet = next.sheets.findIndex(sheet => {
+        const type = detectImportType([Object.fromEntries(sheet.headers.map(header => [header, ""]))]);
+        return type !== null && allowedTypes.includes(type);
+      });
       const nextSheetIndex = firstDataSheet >= 0 ? firstDataSheet : 0;
-      const detectedType = detectImportType([Object.fromEntries((next.sheets[nextSheetIndex]?.headers ?? []).map(header => [header, ""]))]) ?? tipoImportacion;
-      setTipoImportacion(detectedType);
+      const detectedType = detectImportType([Object.fromEntries((next.sheets[nextSheetIndex]?.headers ?? []).map(header => [header, ""]))]);
+      if (detectedType) setTipoImportacion(detectedType);
       setParsed(next);
       setSheetIndex(nextSheetIndex);
+      if (excludedSheets > 0) setParseError(`Se omitieron ${excludedSheets} hoja${excludedSheets === 1 ? "" : "s"} de otros tipos de importación no habilitados en este perfil.`);
     } catch (error) {
       setParsed(null);
       setParseError(error instanceof Error ? error.message : "No se pudo leer el archivo");
@@ -379,6 +420,12 @@ export function AdminImportacionPage() {
   }
 
   function handleSheetChange(index: number) {
+    const nextType = detectImportType([Object.fromEntries((parsed?.sheets[index]?.headers ?? []).map(header => [header, ""]))]);
+    if (nextType && !allowedTypes.includes(nextType)) {
+      setParseError(`La hoja seleccionada corresponde a ${IMPORTACION_MODULOS[nextType].label}, que no está habilitada en este perfil.`);
+      return;
+    }
+    setParseError(null);
     clearDecisionsDraft();
     setValidatedHere(false);
     setSheetIndex(index);
@@ -390,7 +437,6 @@ export function AdminImportacionPage() {
     setConfirming(false);
     validar.reset();
     importar.reset();
-    const nextType = detectImportType([Object.fromEntries((parsed?.sheets[index]?.headers ?? []).map(header => [header, ""]))]);
     if (nextType) setTipoImportacion(nextType);
   }
 
@@ -423,12 +469,12 @@ export function AdminImportacionPage() {
         : null;
 
   return (
-    <AdminShell>
+    <Shell>
       <div className="import-workspace">
-      <ImportacionHeader />
+      <ImportacionHeader showHistory={isAdmin} />
       {parsed && <p role="status" className="mb-3 rounded-lg border border-line bg-white p-3 text-sm text-ink-soft">Tu archivo y las decisiones se conservan en esta pestaña. Después de recargar, pulsa Validar para actualizar la revisión antes de importar.</p>}
-      {confirmationStarted && <div role="alert" className="mb-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">Se inició una carga anteriormente. Revisa el historial antes de volver a importar para evitar registros adicionales. No se reenvían cargas al recargar.<Button variant="outline" className="ml-3" onClick={() => setConfirmationStarted(false)}>Ya revisé el historial</Button></div>}
-      <div className="import-module-tabs" role="tablist" aria-label="Módulo de importación">{(Object.keys(IMPORTACION_MODULOS) as ImportacionTipo[]).map(tipo => <button key={tipo} role="tab" aria-selected={tipoImportacion === tipo} disabled={pending} onClick={() => cambiarTipoImportacion(tipo)}>{tipo === "monitoreo" ? "Monitoreo" : IMPORTACION_MODULOS[tipo].label}</button>)}</div>
+      {confirmationStarted && <div role="alert" className="mb-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">Se inició una carga anteriormente. {isAdmin ? "Revisa el historial antes de volver a importar" : "Comunícate con Administración antes de volver a importar"} para evitar registros adicionales. No se reenvían cargas al recargar.<Button variant="outline" className="ml-3" onClick={() => setConfirmationStarted(false)}>Entendido</Button></div>}
+      <div className="import-module-tabs" role="tablist" aria-label="Módulo de importación">{allowedTypes.map(tipo => <button key={tipo} role="tab" aria-selected={tipoImportacion === tipo} disabled={pending} onClick={() => cambiarTipoImportacion(tipo)}>{tipo === "monitoreo" ? "Monitoreo" : IMPORTACION_MODULOS[tipo].label}</button>)}</div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-ink-quiet">{modulo.description}</p>{!result && !dirty && <ValidationBadge preview={preview} />}</div>
 
       {tipoImportacion === "datos_operativos" && <section aria-label="Plantilla de datos operativos" className="mb-5 rounded-xl border border-brand-100 bg-brand-50/60 p-4 sm:p-5">
@@ -677,7 +723,7 @@ export function AdminImportacionPage() {
         </>
       )}
 
-      <Card id="import-history" className="mt-6 overflow-hidden rounded-lg border border-line bg-white p-0">
+      {isAdmin && <Card id="import-history" className="mt-6 overflow-hidden rounded-lg border border-line bg-white p-0">
         <div className="flex items-center gap-2 border-b border-line bg-surface px-4 py-3">
           <History className="h-4 w-4 text-brand-700" />
           <div><p className="text-[13px] font-semibold text-ink">Historial de importaciones</p><p className="mt-0.5 text-[11.5px] text-ink-quiet">Trazabilidad de archivos cargados y operaciones revertidas.</p></div>
@@ -696,10 +742,10 @@ export function AdminImportacionPage() {
             </tr>)}</tbody>
           </table>{historial.data?.items?.length === 0 && <p className="p-5 text-sm text-ink-quiet">Todavía no existen importaciones registradas.</p>}</div>
         )}
-      </Card>
+      </Card>}
 
-      <div className="mt-3 flex items-center justify-end gap-4 text-sm"><Button variant="outline" disabled={historyPage === 1 || historial.isFetching} onClick={() => setHistoryPage(page => page - 1)}>Anterior</Button><span>Página {historyPage}</span><Button variant="outline" disabled={historyPage * 20 >= (historial.data?.total ?? 0) || historial.isFetching} onClick={() => setHistoryPage(page => page + 1)}>Siguiente</Button></div>
-      {revertingId !== null && (
+      {isAdmin && <div className="mt-3 flex items-center justify-end gap-4 text-sm"><Button variant="outline" disabled={historyPage === 1 || historial.isFetching} onClick={() => setHistoryPage(page => page - 1)}>Anterior</Button><span>Página {historyPage}</span><Button variant="outline" disabled={historyPage * 20 >= (historial.data?.total ?? 0) || historial.isFetching} onClick={() => setHistoryPage(page => page + 1)}>Siguiente</Button></div>}
+      {isAdmin && revertingId !== null && (
         <div role="dialog" aria-modal="true" aria-labelledby="revertir-importacion" className="fixed inset-0 z-50 grid place-items-center bg-black/45 p-4">
           <div className="w-full max-w-lg rounded-xl border border-line bg-white p-6 shadow-2xl">
             <h2 id="revertir-importacion" className="text-lg font-bold text-ink">Revertir importación</h2>
@@ -711,6 +757,6 @@ export function AdminImportacionPage() {
         </div>
       )}
       </div>
-    </AdminShell>
+    </Shell>
   );
 }

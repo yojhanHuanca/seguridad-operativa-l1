@@ -232,7 +232,7 @@ export function EvaluationForm({ caso }: { caso: CaseDetail }) {
                 onSuccess: () => {
                   clearPageDraft("pages/seguridad/case-detail/EvaluationForm:");
                   toast.success(
-                    requiresInvestigation ? "Caso evaluado, pasó a Investigación" : "Caso evaluado, pasó a Plan de Acción"
+                    requiresInvestigation ? "Caso evaluado, pasó a Investigación exhaustiva" : "Caso evaluado, pasó a Plan de Acción"
                   );
                 },
                 onError: (e) => toast.error(apiErrorMessage(e, "No se pudo evaluar el caso")),

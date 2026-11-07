@@ -58,8 +58,9 @@ export function RiskMatrixPicker({
       <div className="overflow-x-auto rounded-xl border border-line bg-white">
         <div className="min-w-[620px]">
           <div className="grid grid-cols-[150px_repeat(4,minmax(110px,1fr))] border-b border-line bg-surface/70">
-            <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
-              Probabilidad / Severidad
+            <div className="px-3 py-2 text-[11px] font-semibold uppercase leading-4 tracking-wide text-ink-faint">
+              <span className="block">Severidad</span>
+              <span className="block">Probabilidad</span>
             </div>
             {SEVERIDADES.map((sev) => (
               <div key={sev.codigo} className="border-l border-line px-3 py-2 text-center">

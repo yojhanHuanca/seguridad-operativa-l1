@@ -6,6 +6,7 @@ import {
   ChevronsRight,
   Database,
   ExternalLink,
+  FileSpreadsheet,
   Gauge,
   History,
   LayoutDashboard,
@@ -47,6 +48,7 @@ const SECTIONS: NavSection[] = [
       { to: "/monitoreo/nuevo", label: "Registrar Evento", icon: Plus },
       { to: "/monitoreo/historial", label: "Historial", icon: History },
       { to: "/monitoreo/datos-operativos", label: "Datos Operativos", icon: Database },
+      { to: "/monitoreo/importacion", label: "Importación masiva", icon: FileSpreadsheet },
     ],
   },
   {
@@ -65,6 +67,7 @@ const TITLES: Record<string, { title: string; crumb: string }> = {
   "/monitoreo/nuevo": { title: "Registrar evento", crumb: "Inicio / Registrar evento" },
   "/monitoreo/historial": { title: "Historial de eventos", crumb: "Inicio / Historial" },
   "/monitoreo/datos-operativos": { title: "Datos Operativos", crumb: "Inicio / Datos Operativos" },
+  "/monitoreo/importacion": { title: "Importación masiva", crumb: "Inicio / Importación masiva" },
   "/monitoreo/indicadores": { title: "Indicadores", crumb: "Inicio / Indicadores" },
   "/monitoreo/reportes": { title: "Reportes", crumb: "Inicio / Reportes" },
 };

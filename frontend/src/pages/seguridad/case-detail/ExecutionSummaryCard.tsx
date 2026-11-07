@@ -1483,7 +1483,7 @@ function ClosedSummary({ caso }: { caso: CaseDetail }) {
       subtitle="Resumen del ciclo completo del expediente."
       icon={<CheckCircle2 className="h-5 w-5" />}
       action={
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           {reaperturas > 0 && (
             <Pill tone="warning" dot>
               {reaperturas} {reaperturas === 1 ? "reapertura" : "reaperturas"}

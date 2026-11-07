@@ -77,7 +77,7 @@ export function InvestigationCard({ caso }: { caso: CaseDetail }) {
         subtitle="Análisis de riesgo, hallazgos, causa raíz y conclusiones registrados por Seguridad Operativa."
         icon={<Microscope className="h-5 w-5" />}
         action={
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             {risk && <RiskPill risk={risk} showCategory />}
             <Pill tone={sinPlan ? "warning" : "brand"} dot>{sinPlan ? "Falta plan" : "Completado"}</Pill>
             <StageRollbackButton
@@ -124,7 +124,7 @@ export function InvestigationCard({ caso }: { caso: CaseDetail }) {
       subtitle="Complete el análisis de riesgo, los hallazgos, la causa raíz y las conclusiones del caso."
       icon={<Microscope className="h-5 w-5" />}
       action={
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           {risk && <RiskPill risk={risk} showCategory />}
           <Pill tone={sinPlan ? "warning" : "info"} dot>{sinPlan ? "Falta plan" : "En curso"}</Pill>
           <StageRollbackButton

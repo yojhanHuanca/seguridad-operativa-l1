@@ -72,7 +72,6 @@ export function AuthLayout({
               <div className="mt-8 flex gap-7 border-t border-white/20 pt-5 text-[11px] text-white/65">
                 <span><strong className="block text-[18px] text-white">26</strong> estaciones</span>
                 <span><strong className="block text-[18px] text-white">11</strong> distritos conectados</span>
-                <span><strong className="block text-[18px] text-white">24/7</strong> continuidad operativa</span>
               </div>
             </div>
           </div>

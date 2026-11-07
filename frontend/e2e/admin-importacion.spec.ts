@@ -33,7 +33,7 @@ for (const [filename, module, sheet] of [
 }
 import { usersPrefixedWorkbook } from './fixtures/users-prefixed-workbook';
 
-test('el mismo XLSX independiente también se puede leer en Importación Histórica', async ({ page }) => {
+test('rechaza un XLSX sin encabezados de los módulos de importación', async ({ page }) => {
   await mockApi(page);
   await loginAs(page, 'Admin');
   await page.route('**/api/importacion/historial**', route => route.fulfill({ json: { success: true, data: { items: [], total: 0 } } }));
@@ -45,9 +45,8 @@ test('el mismo XLSX independiente también se puede leer en Importación Histór
     mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     buffer: usersPrefixedWorkbook,
   });
-  await expect(page.getByLabel('Hoja que se importará').locator('option')).toHaveText([
-    'Usuarios válidos — 9 filas — 6 columnas', 'Errores intencionales — 4 filas — 6 columnas',
-  ]);
+  await expect(page.getByText('El archivo no contiene hojas con encabezados y datos.', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('Hoja que se importará')).toHaveCount(0);
   expect(writes).toBe(0);
 });
 

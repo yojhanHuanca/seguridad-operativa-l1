@@ -46,10 +46,10 @@ describe("importación de datos operativos", () => {
     ] });
   });
 
-  it("omite una fecha existente y rechaza un cambio de configuración", async () => {
+  it("permite registrar fechas existentes y rechaza un cambio de configuración", async () => {
     db.datos_operativos.findMany.mockResolvedValue([{ fecha: new Date("2025-09-01T00:00:00Z") }]);
     const preview = await service.validar(input);
-    expect(preview.resumen).toMatchObject({ listos: 1, duplicados: 1 });
+    expect(preview.resumen).toMatchObject({ listos: 2, duplicados: 0 });
     config.get.mockResolvedValue({ operacion: { kmPorCarrera: 34 } });
     await expect(service.importar(input, 1, 33.128331, 26)).rejects.toThrow("cambió");
     expect(db.datos_operativos.createMany).not.toHaveBeenCalled();

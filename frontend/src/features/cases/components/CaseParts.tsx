@@ -161,15 +161,15 @@ export function StageSection({
 }) {
   return (
     <Card>
-      <div className="flex items-start justify-between gap-4 mb-5">
-        <div className="flex items-start gap-3">
+      <div className="mb-5 flex min-w-0 flex-col gap-3 2xl:flex-row 2xl:items-start 2xl:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
           <div className="h-10 w-10 rounded-xl bg-brand-50 text-brand-700 grid place-items-center shrink-0">{icon}</div>
-          <div>
-            <h2 className="text-[16px] font-bold text-ink leading-tight">{title}</h2>
-            <p className="text-[12.5px] text-ink-quiet mt-0.5">{subtitle}</p>
+          <div className="min-w-0">
+            <h2 className="break-words text-[16px] font-bold text-ink leading-tight">{title}</h2>
+            <p className="mt-0.5 break-words text-[12.5px] text-ink-quiet">{subtitle}</p>
           </div>
         </div>
-        {action}
+        {action && <div className="min-w-0 max-w-full 2xl:shrink-0">{action}</div>}
       </div>
       {children}
     </Card>

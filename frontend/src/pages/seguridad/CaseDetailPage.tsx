@@ -52,7 +52,7 @@ import { parseActivityDescription } from "@/features/cases/lib/activityMeta";
 import { shortPlanCode } from "@/features/cases/lib/planLabels";
 
 const mobileHeaderButtonClass =
-  "h-auto min-h-8 w-full min-w-0 whitespace-normal px-2 py-1.5 text-center leading-tight sm:h-8 sm:w-auto sm:whitespace-nowrap sm:px-3 sm:py-0";
+  "h-auto min-h-8 w-full min-w-0 whitespace-normal px-2 py-1.5 text-center leading-tight 2xl:h-8 2xl:w-auto 2xl:whitespace-nowrap 2xl:px-3 2xl:py-0";
 
 // Portado de pages/seguridad/CaseFile.tsx: cabecera + stepper + panel
 // izquierdo (Información general / Evento operativo) + panel central por etapa,
@@ -152,10 +152,10 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
       {exportFullActive && <ExpedienteCompletoPrintDocument caso={caso} systemName={systemName} />}
       <div data-print-plan-screen>
       {/* Header */}
-      <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex min-w-0 flex-col gap-4 2xl:flex-row 2xl:items-start 2xl:justify-between">
         <div className="min-w-0 sm:flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-mono text-[18px] font-bold text-brand-700">{caso.codigo_sop}</span>
+            <span className="max-w-full break-words font-mono text-[18px] font-bold text-brand-700 [overflow-wrap:anywhere]">{caso.codigo_sop}</span>
             <span className="text-ink-faint">·</span>
             <StagePill stage={stage} />
             {estado === "Prórroga Solicitada" && (
@@ -173,11 +173,11 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
               el estado ya identifican el expediente, y el texto se lee en la
               descripción. Mejor sin encabezado que con uno inventado. */}
           {titulo && (
-            <h1 className="mt-2 max-w-3xl break-words text-[20px] font-bold leading-tight tracking-tight text-ink sm:text-[22px]">{titulo}</h1>
+            <h1 className="mt-2 max-w-3xl break-words text-[20px] font-bold leading-tight tracking-tight text-ink [overflow-wrap:anywhere] sm:text-[22px]">{titulo}</h1>
           )}
         </div>
-        <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
-          <span data-print="hide" className="grid w-full min-w-0 grid-cols-2 gap-2 min-[440px]:grid-cols-3 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:justify-end">
+        <div className="flex w-full min-w-0 flex-col gap-2 2xl:w-auto 2xl:flex-row 2xl:items-center 2xl:justify-end">
+          <span data-print="hide" className="grid w-full min-w-0 grid-cols-2 gap-2 min-[440px]:grid-cols-3 2xl:flex 2xl:w-auto 2xl:flex-wrap 2xl:items-center 2xl:justify-end">
           <Button variant="outline" size="sm" className={mobileHeaderButtonClass} onClick={() => setShowEvidence(true)}>
             <ImageIcon className="h-4 w-4" /> Evidencias ({caso.anexos_caso.length})
           </Button>
@@ -210,9 +210,9 @@ function CaseFileContent({ caso }: { caso: CaseDetail }) {
       {ayuda && <p className="mt-2 text-[11.5px] text-ink-quiet">{ayuda}</p>}
 
       {/* Dos columnas */}
-      <div className="mt-5 grid lg:grid-cols-[280px_minmax(0,1fr)] gap-5 items-start">
+      <div className="mt-5 grid gap-5 items-start xl:grid-cols-[280px_minmax(0,1fr)]">
         {/* Panel izquierdo */}
-        <div className="space-y-4 lg:sticky lg:top-24">
+        <div className="space-y-4 xl:sticky xl:top-24">
           <InfoCard title="Información general">
             <InfoRow icon={<Building2 className="h-3.5 w-3.5" />} label="Área" value={areasCaso} />
             <InfoRow icon={<MapPin className="h-3.5 w-3.5" />} label="Estación" value={evento?.catalogo_detalle_eventos_operativos_lugar_incidenteTocatalogo_detalle?.nombre ?? "—"} />
@@ -534,7 +534,7 @@ function ExpedienteCompletoPrintDocument({ caso, systemName }: { caso: CaseDetai
             value={riesgo ? `${riesgo.codigo ?? "—"} — ${criterioAceptabilidad(riesgo.nombre, riesgo.codigo) ?? riesgo.nombre}` : "Sin evaluar"}
           />
           <PrintField label="Reportante" value={caso.nombre_reportante?.trim() || "Reporte Anónimo"} />
-          <PrintField label="Fecha de creación" value={formatDateTime(caso.created_at)} />
+          <PrintField label="Fecha de reporte" value={formatDateTime(caso.created_at)} />
         </div>
         <div className="mt-3">
           <PrintField label="Descripción del reporte" value={caso.descripcion} />

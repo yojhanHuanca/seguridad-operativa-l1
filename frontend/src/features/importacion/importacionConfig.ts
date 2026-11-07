@@ -1,5 +1,16 @@
 import type { ImportacionTipo } from "./types";
 
+export type ImportacionPanel = "admin" | "seguridad" | "monitoreo" | "contingencias";
+
+// Mantener este mapa alineado con los permisos del servidor en
+// backend/src/modules/importacion/importacion.routes.ts.
+export const IMPORTACION_TIPOS_POR_PANEL: Record<ImportacionPanel, readonly ImportacionTipo[]> = {
+  admin: ["datos_operativos", "casos", "monitoreo", "contingencias"],
+  seguridad: ["datos_operativos", "casos"],
+  monitoreo: ["datos_operativos", "monitoreo", "contingencias"],
+  contingencias: ["datos_operativos", "contingencias"],
+};
+
 export const IMPORTACION_MODULOS: Record<
   ImportacionTipo,
   {

@@ -332,7 +332,7 @@ function Hero({ systemName }: { systemName: string }) {
           Seguridad operativa, en tiempo real.
         </motion.p>
         <motion.p variants={riseItem} className="mt-2 max-w-xl text-[14px] leading-relaxed text-white/75 sm:text-[15.5px]">
-          Una plataforma para reportar, evaluar y dar seguimiento a eventos operativos, desde el primer aviso hasta el cierre del plan de acción.
+          Una plataforma para reportar, evaluar y dar seguimiento a eventos operativos.
         </motion.p>
         <motion.div variants={riseItem} className="mt-8 flex flex-wrap items-center gap-3">
           <MotionLink

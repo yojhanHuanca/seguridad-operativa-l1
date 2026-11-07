@@ -171,7 +171,7 @@ export function PlanCard({ caso }: { caso: CaseDetail }) {
       }
       icon={<ClipboardList className="h-5 w-5" />}
       action={
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           {plan ? (
             <Pill tone={plan.catalogo_detalle.nombre === "Aceptado" ? "brand" : "warning"} dot>
               {plan.catalogo_detalle.nombre}

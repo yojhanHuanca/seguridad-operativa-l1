@@ -84,6 +84,10 @@ export function esTaller(nombre: string, codigo?: string | null) {
 
 const NO_ES_ESTACION = new Set(["exteriores"]);
 
+function normalizarNombreEstacion(nombre: string): string {
+  return nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+}
+
 /**
  * El catálogo "Lugar de Incidente" (que administra el Admin) es la fuente de
  * verdad de qué estaciones existen — pero no tiene coordenadas para dibujar
@@ -99,26 +103,50 @@ export function stationNamesFromCatalog(catalogItems: { nombre: string; codigo?:
 }
 
 export function resolveStationCoords(catalogItems: { nombre: string; codigo?: string | null }[]): { name: string; x: number; y: number; km: number }[] {
-  const nombresCatalogo = catalogItems.filter((i) => !esTaller(i.nombre, i.codigo)).map((i) => i.nombre.trim()).filter((n) => n && !NO_ES_ESTACION.has(n.toLowerCase()));
-
-  const conocidas = new Map(STATION_COORDS.map((s) => [s.name.toLowerCase(), s]));
-  const resultado: { name: string; x: number; y: number; km: number }[] = [];
-
-  for (const nombre of nombresCatalogo) {
-    const known = conocidas.get(nombre.toLowerCase());
-    if (known) {
-      resultado.push(known);
-      continue;
-    }
-
-    const ultimo = resultado[resultado.length - 1] ?? STATION_COORDS[STATION_COORDS.length - 1];
-    const penultimo = resultado[resultado.length - 2] ?? STATION_COORDS[STATION_COORDS.length - 2] ?? ultimo;
-    const dx = ultimo.x - penultimo.x || 50;
-    const dy = ultimo.y - penultimo.y || 30;
-    const dkm = ultimo.km - penultimo.km || 2;
-
-    resultado.push({ name: nombre, x: ultimo.x + dx, y: ultimo.y + dy, km: Math.round((ultimo.km + dkm) * 10) / 10 });
+  const nombresCatalogo: string[] = [];
+  const nombresVistos = new Set<string>();
+  for (const item of catalogItems) {
+    if (esTaller(item.nombre, item.codigo)) continue;
+    const nombre = item.nombre.trim();
+    const normalizado = normalizarNombreEstacion(nombre);
+    if (!nombre || NO_ES_ESTACION.has(normalizado) || nombresVistos.has(normalizado)) continue;
+    nombresVistos.add(normalizado);
+    nombresCatalogo.push(nombre);
   }
+
+  const conocidas = new Map(STATION_COORDS.map((station, index) => [
+    normalizarNombreEstacion(station.name),
+    { station, index },
+  ] as const));
+  const conocidasDelCatalogo = nombresCatalogo
+    .map((nombre) => conocidas.get(normalizarNombreEstacion(nombre)))
+    .filter((item): item is { station: (typeof STATION_COORDS)[number]; index: number } => Boolean(item))
+    .sort((a, b) => a.index - b.index);
+  const resultado = conocidasDelCatalogo.map(({ station }) => station);
+  const nombresNuevos = nombresCatalogo.filter((nombre) => !conocidas.has(normalizarNombreEstacion(nombre)));
+
+  if (nombresNuevos.length === 0) return resultado;
+
+  // El catálogo puede tener un orden administrativo distinto al recorrido
+  // físico. Primero se colocan las estaciones conocidas en su secuencia real;
+  // las estaciones nuevas se prolongan desde el último punto de esa secuencia.
+  const ultimoConocido = conocidasDelCatalogo[conocidasDelCatalogo.length - 1];
+  const indiceBase = ultimoConocido?.index ?? STATION_COORDS.length - 1;
+  const base = ultimoConocido?.station ?? STATION_COORDS[indiceBase];
+  const siguiente = STATION_COORDS[indiceBase + 1];
+  const anterior = STATION_COORDS[indiceBase - 1] ?? STATION_COORDS[indiceBase];
+  const dx = (siguiente?.x ?? base.x + (base.x - anterior.x)) - base.x || 50;
+  const dy = (siguiente?.y ?? base.y + (base.y - anterior.y)) - base.y || 30;
+  const dkm = (siguiente?.km ?? base.km + (base.km - anterior.km)) - base.km || 2;
+
+  nombresNuevos.forEach((nombre, index) => {
+    resultado.push({
+      name: nombre,
+      x: base.x + dx * (index + 1),
+      y: base.y + dy * (index + 1),
+      km: Math.round((base.km + dkm * (index + 1)) * 10) / 10,
+    });
+  });
 
   return resultado;
 }

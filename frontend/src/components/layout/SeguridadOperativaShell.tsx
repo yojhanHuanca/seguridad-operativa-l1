@@ -16,6 +16,7 @@ import {
   Download,
   ExternalLink,
   FilePlus2,
+  FileSpreadsheet,
   Folder,
   Gauge,
   Home,
@@ -124,6 +125,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
       links: [
         { to: "/seguridad", label: "Dashboard Ejecutivo", icon: LayoutDashboard, match: (p) => p === "/seguridad" },
         { to: "/seguridad/datos-operativos", label: "Datos Operativos", icon: Database, match: (p) => p === "/seguridad/datos-operativos" },
+        { to: "/seguridad/importacion", label: "Importación masiva", icon: FileSpreadsheet, match: (p) => p === "/seguridad/importacion" },
         {
           to: "/seguridad/eventos-asignados",
           label: "Eventos asignados",
@@ -163,7 +165,7 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
       icon: BarChart3,
       defaultOpen: true,
       links: [
-        { to: "/seguridad/reportes/kpis", label: "KPIs", icon: Gauge, match: (p) => p === "/seguridad/reportes" || p === "/seguridad/reportes/kpis" },
+        { to: "/seguridad/reportes/kpis", label: "KPI HALLAZGOS", icon: Gauge, match: (p) => p === "/seguridad/reportes" || p === "/seguridad/reportes/kpis" },
         { to: "/seguridad/reportes/indicadores-operativos", label: "Eventos operativos", icon: Activity, match: (p) => p === "/seguridad/reportes/indicadores-operativos" },
         { to: "/seguridad/reportes/exportar", label: "Exportar", icon: Download, match: (p) => p === "/seguridad/reportes/exportar" },
       ],
@@ -427,12 +429,13 @@ export function SeguridadOperativaShell({ children }: { children: ReactNode }) {
 
 function getPageTitle(pathname: string) {
   if (pathname === "/seguridad/datos-operativos") return "Datos Operativos";
+  if (pathname === "/seguridad/importacion") return "Importación masiva";
   if (pathname === "/seguridad") return "Dashboard Ejecutivo";
   if (pathname.startsWith("/seguridad/casos")) return "Gestión de Casos";
   if (pathname === "/seguridad/planes-accion") return "Planes de Acción";
   if (pathname === "/seguridad/eventos") return "Eventos operativos";
   if (pathname === "/seguridad/eventos-asignados") return "Eventos asignados";
-  if (pathname === "/seguridad/reportes" || pathname === "/seguridad/reportes/kpis") return "KPIs";
+  if (pathname === "/seguridad/reportes" || pathname === "/seguridad/reportes/kpis") return "KPI HALLAZGOS";
   if (pathname === "/seguridad/reportes/indicadores-operativos") return "Indicadores de eventos operativos";
   if (pathname === "/seguridad/reportes/exportar") return "Exportar Reportes";
   if (pathname === "/seguridad/usuarios") return "Administración de Usuarios";
@@ -443,12 +446,13 @@ function getPageTitle(pathname: string) {
 
 function getBreadcrumb(pathname: string) {
   if (pathname === "/seguridad/datos-operativos") return "Inicio / Datos Operativos";
+  if (pathname === "/seguridad/importacion") return "Inicio / Importación masiva";
   if (pathname === "/seguridad") return "Inicio";
   if (pathname.startsWith("/seguridad/casos")) return "Inicio / Casos";
   if (pathname === "/seguridad/planes-accion") return "Inicio / Planes de Acción";
   if (pathname === "/seguridad/eventos") return "Inicio / Eventos operativos";
   if (pathname === "/seguridad/eventos-asignados") return "Inicio / Eventos asignados";
-  if (pathname === "/seguridad/reportes" || pathname === "/seguridad/reportes/kpis") return "Inicio / Reportes / KPIs";
+  if (pathname === "/seguridad/reportes" || pathname === "/seguridad/reportes/kpis") return "Inicio / Reportes / KPI HALLAZGOS";
   if (pathname === "/seguridad/reportes/indicadores-operativos") return "Inicio / Indicadores / Eventos operativos";
   if (pathname === "/seguridad/reportes/exportar") return "Inicio / Reportes / Exportar";
   if (pathname === "/seguridad/usuarios") return "Inicio / Usuarios";

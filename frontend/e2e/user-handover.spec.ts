@@ -50,8 +50,13 @@ test("reasignar primero y desactivar después conserva el formulario y filtra re
   const dialog = page.getByRole("dialog", { name: "Reasignar planes pendientes", exact: true });
   await expect(dialog).toBeVisible();
   await expect(page.getByRole("dialog")).toHaveCount(1);
-  const replacement = dialog.getByRole("combobox", { name: "Reemplazo para Operaciones", exact: true });
-  await expect(replacement.locator("option")).toHaveText(["Selecciona al jefe de reemplazo", "Jefe Reemplazo"]);
+  await dialog.getByRole("checkbox", { name: "SOP 1-2026-PLA-01", exact: true }).check();
+  const replacement = dialog.getByRole("combobox", { name: "Reemplazo para SOP 1-2026-PLA-01", exact: true });
+  await expect(replacement.locator("option")).toHaveText([
+    "Selecciona al jefe de reemplazo",
+    "Jefe Reemplazo · Operaciones",
+    "Jefe Otra Área · Operaciones",
+  ]);
   await dialog.getByRole("button", { name: "Cancelar", exact: true }).click();
   await expect(page.getByRole("combobox", { name: "Estado", exact: true })).toHaveValue("Inactivo");
   expect(result.transfers).toEqual([]);
@@ -62,7 +67,7 @@ test("reasignar primero y desactivar después conserva el formulario y filtra re
   await dialog.getByRole("textbox", { name: "Motivo de la reasignación", exact: true }).fill("Transferencia por cambio de jefe");
   await dialog.getByRole("button", { name: "Confirmar reasignación", exact: true }).click();
   await expect(dialog).toHaveCount(0);
-  expect(result.transfers).toEqual([{ planes: [10], asignaciones: [{ id_area: 1, id_usuario: 83 }], motivo: "Transferencia por cambio de jefe" }]);
+  expect(result.transfers).toEqual([{ planes: [10], asignaciones: [{ id_plan: 10, id_usuario: 83 }], motivo: "Transferencia por cambio de jefe" }]);
   expect(result.source.estado).toBe("Activo");
   await expect(page.getByRole("combobox", { name: "Estado", exact: true })).toHaveValue("Inactivo");
   await page.getByRole("button", { name: "Guardar cambios", exact: true }).click();
@@ -74,7 +79,8 @@ test("una reasignación rechazada no se reintenta sola ni desactiva al jefe", as
   const result = await setup(page, true);
   await page.getByRole("button", { name: "Reasignar planes pendientes", exact: true }).click();
   const dialog = page.getByRole("dialog", { name: "Reasignar planes pendientes", exact: true });
-  await dialog.getByRole("combobox", { name: "Reemplazo para Operaciones", exact: true }).selectOption("83");
+  await dialog.getByRole("checkbox", { name: "SOP 1-2026-PLA-01", exact: true }).check();
+  await dialog.getByRole("combobox", { name: "Reemplazo para SOP 1-2026-PLA-01", exact: true }).selectOption("83");
   await dialog.getByRole("textbox", { name: "Motivo de la reasignación", exact: true }).fill("Transferencia por cambio de jefe");
   await dialog.getByRole("button", { name: "Confirmar reasignación", exact: true }).click();
   await expect(dialog.getByRole("alert")).toContainText("Los planes pendientes cambiaron");

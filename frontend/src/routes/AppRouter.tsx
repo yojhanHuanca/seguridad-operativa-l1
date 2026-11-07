@@ -52,6 +52,9 @@ const AdminConfiguracionPage = lazyNamed(() => import("@/pages/admin/Configuraci
 const AdminAuditoriaPage = lazyNamed(() => import("@/pages/AuditoriaPage"), "AdminAuditoriaPage");
 const AdminPerfilPage = lazyNamed(() => import("@/pages/admin/PerfilPage"), "AdminPerfilPage");
 const AdminImportacionPage = lazyNamed(() => import("@/pages/admin/ImportacionPage"), "AdminImportacionPage");
+const SeguridadOperativaImportacionPage = lazyNamed(() => import("@/pages/admin/ImportacionPage"), "SeguridadOperativaImportacionPage");
+const MonitoreoImportacionPage = lazyNamed(() => import("@/pages/admin/ImportacionPage"), "MonitoreoImportacionPage");
+const ContingenciasImportacionPage = lazyNamed(() => import("@/pages/admin/ImportacionPage"), "ContingenciasImportacionPage");
 const NotFoundPage = lazyNamed(() => import("@/pages/NotFound"), "NotFoundPage");
 
 function PageFallback() {
@@ -95,6 +98,7 @@ export function AppRouter() {
           <Route path="/seguridad/notificaciones" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoNotificacionesPage /></ProtectedRoute>} />
           <Route path="/seguridad/eventos-asignados" element={<ProtectedRoute roles={["Seguridad Operativa"]}><EventosAsignadosPage /></ProtectedRoute>} />
           <Route path="/seguridad/datos-operativos" element={<ProtectedRoute roles={["Seguridad Operativa"]}><DatosOperativosPage /></ProtectedRoute>} />
+          <Route path="/seguridad/importacion" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SeguridadOperativaImportacionPage /></ProtectedRoute>} />
           <Route path="/seguridad/perfil" element={<ProtectedRoute roles={["Seguridad Operativa"]}><SoPerfilPage /></ProtectedRoute>} />
 
           {/* Portal Jefe de Área — sin login todavía; el área se elige a mano */}
@@ -114,6 +118,7 @@ export function AppRouter() {
           <Route path="/monitoreo/indicadores" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoIndicadoresPage /></ProtectedRoute>} />
           <Route path="/monitoreo/perfil" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><MonitoreoPerfilPage /></ProtectedRoute>} />
           <Route path="/monitoreo/datos-operativos" element={<ProtectedRoute roles={["Monitorista"]} allowResponsableRole="Seguridad Operativa"><DatosOperativosPage /></ProtectedRoute>} />
+          <Route path="/monitoreo/importacion" element={<ProtectedRoute roles={["Monitorista"]}><MonitoreoImportacionPage /></ProtectedRoute>} />
 
           {/* Gestión de Planes de Contingencia */}
           <Route path="/contingencias" element={<Navigate to="/contingencias/registro" replace />} />
@@ -121,6 +126,7 @@ export function AppRouter() {
           <Route path="/contingencias/historial" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaHistorialPage /></ProtectedRoute>} />
           <Route path="/contingencias/indicadores" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaIndicadoresPage /></ProtectedRoute>} />
           <Route path="/contingencias/datos-operativos" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><DatosOperativosPage /></ProtectedRoute>} />
+          <Route path="/contingencias/importacion" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciasImportacionPage /></ProtectedRoute>} />
           <Route path="/contingencias/evento/:id" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaDetallePage /></ProtectedRoute>} />
           <Route path="/contingencias/editar/:id" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaEditarPage /></ProtectedRoute>} />
           <Route path="/contingencias/perfil" element={<ProtectedRoute roles={["Gestión de Planes de Contingencia"]}><ContingenciaPerfilPage /></ProtectedRoute>} />

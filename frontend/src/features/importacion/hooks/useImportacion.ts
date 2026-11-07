@@ -60,9 +60,10 @@ export function useImportarCasos() {
   return useImportarRegistros("casos");
 }
 
-export function useHistorialImportaciones(page = 1) {
+export function useHistorialImportaciones(page = 1, enabled = true) {
   return useQuery({
     queryKey: ["importaciones-historial", page],
+    enabled,
     refetchInterval: query => query.state.data?.items.some(item => item.estado === "procesando") ? 2000 : false,
     queryFn: async () => {
       const { data } = await api.get<ApiEnvelope<{ items: ImportacionHistorialItem[]; total: number }>>("/importacion/historial", { params: { page, limit: 20 } });
