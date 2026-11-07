@@ -4,7 +4,6 @@ import { loginAs, mockApi } from './helpers';
 const profiles = [
   { role: 'Monitorista', path: '/monitoreo/datos-operativos' },
   { role: 'Seguridad Operativa', path: '/seguridad/datos-operativos' },
-  { role: 'Gestión de Planes de Contingencia', path: '/contingencias/datos-operativos' },
 ] as const;
 
 for (const profile of profiles) {

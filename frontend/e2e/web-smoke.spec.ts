@@ -57,7 +57,7 @@ const monitoreoRoutes = [
 
 const contingenciasRoutes = [
   '/contingencias/registro', '/contingencias/historial', '/contingencias/indicadores',
-  '/contingencias/datos-operativos', '/contingencias/perfil',
+  '/contingencias/perfil',
 ];
 
 test.beforeEach(async ({ page }) => {
@@ -151,4 +151,18 @@ test('Seguridad Operativa sin permiso responsable no entra a Monitoreo ni Evento
     await expect(page).toHaveURL('/seguridad');
     await expectNoRuntimeCrash(page);
   }
+});
+
+test('Contingencias mantiene la importación masiva y no expone el formulario diario de datos operativos', async ({ page }) => {
+  await loginAs(page, 'Gestión de Planes de Contingencia');
+  await page.goto('/contingencias/registro');
+  await expect(page.getByRole('link', { name: 'Datos Operativos', exact: true })).toHaveCount(0);
+  await page.getByRole('link', { name: 'Importación masiva', exact: true }).click();
+  await expect(page).toHaveURL('/contingencias/importacion');
+  await expect(page.getByRole('tab', { name: 'Datos operativos', exact: true })).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'Contingencias', exact: true })).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'Casos SOP', exact: true })).toHaveCount(0);
+  await page.goto('/contingencias/datos-operativos');
+  await expect(page.getByRole('heading', { name: 'Página no encontrada', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Registrar dato operativo', exact: true })).toHaveCount(0);
 });
