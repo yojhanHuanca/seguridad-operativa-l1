@@ -130,6 +130,26 @@ docker compose --env-file .env.docker down
 
    Este paso carga datos de catálogo; la estructura de tablas la instala Prisma Migrate. No ejecutar el seed general de desarrollo en una base empresarial.
 
+   **Crear la primera cuenta administradora:** el sistema no tiene credenciales predeterminadas ni permite el registro público. Después de iniciar la API y preparar los catálogos, TI debe crear una cuenta para la persona designada. Su correo corporativo será el usuario de inicio de sesión.
+
+   En una terminal Bash del servidor, solicita los datos de forma interactiva y ejecuta el script:
+
+   ```sh
+   read -r -p "Nombre del administrador: " INITIAL_ADMIN_NAME
+   read -r -p "Correo corporativo: " INITIAL_ADMIN_EMAIL
+   read -r -s -p "Contraseña inicial (mínimo 16 caracteres): " INITIAL_ADMIN_PASSWORD
+   printf '\n'
+   export INITIAL_ADMIN_NAME INITIAL_ADMIN_EMAIL INITIAL_ADMIN_PASSWORD
+
+   docker compose --env-file .env.production -f docker-compose.production.yml exec \
+     -e INITIAL_ADMIN_NAME -e INITIAL_ADMIN_EMAIL -e INITIAL_ADMIN_PASSWORD \
+     backend node scripts/setup-admin.mjs
+
+   unset INITIAL_ADMIN_NAME INITIAL_ADMIN_EMAIL INITIAL_ADMIN_PASSWORD
+   ```
+
+   La contraseña debe tener al menos 16 caracteres y no superar 72 bytes. Se guarda únicamente su hash y el sistema exige cambiarla en el primer inicio de sesión. El script crea el rol **Admin** si hace falta y se detiene sin modificar cuentas si ya existe un administrador. Si ya hay uno, las cuentas adicionales se gestionan desde **Gestión de Usuarios**. No guardar la contraseña en `.env.production`, el repositorio ni esta guía; TI debe entregarla al administrador por un canal seguro.
+
 6. Configurar HTTPS en el proxy o balanceador aprobado por TI, reenviando al puerto del frontend. Mantener los puertos 3000 y 5432 cerrados desde la red externa.
 
 `TRUST_PROXY_HOPS` controla cuántos proxies Express considera confiables al calcular la IP del cliente para los límites de solicitudes. El valor de ejemplo `1` corresponde a una conexión directa al Nginx del contenedor frontend. Si TI coloca otro proxy/balanceador delante, debe ajustar el valor al número real de saltos de la cadena; no lo aumente sin confirmar esa topología, porque afecta los rate limits y el registro de IP.
