@@ -166,7 +166,6 @@ export function SoKpisPage() {
         <div data-report-export-screen>
       <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h2 className="text-[18px] font-bold leading-tight text-ink">Indicadores Hallazgos</h2>
           <p className="mt-1 text-[12.5px] text-ink-quiet">{totalReportes} reportes · {periodLabel}</p>
         </div>
         <div className="flex flex-wrap items-end gap-3">
